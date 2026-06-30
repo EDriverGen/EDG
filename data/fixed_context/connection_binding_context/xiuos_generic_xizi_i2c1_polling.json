@@ -1,0 +1,51 @@
+{
+  "binding_id": "xiuos_generic_xizi_i2c1_polling",
+  "platform_id": "xiuos_generic_xizi",
+  "connection_type": "i2c",
+  "mode": "polling",
+  "bus_instance": "/dev/i2c1",
+  "bus_instance_kind": "device_path",
+  "bus_symbol": "/dev/i2c1",
+  "backend": "XiUOS transform layer I2C device path",
+  "address_mode": "7-bit",
+  "fixed_attachment": {},
+  "helper_usage_patterns": [
+    {
+      "pattern_id": "xizi_i2c_fd_select_slave_address",
+      "applies_to": "i2c",
+      "purpose": "Bind the opened I2C device fd to the selected 7-bit device slave address before PrivWrite/PrivRead.",
+      "required_symbols": [
+        "PrivOpen",
+        "PrivIoctl",
+        "PrivWrite",
+        "PrivRead",
+        "PrivClose"
+      ],
+      "required_types": [
+        "struct PrivIoctlCfg"
+      ],
+      "required_constants": [
+        "OPE_INT",
+        "I2C_TYPE"
+      ],
+      "steps": [
+        "Open the concrete bus_instance with PrivOpen and keep the fd in device state while the driver is active.",
+        "Create a uint16_t variable holding the chosen Device IR 7-bit I2C address.",
+        "Fill struct PrivIoctlCfg with ioctl_driver_type = I2C_TYPE and args = &i2c_addr.",
+        "Call PrivIoctl(fd, OPE_INT, &ioctl_cfg) once after open and before any PrivWrite or PrivRead.",
+        "Use the same configured fd for subsequent PrivWrite and PrivRead calls; close it during deinit or init-error cleanup."
+      ],
+      "evidence": [
+        "DriverGen/data/references/bh1750/xiuos/bh1750_ref.c",
+        "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ]
+    }
+  ],
+  "notes": [
+    "Default XiUOS I2C binding uses the transform-layer device path /dev/i2c1."
+  ],
+  "evidence": [
+    "DriverGen/data/references/bh1750/xiuos/bh1750_sample_ref.c",
+    "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+  ]
+}

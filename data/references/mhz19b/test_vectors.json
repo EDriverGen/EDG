@@ -1,0 +1,447 @@
+{
+	"device_id": "mhz19b",
+	"description": "MH-Z19B NDIR CO2 Sensor — Standard Test Vectors for UART Emulation",
+	"bus_type": "uart",
+	"uart_config": {
+		"baud_rate": 9600,
+		"data_bits": 8,
+		"parity": "none",
+		"stop_bits": 1,
+		"flow_control": "none"
+	},
+	"protocol": {
+		"frame_length": 9,
+		"start_byte": "0xFF",
+		"sensor_number": "0x01",
+		"commands": {
+			"0x86": "Read CO2 concentration",
+			"0x87": "Zero point calibration",
+			"0x88": "Span point calibration",
+			"0x79": "ABC (Automatic Baseline Correction) on/off",
+			"0x99": "Set detection range"
+		},
+		"checksum": {
+			"formula": "checksum = (~(sum of bytes 1-7) + 1) & 0xFF",
+			"description": "Inverted sum + 1, applied to bytes 1 through 7"
+		}
+	},
+	"response_format_0x86": {
+		"byte0": "0xFF (start)",
+		"byte1": "0x86 (command echo)",
+		"byte2": "CO2 concentration high byte",
+		"byte3": "CO2 concentration low byte",
+		"byte4": "Temperature (raw value, offset by +40, i.e. T°C = byte4 - 40)",
+		"byte5": "Status (0=normal)",
+		"byte6": "Reserved",
+		"byte7": "Reserved",
+		"byte8": "Checksum"
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call mhz19b_init(). Configure UART at 9600 8N1. Returns 0."
+			},
+			{
+				"action": "read_co2",
+				"description": "Call mhz19b_read_co2(). Send cmd 0x86, receive 9-byte response."
+			},
+			{
+				"action": "checksum_verify",
+				"description": "Verify response checksum matches calculated value."
+			},
+			{
+				"action": "co2_check",
+				"description": "Extract CO2 ppm from bytes 2-3: ppm = (byte2 << 8) | byte3."
+			},
+			{
+				"action": "temperature_check",
+				"description": "Extract temperature: temp_c = byte4 - 40."
+			}
+		]
+	},
+	"simulated_data": {
+		"co2_ppm": 800,
+		"temperature_c": 25,
+		"temperature_raw": 65,
+		"command_frame": [
+			"0xFF",
+			"0x01",
+			"0x86",
+			"0x00",
+			"0x00",
+			"0x00",
+			"0x00",
+			"0x00",
+			"0x79"
+		],
+		"response_frame": [
+			"0xFF",
+			"0x86",
+			"0x03",
+			"0x20",
+			"0x41",
+			"0x00",
+			"0x00",
+			"0x00",
+			"0x16"
+		],
+		"description": "CO2=800ppm, Temperature=25°C (raw=65)"
+	},
+	"expected_output": {
+		"co2_ppm": {
+			"value": 800,
+			"min": 750,
+			"max": 850,
+			"description": "CO2 concentration in ppm"
+		},
+		"temperature_c": {
+			"value": 25,
+			"min": 20,
+			"max": 30,
+			"description": "Temperature in °C (byte4 - 40)"
+		},
+		"checksum_valid": true
+	},
+	"additional_test_vectors": [
+		{
+			"name": "low_co2",
+			"co2_ppm": 400,
+			"response_bytes_2_3": [
+				"0x01",
+				"0x90"
+			],
+			"description": "Normal outdoor CO2 level"
+		},
+		{
+			"name": "high_co2",
+			"co2_ppm": 2000,
+			"response_bytes_2_3": [
+				"0x07",
+				"0xD0"
+			],
+			"description": "Indoor elevated CO2 level"
+		},
+		{
+			"name": "max_co2",
+			"co2_ppm": 5000,
+			"response_bytes_2_3": [
+				"0x13",
+				"0x88"
+			],
+			"description": "Maximum default range (5000 ppm)"
+		},
+		{
+			"name": "checksum_error",
+			"response_frame_with_bad_checksum": [
+				"0xFF",
+				"0x86",
+				"0x03",
+				"0x20",
+				"0x41",
+				"0x00",
+				"0x00",
+				"0x00",
+				"0x00"
+			],
+			"expected_error": "checksum_mismatch"
+		}
+	],
+	"timing_constraints": {
+		"warmup_time_s": {
+			"min": 180,
+			"description": "3 minutes preheat time after power on"
+		},
+		"response_timeout_ms": {
+			"max": 500
+		},
+		"measurement_interval_s": {
+			"recommended": 2
+		}
+	},
+	"rtos_overrides": {
+		"rtthread": {
+			"init_call": "mhz19b_init(&g_dev, \"uart2\")"
+		},
+		"freertos": {
+			"init_call": "mhz19b_init(&g_dev, &huart2)"
+		},
+		"zephyr": {
+			"init_call": "mhz19b_init(&g_dev, uart_dev)"
+		}
+	},
+	"assertions": {
+		"count": 5,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_co2_ok",
+				"description": "Read CO2 returns 0"
+			},
+			{
+				"id": "checksum",
+				"description": "Response checksum is valid"
+			},
+			{
+				"id": "co2_range",
+				"description": "CO2 in [750, 850] ppm"
+			},
+			{
+				"id": "temp_range",
+				"description": "Temperature in [20, 30] °C"
+			}
+		]
+	},
+	"uart_proto": "mhz19b",
+	"runtime_tests": [
+		{
+			"name": "co2_400ppm_fresh_air",
+			"uart_pairs": [
+				{
+					"command": [
+						255,
+						1,
+						134,
+						0,
+						0,
+						0,
+						0,
+						0,
+						121
+					],
+					"response": [
+						255,
+						134,
+						1,
+						144,
+						65,
+						0,
+						0,
+						0,
+						168
+					]
+				}
+			],
+			"note": "Fresh outdoor air baseline (~400 ppm). Typical indoor measurement.",
+			"expected": {
+				"raw_alt": [
+					400
+				]
+			}
+		},
+		{
+			"name": "co2_800ppm_occupied_room",
+			"uart_pairs": [
+				{
+					"command": [
+						255,
+						1,
+						134,
+						0,
+						0,
+						0,
+						0,
+						0,
+						121
+					],
+					"response": [
+						255,
+						134,
+						3,
+						32,
+						63,
+						0,
+						0,
+						0,
+						24
+					]
+				}
+			],
+			"note": "Occupied room / moderate ventilation: 800 ppm.",
+			"expected": {
+				"raw_alt": [
+					800
+				]
+			}
+		},
+		{
+			"name": "co2_1200ppm_poor_ventilation",
+			"uart_pairs": [
+				{
+					"command": [
+						255,
+						1,
+						134,
+						0,
+						0,
+						0,
+						0,
+						0,
+						121
+					],
+					"response": [
+						255,
+						134,
+						4,
+						176,
+						66,
+						0,
+						0,
+						0,
+						132
+					]
+				}
+			],
+			"note": "Poor ventilation threshold: 1200 ppm (alarm territory).",
+			"expected": {
+				"raw_alt": [
+					1200
+				]
+			}
+		},
+		{
+			"name": "co2_2000ppm_high",
+			"uart_pairs": [
+				{
+					"command": [
+						255,
+						1,
+						134,
+						0,
+						0,
+						0,
+						0,
+						0,
+						121
+					],
+					"response": [
+						255,
+						134,
+						7,
+						208,
+						67,
+						0,
+						0,
+						0,
+						96
+					]
+				}
+			],
+			"note": "Strongly elevated: 2000 ppm. Tests 2-byte decode at 0x07D0.",
+			"expected": {
+				"raw_alt": [
+					2000
+				]
+			}
+		},
+		{
+			"name": "co2_5000ppm_full_range",
+			"uart_pairs": [
+				{
+					"command": [
+						255,
+						1,
+						134,
+						0,
+						0,
+						0,
+						0,
+						0,
+						121
+					],
+					"response": [
+						255,
+						134,
+						19,
+						136,
+						68,
+						0,
+						0,
+						0,
+						155
+					]
+				}
+			],
+			"note": "Max sensor range 5000 ppm. Tests near-full-scale value.",
+			"expected": {
+				"raw_alt": [
+					5000
+				]
+			}
+		},
+		{
+			"name": "co2_zero_calibration_boundary",
+			"uart_pairs": [
+				{
+					"command": [
+						255,
+						1,
+						134,
+						0,
+						0,
+						0,
+						0,
+						0,
+						121
+					],
+					"response": [
+						255,
+						134,
+						0,
+						0,
+						65,
+						0,
+						0,
+						0,
+						57
+					]
+				}
+			],
+			"note": "Zero response: tests LSB-only decode and handles post-zero-cal state.",
+			"expected": {
+				"raw_alt": [
+					0
+				]
+			}
+		},
+		{
+			"name": "co2_warmup_zone",
+			"uart_pairs": [
+				{
+					"command": [
+						255,
+						1,
+						134,
+						0,
+						0,
+						0,
+						0,
+						0,
+						121
+					],
+					"response": [
+						255,
+						134,
+						1,
+						194,
+						62,
+						64,
+						0,
+						0,
+						57
+					]
+				}
+			],
+			"note": "Sensor warm-up phase: status byte has bit 0x40 set. ppm still readable.",
+			"expected": {
+				"raw_alt": [
+					450
+				]
+			}
+		}
+	]
+}

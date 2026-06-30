@@ -1,0 +1,102 @@
+{
+  "_meta": {
+    "description": "Maps task-package connection_type strings to canonical bus metadata and default query intents.",
+    "version": 1,
+    "stage": "2.1"
+  },
+
+  "canonical_buses": ["i2c", "spi", "uart", "gpio", "adc", "pwm", "can"],
+  "modes": ["polling", "interrupt", "dma", "timing"],
+
+  "connection_types": {
+    "i2c_polling": {
+      "canonical_bus": "i2c",
+      "mode": "polling",
+      "default_query_intents": [
+        "i2c read",
+        "i2c write",
+        "i2c transfer",
+        "i2c master transmit",
+        "i2c master receive"
+      ]
+    },
+    "i2c_interrupt": {
+      "canonical_bus": "i2c",
+      "mode": "interrupt",
+      "default_query_intents": ["i2c interrupt", "i2c irq", "i2c IT"]
+    },
+    "i2c_dma": {
+      "canonical_bus": "i2c",
+      "mode": "dma",
+      "default_query_intents": ["i2c dma", "i2c master transmit dma"]
+    },
+    "spi_polling": {
+      "canonical_bus": "spi",
+      "mode": "polling",
+      "default_query_intents": [
+        "spi transfer",
+        "spi transmit",
+        "spi receive",
+        "spi exchange",
+        "rt_spi_transfer",
+        "rt_spi_send_then_recv",
+        "spi_transfer_bytes",
+        "spi_acquire"
+      ]
+    },
+    "spi_dma": {
+      "canonical_bus": "spi",
+      "mode": "dma",
+      "default_query_intents": ["spi dma", "spi transmit dma"]
+    },
+    "uart_polling": {
+      "canonical_bus": "uart",
+      "mode": "polling",
+      "default_query_intents": [
+        "uart transmit",
+        "uart receive",
+        "usart write",
+        "usart read"
+      ]
+    },
+    "uart_dma": {
+      "canonical_bus": "uart",
+      "mode": "dma",
+      "default_query_intents": ["uart dma", "usart transmit dma"]
+    },
+    "gpio_timing": {
+      "canonical_bus": "gpio",
+      "mode": "timing",
+      "default_query_intents": [
+        "gpio write",
+        "gpio read",
+        "set pin",
+        "read pin",
+        "microsecond delay",
+        "udelay",
+        "pulse width"
+      ]
+    },
+    "gpio_polling": {
+      "canonical_bus": "gpio",
+      "mode": "polling",
+      "default_query_intents": ["gpio read", "gpio write", "set pin", "get pin"]
+    },
+    "adc_polling": {
+      "canonical_bus": "adc",
+      "mode": "polling",
+      "default_query_intents": [
+        "adc read",
+        "adc convert",
+        "adc start",
+        "adc value"
+      ]
+    }
+  },
+
+  "fallback": {
+    "_doc": "When a connection_type is not in connection_types, derive heuristically: split by '_'; first segment sets canonical_bus (must be in canonical_buses), last segment sets mode (must be in modes). Any value that doesn't match goes to None.",
+    "default_canonical_bus": "unknown",
+    "default_mode": null
+  }
+}

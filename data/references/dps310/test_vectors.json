@@ -1,0 +1,855 @@
+{
+	"device_id": "dps310",
+	"description": "DPS310 Barometric Pressure/Temperature Sensor — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x77",
+	"harness": {
+		"_comment": "DPS310 measurement requires probe + read_calibration before any temperature/pressure read. Expose temperature (c100) as `raw` for generic harness. Address is auto-selected by the framework by matching i2c_address_7bit (0x77) against the driver's address macros (DPS310_ADDR_LOW=0x76, DPS310_ADDR_HIGH=0x77, DPS310_DEFAULT_ADDR=DPS310_ADDR_HIGH).",
+		"read_decl": "rt_int32_t t_c100 = 0;",
+		"pre_read_c": "if (dps310_probe(&g_dev) != RT_EOK || dps310_read_calibration(&g_dev) != RT_EOK) { err = -1; goto done; }",
+		"read_raw": "dps310_read_temperature(&g_dev, &t_c100); raw = (rt_uint16_t)t_c100"
+	},
+	"register_map": {
+		"0x0D": {
+			"name": "product_id",
+			"bytes": [
+				"0x10"
+			],
+			"description": "Product/revision ID = 0x10"
+		},
+		"0x08": {
+			"name": "meas_cfg",
+			"bytes": [
+				"0xC0"
+			],
+			"description": "Measurement config: sensor_rdy + coef_rdy bits set. NOTE: status_override applied — after write, reads back 0xC0 (ready)."
+		},
+		"0x06": {
+			"name": "prs_cfg",
+			"bytes": [
+				"0x01"
+			],
+			"description": "Pressure config: rate=1, oversample=1"
+		},
+		"0x07": {
+			"name": "tmp_cfg",
+			"bytes": [
+				"0x80"
+			],
+			"description": "Temperature config: ext sensor source (bit7)"
+		},
+		"0x09": {
+			"name": "cfg_reg",
+			"bytes": [
+				"0x00"
+			],
+			"description": "Interrupt/FIFO config"
+		},
+		"0x0A": {
+			"name": "int_sts",
+			"bytes": [
+				"0x00"
+			],
+			"description": "Interrupt status"
+		},
+		"0x0B": {
+			"name": "fifo_sts",
+			"bytes": [
+				"0x00"
+			],
+			"description": "FIFO status"
+		},
+		"0x0C": {
+			"name": "reset",
+			"bytes": [
+				"0x00"
+			],
+			"description": "Reset register"
+		},
+		"0x28": {
+			"name": "coef_src",
+			"bytes": [
+				"0x80"
+			],
+			"description": "Coefficient source register (TMP_COEF_SRCE bit7)"
+		},
+		"0x10": {
+			"name": "calibration",
+			"bytes": [
+				"0x0F",
+				"0xEC",
+				"0xED",
+				"0x36",
+				"0xEC",
+				"0xE4",
+				"0x25",
+				"0x3F",
+				"0xFD",
+				"0x09",
+				"0x01",
+				"0x8E",
+				"0x44",
+				"0xD4",
+				"0x60",
+				"0x00",
+				"0x04",
+				"0x67"
+			],
+			"description": "Calibration coefficients (18 bytes @ 0x10..0x21): c0, c1, c00, c10, c01, c11, c20, c21, c30"
+		},
+		"0x00": {
+			"name": "psr_data",
+			"bytes": [
+				"0x0C",
+				"0x00",
+				"0x00"
+			],
+			"description": "Raw pressure (3 bytes, 24-bit signed): 0x0C0000 = 786432"
+		},
+		"0x03": {
+			"name": "tmp_data",
+			"bytes": [
+				"0x08",
+				"0x00",
+				"0x00"
+			],
+			"description": "Raw temperature (3 bytes, 24-bit signed): 0x080000 = 524288"
+		}
+	},
+	"test_flow": {
+		"type": "custom",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call dps310_init(). Reads product ID (0x10), waits for sensor_rdy, reads calibration coefficients. Expect return 0."
+			},
+			{
+				"action": "read_calibration",
+				"description": "Parse 18 bytes of calibration data into c0, c1, c00, c10, c01, c11, c20, c21, c30 coefficients."
+			},
+			{
+				"action": "read",
+				"description": "Call dps310_read(&pressure_pa, &temp_mc). Triggers measurement, waits for meas_cfg ready bits, reads 6 bytes of raw data. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify pressure_pa in expected range. Compensation yields ~101325 Pa (sea level) from these test vectors, but rounding varies."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Pressure in Pa (× some scale). Auto-gen test checks first numeric output. Due to large 24-bit raw values, output varies widely by implementation (some output centi-Pa, some Pa, some raw).",
+			"min": 200000,
+			"max": 3000000
+		},
+		"rtos_overrides": {
+			"rtthread": {
+				"raw_value_description": "RT-Thread drivers typically output Pa × some scale. Observed range ~200000-250000.",
+				"min": 200000,
+				"max": 250000
+			}
+		}
+	},
+	"assertions": {
+		"count": 4,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0 and product ID verified"
+			},
+			{
+				"id": "calib",
+				"description": "Calibration read returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "pressure_pa in expected range"
+			}
+		]
+	},
+	"notes": {
+		"status_override": "Register 0x08 (meas_cfg) uses status_override behavior: after any write, subsequent reads return 0xC0 (sensor_rdy | coef_rdy), simulating measurement completion."
+	},
+	"required_writes": [
+		{
+			"addr": "0x77",
+			"description": "Product-ID read preamble (0x0D) to verify chip (0x10).",
+			"any_of": [
+				[
+					"0x0D"
+				]
+			]
+		},
+		{
+			"addr": "0x77",
+			"description": "Calibration coefficients burst (0x10..0x21).",
+			"any_of": [
+				[
+					"0x10"
+				]
+			]
+		},
+		{
+			"addr": "0x77",
+			"description": "TMP_CFG (0x07) written with external sensor bit (bit7) set and some oversampling.",
+			"any_of": [
+				[
+					"0x07",
+					"0x80"
+				],
+				[
+					"0x07",
+					"0x81"
+				],
+				[
+					"0x07",
+					"0x82"
+				],
+				[
+					"0x07",
+					"0x83"
+				],
+				[
+					"0x07",
+					"0x84"
+				],
+				[
+					"0x07",
+					"0x85"
+				],
+				[
+					"0x07",
+					"0x86"
+				],
+				[
+					"0x07",
+					"0x87"
+				],
+				[
+					"0x07",
+					"0xA0"
+				],
+				[
+					"0x07",
+					"0xA1"
+				],
+				[
+					"0x07",
+					"0xA2"
+				],
+				[
+					"0x07",
+					"0xA3"
+				],
+				[
+					"0x07",
+					"0xA4"
+				],
+				[
+					"0x07",
+					"0xA6"
+				],
+				[
+					"0x07",
+					"0xA7"
+				]
+			]
+		},
+		{
+			"addr": "0x77",
+			"description": "MEAS_CFG (0x08) written to select measurement mode (non-zero low nibble for continuous/command modes).",
+			"any_of": [
+				[
+					"0x08",
+					"0x01"
+				],
+				[
+					"0x08",
+					"0x02"
+				],
+				[
+					"0x08",
+					"0x03"
+				],
+				[
+					"0x08",
+					"0x05"
+				],
+				[
+					"0x08",
+					"0x06"
+				],
+				[
+					"0x08",
+					"0x07"
+				]
+			]
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "chip_id_valid",
+			"renode_regs": {
+				"13": [
+					16
+				],
+				"8": [
+					192
+				],
+				"6": [
+					1
+				],
+				"7": [
+					128
+				],
+				"9": [
+					0
+				],
+				"10": [
+					0
+				],
+				"11": [
+					0
+				],
+				"12": [
+					0
+				],
+				"40": [
+					128
+				],
+				"16": [
+					15,
+					236,
+					237,
+					54,
+					236,
+					228,
+					37,
+					63,
+					253,
+					9,
+					1,
+					142,
+					68,
+					212,
+					96,
+					0,
+					4,
+					103
+				],
+				"0": [
+					12,
+					0,
+					0
+				],
+				"3": [
+					8,
+					0,
+					0
+				]
+			},
+			"note": "Product ID reg 0x0D=16, calibration 18 bytes at 0x10. Pressure raw 0x0C0000, temp raw 0x080000. Driver output varies widely by compensation implementation — L4 falls back to physical range [200000, 3000000].",
+			"expected": {
+				"raw": 65072,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 60896
+					},
+					"threadx": {
+						"raw": 60896
+					},
+					"tobudos": {
+						"raw": 60896
+					}
+				}
+			},
+			"tolerance": {
+				"raw": 5
+			}
+		},
+		{
+			"name": "sea_level_1013hpa_25c",
+			"renode_regs": {
+				"13": [
+					16
+				],
+				"8": [
+					192
+				],
+				"6": [
+					1
+				],
+				"7": [
+					128
+				],
+				"9": [
+					0
+				],
+				"10": [
+					0
+				],
+				"11": [
+					0
+				],
+				"12": [
+					0
+				],
+				"40": [
+					128
+				],
+				"16": [
+					15,
+					236,
+					237,
+					54,
+					236,
+					228,
+					37,
+					63,
+					253,
+					9,
+					1,
+					142,
+					68,
+					212,
+					96,
+					0,
+					4,
+					103
+				],
+				"0": [
+					12,
+					0,
+					0
+				],
+				"3": [
+					8,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "Sea-level 1013 hPa / 25 C. Standard reference. Raw press 0x0C0000 / temp 0x080000.",
+			"expected": {
+				"raw": 65072,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 60896
+					},
+					"threadx": {
+						"raw": 60896
+					},
+					"tobudos": {
+						"raw": 60896
+					}
+				}
+			}
+		},
+		{
+			"name": "high_altitude_5000m_500hpa",
+			"renode_regs": {
+				"13": [
+					16
+				],
+				"8": [
+					192
+				],
+				"6": [
+					1
+				],
+				"7": [
+					128
+				],
+				"9": [
+					0
+				],
+				"10": [
+					0
+				],
+				"11": [
+					0
+				],
+				"12": [
+					0
+				],
+				"40": [
+					128
+				],
+				"16": [
+					15,
+					236,
+					237,
+					54,
+					236,
+					228,
+					37,
+					63,
+					253,
+					9,
+					1,
+					142,
+					68,
+					212,
+					96,
+					0,
+					4,
+					103
+				],
+				"0": [
+					4,
+					0,
+					0
+				],
+				"3": [
+					4,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "Alpine 5000 m / ~500 hPa / 0 C. Lower pressure + cold.",
+			"expected": {
+				"raw": 38886,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 61180
+					},
+					"threadx": {
+						"raw": 61180
+					},
+					"tobudos": {
+						"raw": 61180
+					}
+				}
+			}
+		},
+		{
+			"name": "ground_level_1050hpa_35c",
+			"renode_regs": {
+				"13": [
+					16
+				],
+				"8": [
+					192
+				],
+				"6": [
+					1
+				],
+				"7": [
+					128
+				],
+				"9": [
+					0
+				],
+				"10": [
+					0
+				],
+				"11": [
+					0
+				],
+				"12": [
+					0
+				],
+				"40": [
+					128
+				],
+				"16": [
+					15,
+					236,
+					237,
+					54,
+					236,
+					228,
+					37,
+					63,
+					253,
+					9,
+					1,
+					142,
+					68,
+					212,
+					96,
+					0,
+					4,
+					103
+				],
+				"0": [
+					14,
+					0,
+					0
+				],
+				"3": [
+					11,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "Hot high-pressure day: 1050 hPa / 35 C. Upper pressure edge.",
+			"expected": {
+				"raw": 35560,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 27915
+					},
+					"threadx": {
+						"raw": 27915
+					},
+					"tobudos": {
+						"raw": 27915
+					}
+				}
+			}
+		},
+		{
+			"name": "low_pressure_300hpa_neg50c",
+			"renode_regs": {
+				"13": [
+					16
+				],
+				"8": [
+					192
+				],
+				"6": [
+					1
+				],
+				"7": [
+					128
+				],
+				"9": [
+					0
+				],
+				"10": [
+					0
+				],
+				"11": [
+					0
+				],
+				"12": [
+					0
+				],
+				"40": [
+					128
+				],
+				"16": [
+					15,
+					236,
+					237,
+					54,
+					236,
+					228,
+					37,
+					63,
+					253,
+					9,
+					1,
+					142,
+					68,
+					212,
+					96,
+					0,
+					4,
+					103
+				],
+				"0": [
+					2,
+					0,
+					0
+				],
+				"3": [
+					252,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "Stratosphere: 300 hPa / -50 C (negative 24-bit temp raw). Signed encoding stress.",
+			"expected": {
+				"raw": 52050,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 61748
+					},
+					"threadx": {
+						"raw": 61748
+					},
+					"tobudos": {
+						"raw": 61748
+					}
+				}
+			}
+		},
+		{
+			"name": "raw_press_max",
+			"renode_regs": {
+				"13": [
+					16
+				],
+				"8": [
+					192
+				],
+				"6": [
+					1
+				],
+				"7": [
+					128
+				],
+				"9": [
+					0
+				],
+				"10": [
+					0
+				],
+				"11": [
+					0
+				],
+				"12": [
+					0
+				],
+				"40": [
+					128
+				],
+				"16": [
+					15,
+					236,
+					237,
+					54,
+					236,
+					228,
+					37,
+					63,
+					253,
+					9,
+					1,
+					142,
+					68,
+					212,
+					96,
+					0,
+					4,
+					103
+				],
+				"0": [
+					127,
+					255,
+					255
+				],
+				"3": [
+					8,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "Press raw at +full-scale (24-bit signed max). Saturation upper.",
+			"expected": {
+				"raw": 65072,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 60896
+					},
+					"threadx": {
+						"raw": 60896
+					},
+					"tobudos": {
+						"raw": 60896
+					}
+				}
+			}
+		},
+		{
+			"name": "raw_press_min",
+			"renode_regs": {
+				"13": [
+					16
+				],
+				"8": [
+					192
+				],
+				"6": [
+					1
+				],
+				"7": [
+					128
+				],
+				"9": [
+					0
+				],
+				"10": [
+					0
+				],
+				"11": [
+					0
+				],
+				"12": [
+					0
+				],
+				"40": [
+					128
+				],
+				"16": [
+					15,
+					236,
+					237,
+					54,
+					236,
+					228,
+					37,
+					63,
+					253,
+					9,
+					1,
+					142,
+					68,
+					212,
+					96,
+					0,
+					4,
+					103
+				],
+				"0": [
+					128,
+					0,
+					0
+				],
+				"3": [
+					8,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "Press raw at -full-scale (24-bit signed min). Saturation lower.",
+			"expected": {
+				"raw": 65072,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 60896
+					},
+					"threadx": {
+						"raw": 60896
+					},
+					"tobudos": {
+						"raw": 60896
+					}
+				}
+			}
+		}
+	]
+}

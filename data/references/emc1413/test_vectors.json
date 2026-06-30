@@ -1,0 +1,538 @@
+{
+	"device_id": "emc1413",
+	"description": "EMC1413 Triple Temperature Sensor — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x4C",
+	"register_map": {
+		"0xFE": {
+			"name": "manufacturer_id",
+			"bytes": [
+				"0x5D"
+			],
+			"description": "Manufacturer ID = 0x5D (SMSC)"
+		},
+		"0xFD": {
+			"name": "product_id",
+			"bytes": [
+				"0x21"
+			],
+			"description": "Product ID = 0x21 (EMC1413)"
+		},
+		"0xFF": {
+			"name": "revision",
+			"bytes": [
+				"0x04"
+			],
+			"description": "Revision register"
+		},
+		"0x02": {
+			"name": "status",
+			"bytes": [
+				"0x00"
+			],
+			"description": "Status register"
+		},
+		"0x03": {
+			"name": "config",
+			"bytes": [
+				"0x00"
+			],
+			"description": "Configuration register"
+		},
+		"0x04": {
+			"name": "conversion_rate",
+			"bytes": [
+				"0x08"
+			],
+			"description": "Conversion rate register"
+		},
+		"0x00": {
+			"name": "int_temp_high",
+			"bytes": [
+				"0x19"
+			],
+			"description": "Internal temperature high byte = 25 (0x19)"
+		},
+		"0x29": {
+			"name": "int_temp_low",
+			"bytes": [
+				"0x00"
+			],
+			"description": "Internal temperature low byte (fraction bits)"
+		},
+		"0x01": {
+			"name": "ext1_temp_high",
+			"bytes": [
+				"0x19"
+			],
+			"description": "External diode 1 temperature high byte = 25"
+		},
+		"0x10": {
+			"name": "ext1_temp_low",
+			"bytes": [
+				"0x80"
+			],
+			"description": "External diode 1 temperature low byte = 0.5 C"
+		},
+		"0x23": {
+			"name": "ext2_temp_high",
+			"bytes": [
+				"0x1A"
+			],
+			"description": "External diode 2 temperature high byte = 26"
+		},
+		"0x24": {
+			"name": "ext2_temp_low",
+			"bytes": [
+				"0x40"
+			],
+			"description": "External diode 2 temperature low byte = 0.25 C"
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call emc1413_init(). Reads manufacturer/product ID. Expect return 0."
+			},
+			{
+				"action": "read",
+				"description": "Call emc1413_read_temp(&int_temp_mc, &ext1_mc, &ext2_mc). Reads temp registers. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify int_temp_mc in expected range."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Internal temperature in millidegrees C. 0x19,0x00 → 25.0 C → 25000 mC.",
+			"min": 24000,
+			"max": 26000
+		}
+	},
+	"assertions": {
+		"count": 3,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "int_temp_mc in [24000, 26000]"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x4C",
+			"any_of": [
+				[
+					"0x00"
+				],
+				[
+					"0x01"
+				],
+				[
+					"0x23"
+				]
+			],
+			"description": "Register pointer write for high byte of temperature: 0x00 (internal), 0x01 (ext1), or 0x23 (ext2)."
+		},
+		{
+			"addr": "0x4C",
+			"any_of": [
+				[
+					"0x29"
+				],
+				[
+					"0x10"
+				],
+				[
+					"0x24"
+				]
+			],
+			"description": "Register pointer write for low byte: 0x29 (internal), 0x10 (ext1), or 0x24 (ext2)."
+		}
+	],
+	"harness": {
+		"raw_decl": "int32_t raw = 0;",
+		"read_raw": "emc1413_read_temperature(&g_dev, EMC1413_CH_INTERNAL, &raw)",
+		"pre_read_c": "err = emc1413_probe(&g_dev);\nif (err != RT_EOK) { hw_uart2_puts(\"ERROR: probe failed\\r\\n\"); goto done; }"
+	},
+	"runtime_tests": [
+		{
+			"name": "int_25c_ext1_25_5c_ext2_26_25c",
+			"renode_regs": {
+				"254": [
+					93
+				],
+				"253": [
+					33
+				],
+				"255": [
+					4
+				],
+				"2": [
+					0
+				],
+				"3": [
+					0
+				],
+				"4": [
+					8
+				],
+				"0": [
+					25
+				],
+				"41": [
+					0
+				],
+				"1": [
+					25
+				],
+				"16": [
+					128
+				],
+				"35": [
+					26
+				],
+				"36": [
+					64
+				]
+			},
+			"expected": {
+				"raw": 25000,
+				"raw_alt": [
+					25,
+					25125
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Manufacturer ID 0xFE=0x5D=93, product ID 0xFD=0x21=33. Internal temp 0x19=25.0°C. raw_alt covers drivers returning °C (25) or averaged (25.125°C=25125 mC)."
+		},
+		{
+			"name": "int_0c_zero_point",
+			"renode_regs": {
+				"254": [
+					93
+				],
+				"253": [
+					33
+				],
+				"255": [
+					4
+				],
+				"2": [
+					0
+				],
+				"3": [
+					0
+				],
+				"4": [
+					8
+				],
+				"0": [
+					0
+				],
+				"41": [
+					0
+				],
+				"1": [
+					0
+				],
+				"16": [
+					0
+				],
+				"35": [
+					0
+				],
+				"36": [
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "All channels 0 C. Zero-point baseline for signed temperature encoding.",
+			"expected": {
+				"raw": 0,
+				"raw_alt": [
+					0
+				]
+			}
+		},
+		{
+			"name": "int_neg20c_negative",
+			"renode_regs": {
+				"254": [
+					93
+				],
+				"253": [
+					33
+				],
+				"255": [
+					4
+				],
+				"2": [
+					0
+				],
+				"3": [
+					0
+				],
+				"4": [
+					8
+				],
+				"0": [
+					236
+				],
+				"41": [
+					0
+				],
+				"1": [
+					0
+				],
+				"16": [
+					0
+				],
+				"35": [
+					0
+				],
+				"36": [
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Internal -20 C (0xEC two's complement). Exercises sign handling.",
+			"expected": {
+				"raw": -20000,
+				"raw_alt": [
+					-20,
+					236,
+					236
+				]
+			}
+		},
+		{
+			"name": "int_127c_max_positive",
+			"renode_regs": {
+				"254": [
+					93
+				],
+				"253": [
+					33
+				],
+				"255": [
+					4
+				],
+				"2": [
+					0
+				],
+				"3": [
+					0
+				],
+				"4": [
+					8
+				],
+				"0": [
+					127
+				],
+				"41": [
+					0
+				],
+				"1": [
+					0
+				],
+				"16": [
+					0
+				],
+				"35": [
+					0
+				],
+				"36": [
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Internal 127 C (datasheet max for 8-bit signed integer degrees).",
+			"expected": {
+				"raw": 127000,
+				"raw_alt": [
+					127,
+					127
+				]
+			}
+		},
+		{
+			"name": "int_25c_fractional_0_125",
+			"renode_regs": {
+				"254": [
+					93
+				],
+				"253": [
+					33
+				],
+				"255": [
+					4
+				],
+				"2": [
+					0
+				],
+				"3": [
+					0
+				],
+				"4": [
+					8
+				],
+				"0": [
+					25
+				],
+				"41": [
+					32
+				],
+				"1": [
+					25
+				],
+				"16": [
+					0
+				],
+				"35": [
+					25
+				],
+				"36": [
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Internal 25 + 0.125 C (low reg 0x20 -> bits[7:5]=001). Minimum resolution step.",
+			"expected": {
+				"raw": 25125,
+				"raw_alt": [
+					25,
+					25,
+					25
+				]
+			}
+		},
+		{
+			"name": "int_25c_ext1_70c_ext2_neg10c_asymmetric",
+			"renode_regs": {
+				"254": [
+					93
+				],
+				"253": [
+					33
+				],
+				"255": [
+					4
+				],
+				"2": [
+					0
+				],
+				"3": [
+					0
+				],
+				"4": [
+					8
+				],
+				"0": [
+					25
+				],
+				"41": [
+					0
+				],
+				"1": [
+					70
+				],
+				"16": [
+					0
+				],
+				"35": [
+					246
+				],
+				"36": [
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Internal 25 C, Ext1 70 C (hot chip), Ext2 -10 C (cold diode). Asymmetric multi-channel stress.",
+			"expected": {
+				"raw": 25000,
+				"raw_alt": [
+					25,
+					70,
+					-10
+				]
+			}
+		},
+		{
+			"name": "int_neg40c_datasheet_min",
+			"renode_regs": {
+				"254": [
+					93
+				],
+				"253": [
+					33
+				],
+				"255": [
+					4
+				],
+				"2": [
+					0
+				],
+				"3": [
+					0
+				],
+				"4": [
+					8
+				],
+				"0": [
+					216
+				],
+				"41": [
+					0
+				],
+				"1": [
+					0
+				],
+				"16": [
+					0
+				],
+				"35": [
+					0
+				],
+				"36": [
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Internal -40 C (0xD8 two's complement). Datasheet operating minimum.",
+			"expected": {
+				"raw": -40000,
+				"raw_alt": [
+					-40,
+					216,
+					216
+				]
+			}
+		}
+	]
+}

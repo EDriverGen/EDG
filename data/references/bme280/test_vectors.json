@@ -1,0 +1,767 @@
+{
+  "device_id": "bme280",
+  "description": "BME280 Temperature/Pressure/Humidity Sensor — Standard Test Vectors for Renode I2C Emulation",
+  "i2c_address_7bit": "0x76",
+  "harness": {
+    "_comment": "BME280 measurement requires: probe + read_calibration + read (all three). Expose temperature (×100 °C scaled down to ×10) through `raw` for generic harness.",
+    "read_decl": "int32_t t_mc = 0; uint32_t p_pa = 0; uint32_t h_mp = 0;",
+    "pre_read_c": "if (bme280_probe(&g_dev) != 0 || bme280_read_calibration(&g_dev) != 0) { err = -1; goto done; }",
+    "read_raw": "bme280_read(&g_dev, &t_mc, &p_pa, &h_mp); raw = (rt_uint16_t)(t_mc / 10)"
+  },
+  "register_map": {
+    "0xD0": {
+      "name": "chip_id",
+      "bytes": [
+        "0x60"
+      ],
+      "description": "Chip ID = 0x60 (BME280)"
+    },
+    "0x88": {
+      "name": "calib_tp",
+      "bytes": [
+        "0x70",
+        "0x6B",
+        "0x43",
+        "0x67",
+        "0x18",
+        "0xFC",
+        "0x7D",
+        "0x8E",
+        "0x43",
+        "0xD6",
+        "0xD0",
+        "0x0B",
+        "0x27",
+        "0x0B",
+        "0x8C",
+        "0x00",
+        "0xF9",
+        "0xFF",
+        "0x8C",
+        "0x3C",
+        "0xF8",
+        "0xC6",
+        "0x70",
+        "0x17",
+        "0x00",
+        "0x00"
+      ],
+      "description": "Temperature & pressure calibration (26 bytes: dig_T1..dig_P9)"
+    },
+    "0xA1": {
+      "name": "calib_h1",
+      "bytes": [
+        "0x4B"
+      ],
+      "description": "Humidity calibration part 1 (dig_H1)"
+    },
+    "0xE1": {
+      "name": "calib_h2_6",
+      "bytes": [
+        "0x72",
+        "0x01",
+        "0x00",
+        "0x13",
+        "0x29",
+        "0x03",
+        "0x1E"
+      ],
+      "description": "Humidity calibration part 2 (dig_H2..dig_H6, 7 bytes)"
+    },
+    "0xF7": {
+      "name": "raw_data",
+      "bytes": [
+        "0x51",
+        "0x40",
+        "0x00",
+        "0x7E",
+        "0xED",
+        "0x00",
+        "0x6D",
+        "0x60"
+      ],
+      "description": "Raw pressure (3B) + temp (3B) + humidity (2B), 8 bytes total"
+    },
+    "0xF2": {
+      "name": "ctrl_hum",
+      "bytes": [
+        "0x00"
+      ],
+      "description": "Humidity oversampling control"
+    },
+    "0xF3": {
+      "name": "status",
+      "bytes": [
+        "0x00"
+      ],
+      "description": "Status: 0x00 = not measuring, not updating"
+    },
+    "0xF4": {
+      "name": "ctrl_meas",
+      "bytes": [
+        "0x00"
+      ],
+      "description": "Measurement control"
+    }
+  },
+  "test_flow": {
+    "type": "custom",
+    "steps": [
+      {
+        "action": "init",
+        "description": "Call bme280_init(). Reads chip ID (0x60). Expect return 0."
+      },
+      {
+        "action": "read_calibration",
+        "description": "Call bme280_read_calibration(). Reads 26+1+7 bytes of cal data. Expect return 0."
+      },
+      {
+        "action": "read",
+        "description": "Call bme280_read(&temp_mc, &press_pa, &hum_mp). Waits for status ready. Expect return 0."
+      },
+      {
+        "action": "value_check",
+        "description": "Verify temp_mc in expected range."
+      }
+    ]
+  },
+  "physical_range": {
+    "default": {
+      "raw_value_description": "Temperature in millidegrees C (temp_mc). Result ~25080 from compensation algorithm.",
+      "min": 24000,
+      "max": 26000
+    }
+  },
+  "assertions": {
+    "count": 4,
+    "details": [
+      {
+        "id": "init",
+        "description": "Init returns 0"
+      },
+      {
+        "id": "calib",
+        "description": "Read calibration returns 0"
+      },
+      {
+        "id": "read_err",
+        "description": "Read returns 0"
+      },
+      {
+        "id": "value_range",
+        "description": "temp_mc in [24000, 26000]"
+      }
+    ]
+  },
+  "required_writes": [
+    {
+      "addr": "0x76",
+      "description": "Chip-ID read preamble: write register pointer 0xD0 to read chip ID (0x60).",
+      "any_of": [
+        [
+          "0xD0"
+        ]
+      ]
+    },
+    {
+      "addr": "0x76",
+      "description": "Calibration burst read: write pointer 0x88 (dig_T1..dig_P9, 26 bytes).",
+      "any_of": [
+        [
+          "0x88"
+        ]
+      ]
+    },
+    {
+      "addr": "0x76",
+      "description": "ctrl_meas (0xF4) must be written with non-zero mode bits (1=forced, 3=normal); sensor stays in sleep otherwise and F7 stays stale.",
+      "any_of": [
+        [
+          "0xF4",
+          "0x25"
+        ],
+        [
+          "0xF4",
+          "0x26"
+        ],
+        [
+          "0xF4",
+          "0x27"
+        ],
+        [
+          "0xF4",
+          "0x21"
+        ],
+        [
+          "0xF4",
+          "0x22"
+        ],
+        [
+          "0xF4",
+          "0x23"
+        ],
+        [
+          "0xF4",
+          "0x29"
+        ],
+        [
+          "0xF4",
+          "0x2D"
+        ],
+        [
+          "0xF4",
+          "0x2F"
+        ],
+        [
+          "0xF4",
+          "0xB7"
+        ],
+        [
+          "0xF4",
+          "0xBF"
+        ],
+        [
+          "0xF4",
+          "0x57"
+        ],
+        [
+          "0xF4",
+          "0xA5"
+        ],
+        [
+          "0xF4",
+          "0xA7"
+        ]
+      ]
+    },
+    {
+      "addr": "0x76",
+      "description": "Raw data burst read: write pointer 0xF7 (press/temp/hum 8 bytes from F7..FE).",
+      "any_of": [
+        [
+          "0xF7"
+        ]
+      ]
+    }
+  ],
+  "runtime_tests": [
+    {
+      "name": "chip_id_valid",
+      "renode_regs": {
+        "208": [
+          96
+        ],
+        "136": [
+          112,
+          107,
+          67,
+          103,
+          24,
+          252,
+          125,
+          142,
+          67,
+          214,
+          208,
+          11,
+          39,
+          11,
+          140,
+          0,
+          249,
+          255,
+          140,
+          60,
+          248,
+          198,
+          112,
+          23,
+          0,
+          0
+        ],
+        "161": [
+          75
+        ],
+        "225": [
+          114,
+          1,
+          0,
+          19,
+          41,
+          3,
+          30
+        ],
+        "247": [
+          81,
+          64,
+          0,
+          126,
+          237,
+          0,
+          109,
+          96
+        ],
+        "242": [
+          0
+        ],
+        "244": [
+          0
+        ],
+        "243": [
+          0
+        ]
+      },
+      "expected": {
+        "raw": 2508
+      },
+      "tolerance": {
+        "raw": 5
+      },
+      "note": "Default ADC data; compensation yields ~25.08 degC → raw=2508. Chip ID 0x60 also present."
+    },
+    {
+      "name": "low_temp_low_pressure_dry_high_altitude",
+      "renode_regs": {
+        "208": [
+          96
+        ],
+        "136": [
+          112,
+          107,
+          67,
+          103,
+          24,
+          252,
+          125,
+          142,
+          67,
+          214,
+          208,
+          11,
+          39,
+          11,
+          140,
+          0,
+          249,
+          255,
+          140,
+          60,
+          248,
+          198,
+          112,
+          23,
+          0,
+          0
+        ],
+        "161": [
+          75
+        ],
+        "225": [
+          114,
+          1,
+          0,
+          19,
+          41,
+          3,
+          30
+        ],
+        "247": [
+          48,
+          0,
+          0,
+          96,
+          0,
+          0,
+          16,
+          0
+        ],
+        "242": [
+          0
+        ],
+        "244": [
+          0
+        ],
+        "243": [
+          0
+        ]
+      },
+      "expected": {
+        "raw": 64057
+      },
+      "tolerance": {
+        "raw": 100
+      },
+      "note": "Low temp ADC → compensation -14.79 degC → t_mc=-14790 → uint16(t_mc/10)=64057."
+    },
+    {
+      "name": "nominal_indoor_25c_1013hpa_50rh",
+      "renode_regs": {
+        "208": [
+          96
+        ],
+        "136": [
+          112,
+          107,
+          67,
+          103,
+          24,
+          252,
+          125,
+          142,
+          67,
+          214,
+          208,
+          11,
+          39,
+          11,
+          140,
+          0,
+          249,
+          255,
+          140,
+          60,
+          248,
+          198,
+          112,
+          23,
+          0,
+          0
+        ],
+        "161": [
+          75
+        ],
+        "225": [
+          114,
+          1,
+          0,
+          19,
+          41,
+          3,
+          30
+        ],
+        "247": [
+          81,
+          64,
+          0,
+          126,
+          208,
+          0,
+          107,
+          0
+        ],
+        "242": [
+          0
+        ],
+        "244": [
+          0
+        ],
+        "243": [
+          0
+        ]
+      },
+      "expected": {
+        "raw": 2494
+      },
+      "tolerance": {
+        "raw": 100
+      },
+      "note": "Typical indoor ~24.94 degC → raw=2494."
+    },
+    {
+      "name": "hot_humid_40c_1005hpa_95rh",
+      "renode_regs": {
+        "208": [
+          96
+        ],
+        "136": [
+          112,
+          107,
+          67,
+          103,
+          24,
+          252,
+          125,
+          142,
+          67,
+          214,
+          208,
+          11,
+          39,
+          11,
+          140,
+          0,
+          249,
+          255,
+          140,
+          60,
+          248,
+          198,
+          112,
+          23,
+          0,
+          0
+        ],
+        "161": [
+          75
+        ],
+        "225": [
+          114,
+          1,
+          0,
+          19,
+          41,
+          3,
+          30
+        ],
+        "247": [
+          81,
+          0,
+          0,
+          135,
+          0,
+          0,
+          224,
+          0
+        ],
+        "242": [
+          0
+        ],
+        "244": [
+          0
+        ],
+        "243": [
+          0
+        ]
+      },
+      "expected": {
+        "raw": 3543
+      },
+      "tolerance": {
+        "raw": 100
+      },
+      "note": "Hot/humid ~35.43 degC → raw=3543."
+    },
+    {
+      "name": "cold_dry_neg20c_1020hpa_10rh",
+      "renode_regs": {
+        "208": [
+          96
+        ],
+        "136": [
+          112,
+          107,
+          67,
+          103,
+          24,
+          252,
+          125,
+          142,
+          67,
+          214,
+          208,
+          11,
+          39,
+          11,
+          140,
+          0,
+          249,
+          255,
+          140,
+          60,
+          248,
+          198,
+          112,
+          23,
+          0,
+          0
+        ],
+        "161": [
+          75
+        ],
+        "225": [
+          114,
+          1,
+          0,
+          19,
+          41,
+          3,
+          30
+        ],
+        "247": [
+          82,
+          0,
+          0,
+          101,
+          0,
+          0,
+          24,
+          0
+        ],
+        "242": [
+          0
+        ],
+        "244": [
+          0
+        ],
+        "243": [
+          0
+        ]
+      },
+      "expected": {
+        "raw": 64704
+      },
+      "tolerance": {
+        "raw": 100
+      },
+      "note": "Cold -8.32 degC → t_mc=-8320 → uint16(t_mc/10)=64704. (ADC yields -8C not -20C with these calib params.)"
+    },
+    {
+      "name": "low_pressure_30kpa_storm",
+      "renode_regs": {
+        "208": [
+          96
+        ],
+        "136": [
+          112,
+          107,
+          67,
+          103,
+          24,
+          252,
+          125,
+          142,
+          67,
+          214,
+          208,
+          11,
+          39,
+          11,
+          140,
+          0,
+          249,
+          255,
+          140,
+          60,
+          248,
+          198,
+          112,
+          23,
+          0,
+          0
+        ],
+        "161": [
+          75
+        ],
+        "225": [
+          114,
+          1,
+          0,
+          19,
+          41,
+          3,
+          30
+        ],
+        "247": [
+          32,
+          0,
+          0,
+          126,
+          208,
+          0,
+          107,
+          0
+        ],
+        "242": [
+          0
+        ],
+        "244": [
+          0
+        ],
+        "243": [
+          0
+        ]
+      },
+      "expected": {
+        "raw": 2494
+      },
+      "tolerance": {
+        "raw": 100
+      },
+      "note": "Low pressure, same temp ADC as nominal → raw=2494."
+    },
+    {
+      "name": "saturated_raw_all_max",
+      "renode_regs": {
+        "208": [
+          96
+        ],
+        "136": [
+          112,
+          107,
+          67,
+          103,
+          24,
+          252,
+          125,
+          142,
+          67,
+          214,
+          208,
+          11,
+          39,
+          11,
+          140,
+          0,
+          249,
+          255,
+          140,
+          60,
+          248,
+          198,
+          112,
+          23,
+          0,
+          0
+        ],
+        "161": [
+          75
+        ],
+        "225": [
+          114,
+          1,
+          0,
+          19,
+          41,
+          3,
+          30
+        ],
+        "247": [
+          255,
+          255,
+          240,
+          255,
+          255,
+          240,
+          255,
+          255
+        ],
+        "242": [
+          0
+        ],
+        "244": [
+          0
+        ],
+        "243": [
+          0
+        ]
+      },
+      "expected": {
+        "raw": 18755
+      },
+      "tolerance": {
+        "raw": 100
+      },
+      "note": "All ADCs saturated → compensation ~187.55 degC → raw=18755."
+    }
+  ]
+}

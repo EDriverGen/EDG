@@ -1,0 +1,247 @@
+{
+  "device_id": "hcsr04",
+  "description": "HC-SR04 Ultrasonic Distance Sensor — Standard Test Vectors for GPIO Timing Emulation",
+  "bus_type": "gpio_timing",
+  "gpio_config": {
+    "trigger_pin": "output GPIO, 10µs HIGH pulse to start measurement",
+    "echo_pin": "input GPIO, HIGH duration proportional to distance",
+    "protocol": "trigger-echo pulse measurement"
+  },
+  "physics": {
+    "speed_of_sound_m_per_s": 343,
+    "formula_cm": "distance_cm = echo_time_us * 0.0343 / 2",
+    "formula_mm": "distance_mm = echo_time_us * 343 / 2000",
+    "integer_approx_cm": "distance_cm = echo_time_us / 58",
+    "integer_approx_mm": "distance_mm = echo_time_us * 10 / 58",
+    "range_cm": {
+      "min": 2,
+      "max": 400
+    },
+    "range_echo_us": {
+      "min": 116,
+      "max": 23324
+    }
+  },
+  "test_flow": {
+    "type": "auto_gen",
+    "steps": [
+      {
+        "action": "init",
+        "description": "Call hcsr04_init(). Configure TRIG as output, ECHO as input. Returns 0."
+      },
+      {
+        "action": "trigger",
+        "description": "Call hcsr04_trigger() or hcsr04_measure(). Send 10µs HIGH on TRIG."
+      },
+      {
+        "action": "measure_echo",
+        "description": "Measure ECHO pin HIGH duration using timer capture or polling."
+      },
+      {
+        "action": "calculate_distance",
+        "description": "Convert echo time to distance in cm or mm."
+      },
+      {
+        "action": "value_check",
+        "description": "Verify distance ≈ 50 cm (within ±5 cm tolerance)."
+      }
+    ]
+  },
+  "simulated_data": {
+    "distance_cm": 50,
+    "echo_us": 2915,
+    "description": "50 cm target → echo pulse ~2915 µs (50 / 0.01715)"
+  },
+  "expected_output": {
+    "distance_cm": {
+      "min": 45,
+      "max": 55,
+      "description": "50 cm ± 5 cm tolerance"
+    },
+    "distance_mm": {
+      "min": 450,
+      "max": 550,
+      "description": "500 mm ± 50 mm tolerance"
+    },
+    "echo_us": {
+      "min": 2600,
+      "max": 3200,
+      "description": "Echo pulse width for ~50 cm target"
+    }
+  },
+  "additional_test_vectors": [
+    {
+      "name": "min_range",
+      "distance_cm": 2,
+      "echo_us": 116,
+      "expected_cm": {
+        "min": 1,
+        "max": 4
+      }
+    },
+    {
+      "name": "near_range",
+      "distance_cm": 10,
+      "echo_us": 583,
+      "expected_cm": {
+        "min": 8,
+        "max": 12
+      }
+    },
+    {
+      "name": "mid_range",
+      "distance_cm": 100,
+      "echo_us": 5831,
+      "expected_cm": {
+        "min": 95,
+        "max": 105
+      }
+    },
+    {
+      "name": "max_range",
+      "distance_cm": 400,
+      "echo_us": 23324,
+      "expected_cm": {
+        "min": 390,
+        "max": 410
+      }
+    },
+    {
+      "name": "timeout_no_target",
+      "description": "No echo received within 38ms → out of range",
+      "echo_us": 0,
+      "expected_error": "timeout or out_of_range"
+    }
+  ],
+  "timing_constraints": {
+    "trigger_pulse_us": {
+      "min": 10
+    },
+    "echo_timeout_ms": {
+      "max": 38
+    },
+    "measurement_interval_ms": {
+      "min": 60
+    },
+    "max_echo_us": 23324
+  },
+  "rtos_overrides": {
+    "rtthread": {
+      "init_call": "hcsr04_init(&g_dev, TRIG_PIN, ECHO_PIN)"
+    },
+    "freertos": {
+      "init_call": "hcsr04_init(&g_dev, TRIG_PORT, TRIG_PIN, ECHO_PORT, ECHO_PIN)"
+    }
+  },
+  "assertions": {
+    "count": 4,
+    "details": [
+      {
+        "id": "init",
+        "description": "Init returns 0"
+      },
+      {
+        "id": "measure_ok",
+        "description": "Measure returns 0 (no timeout)"
+      },
+      {
+        "id": "distance_range",
+        "description": "Distance in [45, 55] cm"
+      },
+      {
+        "id": "nonzero",
+        "description": "Distance > 0 (echo received)"
+      }
+    ]
+  },
+  "logic_tests": [
+    {
+      "name": "close_10cm",
+      "input": {
+        "echo_us": 580
+      },
+      "expected": {
+        "cm_x10": 100,
+        "status": "ok"
+      },
+      "note": "580 us / 58 = 10.00 cm"
+    },
+    {
+      "name": "mid_100cm",
+      "input": {
+        "echo_us": 5800
+      },
+      "expected": {
+        "cm_x10": 1000,
+        "status": "ok"
+      },
+      "note": "1 meter echo"
+    },
+    {
+      "name": "far_400cm_max",
+      "input": {
+        "echo_us": 23200
+      },
+      "expected": {
+        "cm_x10": 4000,
+        "status": "ok"
+      },
+      "note": "Datasheet max range 4 m"
+    },
+    {
+      "name": "near_min_2cm",
+      "input": {
+        "echo_us": 116
+      },
+      "expected": {
+        "cm_x10": 20,
+        "status": "ok"
+      },
+      "note": "Datasheet min range 2 cm (116 us boundary)"
+    },
+    {
+      "name": "below_min_1cm",
+      "input": {
+        "echo_us": 58
+      },
+      "expected": {
+        "cm_x10": 10,
+        "status": "below_min"
+      },
+      "note": "Below datasheet minimum: distance unreliable"
+    },
+    {
+      "name": "above_max_450cm",
+      "input": {
+        "echo_us": 24000
+      },
+      "expected": {
+        "cm_x10": 4137,
+        "status": "above_max"
+      },
+      "note": "Beyond datasheet max but still within valid pulse window"
+    },
+    {
+      "name": "timeout_no_echo",
+      "input": {
+        "echo_us": 0
+      },
+      "expected": {
+        "cm_x10": 0,
+        "status": "timeout"
+      },
+      "note": "Echo timeout (no object within range)"
+    },
+    {
+      "name": "overrange_hard_limit",
+      "input": {
+        "echo_us": 30000
+      },
+      "expected": {
+        "cm_x10": 0,
+        "status": "overrange"
+      },
+      "note": "Hardware overrange: reject as out-of-spec"
+    }
+  ]
+}

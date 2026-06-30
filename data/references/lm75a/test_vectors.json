@@ -1,0 +1,285 @@
+{
+	"device_id": "lm75a",
+	"description": "LM75A Temperature Sensor — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x48",
+	"register_map": {
+		"0x00": {
+			"name": "temp_register",
+			"bytes": [
+				"0x19",
+				"0x00"
+			],
+			"description": "Temperature: 25.0°C (raw = 0x1900 >> 5 = 200, temp = 200 * 0.125 = 25.0)"
+		},
+		"0x01": {
+			"name": "configuration",
+			"bytes": [
+				"0x00"
+			],
+			"description": "Default config"
+		},
+		"0x02": {
+			"name": "t_hyst",
+			"bytes": [
+				"0x4B",
+				"0x00"
+			],
+			"description": "Hysteresis: 75.0°C"
+		},
+		"0x03": {
+			"name": "t_os",
+			"bytes": [
+				"0x50",
+				"0x00"
+			],
+			"description": "Overtemperature: 80.0°C"
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call lm75a_init(). Expect return 0."
+			},
+			{
+				"action": "read",
+				"description": "Call lm75a_read_temperature() or equivalent. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify temperature value in expected range."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Temperature in millidegrees C (most RTOS) or 0.125°C units (RT-Thread)",
+			"min": 24000,
+			"max": 26000
+		},
+		"rtos_overrides": {
+			"rtthread": {
+				"description": "RT-Thread returns raw register value (0.125°C units): 200 = 25.0°C",
+				"min": 190,
+				"max": 210
+			}
+		}
+	},
+	"assertions": {
+		"count": 3,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "Read value in expected range (RTOS-dependent)"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x48",
+			"description": "Set the register pointer to 0x00 (temperature register) before reading. This is the fundamental LM75A read pattern: W(addr, 0x00) then R(addr, 2 bytes).",
+			"any_of": [
+				[
+					"0x00"
+				]
+			]
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "temp_0C",
+			"renode_regs": {
+				"0": [
+					0,
+					0
+				]
+			},
+			"expected": {
+				"raw": 0,
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 0
+					},
+					"threadx": {
+						"raw": 0
+					},
+					"tobudos": {
+						"raw": 0
+					}
+				}
+			},
+			"note": "0x0000 = 0.0°C. Both 16-bit and 11-bit return 0"
+		},
+		{
+			"name": "temp_25C",
+			"renode_regs": {
+				"0": [
+					25,
+					0
+				]
+			},
+			"expected": {
+				"raw": 200,
+				"raw_alt": [
+					6400
+				],
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 25000
+					},
+					"threadx": {
+						"raw": 25000
+					},
+					"tobudos": {
+						"raw": 25000
+					}
+				}
+			},
+			"note": "25°C: 11-bit=6400>>5=200, 16-bit=6400. 200*0.125=25°C"
+		},
+		{
+			"name": "temp_0_5C",
+			"renode_regs": {
+				"0": [
+					0,
+					128
+				]
+			},
+			"expected": {
+				"raw": 4,
+				"raw_alt": [
+					128
+				],
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 500
+					},
+					"threadx": {
+						"raw": 500
+					},
+					"tobudos": {
+						"raw": 500
+					}
+				}
+			},
+			"note": "0.5°C: 11-bit=128>>5=4, 16-bit=128. 4*0.125=0.5°C"
+		},
+		{
+			"name": "temp_80C",
+			"renode_regs": {
+				"0": [
+					80,
+					0
+				]
+			},
+			"expected": {
+				"raw": 640,
+				"raw_alt": [
+					20480
+				],
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 80000
+					},
+					"threadx": {
+						"raw": 80000
+					},
+					"tobudos": {
+						"raw": 80000
+					}
+				}
+			},
+			"note": "80°C: 11-bit=20480>>5=640, 16-bit=20480. 640*0.125=80°C"
+		},
+		{
+			"name": "temp_125C_max",
+			"renode_regs": {
+				"0": [
+					125,
+					0
+				]
+			},
+			"expected": {
+				"raw": 1000,
+				"raw_alt": [
+					32000
+				],
+				"rtos_overrides": {
+					"freertos": {
+						"raw": 125000
+					},
+					"threadx": {
+						"raw": 125000
+					},
+					"tobudos": {
+						"raw": 125000
+					}
+				}
+			},
+			"note": "125°C max: 11-bit=32000>>5=1000, 16-bit=32000. 1000*0.125=125°C"
+		},
+		{
+			"name": "temp_neg27_5C",
+			"renode_regs": {
+				"0": [
+					228,
+					128
+				]
+			},
+			"expected": {
+				"raw": 65316,
+				"raw_alt": [
+					58496
+				],
+				"rtos_overrides": {
+					"freertos": {
+						"raw": -27500
+					},
+					"threadx": {
+						"raw": -27500
+					},
+					"tobudos": {
+						"raw": -27500
+					}
+				}
+			},
+			"note": "-27.5°C: signed 11-bit=-220 (prints as 65316 via uint16_t cast), 16-bit=58496"
+		},
+		{
+			"name": "temp_neg55C_min",
+			"renode_regs": {
+				"0": [
+					201,
+					0
+				]
+			},
+			"expected": {
+				"raw": 65096,
+				"raw_alt": [
+					51456
+				],
+				"rtos_overrides": {
+					"freertos": {
+						"raw": -55000
+					},
+					"threadx": {
+						"raw": -55000
+					},
+					"tobudos": {
+						"raw": -55000
+					}
+				}
+			},
+			"note": "-55°C min: signed 11-bit=-440 (prints as 65096 via uint16_t cast), 16-bit=51456"
+		}
+	]
+}

@@ -1,0 +1,144 @@
+{
+	"device_id": "tmp105",
+	"description": "TMP105 Temperature Sensor — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x48",
+	"register_map": {
+		"0x00": {
+			"name": "temperature",
+			"bytes": ["0x19", "0x00"],
+			"description": "Temperature register (2 bytes): 25.0 C (MSB=0x19, LSB=0x00, 12-bit left-aligned)"
+		},
+		"0x01": {
+			"name": "configuration",
+			"bytes": ["0x60"],
+			"description": "Configuration register default"
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call tmp105_init(). Expect return 0."
+			},
+			{
+				"action": "read",
+				"description": "Call tmp105_read_temp(&temp_mc). Reads 2 bytes from register 0x00. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify temp_mc in expected range."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Temperature in millidegrees C. 0x19,0x00 → 25.0 C → 25000 mC.",
+			"min": 24500,
+			"max": 25500
+		}
+	},
+	"assertions": {
+		"count": 3,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "temp_mc in [24500, 25500]"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x48",
+			"description": "Set the register pointer to 0x00 (temperature register) before reading the 2 temperature bytes. TMP105 default I2C addr is 0x48 (A0=GND).",
+			"any_of": [["0x00"]]
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "temp_0C",
+			"renode_regs": {
+				"0": [0, 0]
+			},
+			"expected": {
+				"raw": 0
+			},
+			"note": "0x0000 = 0.0°C"
+		},
+		{
+			"name": "temp_25C",
+			"renode_regs": {
+				"0": [25, 16]
+			},
+			"expected": {
+				"raw": 25062
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Reg=0x1910 → 25.0625°C. Driver returns millidegrees = 25062 (25.0625 × 1000, rounded). Harness captures uint16 truncation of the mC value."
+		},
+		{
+			"name": "temp_50C",
+			"renode_regs": {
+				"0": [50, 0]
+			},
+			"expected": {
+				"raw": 50000
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Reg=0x3200 → 50.0°C. Driver returns mC=50000 (fits uint16)."
+		},
+		{
+			"name": "temp_100C",
+			"renode_regs": {
+				"0": [100, 0]
+			},
+			"expected": {
+				"raw": 100000,
+				"raw_alt": [34464]
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Reg=0x6400 → 100.0°C → 100000 mC (int32). uint16 overflow: 100000 mod 65536 = 34464."
+		},
+		{
+			"name": "temp_neg25C",
+			"renode_regs": {
+				"0": [231, 0]
+			},
+			"expected": {
+				"raw": -25000,
+				"raw_alt": [40536]
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Reg=0xE700 → -25.0°C → -25000 mC (int32). uint16 reinterpretation: 65536-25000 = 40536."
+		},
+		{
+			"name": "temp_0_0625C",
+			"renode_regs": {
+				"0": [0, 16]
+			},
+			"expected": {
+				"raw": 62
+			},
+			"tolerance": {
+				"raw": 2
+			},
+			"note": "Reg=0x0010 → 0.0625°C. Driver returns mC=62 (62.5 truncated)."
+		}
+	]
+}

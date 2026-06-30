@@ -1,0 +1,47 @@
+{
+  "device_id": "adxl345",
+  "attachment_type": "spi_accelerometer",
+  "required_bus_type": "spi",
+  "address_mode": "chip-select",
+  "addressing": null,
+  "required_attachment": {
+    "signals": ["SCLK", "MOSI", "MISO", "CS"],
+    "spi": {
+      "mode": "mode3",
+      "data_width_bits": 8,
+      "bit_order": "msb_first",
+      "max_hz": 5000000
+    },
+    "notes": [
+      "Use 4-wire SPI with chip select; register address byte encodes read/write and multi-byte burst bits."
+    ]
+  },
+  "optional_attachment": {
+    "interrupt_pins": ["INT1", "INT2"],
+    "alternate_bus": "i2c"
+  },
+  "default_overrides": {
+    "bus_instance": null,
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null
+  },
+  "protocol_hints": {
+    "spi_proto": "register",
+    "register_read_mask": "0x80",
+    "multi_byte_mask": "0x40",
+    "address_mask": "0x3F",
+    "read_when_set": true,
+    "primary_channels": ["accel_x", "accel_y", "accel_z"]
+  },
+  "notes": [
+    "Reference drivers use register SPI, verify DEVID, configure DATA_FORMAT/BW_RATE/POWER_CTL, then burst-read DATAX0..DATAZ1.",
+    "Interrupt pins are not required for the minimal polling driver."
+  ],
+  "evidence": [
+    "DriverGen/data/raw/adxl345/adxl345.pdf",
+    "DriverGen/evaluation/oracle/data/adxl345/meta.json",
+    "DriverGen/data/references/adxl345/*/*_ref.c"
+  ]
+}

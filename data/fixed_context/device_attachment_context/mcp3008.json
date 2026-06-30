@@ -1,0 +1,49 @@
+{
+  "device_id": "mcp3008",
+  "attachment_type": "spi_adc",
+  "required_bus_type": "spi",
+  "address_mode": "chip-select",
+  "addressing": null,
+  "required_attachment": {
+    "signals": ["SCLK", "MOSI", "MISO", "CS"],
+    "spi": {
+      "mode": "mode0",
+      "data_width_bits": 8,
+      "bit_order": "msb_first",
+      "max_hz": 3600000
+    },
+    "vref_mv": 3300,
+    "notes": [
+      "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+    ]
+  },
+  "optional_attachment": {
+    "differential_mode": "optional",
+    "vref_mv": "board_dependent"
+  },
+  "default_overrides": {
+    "bus_instance": null,
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "vref_mv": 3300
+  },
+  "protocol_hints": {
+    "spi_proto": "command",
+    "command_bytes": 3,
+    "single_ended_default": true,
+    "channels": ["ch0", "ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7"],
+    "result_bits": 10,
+    "result_formula": "((rx[1] & 0x03) << 8) | rx[2]"
+  },
+  "notes": [
+    "Reference drivers expose raw 10-bit ADC counts and optional millivolt conversion using vref_mv.",
+    "The main generated path should preserve all 8 single-ended channels; differential mode is optional."
+  ],
+  "evidence": [
+    "DriverGen/data/raw/mcp3008/MCP3008.pdf",
+    "DriverGen/evaluation/oracle/data/mcp3008/meta.json",
+    "DriverGen/data/references/mcp3008/*/*_ref.c"
+  ]
+}

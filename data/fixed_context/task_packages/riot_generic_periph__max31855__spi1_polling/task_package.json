@@ -1,0 +1,53 @@
+{
+  "package_id": "riot_generic_periph__max31855__spi1_polling",
+  "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/riot_generic_periph.json",
+  "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/riot_generic_periph_spi1_polling.json",
+  "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/max31855.json",
+  "reference_driver_root": "DriverGen/data/references/max31855/riot",
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "riot_generic_periph",
+      "rtos": "riot",
+      "board": "generic_periph",
+      "integration": "generic_driver_api",
+      "mcu": "unspecified_riot_target"
+    },
+    "connection": {
+      "binding_id": "riot_generic_periph_spi1_polling",
+      "connection_type": "spi",
+      "mode": "polling",
+      "bus_instance": "SPI_DEV(0)",
+      "bus_symbol": "SPI_DEV(0)",
+      "backend": "RIOT periph SPI driver",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "cs_symbol": "SPI_HWCS(0)",
+        "chip_select": "SPI_HWCS(0)"
+      }
+    },
+    "device": {
+      "device_id": "max31855",
+      "attachment_type": "spi_thermocouple_converter",
+      "required_bus_type": "spi",
+      "required_attachment": {
+        "signals": ["SCK", "MISO", "CS"],
+        "notes": ["Read-only 32-bit SPI stream; no command bytes are sent."]
+      },
+      "protocol_hints": {
+        "spi_proto": "stream",
+        "read_only_stream_no_trigger": true,
+        "frame_bits": 32,
+        "primary_channel": "temp_thermocouple"
+      }
+    }
+  },
+  "notes": [
+    "This package freezes a concrete RIOT SPI task setup for MAX31855.",
+    "The generated driver should acquire SPI_DEV(0), read 4 bytes with spi_transfer_bytes, then release the bus."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/riot/drivers/include/periph/spi.h",
+    "DriverGen/data/raw/max31855/MAX31855.pdf",
+    "DriverGen/data/references/max31855/riot/max31855_ref.c"
+  ]
+}

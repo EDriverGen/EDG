@@ -1,0 +1,88 @@
+#include "ds3231_ref.h"
+
+
+static int openharmony_i2c_write(DevHandle bus, uint16_t addr,
+                                 const uint8_t *data, uint16_t len)
+{
+    struct I2cMsg msg;
+
+    if (bus == NULL || data == NULL) return -1;
+    msg.addr = addr;
+    msg.buf = (uint8_t *)data;
+    msg.len = len;
+    msg.flags = 0;
+    return (I2cTransfer(bus, &msg, 1) == 1) ? 0 : -1;
+}
+
+static int openharmony_i2c_read(DevHandle bus, uint16_t addr,
+                                uint8_t *data, uint16_t len)
+{
+    struct I2cMsg msg;
+
+    if (bus == NULL || data == NULL) return -1;
+    msg.addr = addr;
+    msg.buf = data;
+    msg.len = len;
+    msg.flags = I2C_FLAG_READ;
+    return (I2cTransfer(bus, &msg, 1) == 1) ? 0 : -1;
+}
+
+static int openharmony_i2c_write_read(DevHandle bus, uint16_t addr,
+                                      const uint8_t *wdata, uint16_t wlen,
+                                      uint8_t *rdata, uint16_t rlen)
+{
+    struct I2cMsg msg[2];
+
+    if (bus == NULL || wdata == NULL || rdata == NULL) return -1;
+    msg[0].addr = addr;
+    msg[0].buf = (uint8_t *)wdata;
+    msg[0].len = wlen;
+    msg[0].flags = 0;
+    msg[1].addr = addr;
+    msg[1].buf = rdata;
+    msg[1].len = rlen;
+    msg[1].flags = I2C_FLAG_READ;
+    return (I2cTransfer(bus, msg, 2) == 2) ? 0 : -1;
+}
+
+static int ds_read_reg(struct ds3231_device *dev, uint8_t reg, uint8_t *buf, uint16_t len) {
+    return openharmony_i2c_write_read(dev->bus, dev->addr, &reg, 1, buf, len);
+}
+
+static uint8_t bcd_to_dec(uint8_t bcd) { return (bcd >> 4) * 10 + (bcd & 0x0F); }
+
+int ds3231_init(struct ds3231_device *dev, DevHandle bus, uint16_t addr) {
+    if (!dev) return -1;
+    dev->bus = bus; dev->addr = addr;
+    return 0;
+}
+
+int ds3231_probe(struct ds3231_device *dev) {
+    uint8_t val;
+    return ds_read_reg(dev, 0x00, &val, 1);
+}
+
+int ds3231_read_time(struct ds3231_device *dev, struct ds3231_time *t) {
+    uint8_t buf[7]; int ret;
+    if (!dev || !t) return -1;
+    ret = ds_read_reg(dev, 0x00, buf, 7);
+    if (ret) return ret;
+    t->seconds = bcd_to_dec(buf[0] & 0x7F);
+    t->minutes = bcd_to_dec(buf[1] & 0x7F);
+    t->hours   = bcd_to_dec(buf[2] & 0x3F);
+    t->day     = bcd_to_dec(buf[3] & 0x07);
+    t->date    = bcd_to_dec(buf[4] & 0x3F);
+    t->month   = bcd_to_dec(buf[5] & 0x1F);
+    t->year    = bcd_to_dec(buf[6]);
+    return 0;
+}
+
+int ds3231_read_temperature(struct ds3231_device *dev, int32_t *temp_mcelsius) {
+    uint8_t buf[2]; int ret;
+    if (!dev || !temp_mcelsius) return -1;
+    ret = ds_read_reg(dev, 0x11, buf, 2);
+    if (ret) return ret;
+    int16_t raw = (int16_t)((buf[0] << 8) | buf[1]);
+    *temp_mcelsius = ((int32_t)(raw >> 6) * 250);
+    return 0;
+}

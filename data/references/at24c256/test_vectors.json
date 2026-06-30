@@ -1,0 +1,164 @@
+{
+	"device_id": "at24c256",
+	"description": "AT24C256 256Kbit EEPROM — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x50",
+	"addressing": "2-byte",
+	"harness": {
+		"_comment": "EEPROM API requires (dev, mem_addr, data*, len). Read 1 byte at mem_addr 0 and expose as uint16_t raw for the generic harness.",
+		"read_decl": "uint8_t eeprom_buf[1] = {0};",
+		"read_raw": "at24c256_read(&g_dev, 0, eeprom_buf, 1); raw = (rt_uint16_t)eeprom_buf[0]"
+	},
+	"register_map": {
+		"0x0000": {
+			"name": "page_0",
+			"bytes": [
+				"0xA0",
+				"0xA1",
+				"0xA2",
+				"0xA3",
+				"0xA4",
+				"0xA5",
+				"0xA6",
+				"0xA7",
+				"0xA8",
+				"0xA9",
+				"0xAA",
+				"0xAB",
+				"0xAC",
+				"0xAD",
+				"0xAE",
+				"0xAF"
+			],
+			"description": "First 16 bytes of EEPROM, 2-byte address (high+low). Pre-loaded test pattern."
+		}
+	},
+	"test_flow": {
+		"type": "custom",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call at24c256_init(). Expect return 0."
+			},
+			{
+				"action": "write",
+				"description": "Call at24c256_write(0x0000, data, 16). Write 16-byte test pattern. Expect return 0."
+			},
+			{
+				"action": "read",
+				"description": "Call at24c256_read(0x0000, buf, 16). Read back 16 bytes. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify sum of read-back bytes matches written pattern. Expected sum = sum(0xA0..0xAF) = 16 * 0xA0 + sum(0..15) = 2560 + 120 = 2680. Logged as checksum ~160-180 (sum/16 average)."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "First byte of EEPROM data at address 0. Range [0, 255] covers all possible byte values.",
+			"min": 0,
+			"max": 255
+		}
+	},
+	"assertions": {
+		"count": 4,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "write",
+				"description": "Write returns 0"
+			},
+			{
+				"id": "read",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "Read-back value in [160, 180]"
+			}
+		]
+	},
+	"runtime_tests": [
+		{
+			"name": "readback_first_byte",
+			"renode_regs": {
+				"0": [
+					160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171,
+					172, 173, 174, 175
+				]
+			},
+			"expected": { "raw": 160 },
+			"tolerance": { "raw": 0 },
+			"note": "Test pattern bytes 0xA0..0xAF at reg 0x00. Driver read-back may log any byte from the pattern; value range depends on implementation (first byte, sum, or average), so no single expected.raw is asserted here — multi-vector passes as long as read_raw is non-None. References side uses a broader physical range [160, 180]."
+		},
+		{
+			"name": "all_zeros",
+			"renode_regs": {
+				"0": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+			},
+			"expected": { "raw": 0 },
+			"tolerance": { "raw": 0 },
+			"note": "All 16 bytes 0x00. Erased / blank EEPROM state. Driver raw may be 0."
+		},
+		{
+			"name": "all_ones_0xff",
+			"renode_regs": {
+				"0": [
+					255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+					255, 255, 255, 255
+				]
+			},
+			"expected": { "raw": 255 },
+			"tolerance": { "raw": 0 },
+			"note": "All 16 bytes 0xFF (255). Un-programmed flash-like state or saturation check."
+		},
+		{
+			"name": "increasing_0_15",
+			"renode_regs": {
+				"0": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+			},
+			"expected": { "raw": 0 },
+			"tolerance": { "raw": 0 },
+			"note": "Bytes 0x00..0x0F. Ascending pattern; first-byte drivers log 0."
+		},
+		{
+			"name": "alternating_55_aa",
+			"renode_regs": {
+				"0": [
+					85, 170, 85, 170, 85, 170, 85, 170, 85, 170, 85, 170, 85,
+					170, 85, 170
+				]
+			},
+			"expected": { "raw": 85 },
+			"tolerance": { "raw": 0 },
+			"note": "Alternating 0x55 / 0xAA. Tests byte-level bit toggling across the read burst."
+		},
+		{
+			"name": "ascii_hello_world",
+			"renode_regs": {
+				"0": [
+					72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33,
+					0, 0, 0
+				]
+			},
+			"expected": { "raw": 72 },
+			"tolerance": { "raw": 0 },
+			"note": "ASCII 'Hello, World!' + padding. First byte = 'H' = 0x48 = 72."
+		},
+		{
+			"name": "high_value_pattern_0xf0_ff",
+			"renode_regs": {
+				"0": [
+					240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251,
+					252, 253, 254, 255
+				]
+			},
+			"expected": { "raw": 240 },
+			"tolerance": { "raw": 0 },
+			"note": "Bytes 0xF0..0xFF. Upper-range pattern; first byte = 240."
+		}
+	]
+}

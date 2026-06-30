@@ -1,0 +1,276 @@
+{
+  "device_id": "dht22",
+  "description": "DHT22/AM2302 Temperature & Humidity Sensor — Standard Test Vectors for GPIO Timing Emulation",
+  "bus_type": "gpio_timing",
+  "gpio_config": {
+    "data_pin": "single bidirectional GPIO with external pull-up",
+    "protocol": "proprietary 1-wire (NOT Dallas 1-Wire)",
+    "start_signal": "host LOW ≥1ms, then release",
+    "data_bits": 40
+  },
+  "data_format": {
+    "total_bits": 40,
+    "byte_order": [
+      "humidity_high",
+      "humidity_low",
+      "temperature_high",
+      "temperature_low",
+      "checksum"
+    ],
+    "humidity": {
+      "formula": "humidity_rh = (byte0 << 8 | byte1) / 10.0",
+      "integer_approx": "humidity_x10 = byte0 << 8 | byte1",
+      "unit": "%RH",
+      "range": "0.0 – 99.9"
+    },
+    "temperature": {
+      "formula": "if bit15: temp = -((raw & 0x7FFF) / 10.0) else: temp = raw / 10.0",
+      "integer_approx": "temp_x10 = raw & 0x7FFF; if raw & 0x8000: temp_x10 = -temp_x10",
+      "unit": "°C",
+      "range": "-40.0 – 80.0"
+    },
+    "checksum": {
+      "formula": "checksum = (byte0 + byte1 + byte2 + byte3) & 0xFF"
+    }
+  },
+  "test_flow": {
+    "type": "auto_gen",
+    "steps": [
+      {
+        "action": "init",
+        "description": "Call dht22_init(). Configure GPIO pin. Returns 0."
+      },
+      {
+        "action": "read",
+        "description": "Call dht22_read(). Perform start signal, receive 40 bits. Returns 0."
+      },
+      {
+        "action": "checksum_verify",
+        "description": "Verify checksum byte matches sum of data bytes."
+      },
+      {
+        "action": "humidity_check",
+        "description": "Verify humidity in expected range."
+      },
+      {
+        "action": "temperature_check",
+        "description": "Verify temperature in expected range."
+      }
+    ]
+  },
+  "simulated_payload": {
+    "humidity_x10": 652,
+    "temperature_x10": 245,
+    "raw_bytes": [
+      "0x02",
+      "0x8C",
+      "0x00",
+      "0xF5",
+      "0x83"
+    ],
+    "description": "Humidity=65.2%RH, Temperature=+24.5°C, Checksum=0x83"
+  },
+  "expected_output": {
+    "humidity": {
+      "value_x10": 652,
+      "min": 60.0,
+      "max": 70.0,
+      "unit": "%RH",
+      "description": "65.2 %RH"
+    },
+    "temperature": {
+      "value_x10": 245,
+      "min": 23.0,
+      "max": 26.0,
+      "unit": "°C",
+      "description": "+24.5 °C"
+    },
+    "checksum_valid": true
+  },
+  "negative_temp_vector": {
+    "humidity_x10": 500,
+    "temperature_x10": -100,
+    "raw_bytes": [
+      "0x01",
+      "0xF4",
+      "0x80",
+      "0x64",
+      "0xBC"
+    ],
+    "description": "Humidity=50.0%RH, Temperature=-10.0°C (bit15 set)",
+    "expected_temp_c": -10.0
+  },
+  "timing_constraints": {
+    "start_signal_low_ms": {
+      "min": 1,
+      "max": 20
+    },
+    "response_low_us": {
+      "typical": 80
+    },
+    "response_high_us": {
+      "typical": 80
+    },
+    "bit_low_us": {
+      "typical": 50
+    },
+    "bit_high_0_us": {
+      "typical": 26
+    },
+    "bit_high_1_us": {
+      "typical": 70
+    },
+    "min_interval_s": 2
+  },
+  "assertions": {
+    "count": 5,
+    "details": [
+      {
+        "id": "init",
+        "description": "Init returns 0"
+      },
+      {
+        "id": "read_ok",
+        "description": "Read returns 0 (no timeout or NACK)"
+      },
+      {
+        "id": "checksum",
+        "description": "Checksum matches data bytes"
+      },
+      {
+        "id": "humidity_range",
+        "description": "Humidity in [60.0, 70.0] %RH"
+      },
+      {
+        "id": "temp_range",
+        "description": "Temperature in [23.0, 26.0] °C"
+      }
+    ]
+  },
+  "logic_tests": [
+    {
+      "name": "room_20C_50RH",
+      "input": {
+        "raw_frame": [
+          1,
+          244,
+          0,
+          200,
+          189
+        ]
+      },
+      "expected": {
+        "humidity_x10": 500,
+        "temp_x10": 200,
+        "checksum_ok": true
+      },
+      "note": "Typical indoor: 50.0%RH, 20.0°C"
+    },
+    {
+      "name": "hot_humid_35C_85RH",
+      "input": {
+        "raw_frame": [
+          3,
+          82,
+          1,
+          94,
+          180
+        ]
+      },
+      "expected": {
+        "humidity_x10": 850,
+        "temp_x10": 350,
+        "checksum_ok": true
+      },
+      "note": "Hot/humid: 85.0%RH, 35.0°C"
+    },
+    {
+      "name": "cold_negative_10.5C",
+      "input": {
+        "raw_frame": [
+          1,
+          144,
+          128,
+          105,
+          122
+        ]
+      },
+      "expected": {
+        "humidity_x10": 400,
+        "temp_x10": -105,
+        "checksum_ok": true
+      },
+      "note": "Negative temperature sign bit: -10.5°C, 40.0%RH"
+    },
+    {
+      "name": "boundary_0C_0RH",
+      "input": {
+        "raw_frame": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "expected": {
+        "humidity_x10": 0,
+        "temp_x10": 0,
+        "checksum_ok": true
+      },
+      "note": "Lower bound"
+    },
+    {
+      "name": "boundary_100RH_max",
+      "input": {
+        "raw_frame": [
+          3,
+          232,
+          0,
+          250,
+          229
+        ]
+      },
+      "expected": {
+        "humidity_x10": 1000,
+        "temp_x10": 250,
+        "checksum_ok": true
+      },
+      "note": "Upper humidity bound 100.0%RH"
+    },
+    {
+      "name": "boundary_-40C_min",
+      "input": {
+        "raw_frame": [
+          0,
+          100,
+          129,
+          144,
+          117
+        ]
+      },
+      "expected": {
+        "humidity_x10": 100,
+        "temp_x10": -400,
+        "checksum_ok": true
+      },
+      "note": "Datasheet lower temperature bound -40.0°C"
+    },
+    {
+      "name": "bad_checksum",
+      "input": {
+        "raw_frame": [
+          1,
+          244,
+          0,
+          200,
+          0
+        ]
+      },
+      "expected": {
+        "checksum_ok": false
+      },
+      "note": "Corrupted checksum: driver must reject"
+    }
+  ]
+}

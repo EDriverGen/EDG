@@ -1,0 +1,46 @@
+{
+  "device_id": "max31855",
+  "attachment_type": "spi_thermocouple_converter",
+  "required_bus_type": "spi",
+  "address_mode": "chip-select",
+  "addressing": null,
+  "required_attachment": {
+    "signals": ["SCK", "MISO", "CS"],
+    "spi": {
+      "mode": "mode0",
+      "data_width_bits": 8,
+      "bit_order": "msb_first",
+      "max_hz": 5000000
+    },
+    "notes": [
+      "Read-only 32-bit SPI stream; MOSI command bytes are not required."
+    ]
+  },
+  "optional_attachment": {
+    "mosi": "not_required",
+    "thermocouple_type": "device_variant_dependent"
+  },
+  "default_overrides": {
+    "bus_instance": null,
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null
+  },
+  "protocol_hints": {
+    "spi_proto": "stream",
+    "read_only_stream_no_trigger": true,
+    "frame_bits": 32,
+    "primary_channel": "temp_thermocouple",
+    "optional_channels": ["temp_internal"]
+  },
+  "notes": [
+    "SPI read clocks out the latest continuously converted 32-bit result; the driver does not issue a conversion command.",
+    "The primary observable for current oracle/reference evaluation is thermocouple temperature; internal temperature may be kept as an optional helper API."
+  ],
+  "evidence": [
+    "DriverGen/data/raw/max31855/MAX31855.pdf",
+    "DriverGen/evaluation/oracle/data/max31855/meta.json",
+    "DriverGen/data/references/max31855/*/*_ref.c"
+  ]
+}

@@ -1,0 +1,126 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * BH1750 Light Sensor Driver for XiUOS
+ */
+#include "bh1750_ref.h"
+#include <stdio.h>
+
+#define BH1750_CMD_POWER_DOWN  0x00
+#define BH1750_CMD_POWER_ON   0x01
+#define BH1750_CMD_RESET      0x07
+
+static int bh1750_write_cmd(struct bh1750_device *dev, uint8_t cmd)
+{
+  if (PrivWrite(dev->fd, &cmd, 1) < 0) return -1;
+  return 0;
+}
+
+static int bh1750_read_bytes(struct bh1750_device *dev,
+                             uint8_t *buf, int len)
+{
+  if (PrivRead(dev->fd, buf, len) < 0) return -1;
+  return 0;
+}
+
+static int bh1750_get_wait_ms(uint8_t mode)
+{
+  switch (mode)
+    {
+    case BH1750_CONT_H_RES_MODE:
+    case BH1750_CONT_H_RES_MODE2:
+    case BH1750_ONE_H_RES_MODE:
+    case BH1750_ONE_H_RES_MODE2:
+      return 180;
+    default:
+      return 24;
+    }
+}
+
+int bh1750_init(struct bh1750_device *dev,
+                const char *i2c_dev_path,
+                uint16_t addr)
+{
+  struct PrivIoctlCfg ioctl_cfg;
+  uint16_t i2c_addr = addr;
+
+  if (dev == NULL || i2c_dev_path == NULL) return -1;
+
+  dev->fd = PrivOpen(i2c_dev_path, O_RDWR);
+  if (dev->fd < 0)
+    {
+      printf("bh1750: open %s failed\n", i2c_dev_path);
+      return -1;
+    }
+
+  ioctl_cfg.ioctl_driver_type = I2C_TYPE;
+  ioctl_cfg.args = &i2c_addr;
+  if (PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg) < 0)
+    {
+      PrivClose(dev->fd);
+      dev->fd = -1;
+      return -1;
+    }
+
+  dev->addr = addr;
+  dev->mode = BH1750_ONE_H_RES_MODE;
+  return 0;
+}
+
+void bh1750_deinit(struct bh1750_device *dev)
+{
+  if (dev != NULL && dev->fd >= 0)
+    {
+      PrivClose(dev->fd);
+      dev->fd = -1;
+    }
+}
+
+int bh1750_set_mode(struct bh1750_device *dev, uint8_t mode)
+{
+  if (dev == NULL) return -1;
+  dev->mode = mode;
+  return 0;
+}
+
+int bh1750_probe(struct bh1750_device *dev)
+{
+  if (dev == NULL || dev->fd < 0) return -1;
+
+  if (bh1750_write_cmd(dev, BH1750_CMD_POWER_ON) < 0) return -1;
+  return bh1750_write_cmd(dev, BH1750_CMD_POWER_DOWN);
+}
+
+int bh1750_read_raw(struct bh1750_device *dev, uint16_t *raw)
+{
+  uint8_t data[2];
+
+  if (dev == NULL || raw == NULL) return -1;
+
+  if (bh1750_write_cmd(dev, BH1750_CMD_POWER_ON) < 0) return -1;
+  if (bh1750_write_cmd(dev, BH1750_CMD_RESET) < 0) return -1;
+  if (bh1750_write_cmd(dev, dev->mode) < 0) return -1;
+
+  PrivTaskDelay(bh1750_get_wait_ms(dev->mode));
+
+  if (bh1750_read_bytes(dev, data, 2) < 0) return -1;
+
+  *raw = ((uint16_t)data[0] << 8) | data[1];
+  return 0;
+}
+
+uint32_t bh1750_raw_to_lux_x100(uint16_t raw)
+{
+  return ((uint32_t)raw * 1000U) / 12U;
+}
+
+int bh1750_read_lux_x100(struct bh1750_device *dev, uint32_t *lux_x100)
+{
+  uint16_t raw;
+
+  if (dev == NULL || lux_x100 == NULL) return -1;
+  if (bh1750_read_raw(dev, &raw) < 0) return -1;
+
+  *lux_x100 = bh1750_raw_to_lux_x100(raw);
+  return 0;
+}

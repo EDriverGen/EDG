@@ -1,0 +1,55 @@
+{
+  "package_id": "riot_generic_periph__adxl345__spi1_polling",
+  "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/riot_generic_periph.json",
+  "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/riot_generic_periph_spi1_polling.json",
+  "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/adxl345.json",
+  "reference_driver_root": "DriverGen/data/references/adxl345/riot",
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "riot_generic_periph",
+      "rtos": "riot",
+      "board": "generic_periph",
+      "integration": "generic_driver_api",
+      "mcu": "unspecified_riot_target"
+    },
+    "connection": {
+      "binding_id": "riot_generic_periph_spi1_polling",
+      "connection_type": "spi",
+      "mode": "polling",
+      "bus_instance": "SPI_DEV(0)",
+      "bus_symbol": "SPI_DEV(0)",
+      "backend": "RIOT periph SPI driver",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "cs_symbol": "SPI_HWCS(0)",
+        "chip_select": "SPI_HWCS(0)"
+      }
+    },
+    "device": {
+      "device_id": "adxl345",
+      "attachment_type": "spi_accelerometer",
+      "required_bus_type": "spi",
+      "required_attachment": {
+        "signals": ["SCLK", "MOSI", "MISO", "CS"],
+        "notes": ["Use register SPI with read bit 0x80 and multi-byte burst bit 0x40."]
+      },
+      "protocol_hints": {
+        "spi_proto": "register",
+        "register_read_mask": "0x80",
+        "multi_byte_mask": "0x40",
+        "address_mask": "0x3F",
+        "read_when_set": true,
+        "primary_channels": ["accel_x", "accel_y", "accel_z"]
+      }
+    }
+  },
+  "notes": [
+    "This package freezes a concrete RIOT SPI task setup for ADXL345.",
+    "The generated driver should use spi_acquire/spi_transfer_bytes/spi_release and mode 3."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/riot/drivers/include/periph/spi.h",
+    "DriverGen/data/raw/adxl345/adxl345.pdf",
+    "DriverGen/data/references/adxl345/riot/adxl345_ref.c"
+  ]
+}

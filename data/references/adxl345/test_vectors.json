@@ -1,0 +1,343 @@
+{
+	"device_id": "adxl345",
+	"description": "ADXL345 3-Axis Digital Accelerometer — Standard Test Vectors for Renode SPI Emulation",
+	"bus_type": "spi",
+	"spi_config": {
+		"mode": 3,
+		"max_freq_hz": 5000000,
+		"cs_active_low": true
+	},
+	"register_map": {
+		"0x00": {
+			"name": "DEVID",
+			"value": "0xE5",
+			"description": "Device ID register (read-only), expected value 0xE5"
+		},
+		"0x2D": {
+			"name": "POWER_CTL",
+			"value": "0x08",
+			"description": "Power control: bit 3 = Measure mode enabled"
+		},
+		"0x31": {
+			"name": "DATA_FORMAT",
+			"value": "0x08",
+			"description": "Data format: FULL_RES=1, range ±2g"
+		},
+		"0x32": {
+			"name": "DATAX0",
+			"bytes": [
+				"0x1A",
+				"0x00"
+			],
+			"description": "X-axis data LSB/MSB, 16-bit signed little-endian. raw=26 → ~100mg"
+		},
+		"0x34": {
+			"name": "DATAY0",
+			"bytes": [
+				"0xCD",
+				"0xFF"
+			],
+			"description": "Y-axis data LSB/MSB, raw=-51 (0xFFCD) → ~-200mg"
+		},
+		"0x36": {
+			"name": "DATAZ0",
+			"bytes": [
+				"0x00",
+				"0x01"
+			],
+			"description": "Z-axis data LSB/MSB, raw=256 → ~1000mg (≈1g)"
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call adxl345_init(). Writes POWER_CTL=0x08 (measure mode), DATA_FORMAT. Returns 0."
+			},
+			{
+				"action": "read_id",
+				"description": "Call adxl345_read_id() or read register 0x00. Expect DEVID=0xE5."
+			},
+			{
+				"action": "read_accel",
+				"description": "Call adxl345_read_accel(). Reads 6 bytes from 0x32 (multi-byte read)."
+			},
+			{
+				"action": "read_accel_mg",
+				"description": "Call adxl345_read_accel_mg(). Returns acceleration in milligravity."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify X≈100mg, Y≈-200mg, Z≈1000mg (±tolerance)."
+			}
+		]
+	},
+	"expected_output": {
+		"devid": {
+			"value": "0xE5",
+			"description": "Device ID must be 0xE5"
+		},
+		"accel_raw": {
+			"x": 26,
+			"y": -51,
+			"z": 256,
+			"description": "Raw 16-bit signed acceleration values"
+		},
+		"accel_mg": {
+			"x_mg": {
+				"min": 80,
+				"max": 120
+			},
+			"y_mg": {
+				"min": -220,
+				"max": -180
+			},
+			"z_mg": {
+				"min": 950,
+				"max": 1050
+			},
+			"description": "Acceleration in milligravity (scale factor ~3.9mg/LSB, integer approx 4mg/LSB)"
+		}
+	},
+	"rtos_overrides": {
+		"rtthread": {
+			"init_call": "adxl345_init(&g_dev, \"spi10\", ADXL345_RANGE_2G)"
+		},
+		"freertos": {
+			"init_call": "adxl345_init(&g_dev, &hspi1, CS_PORT, CS_PIN, ADXL345_RANGE_2G)"
+		},
+		"zephyr": {
+			"init_call": "adxl345_init(&g_dev, spi_dev, &cs_gpio, ADXL345_RANGE_2G)"
+		}
+	},
+	"assertions": {
+		"count": 5,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "devid",
+				"description": "DEVID register == 0xE5"
+			},
+			{
+				"id": "read_accel",
+				"description": "Read accel returns 0"
+			},
+			{
+				"id": "x_range",
+				"description": "X_mg in [80, 120]"
+			},
+			{
+				"id": "z_range",
+				"description": "Z_mg in [950, 1050] (gravity axis)"
+			}
+		]
+	},
+	"spi_proto": "adxl345",
+	"runtime_tests": [
+		{
+			"name": "devid_read",
+			"spi_regs": {
+				"0": [
+					229
+				]
+			},
+			"note": "DEVID register 0x00 reads 0xE5 (ADXL345 fixed signature).",
+			"expected": {
+				"raw_alt": [
+					229,
+					229
+				]
+			}
+		},
+		{
+			"name": "static_1g_z",
+			"spi_regs": {
+				"0": [
+					229
+				],
+				"45": [
+					8
+				],
+				"49": [
+					8
+				],
+				"50": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					1
+				]
+			},
+			"note": "Device flat on table: X=0, Y=0, Z=+256 LSB (~1g at FULL_RES). LE 16-bit.",
+			"expected": {
+				"raw_alt": [
+					0,
+					256,
+					1000
+				]
+			}
+		},
+		{
+			"name": "tilt_x_plus_1g",
+			"spi_regs": {
+				"0": [
+					229
+				],
+				"45": [
+					8
+				],
+				"49": [
+					8
+				],
+				"50": [
+					0,
+					1,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"note": "Tilted +X axis down: X=+256, Y=0, Z=0.",
+			"expected": {
+				"raw_alt": [
+					256,
+					0,
+					0
+				]
+			}
+		},
+		{
+			"name": "tilt_x_neg_1g",
+			"spi_regs": {
+				"0": [
+					229
+				],
+				"45": [
+					8
+				],
+				"49": [
+					8
+				],
+				"50": [
+					0,
+					255,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"note": "Tilted -X axis down: X=-256 (0xFF00 LE), Y=0, Z=0.",
+			"expected": {
+				"raw_alt": [
+					-256,
+					0,
+					0
+				]
+			}
+		},
+		{
+			"name": "full_scale_positive",
+			"spi_regs": {
+				"0": [
+					229
+				],
+				"45": [
+					8
+				],
+				"49": [
+					11
+				],
+				"50": [
+					255,
+					7,
+					232,
+					3,
+					24,
+					252
+				]
+			},
+			"note": "DATA_FORMAT=0x0B (FULL_RES, ±16g). X saturated positive 2047.",
+			"expected": {
+				"raw_alt": [
+					2047,
+					1000,
+					-1000
+				]
+			}
+		},
+		{
+			"name": "full_scale_negative",
+			"spi_regs": {
+				"0": [
+					229
+				],
+				"45": [
+					8
+				],
+				"49": [
+					11
+				],
+				"50": [
+					0,
+					248,
+					48,
+					248,
+					208,
+					7
+				]
+			},
+			"note": "Full-scale negative X=-2048 (0xF800 LE). Verifies signed decoding.",
+			"expected": {
+				"raw_alt": [
+					-2048,
+					-2000,
+					2000
+				]
+			}
+		},
+		{
+			"name": "configured_state_readback",
+			"spi_regs": {
+				"0": [
+					229
+				],
+				"44": [
+					10
+				],
+				"45": [
+					8
+				],
+				"49": [
+					8
+				],
+				"50": [
+					26,
+					0,
+					205,
+					255,
+					0,
+					1
+				]
+			},
+			"note": "After init: BW_RATE=0x0A (100Hz), POWER_CTL=0x08 (measure), DATA_FORMAT=0x08 (FULL_RES ±2g), accel ≈ (+100mg,-200mg,+1g).",
+			"expected": {
+				"raw_alt": [
+					229,
+					10,
+					8,
+					26,
+					-51,
+					256
+				]
+			}
+		}
+	]
+}

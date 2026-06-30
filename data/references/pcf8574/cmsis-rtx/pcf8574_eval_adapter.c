@@ -1,0 +1,46 @@
+#include "drivergen_eval_adapter.h"
+#include "pcf8574_ref.h"
+
+static I2C_HandleTypeDef g_i2c;
+static struct pcf8574_device g_eval_dev;
+static uint8_t g_cache;
+static int g_cache_valid = 0;
+
+static int _refresh(void) {
+    /* PCF8574 has NO registers — pure I2C read, no register address byte. */
+    if (HAL_I2C_Master_Receive(&g_i2c, (uint16_t)(PCF8574_I2C_ADDR << 1),
+                               &g_cache, 1, 100) != HAL_OK)
+        return DRIVERGEN_EVAL_ERR_IO;
+    g_cache_valid = 1;
+    return DRIVERGEN_EVAL_OK;
+}
+
+int drivergen_eval_init(const char *bus_name) {
+    (void)bus_name;
+    return (pcf8574_init(&g_eval_dev, &g_i2c, PCF8574_I2C_ADDR) == 0)
+           ? DRIVERGEN_EVAL_OK : DRIVERGEN_EVAL_ERR_IO;
+}
+
+int drivergen_eval_read_channel(int idx, int32_t *val) {
+    if (idx < 0 || idx > 7 || !val) return DRIVERGEN_EVAL_ERR_INVALID;
+    if (!g_cache_valid) { int r = _refresh(); if (r) return r; }
+    /* P0=bit0 (LSB) ... P7=bit7 (MSB), per datasheet I/O data bus: P7..P0 */
+    *val = (int32_t)((g_cache >> idx) & 1);
+    return DRIVERGEN_EVAL_OK;
+}
+
+int drivergen_eval_cleanup(void) { return DRIVERGEN_EVAL_OK; }
+
+const drivergen_eval_meta_t drivergen_eval_meta = {
+    .device_id     = "pcf8574",
+    .eval_class    = DRIVERGEN_EVAL_CLASS_MULTI_CHANNEL,
+    .channel_count = 8,
+    .channels = (const drivergen_eval_channel_t[]){
+        {"p0","bool",0},{"p1","bool",0},{"p2","bool",0},{"p3","bool",0},
+        {"p4","bool",0},{"p5","bool",0},{"p6","bool",0},{"p7","bool",0},
+    },
+    .primary_id    = "p0",
+    .primary_unit  = "bool",
+    .abi_version_major = DRIVERGEN_EVAL_ABI_VERSION_MAJOR,
+    .abi_version_minor = DRIVERGEN_EVAL_ABI_VERSION_MINOR,
+};

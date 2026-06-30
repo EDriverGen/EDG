@@ -1,0 +1,44 @@
+{
+  "device_id": "mhz19b",
+  "attachment_type": "uart_fixed_frame_sensor",
+  "required_bus_type": "uart",
+  "address_mode": null,
+  "addressing": null,
+  "required_attachment": {
+    "signals": [
+      "uart_tx",
+      "uart_rx"
+    ],
+    "notes": [
+      "MH-Z19B communicates over UART using fixed 9-byte command and response frames.",
+      "The task assumes a local UART instance configured for 9600 baud, 8 data bits, no parity, 1 stop bit."
+    ]
+  },
+  "optional_attachment": {
+    "pwm_output": "not used by this UART task",
+    "abc_calibration": "optional command path"
+  },
+  "default_overrides": {
+    "bus_instance": null,
+    "irq": "optional",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null
+  },
+  "protocol_hints": {
+    "uart_proto": "fixed",
+    "frame_len": 9,
+    "baud_rate": 9600,
+    "read_co2_command": "0xFF 0x01 0x86 0x00 0x00 0x00 0x00 0x00 checksum",
+    "checksum": "one-byte complement checksum over bytes 1..7"
+  },
+  "notes": [
+    "Reference drivers resolve a named UART device, configure 9600 8N1, send the read-CO2 command, then read and validate a 9-byte response."
+  ],
+  "evidence": [
+    "DriverGen/data/raw/mhz19b",
+    "DriverGen/evaluation/oracle/data/mhz19b/meta.json",
+    "DriverGen/data/references/mhz19b/*/*_ref.h",
+    "DriverGen/data/references/mhz19b/rtthread"
+  ]
+}

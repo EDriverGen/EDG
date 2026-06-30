@@ -1,0 +1,234 @@
+{
+	"device_id": "vl53l0x",
+	"description": "VL53L0X Time-of-Flight Distance Sensor — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x29",
+	"harness": {
+		"_comment": "Call probe before read so the Model-ID register (0xC0) is exercised.",
+		"pre_read_c": "if (vl53l0x_probe(&g_dev) != 0) { err = -1; goto done; }",
+		"read_raw": "vl53l0x_read_range_mm(&g_dev, &raw)"
+	},
+	"register_map": {
+		"0xC0": {
+			"name": "model_id",
+			"bytes": ["0xEE"],
+			"description": "Model ID = 0xEE"
+		},
+		"0x00": {
+			"name": "sysrange_start",
+			"bytes": ["0x00"],
+			"description": "System range start register"
+		},
+		"0x13": {
+			"name": "result_interrupt_status",
+			"bytes": ["0x07"],
+			"description": "Interrupt status (bit2:0 = new data ready)"
+		},
+		"0x0B": {
+			"name": "gpio_config",
+			"bytes": ["0x00"],
+			"description": "GPIO config register"
+		},
+		"0x14": {
+			"name": "result_data",
+			"bytes": [
+				"0x00",
+				"0x00",
+				"0x00",
+				"0x00",
+				"0x01",
+				"0xF4",
+				"0x01",
+				"0xF4",
+				"0x01",
+				"0xF4",
+				"0x11",
+				"0x22"
+			],
+			"description": "Result data block (12 bytes from 0x14..0x1F). Bytes [4:5] = 0x01F4 = 500 (range in mm). Other fields: signal rate, ambient, etc."
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call vl53l0x_init(). Reads model ID (0xEE). Expect return 0."
+			},
+			{
+				"action": "read",
+				"description": "Call vl53l0x_read_range(&distance_mm). Triggers measurement, polls interrupt status, reads result data. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify distance_mm in expected range (500 mm from test vectors)."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Distance in mm read from result register block 0x14..0x1F, bytes[10:11] = 16-bit range.",
+			"min": 0,
+			"max": 8200
+		}
+	},
+	"assertions": {
+		"count": 3,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "distance_mm in [490, 510]"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x29",
+			"description": "Model-ID read (0xC0) to identify sensor as VL53L0X (expected 0xEE). A driver that never reads the ID cannot verify the chip is present.",
+			"any_of": [["0xC0"]]
+		},
+		{
+			"addr": "0x29",
+			"description": "SYSRANGE_START (0x00) write to trigger a measurement. Common values are 0x01 (start single-shot) or 0x02 (back-to-back continuous). Without any write to 0x00, the sensor never measures.",
+			"any_of": [
+				["0x00", "0x01"],
+				["0x00", "0x02"],
+				["0x00", "0x03"],
+				["0x00", "0x04"]
+			]
+		},
+		{
+			"addr": "0x29",
+			"description": "Range-result read: register pointer 0x14 for the 12-byte result block, or 0x1E/0x1F for the 16-bit range directly.",
+			"any_of": [["0x14"], ["0x1E"]]
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "distance_500mm",
+			"renode_regs": {
+				"192": [238],
+				"0": [0],
+				"19": [7],
+				"11": [0],
+				"20": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 244]
+			},
+			"expected": {
+				"raw": 500
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Model ID 0xC0=238. Result block 0x14: bytes[10:11]=0x01F4=500mm."
+		},
+		{
+			"name": "zero_mm_contact",
+			"renode_regs": {
+				"192": [238],
+				"0": [0],
+				"19": [7],
+				"11": [0],
+				"20": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+			},
+			"expected": {
+				"raw": 0
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Distance = 0 mm (direct contact). Lower edge of measurement range."
+		},
+		{
+			"name": "near_30mm",
+			"renode_regs": {
+				"192": [238],
+				"0": [0],
+				"19": [7],
+				"11": [0],
+				"20": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30]
+			},
+			"expected": {
+				"raw": 30
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Distance = 30 mm. Near-field target."
+		},
+		{
+			"name": "mid_1000mm",
+			"renode_regs": {
+				"192": [238],
+				"0": [0],
+				"19": [7],
+				"11": [0],
+				"20": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 232]
+			},
+			"expected": {
+				"raw": 1000
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Distance = 1000 mm = 1 m. Typical room-scale measurement."
+		},
+		{
+			"name": "max_range_2000mm",
+			"renode_regs": {
+				"192": [238],
+				"0": [0],
+				"19": [7],
+				"11": [0],
+				"20": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 208]
+			},
+			"expected": {
+				"raw": 2000
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Distance = 2000 mm. Near VL53L0X default max range in normal precision mode."
+		},
+		{
+			"name": "long_range_4000mm",
+			"renode_regs": {
+				"192": [238],
+				"0": [0],
+				"19": [7],
+				"11": [0],
+				"20": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 160]
+			},
+			"expected": {
+				"raw": 4000
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Distance = 4000 mm. Approaches long-range mode limit."
+		},
+		{
+			"name": "invalid_reading_out_of_range",
+			"renode_regs": {
+				"192": [238],
+				"0": [0],
+				"19": [7],
+				"11": [0],
+				"20": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 254]
+			},
+			"expected": {
+				"raw": 8190
+			},
+			"tolerance": {
+				"raw": 10
+			},
+			"note": "Distance = 8190 mm / 0x1FFE. Beyond reliable range; valid interrupt status but huge value."
+		}
+	]
+}

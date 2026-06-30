@@ -1,0 +1,378 @@
+{
+	"device_id": "lsm303dlhc",
+	"description": "LSM303DLHC 3-Axis Accelerometer + 3-Axis Magnetometer — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x19",
+	"harness": {
+		"init_call": "lsm303dlhc_init(&g_dev, \"i2c1\")",
+		"init_takes_bus_name": true,
+		"raw_decl": "int32_t raw = 0;",
+		"read_decl": "struct lsm303dlhc_xyz _a = {0,0,0};",
+		"read_raw": "lsm303dlhc_accel_read_raw(&g_dev, &_a); if (_a.x != 0) raw = (int32_t)_a.x; else if (_a.y != 0) raw = (int32_t)_a.y; else raw = (int32_t)_a.z"
+	},
+	"i2c_addresses": {
+		"accelerometer": "0x19",
+		"magnetometer": "0x1E"
+	},
+	"special_behavior": {
+		"auto_increment": "Both 0x19 and 0x1E use auto-increment addressing: bit7 of sub-address is the auto-increment flag and is masked off (addr & 0x7F) before register lookup."
+	},
+	"register_map": {
+		"accel_0x19": {
+			"0x0F": {
+				"name": "WHO_AM_I_A",
+				"bytes": [
+					"0x33"
+				],
+				"description": "Accelerometer WHO_AM_I = 0x33"
+			},
+			"0x20": {
+				"name": "CTRL_REG1_A",
+				"bytes": [
+					"0x07"
+				],
+				"description": "Accel control reg 1 (all axes enabled)"
+			},
+			"0x28": {
+				"name": "accel_data",
+				"bytes": [
+					"0x10",
+					"0x00",
+					"0x20",
+					"0x00",
+					"0x00",
+					"0x40"
+				],
+				"description": "OUT_X_L..OUT_Z_H (6 bytes, auto-increment from 0xA8→0x28): X=0x0010=16, Y=0x0020=32, Z=0x4000=16384"
+			}
+		},
+		"mag_0x1E": {
+			"0x0A": {
+				"name": "IRA_REG_M",
+				"bytes": [
+					"0x48"
+				],
+				"description": "Magnetometer ident A = 'H' (0x48)"
+			},
+			"0x0B": {
+				"name": "IRB_REG_M",
+				"bytes": [
+					"0x34"
+				],
+				"description": "Magnetometer ident B = '4' (0x34)"
+			},
+			"0x0C": {
+				"name": "IRC_REG_M",
+				"bytes": [
+					"0x33"
+				],
+				"description": "Magnetometer ident C = '3' (0x33)"
+			},
+			"0x00": {
+				"name": "CRA_REG_M",
+				"bytes": [
+					"0x10"
+				],
+				"description": "Config A (15 Hz output rate)"
+			},
+			"0x01": {
+				"name": "CRB_REG_M",
+				"bytes": [
+					"0x20"
+				],
+				"description": "Config B (gain ±1.3 gauss)"
+			},
+			"0x02": {
+				"name": "MR_REG_M",
+				"bytes": [
+					"0x00"
+				],
+				"description": "Mode register (continuous conversion)"
+			},
+			"0x03": {
+				"name": "mag_data",
+				"bytes": [
+					"0x00",
+					"0xF0",
+					"0x00",
+					"0x10",
+					"0x00",
+					"0x80"
+				],
+				"description": "OUT_X_H..OUT_Z_L (6 bytes, X-Z-Y order per datasheet): X=0x00F0=240, Z=0x0010=16, Y=0x0080=128"
+			}
+		}
+	},
+	"test_flow": {
+		"type": "custom",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call lsm303dlhc_init(). Reads WHO_AM_I_A (0x33) and ident registers (H, 4, 3). Configures accel and mag. Expect return 0."
+			},
+			{
+				"action": "read_accel",
+				"description": "Call lsm303dlhc_read_accel(&ax, &ay, &az). Reads 6 bytes from 0xA8 (auto-increment). Expect return 0."
+			},
+			{
+				"action": "read_mag",
+				"description": "Call lsm303dlhc_read_mag(&mx, &my, &mz). Reads 6 bytes from 0x03. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify first logged value in expected range. Typically accel X raw (16) or scaled value."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "First non-zero accel axis (int16). Full range ±32768.",
+			"min": -33000,
+			"max": 33000
+		},
+		"rtos_overrides": {
+			"rtthread": {
+				"raw_value_description": "Harness reads accel struct and reports first non-zero axis as raw int16. Range covers full 12-bit high-resolution signed accel ±2047 LSB.",
+				"min": -2500,
+				"max": 2500
+			}
+		}
+	},
+	"assertions": {
+		"count": 4,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "accel_read",
+				"description": "Accel read returns 0"
+			},
+			{
+				"id": "mag_read",
+				"description": "Mag read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "First output value in expected range"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x19",
+			"description": "Accel data burst read at OUT_X_L (0x28), typically with auto-increment bit 7 set (so register pointer byte is 0xA8). This is the ONE write that any accel-axis read must issue; other init writes (WHO_AM_I probe, CTRL_REG1 config, mag-side init) are implementation-dependent and NOT required for a minimal read_accel call.",
+			"any_of": [
+				[
+					"0xA8"
+				],
+				[
+					"0x28"
+				]
+			]
+		}
+	],
+	"aux_i2c_addrs": [
+		"0x1E"
+	],
+	"runtime_tests": [
+		{
+			"name": "accel_mag_identity",
+			"renode_regs": {
+				"15": [
+					51
+				],
+				"32": [
+					7
+				],
+				"40": [
+					16,
+					0,
+					32,
+					0,
+					0,
+					64
+				]
+			},
+			"note": "Accel @0x19 snapshot: WHO_AM_I_A=0x33, CTRL_REG1_A=0x07, OUT_X..Z = 16/32/16384. This vector currently only populates the accel slave; the mag slave (0x1E) is declared via aux_i2c_addrs for the consistency checker but is not yet attached in the .resc template. Driver-visible read_raw may be any axis value, so no expected.raw is asserted."
+		},
+		{
+			"name": "zero_g_all_axes",
+			"renode_regs": {
+				"15": [
+					51
+				],
+				"32": [
+					87
+				],
+				"40": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 100
+			},
+			"note": "All three axes zero (free fall / no gravity). Baseline.",
+			"expected": {
+				"raw": 0,
+				"raw_alt": [
+					0
+				]
+			}
+		},
+		{
+			"name": "pos_1g_x_axis",
+			"renode_regs": {
+				"15": [
+					51
+				],
+				"32": [
+					87
+				],
+				"40": [
+					0,
+					64,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 100
+			},
+			"note": "X axis = +1g (~16384 at +/-2g scale, 16-bit left-aligned). Y/Z zero.",
+			"expected": {
+				"raw_alt": [
+					16384,
+					1000,
+					1024
+				]
+			}
+		},
+		{
+			"name": "neg_1g_x_axis",
+			"renode_regs": {
+				"15": [
+					51
+				],
+				"32": [
+					87
+				],
+				"40": [
+					0,
+					192,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 100
+			},
+			"note": "X axis = -1g. Exercises signed decoding.",
+			"expected": {
+				"raw_alt": [
+					-16384,
+					-1000,
+					-1024
+				]
+			}
+		},
+		{
+			"name": "full_scale_positive",
+			"renode_regs": {
+				"15": [
+					51
+				],
+				"32": [
+					87
+				],
+				"40": [
+					240,
+					127,
+					240,
+					127,
+					240,
+					127
+				]
+			},
+			"tolerance": {
+				"raw": 100
+			},
+			"note": "All axes near +full-scale (12-bit max left-aligned). Saturation upper edge.",
+			"expected": {
+				"raw_alt": [
+					32752,
+					32752,
+					2047
+				]
+			}
+		},
+		{
+			"name": "full_scale_negative",
+			"renode_regs": {
+				"15": [
+					51
+				],
+				"32": [
+					87
+				],
+				"40": [
+					16,
+					128,
+					16,
+					128,
+					16,
+					128
+				]
+			},
+			"tolerance": {
+				"raw": 100
+			},
+			"note": "All axes near -full-scale. Saturation lower edge.",
+			"expected": {
+				"raw_alt": [
+					-32752,
+					-2047
+				]
+			}
+		},
+		{
+			"name": "xyz_tilted_45deg",
+			"renode_regs": {
+				"15": [
+					51
+				],
+				"32": [
+					87
+				],
+				"40": [
+					65,
+					45,
+					65,
+					45,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 100
+			},
+			"note": "X=Y=11585 (sqrt(2)/2 * 16384), Z=0. Device tilted 45 deg.",
+			"expected": {
+				"raw_alt": [
+					11585,
+					707,
+					724
+				]
+			}
+		}
+	]
+}

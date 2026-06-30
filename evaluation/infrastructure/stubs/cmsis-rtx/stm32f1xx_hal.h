@@ -1,0 +1,4 @@
+#ifndef DRIVERGEN_CMSIS_RTX_STM32F1_HAL_REDIRECT_H
+#define DRIVERGEN_CMSIS_RTX_STM32F1_HAL_REDIRECT_H
+#include "cmsis_rtx.h"
+#endif

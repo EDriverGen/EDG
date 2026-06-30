@@ -1,0 +1,55 @@
+{
+  "package_id": "riot_generic_periph__mcp3008__spi1_polling",
+  "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/riot_generic_periph.json",
+  "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/riot_generic_periph_spi1_polling.json",
+  "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mcp3008.json",
+  "reference_driver_root": "DriverGen/data/references/mcp3008/riot",
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "riot_generic_periph",
+      "rtos": "riot",
+      "board": "generic_periph",
+      "integration": "generic_driver_api",
+      "mcu": "unspecified_riot_target"
+    },
+    "connection": {
+      "binding_id": "riot_generic_periph_spi1_polling",
+      "connection_type": "spi",
+      "mode": "polling",
+      "bus_instance": "SPI_DEV(0)",
+      "bus_symbol": "SPI_DEV(0)",
+      "backend": "RIOT periph SPI driver",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "cs_symbol": "SPI_HWCS(0)",
+        "chip_select": "SPI_HWCS(0)"
+      }
+    },
+    "device": {
+      "device_id": "mcp3008",
+      "attachment_type": "spi_adc",
+      "required_bus_type": "spi",
+      "required_attachment": {
+        "signals": ["SCLK", "MOSI", "MISO", "CS"],
+        "vref_mv": 3300,
+        "notes": ["Use a 3-byte full-duplex command/response transaction for each ADC read."]
+      },
+      "protocol_hints": {
+        "spi_proto": "command",
+        "command_bytes": 3,
+        "single_ended_default": true,
+        "channels": ["ch0", "ch1", "ch2", "ch3", "ch4", "ch5", "ch6", "ch7"],
+        "result_bits": 10
+      }
+    }
+  },
+  "notes": [
+    "This package freezes a concrete RIOT SPI task setup for MCP3008.",
+    "The generated driver should transfer three bytes full-duplex with spi_transfer_bytes; channel command bits must vary by channel."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/riot/drivers/include/periph/spi.h",
+    "DriverGen/data/raw/mcp3008/MCP3008.pdf",
+    "DriverGen/data/references/mcp3008/riot/mcp3008_ref.c"
+  ]
+}

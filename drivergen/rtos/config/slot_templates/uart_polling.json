@@ -1,0 +1,117 @@
+{
+  "_meta": {
+    "description": "Base SlotPlan template for connection_type=uart_polling.",
+    "version": 1,
+    "stage": "2.2"
+  },
+  "connection_type": "uart_polling",
+  "base_slots": [
+    {
+      "slot_id": "uart.acquire_or_bind",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "uart",
+      "expected_kinds": ["function", "macro"],
+      "query_intents": [
+        "uart device",
+        "open serial",
+        "uart handle",
+        "usart init",
+        "find uart",
+        "rt_device_find",
+        "device_get_binding",
+        "uart_init"
+      ],
+      "preferred_root_roles": ["driver_framework", "vendor_hal"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "uart.write",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "uart",
+      "expected_kinds": ["function"],
+      "query_intents": [
+        "uart transmit",
+        "uart write",
+        "usart send",
+        "serial write",
+        "HAL_UART_Transmit",
+        "rt_device_write",
+        "sdWrite",
+        "uart_write",
+        "LOS_UartWrite",
+        "PrivWrite"
+      ],
+      "preferred_root_roles": ["driver_framework", "vendor_hal"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "uart.read",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "uart",
+      "expected_kinds": ["function"],
+      "query_intents": [
+        "uart receive",
+        "uart read",
+        "usart read",
+        "serial read",
+        "HAL_UART_Receive",
+        "rt_device_read",
+        "sdRead",
+        "uart_read",
+        "LOS_UartRead",
+        "PrivRead"
+      ],
+      "preferred_root_roles": ["driver_framework", "vendor_hal"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "uart.key_types",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "uart",
+      "expected_kinds": ["struct", "typedef"],
+      "query_intents": [
+        "uart handle",
+        "uart config",
+        "usart handle",
+        "uart_init_t",
+        "UART_HandleTypeDef",
+        "rt_device_t",
+        "SerialDriver"
+      ],
+      "preferred_root_roles": ["driver_framework", "vendor_hal"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "runtime.delay_ms",
+      "layer": "runtime",
+      "required": false,
+      "expected_kinds": ["function", "macro", "task_package_helper"],
+      "query_intents": ["millisecond delay", "HAL_Delay", "ms delay"],
+      "preferred_root_roles": ["kernel", "runtime", "driver_framework", "vendor_hal"],
+      "min_evidence": 1,
+      "source_kinds_allowed": ["manifest_repo", "task_package_helper"]
+    },
+    {
+      "slot_id": "runtime.error_status",
+      "layer": "runtime",
+      "required": true,
+      "expected_kinds": ["macro", "enum", "typedef"],
+      "query_intents": ["status", "error", "success", "timeout", "OK"],
+      "preferred_root_roles": ["kernel", "runtime", "vendor_hal"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "integration.bus_instance_binding",
+      "layer": "integration",
+      "required": true,
+      "expected_kinds": ["macro", "struct", "config"],
+      "query_intents": ["bus instance", "board uart"],
+      "preferred_root_roles": ["board_integration", "vendor_hal"],
+      "min_evidence": 1
+    }
+  ]
+}

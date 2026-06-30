@@ -1,0 +1,511 @@
+{
+	"device_id": "mpu6050",
+	"description": "MPU6050 6-Axis Accelerometer/Gyroscope — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x68",
+	"harness": {
+		"_comment": "Multi-axis IMU. Use int32_t raw; x-axis accel read produces signed int16 widened. who_am_i vector accepts 0x68=104 via driver init/probe—read_accel returns configured state.",
+		"raw_decl": "int32_t raw = 0;",
+		"read_decl": "int16_t ax = 0, ay = 0, az = 0;",
+		"read_raw": "mpu6050_read_accel(&g_dev, &ax, &ay, &az); raw = (int32_t)ax",
+		"rtos_overrides": {
+			"freertos": {
+				"pre_read_c": "mpu6050_probe(&g_dev);"
+			},
+			"threadx": {
+				"pre_read_c": "mpu6050_probe(&g_dev);"
+			},
+			"tobudos": {
+				"pre_read_c": "mpu6050_probe(&g_dev);"
+			}
+		}
+	},
+	"register_map": {
+		"0x75": {
+			"name": "who_am_i",
+			"bytes": [
+				"0x68"
+			],
+			"description": "WHO_AM_I register = 0x68"
+		},
+		"0x6B": {
+			"name": "pwr_mgmt_1",
+			"bytes": [
+				"0x40"
+			],
+			"description": "Power management 1 (default sleep mode, bit6=1)"
+		},
+		"0x3B": {
+			"name": "accel_data",
+			"bytes": [
+				"0x00",
+				"0x64",
+				"0xFF",
+				"0x9C",
+				"0x40",
+				"0x00"
+			],
+			"description": "ACCEL_XOUT_H..ACCEL_ZOUT_L (6 bytes): X=100, Y=-100, Z=16384"
+		},
+		"0x43": {
+			"name": "gyro_data",
+			"bytes": [
+				"0x00",
+				"0x32",
+				"0xFF",
+				"0xCE",
+				"0x00",
+				"0x00"
+			],
+			"description": "GYRO_XOUT_H..GYRO_ZOUT_L (6 bytes): X=50, Y=-50, Z=0"
+		}
+	},
+	"test_flow": {
+		"type": "custom",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call mpu6050_init(). Reads WHO_AM_I (0x68), clears sleep bit in PWR_MGMT_1. Expect return 0."
+			},
+			{
+				"action": "who_am_i_check",
+				"description": "Verify WHO_AM_I value equals 0x68. This is typically the first parsed output value."
+			},
+			{
+				"action": "read_accel",
+				"description": "Call mpu6050_read_accel(&ax, &ay, &az). Reads 6 bytes from 0x3B."
+			},
+			{
+				"action": "read_gyro",
+				"description": "Call mpu6050_read_gyro(&gx, &gy, &gz). Reads 6 bytes from 0x43."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify first logged numeric value (WHO_AM_I = 104 decimal = 0x68) is in expected range."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Raw accelerometer X-axis reading (int16 widened to int32). Range [-33000, 33000] covers full ±2g scale.",
+			"min": -33000,
+			"max": 33000
+		}
+	},
+	"assertions": {
+		"count": 5,
+		"details": [
+			{
+				"id": "init_ret",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "who_am_i",
+				"description": "WHO_AM_I == 0x68 (104)"
+			},
+			{
+				"id": "sleep_clear",
+				"description": "PWR_MGMT_1 sleep bit cleared"
+			},
+			{
+				"id": "accel_read",
+				"description": "Accel data read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "First output value in [100, 110]"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x68",
+			"description": "WHO_AM_I read (0x75) — driver must read the ID register to identify the MPU6050 (expected 0x68). A driver that skips this cannot detect device presence / wiring errors.",
+			"any_of": [
+				[
+					"0x75"
+				]
+			]
+		},
+		{
+			"addr": "0x68",
+			"description": "PWR_MGMT_1 (0x6B) write with the sleep bit (bit 6) cleared. The chip boots into sleep mode; drivers must write here to wake it. Common wake values: 0x00 (internal 8 MHz osc), 0x01 (PLL gyro X), 0x02 (PLL gyro Y), 0x03 (PLL gyro Z), 0x08 (disable temp sensor + internal osc).",
+			"any_of": [
+				[
+					"0x6B",
+					"0x00"
+				],
+				[
+					"0x6B",
+					"0x01"
+				],
+				[
+					"0x6B",
+					"0x02"
+				],
+				[
+					"0x6B",
+					"0x03"
+				],
+				[
+					"0x6B",
+					"0x08"
+				],
+				[
+					"0x6B",
+					"0x09"
+				],
+				[
+					"0x6B",
+					"0x0B"
+				]
+			]
+		},
+		{
+			"addr": "0x68",
+			"description": "ACCEL_XOUT_H register pointer (0x3B). Driver must read the 6-byte accel burst starting at 0x3B, or the whole 14-byte sensor block at the same base. Without this read the driver produces no accel data.",
+			"any_of": [
+				[
+					"0x3B"
+				]
+			]
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "who_am_i",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					0,
+					0,
+					0,
+					0,
+					64,
+					0
+				],
+				"67": [
+					0,
+					16,
+					0,
+					32,
+					0,
+					48
+				]
+			},
+			"expected": {
+				"raw": 0,
+				"raw_alt": [
+					0,
+					104
+				]
+			},
+			"tolerance": {
+				"raw": 0
+			},
+			"note": "WHO_AM_I reg 0x75 = 0x68 = 104. Accel X = 0 at this vector; probe verifies WHO_AM_I via trace."
+		},
+		{
+			"name": "accel_zero_g_flat",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					0,
+					0,
+					0,
+					0,
+					64,
+					0
+				],
+				"65": [
+					0,
+					0
+				],
+				"67": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 200
+			},
+			"note": "Device flat on table: X=Y=0, Z=+1g=16384 at +/-2g. Gyro all zero.",
+			"expected": {
+				"raw": 0,
+				"raw_alt": [
+					0,
+					104,
+					16384
+				]
+			}
+		},
+		{
+			"name": "accel_pos_1g_x",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					64,
+					0,
+					0,
+					0,
+					0,
+					0
+				],
+				"65": [
+					0,
+					0
+				],
+				"67": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 200
+			},
+			"note": "X = +1g (16384). Side-lying orientation.",
+			"expected": {
+				"raw": 16384,
+				"raw_alt": [
+					16384,
+					104
+				]
+			}
+		},
+		{
+			"name": "accel_neg_1g_x",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					192,
+					0,
+					0,
+					0,
+					0,
+					0
+				],
+				"65": [
+					0,
+					0
+				],
+				"67": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 200
+			},
+			"note": "X = -1g. Negative-axis orientation; signed decoding stress.",
+			"expected": {
+				"raw": -16384,
+				"raw_alt": [
+					-16384,
+					104
+				]
+			}
+		},
+		{
+			"name": "accel_saturation_positive",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					127,
+					255,
+					127,
+					255,
+					127,
+					255
+				],
+				"65": [
+					0,
+					0
+				],
+				"67": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 200
+			},
+			"note": "All axes at +32767 (16-bit signed max). Overload condition.",
+			"expected": {
+				"raw": 32767,
+				"raw_alt": [
+					32767,
+					104
+				]
+			}
+		},
+		{
+			"name": "accel_saturation_negative",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					128,
+					0,
+					128,
+					0,
+					128,
+					0
+				],
+				"65": [
+					0,
+					0
+				],
+				"67": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 200
+			},
+			"note": "All axes at -32768. Lower saturation.",
+			"expected": {
+				"raw": -32768,
+				"raw_alt": [
+					-32768,
+					104
+				]
+			}
+		},
+		{
+			"name": "gyro_rapid_yaw_spin",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					0,
+					0,
+					0,
+					0,
+					64,
+					0
+				],
+				"65": [
+					0,
+					0
+				],
+				"67": [
+					0,
+					0,
+					0,
+					0,
+					62,
+					128
+				]
+			},
+			"tolerance": {
+				"raw": 200
+			},
+			"note": "Gyro Z = 16000 (fast yaw rotation). Accel Z = 1g.",
+			"expected": {
+				"raw": 0,
+				"raw_alt": [
+					0,
+					104,
+					16384
+				]
+			}
+		},
+		{
+			"name": "temp_25c_nominal",
+			"renode_regs": {
+				"117": [
+					104
+				],
+				"107": [
+					0
+				],
+				"59": [
+					0,
+					0,
+					0,
+					0,
+					64,
+					0
+				],
+				"65": [
+					240,
+					176
+				],
+				"67": [
+					0,
+					0,
+					0,
+					0,
+					0,
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 200
+			},
+			"note": "Temp reg = 0xF0B0 = -3920 (signed 16-bit BE). MPU6050 formula: T = TEMP/340 + 36.53 = -11.53 + 36.53 = 25.00 C. Accel Z = 1g (flat).",
+			"expected": {
+				"raw": 0,
+				"raw_alt": [
+					-3920,
+					61616,
+					104,
+					16384
+				]
+			}
+		}
+	]
+}

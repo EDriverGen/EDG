@@ -1,0 +1,39 @@
+{
+  "device_id": "pcf8574",
+  "attachment_type": "i2c_gpio_expander",
+  "required_bus_type": "i2c",
+  "address_mode": "7-bit",
+  "addressing": {
+    "default": "0x20",
+    "alternates": [
+      "0x21", "0x22", "0x23", "0x24", "0x25", "0x26", "0x27"
+    ],
+    "selection_rule": "A0/A1/A2 pins set 3 LSBs of 7-bit address. POR default with all address pins LOW is 0x20."
+  },
+  "required_attachment": {
+    "signals": [],
+    "notes": [
+      "PCF8574 has no internal registers. I2C write sets all 8 I/O pin output levels; I2C read returns current input states.",
+      "POR default: all I/Os are HIGH (input mode with internal weak pull-up)."
+    ]
+  },
+  "optional_attachment": {
+    "int_pin": "optional",
+    "addr_pins": ["A0", "A1", "A2"]
+  },
+  "default_overrides": {
+    "bus_instance": null,
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null
+  },
+  "notes": [
+    "Quasi-bidirectional I/O: writing 1 = input/high-impedance (default), writing 0 = output LOW with strong drive.",
+    "INT pin asserts LOW when any input changes state from the last read; cleared by reading the port."
+  ],
+  "evidence": [
+    "DriverGen/data/raw/pcf8574/pcf8574.pdf",
+    "DriverGen/data/references/pcf8574/*/*_ref.h"
+  ]
+}

@@ -1,0 +1,38 @@
+/* NuttX nuttx/ioexpander/gpio.h stub */
+#ifndef __NUTTX_IOEXPANDER_GPIO_STUB_H
+#define __NUTTX_IOEXPANDER_GPIO_STUB_H
+
+#include <stdint.h>
+
+/* GPIO ioctl commands */
+#define GPIOC_WRITE       0x0001
+#define GPIOC_READ        0x0002
+#define GPIOC_SETPINTYPE  0x0003
+#define GPIOC_REGISTER    0x0004
+#define GPIOC_UNREGISTER  0x0005
+
+/* GPIO pin types */
+#define GPIO_INPUT_PIN             0
+#define GPIO_INPUT_PIN_PULLUP      1
+#define GPIO_INPUT_PIN_PULLDOWN    2
+#define GPIO_OUTPUT_PIN            3
+#define GPIO_OUTPUT_PIN_OPENDRAIN  4
+#define GPIO_INTERRUPT_PIN         5
+#define GPIO_INTERRUPT_RISING_PIN  6
+#define GPIO_INTERRUPT_FALLING_PIN 7
+#define GPIO_INTERRUPT_BOTH_PIN    8
+
+/* Pin type enum (used by ioctl GPIOC_SETPINTYPE) */
+enum gpio_pintype_e {
+    GPIO_PINTYPE_INPUT = 0,
+    GPIO_PINTYPE_INPUT_PULLUP,
+    GPIO_PINTYPE_INPUT_PULLDOWN,
+    GPIO_PINTYPE_OUTPUT,
+    GPIO_PINTYPE_OUTPUT_OPENDRAIN,
+    GPIO_PINTYPE_INTERRUPT,
+    GPIO_PINTYPE_INTERRUPT_RISING,
+    GPIO_PINTYPE_INTERRUPT_FALLING,
+    GPIO_PINTYPE_INTERRUPT_BOTH,
+};
+
+#endif

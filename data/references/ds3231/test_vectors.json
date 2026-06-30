@@ -1,0 +1,299 @@
+{
+	"device_id": "ds3231",
+	"description": "DS3231 Real-Time Clock with Temperature — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x68",
+	"register_map": {
+		"0x00": {
+			"name": "time_regs",
+			"bytes": [
+				"0x30",
+				"0x15",
+				"0x10",
+				"0x04",
+				"0x17",
+				"0x04",
+				"0x25"
+			],
+			"description": "Time registers (7 bytes): sec=0x30(30s), min=0x15(15m), hr=0x10(10h), day=0x04(Wed), date=0x17(17), month=0x04(Apr), year=0x25(2025). BCD format."
+		},
+		"0x11": {
+			"name": "temperature",
+			"bytes": [
+				"0x19",
+				"0x40"
+			],
+			"description": "Temperature register (2 bytes): MSB=0x19 (25 C), LSB=0x40 (0.25 C fraction). Total = 25.25 C = 25250 mC."
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call ds3231_init(). Expect return 0."
+			},
+			{
+				"action": "read",
+				"description": "Call ds3231_read_temp(&temp_mc) or ds3231_read_time(&time). Reads from register 0x11 (temp) or 0x00 (time). Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify temp_mc in expected range."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Temperature in millidegrees C. 0x19,0x40 → 25.25 C → 25250 mC. Or time fields in BCD.",
+			"min": 24000,
+			"max": 26000
+		}
+	},
+	"assertions": {
+		"count": 3,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "temp_mc in [24000, 26000]"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x68",
+			"any_of": [
+				[
+					"0x11"
+				],
+				[
+					"0x00"
+				]
+			],
+			"description": "Register pointer write before repeated-start read: 0x11 for ds3231_read_temperature, 0x00 for ds3231_read_time. ds3231_init itself issues no I2C traffic."
+		}
+	],
+	"harness": {
+		"raw_decl": "int32_t raw = 0;",
+		"read_raw": "ds3231_read_temperature(&g_dev, &raw)"
+	},
+	"runtime_tests": [
+		{
+			"name": "time_2025_04_17_10_15_30_temp_25_25c",
+			"renode_regs": {
+				"0": [
+					48,
+					21,
+					16,
+					4,
+					23,
+					4,
+					37
+				],
+				"17": [
+					25,
+					64
+				]
+			},
+			"expected": {
+				"raw": 25250,
+				"raw_alt": [
+					25,
+					6464,
+					200
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Time (BCD): 10:15:30 Wed 2025-04-17. Temp 0x1940 = 25.25°C = 25250 mC. raw_alt covers drivers that return °C (25), raw register 0x1940=6464, or shifted-right forms."
+		},
+		{
+			"name": "midnight_newyear_2000_temp_0c",
+			"renode_regs": {
+				"0": [
+					0,
+					0,
+					0,
+					7,
+					1,
+					1,
+					0
+				],
+				"17": [
+					0,
+					0
+				]
+			},
+			"expected": {
+				"raw": 0,
+				"raw_alt": [
+					0
+				]
+			},
+			"tolerance": {
+				"raw": 100
+			},
+			"note": "00:00:00 Sat 2000-01-01. Temp 0x00,0x00 = 0 C = 0 mC. Zero-point edge case for both time and temp."
+		},
+		{
+			"name": "leap_year_feb29_temp_25c",
+			"renode_regs": {
+				"0": [
+					89,
+					89,
+					35,
+					4,
+					41,
+					2,
+					36
+				],
+				"17": [
+					25,
+					0
+				]
+			},
+			"expected": {
+				"raw": 25000,
+				"raw_alt": [
+					25,
+					6400,
+					200
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "23:59:59 Thu 2024-02-29 (leap year). Temp 0x19,0x00 = 25.0 C. Exercises month-rollover logic and leap-day."
+		},
+		{
+			"name": "winter_neg10c_fractional",
+			"renode_regs": {
+				"0": [
+					21,
+					48,
+					8,
+					2,
+					21,
+					18,
+					37
+				],
+				"17": [
+					246,
+					64
+				]
+			},
+			"expected": {
+				"raw": -9750,
+				"raw_alt": [
+					-9,
+					-10,
+					63040,
+					-2496
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "08:30:15 Mon 2025-12-15. Temp MSB=0xF6 (-10), LSB[7:6]=01 (+0.25) -> -9.75 C = -9750 mC. raw_alt covers: integer C drivers (-9 or -10), unsigned 16-bit 0xF640=63040, signed 16-bit (int16_t)0xF640=-2496. Negative + fractional edge case."
+		},
+		{
+			"name": "summer_40c_peak",
+			"renode_regs": {
+				"0": [
+					69,
+					48,
+					20,
+					1,
+					32,
+					7,
+					37
+				],
+				"17": [
+					40,
+					64
+				]
+			},
+			"expected": {
+				"raw": 40250,
+				"raw_alt": [
+					40,
+					10304,
+					322
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "14:30:45 Sun 2025-07-20. Temp 0x28,0x40 -> 40.25 C = 40250 mC. Hot summer day."
+		},
+		{
+			"name": "datasheet_temp_max_85c",
+			"renode_regs": {
+				"0": [
+					0,
+					0,
+					18,
+					3,
+					1,
+					1,
+					37
+				],
+				"17": [
+					85,
+					0
+				]
+			},
+			"expected": {
+				"raw": 85000,
+				"raw_alt": [
+					85,
+					21760,
+					680
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Temp 0x55,0x00 = 85.0 C = 85000 mC. DS3231 datasheet operating maximum."
+		},
+		{
+			"name": "datasheet_temp_min_neg40c",
+			"renode_regs": {
+				"0": [
+					0,
+					0,
+					18,
+					3,
+					1,
+					1,
+					37
+				],
+				"17": [
+					216,
+					0
+				]
+			},
+			"expected": {
+				"raw": -40000,
+				"raw_alt": [
+					-40,
+					55296,
+					55296,
+					-1280
+				]
+			},
+			"tolerance": {
+				"raw": 500
+			},
+			"note": "Temp MSB=0xD8 (two's complement -40). DS3231 datasheet operating minimum."
+		}
+	]
+}

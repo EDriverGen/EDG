@@ -1,0 +1,369 @@
+{
+  "device_id": "ds18b20",
+  "description": "DS18B20 1-Wire Digital Temperature Sensor — Standard Test Vectors for GPIO Timing Emulation",
+  "bus_type": "gpio_timing",
+  "gpio_config": {
+    "data_pin": "single open-drain GPIO with 4.7kΩ external pull-up",
+    "protocol": "Dallas 1-Wire",
+    "parasite_power": false
+  },
+  "rom_code": {
+    "family": "0x28",
+    "serial": "0x000000001234",
+    "crc": "0xA5",
+    "full_rom": [
+      "0x28",
+      "0x34",
+      "0x12",
+      "0x00",
+      "0x00",
+      "0x00",
+      "0x00",
+      "0xA5"
+    ]
+  },
+  "commands": {
+    "0x33": "Read ROM",
+    "0xCC": "Skip ROM",
+    "0x44": "Convert T (initiate temperature conversion)",
+    "0xBE": "Read Scratchpad (9 bytes)"
+  },
+  "scratchpad_format": {
+    "byte0": "Temperature LSB",
+    "byte1": "Temperature MSB",
+    "byte2": "TH register (alarm high)",
+    "byte3": "TL register (alarm low)",
+    "byte4": "Configuration (resolution: 9/10/11/12-bit)",
+    "byte5_7": "Reserved (0xFF, 0x0C, 0x10)",
+    "byte8": "CRC8 (polynomial x^8+x^5+x^4+1)"
+  },
+  "data_format": {
+    "temperature": {
+      "bits": 16,
+      "type": "signed_16bit",
+      "resolution_12bit": "0.0625°C per LSB",
+      "formula": "temp_c = raw_signed_16 * 0.0625",
+      "integer_approx": "temp_mc = raw * 625 / 10",
+      "range": "-55.0 to +125.0 °C"
+    },
+    "resolution_config": {
+      "0x1F": "9-bit (0.5°C, 93.75ms conversion)",
+      "0x3F": "10-bit (0.25°C, 187.5ms conversion)",
+      "0x5F": "11-bit (0.125°C, 375ms conversion)",
+      "0x7F": "12-bit (0.0625°C, 750ms default)"
+    }
+  },
+  "test_flow": {
+    "type": "auto_gen",
+    "steps": [
+      {
+        "action": "init",
+        "description": "Call ds18b20_init(). Configure GPIO pin. Returns 0."
+      },
+      {
+        "action": "read_rom",
+        "description": "Send 0x33 ReadROM. Expect 8-byte ROM with family code 0x28."
+      },
+      {
+        "action": "convert",
+        "description": "Send 0xCC SkipROM + 0x44 ConvertT. Wait ≥750ms for 12-bit."
+      },
+      {
+        "action": "read_scratchpad",
+        "description": "Send 0xCC SkipROM + 0xBE ReadScratchpad. Read 9 bytes."
+      },
+      {
+        "action": "crc_verify",
+        "description": "Verify CRC8 of scratchpad bytes 0-7 matches byte 8."
+      },
+      {
+        "action": "temperature_check",
+        "description": "Decode temperature from bytes 0-1, verify range."
+      }
+    ]
+  },
+  "simulated_data": {
+    "temperature_c": 25.0625,
+    "temperature_raw": 401,
+    "scratchpad_bytes": [
+      "0x91",
+      "0x01",
+      "0x4B",
+      "0x00",
+      "0x7F",
+      "0xFF",
+      "0x0C",
+      "0x10"
+    ],
+    "scratchpad_crc": "calculated",
+    "description": "12-bit resolution, +25.0625°C (raw=0x0191=401)"
+  },
+  "expected_output": {
+    "rom_family": {
+      "value": "0x28",
+      "description": "DS18B20 family code"
+    },
+    "temperature": {
+      "value_mc": 25062,
+      "min_c": 24.0,
+      "max_c": 26.5,
+      "description": "+25.0625°C (401 * 0.0625)"
+    },
+    "crc_valid": true,
+    "config_resolution": "12-bit"
+  },
+  "additional_test_vectors": [
+    {
+      "name": "negative_temperature",
+      "temperature_c": -10.125,
+      "raw": -162,
+      "raw_hex": "0xFF5E",
+      "scratchpad_bytes_0_1": [
+        "0x5E",
+        "0xFF"
+      ],
+      "expected_mc": -10125
+    },
+    {
+      "name": "zero_crossing",
+      "temperature_c": 0.0,
+      "raw": 0,
+      "scratchpad_bytes_0_1": [
+        "0x00",
+        "0x00"
+      ],
+      "expected_mc": 0
+    },
+    {
+      "name": "max_temperature",
+      "temperature_c": 125.0,
+      "raw": 2000,
+      "scratchpad_bytes_0_1": [
+        "0xD0",
+        "0x07"
+      ],
+      "expected_mc": 125000
+    }
+  ],
+  "timing_constraints": {
+    "reset_low_us": {
+      "min": 480
+    },
+    "presence_detect_us": {
+      "min": 60,
+      "max": 240
+    },
+    "write_slot_us": {
+      "min": 60,
+      "max": 120
+    },
+    "read_slot_us": {
+      "min": 60
+    },
+    "conversion_12bit_ms": {
+      "max": 750
+    }
+  },
+  "assertions": {
+    "count": 6,
+    "details": [
+      {
+        "id": "init",
+        "description": "Init returns 0"
+      },
+      {
+        "id": "rom_family",
+        "description": "ROM family code == 0x28"
+      },
+      {
+        "id": "convert_ok",
+        "description": "Convert T returns 0"
+      },
+      {
+        "id": "scratchpad_ok",
+        "description": "Read scratchpad returns 0"
+      },
+      {
+        "id": "crc_valid",
+        "description": "Scratchpad CRC8 is correct"
+      },
+      {
+        "id": "temp_range",
+        "description": "Temperature in [24.0, 26.5] °C"
+      }
+    ]
+  },
+  "logic_tests": [
+    {
+      "name": "temp_25.0625C_12bit",
+      "input": {
+        "scratchpad": [
+          145,
+          1,
+          75,
+          70,
+          127,
+          255,
+          0,
+          16,
+          61
+        ]
+      },
+      "expected": {
+        "temp_x16": 401,
+        "resolution_bits": 12,
+        "crc_ok": true
+      },
+      "note": "Datasheet example: 25.0625 °C * 16 = 401"
+    },
+    {
+      "name": "temp_85C_power_on_default",
+      "input": {
+        "scratchpad": [
+          80,
+          5,
+          75,
+          70,
+          127,
+          255,
+          0,
+          16,
+          81
+        ]
+      },
+      "expected": {
+        "temp_x16": 1360,
+        "resolution_bits": 12,
+        "crc_ok": true
+      },
+      "note": "Power-on reset value: 85°C * 16 = 0x0550"
+    },
+    {
+      "name": "temp_-0.5C_12bit",
+      "input": {
+        "scratchpad": [
+          248,
+          255,
+          75,
+          70,
+          127,
+          255,
+          0,
+          16,
+          142
+        ]
+      },
+      "expected": {
+        "temp_x16": -8,
+        "resolution_bits": 12,
+        "crc_ok": true
+      },
+      "note": "Negative temperature: -0.5 °C"
+    },
+    {
+      "name": "temp_-25C_12bit",
+      "input": {
+        "scratchpad": [
+          112,
+          254,
+          75,
+          70,
+          127,
+          255,
+          0,
+          16,
+          11
+        ]
+      },
+      "expected": {
+        "temp_x16": -400,
+        "resolution_bits": 12,
+        "crc_ok": true
+      },
+      "note": "-25.0 °C * 16 = -400"
+    },
+    {
+      "name": "resolution_9bit",
+      "input": {
+        "scratchpad": [
+          152,
+          1,
+          75,
+          70,
+          31,
+          255,
+          0,
+          16,
+          196
+        ]
+      },
+      "expected": {
+        "resolution_bits": 9,
+        "crc_ok": true
+      },
+      "note": "9-bit resolution: 0.5°C step, lower 3 bits of raw masked"
+    },
+    {
+      "name": "resolution_10bit",
+      "input": {
+        "scratchpad": [
+          148,
+          1,
+          75,
+          70,
+          63,
+          255,
+          0,
+          16,
+          139
+        ]
+      },
+      "expected": {
+        "resolution_bits": 10,
+        "crc_ok": true
+      },
+      "note": "10-bit resolution: 0.25°C step"
+    },
+    {
+      "name": "resolution_11bit",
+      "input": {
+        "scratchpad": [
+          146,
+          1,
+          75,
+          70,
+          95,
+          255,
+          0,
+          16,
+          136
+        ]
+      },
+      "expected": {
+        "resolution_bits": 11,
+        "crc_ok": true
+      },
+      "note": "11-bit resolution: 0.125°C step"
+    },
+    {
+      "name": "crc_mismatch",
+      "input": {
+        "scratchpad": [
+          80,
+          5,
+          75,
+          70,
+          127,
+          255,
+          0,
+          16,
+          0
+        ]
+      },
+      "expected": {
+        "crc_ok": false
+      },
+      "note": "Fixture with corrupted CRC byte"
+    }
+  ]
+}

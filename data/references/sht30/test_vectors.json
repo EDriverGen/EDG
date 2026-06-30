@@ -1,0 +1,208 @@
+{
+	"device_id": "sht30",
+	"description": "SHT30 Temperature/Humidity Sensor — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x44",
+	"harness": {
+		"_comment": "sht30_read(dev, int32_t *temp_mc, int32_t *rh_mp) — both must be non-NULL or driver returns -1. Expose temp_mc as `raw` for generic harness.",
+		"read_decl": "int32_t temp_mc = 0; int32_t rh_mp = 0;",
+		"read_raw": "sht30_read(&g_dev, &temp_mc, &rh_mp); raw = (rt_uint16_t)temp_mc"
+	},
+	"register_map": {
+		"0x00": {
+			"name": "raw_data",
+			"bytes": ["0x65", "0xAC", "0xA2", "0x61", "0x15", "0xD6"],
+			"description": "Temp MSB + LSB + CRC + Hum MSB + LSB + CRC (6 bytes). Single-shot read response."
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call sht30_init(). Expect return 0."
+			},
+			{
+				"action": "read",
+				"description": "Call sht30_read(&temp_mc, &hum_mpct). Sends measurement command, reads 6 bytes. Expect return 0."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify temp_mc in expected range."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Temperature in millidegrees C. Expected ~25000 mC from raw 0x65AC.",
+			"min": 24000,
+			"max": 26000
+		}
+	},
+	"assertions": {
+		"count": 3,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "temp_mc in [24000, 26000]"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x44",
+			"description": "Measurement trigger. Typical single-shot (0x24/0x2C with rep byte) or periodic (0x20xx/0x21xx). Soft reset (0x30 0xA2) is optional and accepted.",
+			"any_of": [
+				["0x24", "0x00"],
+				["0x24", "0x0B"],
+				["0x24", "0x16"],
+				["0x2C", "0x06"],
+				["0x2C", "0x0D"],
+				["0x2C", "0x10"],
+				["0x20", "0x32"],
+				["0x21", "0x30"],
+				["0x22", "0x36"],
+				["0x23", "0x34"],
+				["0x27", "0x37"],
+				["0x30", "0xA2"]
+			]
+		}
+	],
+	"vectors": [
+		{
+			"name": "room_25c_50rh",
+			"description": "Typical lab conditions: ~25 °C, ~50 %RH.",
+			"renode_regs": {
+				"0x00": ["0x65", "0xAC", "0xA2", "0x61", "0x15", "0xD6"]
+			},
+			"expected": {
+				"raw": 25000,
+				"raw_alt": []
+			},
+			"tolerance": {
+				"raw": 1500
+			}
+		},
+		{
+			"name": "cold_0c_30rh",
+			"description": "Freezer chamber.",
+			"renode_regs": {
+				"0x00": ["0x51", "0x40", "0x43", "0x4A", "0x11", "0x16"]
+			},
+			"expected": {
+				"raw": 0,
+				"raw_alt": []
+			},
+			"tolerance": {
+				"raw": 3000
+			}
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "temp25_hum50",
+			"renode_regs": {
+				"0": [102, 102, 147, 127, 255, 143]
+			},
+			"expected": {
+				"raw": 25000,
+				"raw_alt": []
+			},
+			"note": "temp_raw=0x6666 -> temp_mc=25000 -> uint16=25000; CRC8(t)=93 CRC8(h)=8f",
+			"tolerance": {
+				"raw": 5
+			}
+		},
+		{
+			"name": "temp0_hum0",
+			"renode_regs": {
+				"0": [37, 112, 210, 0, 0, 129]
+			},
+			"expected": {
+				"raw": 46128,
+				"raw_alt": []
+			},
+			"note": "temp_raw=0x2570 -> temp_mc=-19408 -> uint16=46128; CRC8(t)=d2 CRC8(h)=81",
+			"tolerance": {
+				"raw": 5
+			}
+		},
+		{
+			"name": "temp_min",
+			"renode_regs": {
+				"0": [0, 0, 129, 0, 0, 129]
+			},
+			"expected": {
+				"raw": 20536,
+				"raw_alt": []
+			},
+			"note": "temp_raw=0x0000 -> temp_mc=-45000 -> uint16=20536; CRC8(t)=81 CRC8(h)=81",
+			"tolerance": {
+				"raw": 5
+			}
+		},
+		{
+			"name": "temp_max",
+			"renode_regs": {
+				"0": [255, 255, 172, 255, 255, 172]
+			},
+			"expected": {
+				"raw": 64464,
+				"raw_alt": []
+			},
+			"note": "temp_raw=0xffff -> temp_mc=130000 -> uint16=64464; CRC8(t)=ac CRC8(h)=ac",
+			"tolerance": {
+				"raw": 5
+			}
+		},
+		{
+			"name": "high_humidity",
+			"renode_regs": {
+				"0": [102, 102, 147, 230, 102, 176]
+			},
+			"expected": {
+				"raw": 25000,
+				"raw_alt": []
+			},
+			"note": "temp_raw=0x6666 -> temp_mc=25000 -> uint16=25000; CRC8(t)=93 CRC8(h)=b0",
+			"tolerance": {
+				"raw": 5
+			}
+		},
+		{
+			"name": "room_25c_50rh",
+			"renode_regs": {
+				"0": [101, 172, 34, 97, 21, 150]
+			},
+			"expected": {
+				"raw": 24503,
+				"raw_alt": [26028]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "temp_raw=0x65ac -> temp_mc=24503 -> uint16=24503; CRC8(t)=22 CRC8(h)=96"
+		},
+		{
+			"name": "cold_0c_30rh",
+			"renode_regs": {
+				"0": [81, 64, 175, 74, 17, 148]
+			},
+			"expected": {
+				"raw": 10542,
+				"raw_alt": [20800]
+			},
+			"tolerance": {
+				"raw": 5
+			},
+			"note": "temp_raw=0x5140 -> temp_mc=10542 -> uint16=10542; CRC8(t)=af CRC8(h)=94"
+		}
+	]
+}

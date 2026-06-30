@@ -1,0 +1,319 @@
+{
+    "stimuli": [
+        {
+            "name": "readback_first_byte",
+            "mock_preload": {
+                "0": [
+                    160,
+                    161,
+                    162,
+                    163,
+                    164,
+                    165,
+                    166,
+                    167,
+                    168,
+                    169,
+                    170,
+                    171,
+                    172,
+                    173,
+                    174,
+                    175
+                ]
+            },
+            "expected": {
+                "mem_bytes": [
+                    160,
+                    161,
+                    162,
+                    163,
+                    164,
+                    165,
+                    166,
+                    167,
+                    168,
+                    169,
+                    170,
+                    171,
+                    172,
+                    173,
+                    174,
+                    175
+                ],
+                "raw": 160
+            },
+            "note": "Test pattern bytes 0xA0..0xAF at reg 0x00. Driver read-back may log any byte from the pattern; value range depends on implementation (first byte, sum, or average), so no single expected.raw is asserted here — multi-vector passes as long as read_raw is non-None. References side uses a broader physical range [160, 180]."
+        },
+        {
+            "name": "all_zeros",
+            "mock_preload": {
+                "0": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "mem_bytes": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "raw": 0
+            },
+            "note": "All 16 bytes 0x00. Erased / blank EEPROM state. Driver raw may be 0."
+        },
+        {
+            "name": "all_ones_0xff",
+            "mock_preload": {
+                "0": [
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            },
+            "expected": {
+                "mem_bytes": [
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255,
+                    255
+                ],
+                "raw": 255
+            },
+            "note": "All 16 bytes 0xFF (255). Un-programmed flash-like state or saturation check."
+        },
+        {
+            "name": "increasing_0_15",
+            "mock_preload": {
+                "0": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15
+                ]
+            },
+            "expected": {
+                "mem_bytes": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15
+                ],
+                "raw": 0
+            },
+            "note": "Bytes 0x00..0x0F. Ascending pattern; first-byte drivers log 0."
+        },
+        {
+            "name": "alternating_55_aa",
+            "mock_preload": {
+                "0": [
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170
+                ]
+            },
+            "expected": {
+                "mem_bytes": [
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170,
+                    85,
+                    170
+                ],
+                "raw": 85
+            },
+            "note": "Alternating 0x55 / 0xAA. Tests byte-level bit toggling across the read burst."
+        },
+        {
+            "name": "ascii_hello_world",
+            "mock_preload": {
+                "0": [
+                    72,
+                    101,
+                    108,
+                    108,
+                    111,
+                    44,
+                    32,
+                    87,
+                    111,
+                    114,
+                    108,
+                    100,
+                    33,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "mem_bytes": [
+                    72,
+                    101,
+                    108,
+                    108,
+                    111,
+                    44,
+                    32,
+                    87,
+                    111,
+                    114,
+                    108,
+                    100,
+                    33,
+                    0,
+                    0,
+                    0
+                ],
+                "raw": 72
+            },
+            "note": "ASCII 'Hello, World!' + padding. First byte = 'H' = 0x48 = 72."
+        },
+        {
+            "name": "high_value_pattern_0xf0_ff",
+            "mock_preload": {
+                "0": [
+                    240,
+                    241,
+                    242,
+                    243,
+                    244,
+                    245,
+                    246,
+                    247,
+                    248,
+                    249,
+                    250,
+                    251,
+                    252,
+                    253,
+                    254,
+                    255
+                ]
+            },
+            "expected": {
+                "mem_bytes": [
+                    240,
+                    241,
+                    242,
+                    243,
+                    244,
+                    245,
+                    246,
+                    247,
+                    248,
+                    249,
+                    250,
+                    251,
+                    252,
+                    253,
+                    254,
+                    255
+                ],
+                "raw": 240
+            },
+            "note": "Bytes 0xF0..0xFF. Upper-range pattern; first byte = 240."
+        }
+    ]
+}

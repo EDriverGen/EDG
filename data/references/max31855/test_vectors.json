@@ -1,0 +1,219 @@
+{
+	"device_id": "max31855",
+	"description": "MAX31855 Thermocouple-to-Digital Converter — Standard Test Vectors for Renode SPI Emulation",
+	"bus_type": "spi",
+	"spi_config": {
+		"mode": 0,
+		"max_freq_hz": 5000000,
+		"cs_active_low": true,
+		"read_only": true
+	},
+	"register_map": {
+		"raw_32bit": {
+			"name": "full_frame",
+			"bytes": ["0x0F", "0xA4", "0x19", "0x10"],
+			"description": "32-bit SPI frame, MSB-first. TC=+250.25°C (raw 1001), IJ=+25.0625°C (raw 401), no fault"
+		}
+	},
+	"data_format": {
+		"thermocouple_temp": {
+			"bits": "31:18",
+			"type": "signed_14bit",
+			"resolution": "0.25°C per LSB",
+			"formula": "temp_c = raw * 0.25",
+			"integer_approx": "temp_mc = raw * 250"
+		},
+		"fault_bit": {
+			"bit": 16,
+			"description": "1 = fault detected; check bits 2:0 for type"
+		},
+		"internal_temp": {
+			"bits": "15:4",
+			"type": "signed_12bit",
+			"resolution": "0.0625°C per LSB",
+			"formula": "temp_c = raw * 0.0625",
+			"integer_approx": "temp_mc = raw * 625 / 10"
+		},
+		"fault_scv": {
+			"bit": 2,
+			"description": "Short to VCC"
+		},
+		"fault_scg": {
+			"bit": 1,
+			"description": "Short to GND"
+		},
+		"fault_oc": {
+			"bit": 0,
+			"description": "Open circuit (no thermocouple)"
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call max31855_init(). Configure SPI. Returns 0."
+			},
+			{
+				"action": "read_raw",
+				"description": "Call max31855_read_raw(). Read 4 bytes via SPI (32-bit frame)."
+			},
+			{
+				"action": "check_fault",
+				"description": "Call max31855_has_fault(raw). Expect 0 (no fault)."
+			},
+			{
+				"action": "read_thermocouple",
+				"description": "Call max31855_get_thermocouple_temp(raw, &temp_mc). Extract bits 31:18."
+			},
+			{
+				"action": "read_internal",
+				"description": "Call max31855_get_internal_temp(raw, &temp_mc). Extract bits 15:4."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify TC≈250250 mC, IJ≈25062 mC."
+			}
+		]
+	},
+	"expected_output": {
+		"thermocouple_temp_mc": {
+			"min": 249500,
+			"max": 251000,
+			"description": "Thermocouple temperature in millidegrees C (raw=1001, expected ~250250)"
+		},
+		"internal_temp_mc": {
+			"min": 24500,
+			"max": 25500,
+			"description": "Internal junction temperature in millidegrees C (raw=401, expected ~25062)"
+		},
+		"fault": {
+			"value": 0,
+			"description": "No fault condition"
+		}
+	},
+	"fault_test_vectors": [
+		{
+			"name": "open_circuit",
+			"bytes": ["0x00", "0x01", "0x00", "0x01"],
+			"expected_fault": true,
+			"fault_type": "OC"
+		},
+		{
+			"name": "short_to_gnd",
+			"bytes": ["0x00", "0x01", "0x00", "0x02"],
+			"expected_fault": true,
+			"fault_type": "SCG"
+		},
+		{
+			"name": "short_to_vcc",
+			"bytes": ["0x00", "0x01", "0x00", "0x04"],
+			"expected_fault": true,
+			"fault_type": "SCV"
+		},
+		{
+			"name": "negative_tc",
+			"raw_32bit_hex": "0xF0000000",
+			"description": "Negative thermocouple temperature: -256°C",
+			"expected_tc_mc": -256000
+		}
+	],
+	"assertions": {
+		"count": 5,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_raw",
+				"description": "Read raw returns 0"
+			},
+			{
+				"id": "no_fault",
+				"description": "Fault flag == 0"
+			},
+			{
+				"id": "tc_range",
+				"description": "TC temp in [249500, 251000] mC"
+			},
+			{
+				"id": "ij_range",
+				"description": "Internal temp in [24500, 25500] mC"
+			}
+		]
+	},
+	"spi_proto": "stream",
+	"runtime_tests": [
+		{
+			"name": "room_temp_25c",
+			"spi_regs": {
+				"0": [1, 144, 25, 0]
+			},
+			"note": "TC=100*0.25=25.00 C, internal=400*0.0625=25.00 C, no fault.",
+			"expected": {
+				"raw_alt": [25000, 25, 100]
+			}
+		},
+		{
+			"name": "freezing_0c",
+			"spi_regs": {
+				"0": [0, 0, 0, 0]
+			},
+			"note": "All zeros: TC=0 C, internal=0 C.",
+			"expected": {
+				"raw_alt": [0]
+			}
+		},
+		{
+			"name": "boiling_100c",
+			"spi_regs": {
+				"0": [6, 64, 25, 0]
+			},
+			"note": "TC=400*0.25=100.00 C, internal=25 C.",
+			"expected": {
+				"raw_alt": [100000, 100, 400]
+			}
+		},
+		{
+			"name": "subzero_neg10c",
+			"spi_regs": {
+				"0": [255, 96, 0, 0]
+			},
+			"note": "TC=-40*0.25=-10.00 C. Tests 14-bit signed sign-extension.",
+			"expected": {
+				"raw_alt": [-10000, -10, -40]
+			}
+		},
+		{
+			"name": "open_circuit_fault",
+			"spi_regs": {
+				"0": [0, 1, 0, 1]
+			},
+			"note": "FAULT=1, OC=1 (thermocouple open). Bytes: 0x00 0x01 0x00 0x01. Driver must detect fault and return error.",
+			"expected": {
+				"driver_returns_error": true
+			}
+		},
+		{
+			"name": "short_to_vcc_fault",
+			"spi_regs": {
+				"0": [0, 1, 0, 4]
+			},
+			"note": "FAULT=1, SCV=1 (short to VCC). Bytes: 0x00 0x01 0x00 0x04. Driver must detect fault and return error.",
+			"expected": {
+				"driver_returns_error": true
+			}
+		},
+		{
+			"name": "short_to_gnd_fault",
+			"spi_regs": {
+				"0": [0, 1, 0, 2]
+			},
+			"note": "FAULT=1, SCG=1 (short to GND). Bytes: 0x00 0x01 0x00 0x02. Driver must detect fault and return error.",
+			"expected": {
+				"driver_returns_error": true
+			}
+		}
+	]
+}

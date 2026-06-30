@@ -1,0 +1,300 @@
+{
+    "stimuli": [
+        {
+            "name": "accel_mag_identity",
+            "mock_preload": {
+                "15": [
+                    51
+                ],
+                "32": [
+                    7
+                ],
+                "40": [
+                    16,
+                    0,
+                    32,
+                    0,
+                    0,
+                    64
+                ],
+                "0x1E:10": [
+                    72
+                ],
+                "0x1E:11": [
+                    52
+                ],
+                "0x1E:12": [
+                    51
+                ],
+                "0x1E:3": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {},
+            "note": "Accel @0x19 snapshot: WHO_AM_I_A=0x33, CTRL_REG1_A=0x07, OUT_X..Z = 16/32/16384. This vector currently only populates the accel slave; the mag slave (0x1E) is declared via aux_i2c_addrs for the consistency checker but is not yet attached in the .resc template. Driver-visible read_raw may be any axis value, so no expected.raw is asserted."
+        },
+        {
+            "name": "zero_g_all_axes",
+            "mock_preload": {
+                "15": [
+                    51
+                ],
+                "32": [
+                    87
+                ],
+                "40": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "0x1E:10": [
+                    72
+                ],
+                "0x1E:11": [
+                    52
+                ],
+                "0x1E:12": [
+                    51
+                ],
+                "0x1E:3": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 0
+            },
+            "note": "All three axes zero (free fall / no gravity). Baseline."
+        },
+        {
+            "name": "pos_1g_x_axis",
+            "mock_preload": {
+                "15": [
+                    51
+                ],
+                "32": [
+                    87
+                ],
+                "40": [
+                    0,
+                    64,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "0x1E:10": [
+                    72
+                ],
+                "0x1E:11": [
+                    52
+                ],
+                "0x1E:12": [
+                    51
+                ],
+                "0x1E:3": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 16384,
+                "raw_alt": [
+                    1000,
+                    1024
+                ]
+            },
+            "note": "X axis = +1g (~16384 at +/-2g scale, 16-bit left-aligned). Y/Z zero."
+        },
+        {
+            "name": "neg_1g_x_axis",
+            "mock_preload": {
+                "15": [
+                    51
+                ],
+                "32": [
+                    87
+                ],
+                "40": [
+                    0,
+                    192,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "0x1E:10": [
+                    72
+                ],
+                "0x1E:11": [
+                    52
+                ],
+                "0x1E:12": [
+                    51
+                ],
+                "0x1E:3": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": -16384,
+                "raw_alt": [
+                    -1000,
+                    -1024
+                ]
+            },
+            "note": "X axis = -1g. Exercises signed decoding."
+        },
+        {
+            "name": "full_scale_positive",
+            "mock_preload": {
+                "15": [
+                    51
+                ],
+                "32": [
+                    87
+                ],
+                "40": [
+                    240,
+                    127,
+                    240,
+                    127,
+                    240,
+                    127
+                ],
+                "0x1E:10": [
+                    72
+                ],
+                "0x1E:11": [
+                    52
+                ],
+                "0x1E:12": [
+                    51
+                ],
+                "0x1E:3": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 32752,
+                "raw_alt": [
+                    2047
+                ]
+            },
+            "note": "All axes near +full-scale (12-bit max left-aligned). Saturation upper edge."
+        },
+        {
+            "name": "full_scale_negative",
+            "mock_preload": {
+                "15": [
+                    51
+                ],
+                "32": [
+                    87
+                ],
+                "40": [
+                    16,
+                    128,
+                    16,
+                    128,
+                    16,
+                    128
+                ],
+                "0x1E:10": [
+                    72
+                ],
+                "0x1E:11": [
+                    52
+                ],
+                "0x1E:12": [
+                    51
+                ],
+                "0x1E:3": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": -32752,
+                "raw_alt": [
+                    -2047
+                ]
+            },
+            "note": "All axes near -full-scale. Saturation lower edge."
+        },
+        {
+            "name": "xyz_tilted_45deg",
+            "mock_preload": {
+                "15": [
+                    51
+                ],
+                "32": [
+                    87
+                ],
+                "40": [
+                    65,
+                    45,
+                    65,
+                    45,
+                    0,
+                    0
+                ],
+                "0x1E:10": [
+                    72
+                ],
+                "0x1E:11": [
+                    52
+                ],
+                "0x1E:12": [
+                    51
+                ],
+                "0x1E:3": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 11585,
+                "raw_alt": [
+                    707,
+                    724
+                ]
+            },
+            "note": "X=Y=11585 (sqrt(2)/2 * 16384), Z=0. Device tilted 45 deg."
+        }
+    ]
+}

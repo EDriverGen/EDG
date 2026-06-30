@@ -1,0 +1,88 @@
+{
+    "stimuli": [
+        {
+            "name": "temp_0C",
+            "mock_preload": {
+                "0": [
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 0
+            },
+            "note": "0x0000 = 0.0°C"
+        },
+        {
+            "name": "temp_25C",
+            "mock_preload": {
+                "0": [
+                    25,
+                    16
+                ]
+            },
+            "expected": {
+                "raw": 25062
+            },
+            "note": "Reg=0x1910 → 25.0625°C. Driver returns millidegrees = 25062 (25.0625 × 1000, rounded). Harness captures uint16 truncation of the mC value."
+        },
+        {
+            "name": "temp_50C",
+            "mock_preload": {
+                "0": [
+                    50,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 50000
+            },
+            "note": "Reg=0x3200 → 50.0°C. Driver returns mC=50000 (fits uint16)."
+        },
+        {
+            "name": "temp_100C",
+            "mock_preload": {
+                "0": [
+                    100,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 100000,
+                "raw_alt": [
+                    34464
+                ]
+            },
+            "note": "Reg=0x6400 → 100.0°C → 100000 mC (int32). uint16 overflow: 100000 mod 65536 = 34464."
+        },
+        {
+            "name": "temp_neg25C",
+            "mock_preload": {
+                "0": [
+                    231,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": -25000,
+                "raw_alt": [
+                    40536
+                ]
+            },
+            "note": "Reg=0xE700 → -25.0°C → -25000 mC (int32). uint16 reinterpretation: 65536-25000 = 40536."
+        },
+        {
+            "name": "temp_0_0625C",
+            "mock_preload": {
+                "0": [
+                    0,
+                    16
+                ]
+            },
+            "expected": {
+                "raw": 62
+            },
+            "note": "Reg=0x0010 → 0.0625°C. Driver returns mC=62 (62.5 truncated)."
+        }
+    ]
+}

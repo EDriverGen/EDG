@@ -1,0 +1,188 @@
+{
+	"device_id": "bh1750",
+	"description": "BH1750FVI Ambient Light Sensor — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x23",
+	"register_map": {
+		"0x00": {
+			"name": "measurement_data",
+			"bytes": [
+				"0x04",
+				"0xB0"
+			],
+			"description": "16-bit light level, MSB first. raw = (0x04 << 8) | 0xB0 = 1200"
+		}
+	},
+	"test_flow": {
+		"type": "auto_gen",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call bh1750_init(). Expect return 0 (success)."
+			},
+			{
+				"action": "read",
+				"description": "Call bh1750_read() or equivalent. Expect return 0 (success)."
+			},
+			{
+				"action": "value_check",
+				"description": "Verify read value is within expected range."
+			}
+		]
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Light intensity in lux or raw counts",
+			"min": 1100,
+			"max": 1300
+		}
+	},
+	"assertions": {
+		"count": 3,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0"
+			},
+			{
+				"id": "read_err",
+				"description": "Read returns 0"
+			},
+			{
+				"id": "value_range",
+				"description": "Read value in [1100, 1300]"
+			}
+		]
+	},
+	"required_writes": [
+		{
+			"addr": "0x23",
+			"description": "A valid measurement opcode. Driver may pick any of continuous-H-res (0x10/0x11), continuous-L-res (0x13), or the one-shot variants (0x20/0x21/0x23).",
+			"any_of": [
+				[
+					"0x10"
+				],
+				[
+					"0x11"
+				],
+				[
+					"0x13"
+				],
+				[
+					"0x20"
+				],
+				[
+					"0x21"
+				],
+				[
+					"0x23"
+				]
+			]
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "dark",
+			"renode_regs": {
+				"0": [
+					0,
+					0
+				]
+			},
+			"expected": {
+				"raw": 0
+			},
+			"note": "Complete darkness: raw=0x0000=0"
+		},
+		{
+			"name": "low_light_10lux",
+			"renode_regs": {
+				"0": [
+					0,
+					12
+				]
+			},
+			"expected": {
+				"raw": 12
+			},
+			"note": "raw=12, lux=10. Tests low-value LSB handling"
+		},
+		{
+			"name": "indoor_500lux",
+			"renode_regs": {
+				"0": [
+					2,
+					88
+				]
+			},
+			"expected": {
+				"raw": 600
+			},
+			"note": "raw=0x0258=600, lux=500. Typical indoor lighting"
+		},
+		{
+			"name": "bright_1000lux",
+			"renode_regs": {
+				"0": [
+					4,
+					176
+				]
+			},
+			"expected": {
+				"raw": 1200
+			},
+			"note": "raw=0x04B0=1200, lux=1000. Standard test point"
+		},
+		{
+			"name": "outdoor_10000lux",
+			"renode_regs": {
+				"0": [
+					46,
+					224
+				]
+			},
+			"expected": {
+				"raw": 12000
+			},
+			"note": "raw=0x2EE0=12000, lux=10000. Outdoor daylight"
+		},
+		{
+			"name": "max_65535",
+			"renode_regs": {
+				"0": [
+					255,
+					255
+				]
+			},
+			"expected": {
+				"raw": 65535
+			},
+			"note": "Full scale 0xFFFF=65535, lux≈54612"
+		},
+		{
+			"name": "msb_only",
+			"renode_regs": {
+				"0": [
+					128,
+					0
+				]
+			},
+			"expected": {
+				"raw": 32768
+			},
+			"note": "raw=0x8000=32768. Tests high bit handling in big-endian 16-bit"
+		},
+		{
+			"name": "lsb_only",
+			"renode_regs": {
+				"0": [
+					0,
+					1
+				]
+			},
+			"expected": {
+				"raw": 1
+			},
+			"note": "raw=0x0001=1. Minimum non-zero, tests LSB"
+		}
+	]
+}

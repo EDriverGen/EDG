@@ -1,0 +1,101 @@
+{
+	"device_id": "ssd1306",
+	"description": "SSD1306 128x64 OLED Display Controller — Standard Test Vectors for Renode I2C Emulation",
+	"i2c_address_7bit": "0x3C",
+	"register_map": {
+		"0x00": {
+			"name": "command_prefix",
+			"bytes": ["0x00"],
+			"description": "Command byte prefix. SSD1306 uses special I2C protocol: first byte after address is control byte (0x00=command, 0x40=data)."
+		}
+	},
+	"test_flow": {
+		"type": "custom",
+		"steps": [
+			{
+				"action": "init",
+				"description": "Call ssd1306_init(). Sends initialization command sequence: display off (0xAE), set mux ratio, display offset, start line, segment remap, COM scan, COM pins, contrast, entire display on from RAM, normal display, clock div, charge pump, display on (0xAF). Expect return 0."
+			}
+		],
+		"note": "SSD1306 is output-only (display). Test only verifies init completes without I2C errors. No meaningful numeric readback value."
+	},
+	"physical_range": {
+		"default": {
+			"raw_value_description": "Init-only test. Output is typically 1 (success) or return code. Since there is no sensor readback, only init success is tested.",
+			"min": 1,
+			"max": 1
+		}
+	},
+	"assertions": {
+		"count": 1,
+		"details": [
+			{
+				"id": "init",
+				"description": "Init returns 0 (no I2C NACK or timeout)"
+			}
+		]
+	},
+	"notes": {
+		"display_only": "SSD1306 is a display controller with no meaningful sensor readback. Test validates that the I2C init command sequence completes without bus errors."
+	},
+	"required_writes": [
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0xAE"]],
+			"description": "Display OFF"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0xD5"]],
+			"description": "Set display clock divide ratio"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0xA8"]],
+			"description": "Set multiplex ratio"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0xD3"]],
+			"description": "Set display offset"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0x8D"]],
+			"description": "Enable charge pump"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0x20"]],
+			"description": "Set memory addressing mode"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0xDA"]],
+			"description": "Set COM pins hardware config"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0x81"]],
+			"description": "Set contrast"
+		},
+		{
+			"addr": "0x3C",
+			"any_of": [["0x00", "0xAF"]],
+			"description": "Display ON"
+		}
+	],
+	"runtime_tests": [
+		{
+			"name": "init_only",
+			"renode_regs": {
+				"0": [0]
+			},
+			"expected": {
+				"raw": 0,
+				"note": "Display-only device — no sensor readback. The auto-generated harness leaves `raw` at its init value 0; we assert exactly that to distinguish boot-PASS from unexpected side effects."
+			},
+			"note": "Display-only device — no readback. Driver init writes a command sequence; vector merely registers a non-NACKing sink."
+		}
+	]
+}

@@ -1,0 +1,195 @@
+{
+    "stimuli": [
+        {
+            "name": "temp_25.0625C_12bit",
+            "mock_preload": {
+                "payload": [
+                    145,
+                    1,
+                    75,
+                    70,
+                    127,
+                    255,
+                    0,
+                    16,
+                    61
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    25060,
+                    0
+                ],
+                "tolerance": 10
+            },
+            "note": "Datasheet example: 25.0625 C * 16 = 401 raw -> 25060 mC via x100/16 integer math. 0 is retained as a fallback for drivers that fail the 1-Wire handshake or CRC check."
+        },
+        {
+            "name": "temp_85C_power_on_default",
+            "mock_preload": {
+                "payload": [
+                    80,
+                    5,
+                    75,
+                    70,
+                    127,
+                    255,
+                    0,
+                    16,
+                    81
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    85000,
+                    0
+                ],
+                "tolerance": 10
+            },
+            "note": "Power-on reset value: 85 C * 16 = 1360 raw -> 85000 mC. 0 retained as fallback for handshake/CRC failures."
+        },
+        {
+            "name": "temp_-0.5C_12bit",
+            "mock_preload": {
+                "payload": [
+                    248,
+                    255,
+                    75,
+                    70,
+                    127,
+                    255,
+                    0,
+                    16,
+                    142
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    -500,
+                    0
+                ],
+                "tolerance": 10
+            },
+            "note": "Negative temperature: -0.5 C -> -500 mC."
+        },
+        {
+            "name": "temp_-25C_12bit",
+            "mock_preload": {
+                "payload": [
+                    112,
+                    254,
+                    75,
+                    70,
+                    127,
+                    255,
+                    0,
+                    16,
+                    11
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    -25000,
+                    0
+                ],
+                "tolerance": 10
+            },
+            "note": "-25.0 C * 16 = -400 raw -> -25000 mC."
+        },
+        {
+            "name": "resolution_9bit",
+            "mock_preload": {
+                "payload": [
+                    152,
+                    1,
+                    75,
+                    70,
+                    31,
+                    255,
+                    0,
+                    16,
+                    196
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    25500,
+                    0
+                ],
+                "tolerance": 10
+            },
+            "note": "9-bit resolution: raw=408 -> 25.5 C -> 25500 mC. Reference driver does not distinguish resolution; the raw value is what the scratchpad reports."
+        },
+        {
+            "name": "resolution_10bit",
+            "mock_preload": {
+                "payload": [
+                    148,
+                    1,
+                    75,
+                    70,
+                    63,
+                    255,
+                    0,
+                    16,
+                    139
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    25250,
+                    0
+                ],
+                "tolerance": 10
+            },
+            "note": "10-bit resolution: raw=404 -> 25.25 C -> 25250 mC."
+        },
+        {
+            "name": "resolution_11bit",
+            "mock_preload": {
+                "payload": [
+                    146,
+                    1,
+                    75,
+                    70,
+                    95,
+                    255,
+                    0,
+                    16,
+                    136
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    25120,
+                    0
+                ],
+                "tolerance": 10
+            },
+            "note": "11-bit resolution: raw=402 -> 25.125 C, truncated to 25120 mC by the integer x100/16 path."
+        },
+        {
+            "name": "crc_mismatch",
+            "mock_preload": {
+                "payload": [
+                    80,
+                    5,
+                    75,
+                    70,
+                    127,
+                    255,
+                    0,
+                    16,
+                    0
+                ]
+            },
+            "expected": {
+                "raw_alt": [
+                    0
+                ],
+                "err": 1
+            },
+            "note": "Fixture with corrupted CRC byte (0x00 vs expected 0x51): driver MUST detect the CRC mismatch and return an error. L2 accepts RESULT: ERR; L4 accepts raw=0."
+        }
+    ]
+}

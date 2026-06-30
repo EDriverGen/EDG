@@ -1,0 +1,209 @@
+{
+  "_meta": {
+    "description": "Base SlotPlan template for connection_type=gpio_timing. Inspired by docs/anwserTo10.md Q2.1; runtime.delay_us allows task_package_helper since boards often supply DWT/timer-based microsecond hooks instead of a real RTOS API.",
+    "version": 1,
+    "stage": "2.2"
+  },
+  "connection_type": "gpio_timing",
+  "base_slots": [
+    {
+      "slot_id": "gpio.configure",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "gpio",
+      "expected_kinds": ["function", "macro"],
+      "query_intents": [
+        "gpio init",
+        "pin mode",
+        "set direction",
+        "configure pin",
+        "gpio_set_mode",
+        "HAL_GPIO_Init",
+        "rt_pin_mode",
+        "palSetPadMode",
+        "palSetLineMode",
+        "GpioSetDir",
+        "gpio_pin_configure_dt",
+        "gpio_init",
+        "GPIOC_SETPINTYPE",
+        "IOEXP_SETDIRECTION",
+        "hal_gpio_init_in",
+        "hal_gpio_init_out",
+        "rtems_gpio_request_pin",
+        "GPIO_CFG_OUTPUT",
+        "GPIO_CFG_INPUT",
+        "ioexpander"
+      ],
+      "preferred_root_roles": ["vendor_hal", "driver_framework", "board_integration"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "gpio.write",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "gpio",
+      "expected_kinds": ["function", "macro"],
+      "query_intents": [
+        "gpio write",
+        "set pin",
+        "write pin",
+        "output high low",
+        "HAL_GPIO_WritePin",
+        "rt_pin_write",
+        "palSetPad",
+        "palClearPad",
+        "palWritePad",
+        "palWriteLine",
+        "GpioWrite",
+        "gpio_pin_set_dt",
+        "gpio_set",
+        "gpio_clear",
+        "GPIOC_WRITE",
+        "IOEXP_WRITEPIN",
+        "hal_gpio_write",
+        "rtems_gpio_set",
+        "rtems_gpio_clear",
+        "GPIO_HIGH",
+        "GPIO_LOW",
+        "PrivWrite",
+        "ioexpander"
+      ],
+      "preferred_root_roles": ["vendor_hal", "driver_framework"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "gpio.read",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "gpio",
+      "expected_kinds": ["function", "macro"],
+      "query_intents": [
+        "gpio read",
+        "get pin",
+        "read pin",
+        "input level",
+        "HAL_GPIO_ReadPin",
+        "rt_pin_read",
+        "palReadPad",
+        "palReadLine",
+        "GpioRead",
+        "gpio_pin_get_dt",
+        "gpio_read",
+        "GPIOC_READ",
+        "IOEXP_READPIN",
+        "hal_gpio_read",
+        "rtems_gpio_get_value",
+        "PrivRead",
+        "ioexpander"
+      ],
+      "preferred_root_roles": ["vendor_hal", "driver_framework"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "gpio.key_types",
+      "layer": "bus",
+      "required": true,
+      "canonical_bus": "gpio",
+      "expected_kinds": ["struct", "typedef", "enum", "macro"],
+      "query_intents": [
+        "GPIO_TypeDef",
+        "GPIO_PinState",
+        "gpio_init_t",
+        "pin handle",
+        "GpioValue",
+        "GpioDirType",
+        "GpioIrqType",
+        "hal_gpio_mode_t"
+      ],
+      "preferred_root_roles": ["vendor_hal", "driver_framework"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "runtime.delay_us",
+      "layer": "runtime",
+      "required": true,
+      "expected_kinds": ["function", "macro", "task_package_helper"],
+      "query_intents": [
+        "microsecond delay",
+        "udelay",
+        "delay us",
+        "DWT delay",
+        "rt_hw_us_delay",
+        "k_busy_wait",
+        "us_delay",
+        "chThdSleepMicroseconds",
+        "OsalUDelay",
+        "LOS_Udelay",
+        "ztimer_sleep",
+        "xtimer_usleep",
+        "nxsig_usleep"
+      ],
+      "preferred_root_roles": ["vendor_hal", "kernel", "runtime", "board_integration"],
+      "min_evidence": 1,
+      "source_kinds_allowed": ["manifest_repo", "task_package_helper"]
+    },
+    {
+      "slot_id": "runtime.delay_ms",
+      "layer": "runtime",
+      "required": false,
+      "expected_kinds": ["function", "macro", "task_package_helper"],
+      "query_intents": [
+        "millisecond delay",
+        "mdelay",
+        "HAL_Delay",
+        "rt_thread_mdelay",
+        "vTaskDelay",
+        "chThdSleepMilliseconds",
+        "tx_thread_sleep",
+        "tos_sleep_ms",
+        "k_msleep",
+        "OsalMSleep",
+        "LOS_Mdelay",
+        "PrivTaskDelay",
+        "KMdelay"
+      ],
+      "preferred_root_roles": ["kernel", "runtime", "driver_framework", "vendor_hal"],
+      "min_evidence": 1,
+      "source_kinds_allowed": ["manifest_repo", "task_package_helper"]
+    },
+    {
+      "slot_id": "timing.measure_pulse_width",
+      "layer": "timing",
+      "required": false,
+      "canonical_bus": "gpio",
+      "expected_kinds": ["function", "macro", "task_package_helper"],
+      "query_intents": [
+        "pulse width",
+        "measure pulse",
+        "input capture",
+        "elapsed us",
+        "tick to us",
+        "monotonic counter"
+      ],
+      "preferred_root_roles": ["vendor_hal", "kernel", "runtime", "board_integration"],
+      "min_evidence": 1,
+      "source_kinds_allowed": ["manifest_repo", "task_package_helper"]
+    },
+    {
+      "slot_id": "runtime.error_status",
+      "layer": "runtime",
+      "required": true,
+      "expected_kinds": ["macro", "enum", "typedef"],
+      "query_intents": ["status", "error", "success", "timeout", "OK"],
+      "preferred_root_roles": ["kernel", "runtime", "vendor_hal"],
+      "min_evidence": 1
+    },
+    {
+      "slot_id": "integration.pin_binding",
+      "layer": "integration",
+      "required": true,
+      "expected_kinds": ["macro", "struct", "config"],
+      "query_intents": [
+        "pin binding",
+        "board pin"
+      ],
+      "preferred_root_roles": ["board_integration", "vendor_hal"],
+      "min_evidence": 1
+    }
+  ]
+}
