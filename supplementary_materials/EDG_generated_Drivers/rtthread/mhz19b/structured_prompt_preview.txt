@@ -1,0 +1,221 @@
+
+## Software setting [pages 7-8]
+
+Set serial port baud rate be 9600, data bit 8 bytes, stop bit 1byte, parity bit null.
+
+| Commands   | Commands                                        |
+|------------|-------------------------------------------------|
+| 0x86       | Read CO2 concentration                          |
+| 0x87       | Calibrate Zero Point (ZERO)                     |
+| 0x88       | Calibrate Span Point (SPAN)                     |
+| 0x79       | ON/OFF Self-calibration function for zero point |
+| 0x99       | Detection range setting                         |
+
+| 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   | 0x86- Read CO2 concentration   |
+|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|--------------------------------|
+| Sending command                | Sending command                | Sending command                | Sending command                | Sending command                | Sending command                | Sending command                | Sending command                | Sending command                |
+| Byte0                          | Byte1                          | Byte2                          | Byte3                          | Byte4                          | Byte5                          | Byte6                          | Byte7                          | Byte8                          |
+| Start Byte                     | Reserved                       | Command                        | -                              | -                              | -                              | -                              | -                              | Checksum                       |
+| 0xFF                           | 0x01                           | 0x86                           | 0x00                           | 0x00                           | 0x00                           | 0x00                           | 0x00                           | 0x79                           |
+| Return value                   | Return value                   | Return value                   | Return value                   | Return value                   | Return value                   | Return value                   | Return value                   | Return value                   |
+| Byte0                          | Byte1                          | Byte2                          | Byte3                          | Byte4                          | Byte5                          | Byte6                          | Byte7                          | Byte8                          |
+| Start Byte                     | Comman d                       | Concentration (High 8 Byte)    | Concentration (Low 8 Byte)     | -                              | -                              | -                              | -                              | Checksum                       |
+| 0xFF                           | 0x86                           | HIGH                           | LOW                            | -                              | -                              | -                              | -                              | Checksum                       |
+
+CO2 concentration = HIGH * 256 + LOW
+
+For example:
+
+Send command FF 01 86 00 00 00 00 00 79, Return value FF 86 02 20 00 00 00 00 58
+
+How to calculate concentration: convert hexadecimal 02 into decimal 2, hexadecimal 20 into decimal 32, then 2*256+32=544ppm
+
+| 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   | 0x79- On/Off Self-calibration for Zero Point   |
+|------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|------------------------------------------------|
+| Send command-No return value                   | Send command-No return value                   | Send command-No return value                   | Send command-No return value                   | Send command-No return value                   | Send command-No return value                   | Send command-No return value                   | Send command-No return value                   | Send command-No return value                   |
+| Byte0                                          | Byte1                                          | Byte2                                          | Byte3                                          | Byte4                                          | Byte5                                          | Byte6                                          | Byte7                                          | Byte8                                          |
+| Start Byte                                     | Reserved                                       | Command                                        | -                                              | -                                              | -                                              | -                                              | -                                              | Checksum                                       |
+| 0xFF                                           | 0x01                                           | 0x79                                           | 0xA0/0x00                                      | 0x00                                           | 0x00                                           | 0x00                                           | 0x00                                           | Checksum                                       |
+
+For example:
+
+ON this function, send command: FF 01 79 A0 00 00 00 00 E6
+
+OFF this function, send command: FF 01 79 00 00 00 00 00 86
+
+NOTE: This function is on when Byte3 is 0xA0 while this function is off when Byte3 is 0x00.
+
+Default status is 'this function is on'.
+
+| 0x99- Detection range setting   | 0x99- Detection range setting   | 0x99- Detection range setting   | 0x99- Detection range setting   | 0x99- Detection range setting   | 0x99- Detection range setting   | 0x99- Detection range setting   | 0x99- Detection range setting   | 0x99- Detection range setting   |
+|---------------------------------|---------------------------------|---------------------------------|---------------------------------|---------------------------------|---------------------------------|---------------------------------|---------------------------------|---------------------------------|
+| Send command-No return value    | Send command-No return value    | Send command-No return value    | Send command-No return value    | Send command-No return value    | Send command-No return value    | Send command-No return value    | Send command-No return value    | Send command-No return value    |
+| Byte0                           | Byte1                           | Byte2                           | Byte3                           | Byte4                           | Byte5                           | Byte6                           | Byte7                           | Byte8                           |
+| Start Byte                      | Reserved                        | Command                         | Reserved                        | Detection range 24~32 bit       | Detection range 16~23 bit       | Detection range 8~15 bit        | Detection range 0~7 bit         | Check sum                       |
+| 0xFF                            | 0x01                            | 0x99                            | 0x00                            | Data 1                          | Data 2                          | Data 3                          | Data 4                          | Check sum                       |
+
+
+
+Note: Detection range should be 0~2000, 0~5000, or 0~10000ppm.
+
+For example:    set 0~2000ppm detection range, send command: FF 01 99 00 00 00 07 D0 8F
+
+set 0~10000ppm detection range, send command: FF 01 99 00 00 00 27 10 2F
+
+
+## Sending command method : [pages 9-9]
+
+Zero and Span point calibration can be achieved by sending a calibration command to the sensor via the serial port (URAT). Zero and SPAN point calibration commands are as follows:
+
+| 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                | 0X87-ZEROPOINTCALIBRATION                                                                                |
+|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| Send command-no return value                                                                             | Send command-no return value                                                                             | Send command-no return value                                                                             | Send command-no return value                                                                             | Send command-no return value                                                                             | Send command-no return value                                                                             | Send command-no return value                                                                             | Send command-no return value                                                                             | Send command-no return value                                                                             |
+| Byte0                                                                                                    | Byte1                                                                                                    | Byte2                                                                                                    | Byte3                                                                                                    | Byte4                                                                                                    | Byte5                                                                                                    | Byte6                                                                                                    | Byte7                                                                                                    | Byte8                                                                                                    |
+| Start Byte                                                                                               | Reserved                                                                                                 | Command                                                                                                  |                                                                                                          |                                                                                                          | 1                                                                                                        |                                                                                                          |                                                                                                          | Checksum                                                                                                 |
+| OxFF                                                                                                     | 0x01                                                                                                     | 0x87                                                                                                     | 0x00                                                                                                     | 0x00                                                                                                     | 0x00                                                                                                     | 0x00                                                                                                     | 0x00                                                                                                     | 0x78                                                                                                     |
+| For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; | For example: Put the module in 400ppm standard c02 gas or clean outdoor environment for at least 20 min; |
+
+| OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         | OX88-SPANPOINTCALIBRATION                                         |
+|-------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------|-------------------------------------------------------------------|
+| Send command-no return value                                      | Send command-no return value                                      | Send command-no return value                                      | Send command-no return value                                      | Send command-no return value                                      | Send command-no return value                                      | Send command-no return value                                      | Send command-no return value                                      | Send command-no return value                                      |
+| Byte0                                                             | Byte1                                                             | Byte2                                                             | Byte3                                                             | Byte4                                                             | Byte5                                                             | Byte6                                                             | Byte7                                                             | Byte8                                                             |
+| Start Byte                                                        | Reserved                                                          | Command                                                           | Span(High 8 Byte)                                                 | Span(low 8 Byte)                                                  |                                                                   |                                                                   |                                                                   | Checksum                                                          |
+| OxFF                                                              | 0x01                                                              | 0x88                                                              | HIGH                                                              | LOW                                                               | 0x00                                                              | 0x00                                                              | 0x00                                                              | Checksum                                                          |
+| For example:                                                      | For example:                                                      | For example:                                                      | For example:                                                      | For example:                                                      | For example:                                                      | For example:                                                      | For example:                                                      | For example:                                                      |
+| Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. | Put the module in 2000ppm C02 gas, stability for 20 min at least. |
+
+
+## Pins connection type: [pages 4-5]
+
+Unit: mm
+
+| Pin   | Pin Definition                                                         |
+|-------|------------------------------------------------------------------------|
+| Vin   | Positive pole of power (Vin)                                           |
+| GND   | Negative pole of power (GND)                                           |
+| Vo    | Analog output(0.4~2V)                                                  |
+| PWM   | PWM                                                                    |
+| Hd    | HD(zero point calibration, low level lasting for over 7s is effective) |
+| Rx    | UART(RXD)TTL Level data input                                          |
+| Tx    | UART(TXD)TTL Level data output                                         |
+
+Unit: mm
+
+
+## Terminal connection type: [pages 5-5]
+
+| Pin   | Terminal pin Definition        |
+|-------|--------------------------------|
+| Pin 1 | Anolog Output Vo (0.4~2V)      |
+| Pin 2 | None                           |
+| Pin 3 | Negtive Pole(GND)              |
+| Pin 4 | Positive Pole(Vin)             |
+| Pin 5 | UART(RXD)TTL Level data input  |
+| Pin 6 | UART(TXD)TTL Level data output |
+| Pin 7 | None                           |
+
+Note
+
+: The analog output Vo has a default output range of 0.4V~ 2V. It is configurable from 0V to 3V.
+
+
+## 7. Output [pages 6-6]
+
+| PWMoutput                                         | PWMoutput                                         |
+|---------------------------------------------------|---------------------------------------------------|
+| Take 0~2000ppm for example                        | Take 0~2000ppm for example                        |
+| CO2 output range                                  | 0~2000ppm                                         |
+| Cycle                                             | 1004ms±5%                                         |
+| Cycle start high level output                     | 2ms(theoretical value)                            |
+| The middle cycle                                  | 1000ms±5%                                         |
+| cycle end low level output                        | 2ms(theoretical value)                            |
+| CO2 concentration: Cppm=2000×(TH-2ms)/(TH+TL-4ms) | CO2 concentration: Cppm=2000×(TH-2ms)/(TH+TL-4ms) |
+
+
+## For example: [pages 8-8]
+
+| Byte0      | Byte1    | Byte2   | Byte3   | Byte4   | Byte5   | Byte6   | Byte7   | Byte8     |
+|------------|----------|---------|---------|---------|---------|---------|---------|-----------|
+| Start Byte | Reserved | Command | -       | -       | -       | -       | -       | Check sum |
+| 0xFF       | 0x01     | 0x86    | 0x00    | 0x00    | 0x00    | 0x00    | 0x00    | Check sum |
+
+
+## Serial port output (UART) [pages 6-6]
+
+
+## Hardware connection [pages 6-7]
+
+Connect module's Vin-GND-RXD-TXD to users' 5V-GND-TXD-RXD. (Users must use TTL level. If RS232 level, it must be converted.)
+
+
+## 1. Checksum calculation method [pages 8-8]
+
+Checksum = (Negative (Byte1+Byte2+Byte3+Byte4+Byte5+Byte6+Byte7))+1
+
+
+## 5. Detection range and accuracy [pages 5-5]
+
+| Detection Gas   | Formula   | Detection Range   | Accuracy                   |
+|-----------------|-----------|-------------------|----------------------------|
+| Carbon Dioxide  | CO2       | 0~5000ppm         | ± (50ppm+5% reading value) |
+| Carbon Dioxide  |           | 0~10000ppm        |                            |
+
+
+## 6. Main parameters [pages 5-6]
+
+| Model No.           | MH-Z19B                                                              |
+|---------------------|----------------------------------------------------------------------|
+| Detection Gas       | CO2                                                                  |
+| Working voltage     | 4.5 ~ 5.5 V DC                                                       |
+| Average current     | < 20mA ( @5V power supply)                                           |
+| Peak current        | 150mA (@5V power supply)                                             |
+| Interface level     | 3.3 V (Compatible with 5V)                                           |
+| Detection Range     | 0~2000/5000/10000ppm(optional)                                       |
+| Output signal       | Serial Port (UART) (TTL level 3.3V)                                  |
+| Output signal       | PWM                                                                  |
+| Output signal       | Analog output(DAC) (default 0.4~2V) (0~3V range could be customized) |
+| Preheat time        | 3 min                                                                |
+| Response Time       | T 90 < 120 s                                                         |
+| Working temperature | -10 ~ 50 ℃                                                           |
+| Working humidity    | 0 ~ 90% RH (No condensation)                                         |
+| Weight              | 5 g                                                                  |
+| Lifespan            | > 5 years                                                            |
+
+
+## 1. Profile [pages 3-3]
+
+MH-Z19B NDIR infrared gas module is a common type, small size sensor, using non-dispersive infrared (NDIR) principle to detect the existence of CO 2 in the air, with good selectivity, non-oxygen dependent and long life.  Built-in temperature compensation; and it has UART output and PWM output. It is developed by the tight integration of mature infrared absorbing gas detection technology, precision optical circuit design and superior circuit design.
+
+
+## 3. Main Features [pages 3-3]
+
+Chamber is gold plated, water-proof and anti-corrosion High sensitivity, low power consumption Good stability Temperature compensation, excellent linear output Multiple output modes: UART, DAC, PWM Long lifespan Anti-water vapor interference, anti-poisoning
+
+
+## About zero point calibration: [pages 8-9]
+
+This module has three methods for zero point calibration: hand-operated method, sending command method and self-calibration. All the zero point is at 400ppm CO2.
+
+Hand-operated method : Connect module's HD pin to low level(0V), lasting for 7 seconds at least. Before calibrating the zero point, please ensure that the sensor is stable for more than 20 minutes at 400ppm ambient environment.
+
+
+## Self-calibration: [pages 9-9]
+
+After the module works for some time, it can judge the zero point intelligently and do the zero calibration automatically. The calibration cycle is every 24 hours since the module is power on. The zero point is 400ppm. This method is suitable for office and home environment, not suitable for agriculture greenhouse, farm, refrigerator, etc.. If the module is used in latter environment, please turn off this function.
+
+
+## Analog Voltage Output(Vo) [pages 8-8]
+
+Conversion between analog voltage output and concentration, take 0.4V~2V as an example:
+
+Vo (V)=0.4V+(2.0V-0.4V)*C(concentration ppm) / detection range(ppm)
+
+
+## Calculating Checksum ： [pages 8-8]
+
+
+## C language [pages 8-8]
+
+
+## 8.Zero Point Calibration [pages 8-8]
+

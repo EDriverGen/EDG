@@ -1,0 +1,66 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "rtems",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef BH1750_H\n#define BH1750_H\n\n#include <stdint.h>\n\n#ifdef __cplusplus\nextern \"C\" {\n#endif\n\ntypedef struct bh1750_dev_t {\n    void *bus_handle;\n    uint8_t i2c_addr;\n} bh1750_dev_t;\n\nint bh1750_init(bh1750_dev_t *dev, void *bus_handle);\nint bh1750_read_illuminance(bh1750_dev_t *dev, int32_t *raw);\nint bh1750_set_mtreg(bh1750_dev_t *dev, uint8_t mtreg);\n\n#ifdef __cplusplus\n}\n#endif\n\n#endif /* BH1750_H */",
+  "driver_source": "#include \"bh1750.h\"\n\n#include <errno.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <string.h>\n#include <fcntl.h>\n#include \"rtems.h\"\n\n#include <linux/i2c.h>\n#include <linux/i2c-dev.h>\n#include \"unistd.h\"\n#include <sys/ioctl.h>\n#define BH1750_I2C_ADDR 0x23\n#define BH1750_CMD_POWER_ON 0x01\n#define BH1750_CMD_RESET 0x07\n#define BH1750_CMD_CONT_HRES 0x10\n#define BH1750_CMD_MT_HI 0x40\n#define BH1750_CMD_MT_LO 0x60\n\nstatic int bh1750_i2c_write(bh1750_dev_t *dev, const uint8_t *bytes, size_t len)\n{\n    int fd;\n    struct i2c_msg msg;\n    struct i2c_rdwr_ioctl_data rdwr;\n\n    if (dev == NULL || dev->bus_handle == NULL || bytes == NULL || len == 0U) {\n        return -EINVAL;\n    }\n\n    fd = open((const char *)dev->bus_handle, O_RDWR);\n    if (fd < 0) {\n        return -errno;\n    }\n\n    msg.addr = dev->i2c_addr;\n    msg.flags = 0;\n    msg.len = (uint16_t)len;\n    msg.buf = (uint8_t *)bytes;\n\n    rdwr.msgs = &msg;\n    rdwr.nmsgs = 1U;\n\n    if (ioctl(fd, I2C_RDWR, &rdwr) < 0) {\n        int err = -errno;\n        close(fd);\n        return err;\n    }\n\n    close(fd);\n    return 0;\n}\n\nstatic int bh1750_i2c_read(bh1750_dev_t *dev, uint8_t *bytes, size_t len)\n{\n    int fd;\n    struct i2c_msg msgs[2];\n    struct i2c_rdwr_ioctl_data rdwr;\n    uint8_t cmd = BH1750_CMD_CONT_HRES;\n\n    if (dev == NULL || dev->bus_handle == NULL || bytes == NULL || len == 0U) {\n        return -EINVAL;\n    }\n\n    fd = open((const char *)dev->bus_handle, O_RDWR);\n    if (fd < 0) {\n        return -errno;\n    }\n\n    msgs[0].addr = dev->i2c_addr;\n    msgs[0].flags = 0;\n    msgs[0].len = 1U;\n    msgs[0].buf = &cmd;\n\n    msgs[1].addr = dev->i2c_addr;\n    msgs[1].flags = I2C_M_RD;\n    msgs[1].len = (uint16_t)len;\n    msgs[1].buf = bytes;\n\n    rdwr.msgs = msgs;\n    rdwr.nmsgs = 2U;\n\n    if (ioctl(fd, I2C_RDWR, &rdwr) < 0) {\n        int err = -errno;\n        close(fd);\n        return err;\n    }\n\n    close(fd);\n    return 0;\n}\n\nint bh1750_init(bh1750_dev_t *dev, void *bus_handle)\n{\n    if (dev == NULL) {\n        return -EINVAL;\n    }\n\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = BH1750_I2C_ADDR;\n\n    return 0;\n}\n\nint bh1750_set_mtreg(bh1750_dev_t *dev, uint8_t mtreg)\n{\n    uint8_t hi;\n    uint8_t lo;\n    int ret;\n\n    if (dev == NULL) {\n        return -EINVAL;\n    }\n\n    if (mtreg < 31U) {\n        mtreg = 31U;\n    } else if (mtreg > 254U) {\n        mtreg = 254U;\n    }\n\n    hi = (uint8_t)(BH1750_CMD_MT_HI | ((mtreg >> 5) & 0x07U));\n    lo = (uint8_t)(BH1750_CMD_MT_LO | (mtreg & 0x1FU));\n\n    ret = bh1750_i2c_write(dev, &hi, 1U);\n    if (ret != 0) {\n        return ret;\n    }\n\n    ret = bh1750_i2c_write(dev, &lo, 1U);\n    if (ret != 0) {\n        return ret;\n    }\n\n    return 0;\n}\n\nint bh1750_read_illuminance(bh1750_dev_t *dev, int32_t *raw)\n{\n    uint8_t buf[2];\n    int ret;\n    uint16_t sample;\n\n    if (dev == NULL || raw == NULL) {\n        return -EINVAL;\n    }\n\n    ret = bh1750_i2c_write(dev, (const uint8_t[]){ BH1750_CMD_CONT_HRES }, 1U);\n    if (ret != 0) {\n        return ret;\n    }\n\n    ret = bh1750_i2c_read(dev, buf, 2U);\n    if (ret != 0) {\n        return ret;\n    }\n\n    sample = (uint16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);\n    *raw = (int32_t)sample;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus_handle)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "bh1750_dev_t",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include <errno.h>\n",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_illuminance: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "read_illuminance: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "read_bytes": [
+            "0x01",
+            "0x90"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x01 0x90], raw_count = ((0x01 << 8) | 0x90) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "gpt-5.4-mini",
+  "provider_name": "newapi",
+  "generation_time_s": 14.437,
+  "prompt_chars": 36928,
+  "raw_response": "{\"driver_header\": \"#ifndef BH1750_H\\n#define BH1750_H\\n\\n#include <stdint.h>\\n\\n#ifdef __cplusplus\\nextern \\\"C\\\" {\\n#endif\\n\\ntypedef struct bh1750_dev_t {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n} bh1750_dev_t;\\n\\nint bh1750_init(bh1750_dev_t *dev, void *bus_handle);\\nint bh1750_read_illuminance(bh1750_dev_t *dev, int32_t *raw);\\nint bh1750_set_mtreg(bh1750_dev_t *dev, uint8_t mtreg);\\n\\n#ifdef __cplusplus\\n}\\n#endif\\n\\n#endif /* BH1750_H */\", \"driver_source\": \"#include \\\"bh1750.h\\\"\\n\\n#include <errno.h>\\n#include <stddef.h>\\n#include <stdint.h>\\n#include <string.h>\\n#include <sys/ioctl.h>\\n#include <fcntl.h>\\n#include <linux/i2c-dev.h>\\n#include <linux/i2c.h>\\n#include \\\"rtems.h\\\"\\n\\n#define BH1750_I2C_ADDR 0x23\\n#define BH1750_CMD_POWER_ON 0x01\\n#define BH1750_CMD_RESET 0x07\\n#define BH1750_CMD_CONT_HRES 0x10\\n#define BH1750_CMD_MT_HI 0x40\\n#define BH1750_CMD_MT_LO 0x60\\n\\nstatic int bh1750_i2c_write(bh1750_dev_t *dev, const uint8_t *bytes, size_t len)\\n{\\n    int fd;\\n    struct i2c_msg msg;\\n    struct i2c_rdwr_ioctl_data rdwr;\\n\\n    if (dev == NULL || dev->bus_handle == NULL || bytes == NULL || len == 0U) {\\n        return -EINVAL;\\n    }\\n\\n    fd = open((const char *)dev->bus_handle, O_RDWR);\\n    if (fd < 0) {\\n        return -errno;\\n    }\\n\\n    msg.addr = dev->i2c_addr;\\n    msg.flags = 0;\\n    msg.len = (uint16_t)len;\\n    msg.buf = (uint8_t *)bytes;\\n\\n    rdwr.msgs = &msg;\\n    rdwr.nmsgs = 1U;\\n\\n    if (ioctl(fd, I2C_RDWR, &rdwr) < 0) {\\n        int err = -errno;\\n        close(fd);\\n        return err;\\n    }\\n\\n    close(fd);\\n    return 0;\\n}\\n\\nstatic int bh1750_i2c_read(bh1750_dev_t *dev, uint8_t *bytes, size_t len)\\n{\\n    int fd;\\n    struct i2c_msg msgs[2];\\n    struct i2c_rdwr_ioctl_data rdwr;\\n    uint8_t cmd = BH1750_CMD_CONT_HRES;\\n\\n    if (dev == NULL || dev->bus_handle == NULL || bytes == NULL || len == 0U) {\\n        return -EINVAL;\\n    }\\n\\n    fd = open((const char *)dev->bus_handle, O_RDWR);\\n    if (fd < 0) {\\n        return -errno;\\n    }\\n\\n    msgs[0].addr = dev->i2c_addr;\\n    msgs[0].flags = 0;\\n    msgs[0].len = 1U;\\n    msgs[0].buf = &cmd;\\n\\n    msgs[1].addr = dev->i2c_addr;\\n    msgs[1].flags = I2C_M_RD;\\n    msgs[1].len = (uint16_t)len;\\n    msgs[1].buf = bytes;\\n\\n    rdwr.msgs = msgs;\\n    rdwr.nmsgs = 2U;\\n\\n    if (ioctl(fd, I2C_RDWR, &rdwr) < 0) {\\n        int err = -errno;\\n        close(fd);\\n        return err;\\n    }\\n\\n    close(fd);\\n    return 0;\\n}\\n\\nint bh1750_init(bh1750_dev_t *dev, void *bus_handle)\\n{\\n    if (dev == NULL) {\\n        return -EINVAL;\\n    }\\n\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = BH1750_I2C_ADDR;\\n\\n    return 0;\\n}\\n\\nint bh1750_set_mtreg(bh1750_dev_t *dev, uint8_t mtreg)\\n{\\n    uint8_t hi;\\n    uint8_t lo;\\n    int ret;\\n\\n    if (dev == NULL) {\\n        return -EINVAL;\\n    }\\n\\n    if (mtreg < 31U) {\\n        mtreg = 31U;\\n    } else if (mtreg > 254U) {\\n        mtreg = 254U;\\n    }\\n\\n    hi = (uint8_t)(BH1750_CMD_MT_HI | ((mtreg >> 5) & 0x07U));\\n    lo = (uint8_t)(BH1750_CMD_MT_LO | (mtreg & 0x1FU));\\n\\n    ret = bh1750_i2c_write(dev, &hi, 1U);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n\\n    ret = bh1750_i2c_write(dev, &lo, 1U);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n\\n    return 0;\\n}\\n\\nint bh1750_read_illuminance(bh1750_dev_t *dev, int32_t *raw)\\n{\\n    uint8_t buf[2];\\n    int ret;\\n    uint16_t sample;\\n\\n    if (dev == NULL || raw == NULL) {\\n        return -EINVAL;\\n    }\\n\\n    ret = bh1750_i2c_write(dev, (const uint8_t[]){ BH1750_CMD_CONT_HRES }, 1U);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n\\n    ret = bh1750_i2c_read(dev, buf, 2U);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n\\n    sample = (uint16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);\\n    *raw = (int32_t)sample;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "ef6c99638bcc019c"
+}

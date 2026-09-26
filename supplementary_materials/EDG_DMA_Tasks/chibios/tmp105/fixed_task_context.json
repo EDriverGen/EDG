@@ -1,0 +1,359 @@
+{
+  "task_package_path": "EDG_DMA_Tasks/chibios/tmp105/task_package.json",
+  "task_package": {
+    "package_id": "chibios_generic_hal__tmp105__i2c1_dma",
+    "platform_base_context": "EDG_DMA_Tasks/chibios/tmp105/platform_base_context.json",
+    "connection_binding_context": "EDG_DMA_Tasks/chibios/tmp105/connection_binding_context.json",
+    "device_attachment_context": "EDG_DMA_Tasks/chibios/tmp105/device_attachment_context.json",
+    "reference_driver_root": "DriverGen/data/references/tmp105/chibios",
+    "device_ir": "EDG_DMA_Tasks/chibios/tmp105/device_ir.json",
+    "dma_requirements": "EDG_DMA_Tasks/chibios/tmp105/dma_requirements.json",
+    "evaluation_config": "EDG_DMA_Tasks/chibios/tmp105/evaluation_config.json",
+    "mode": "dma",
+    "notes": [
+      "TMP105 on chibios: DMA payload transfers on the original hardware connection.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use I2C DMA for the complete two-byte temperature register."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c"
+    ],
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "chibios_generic_hal",
+        "rtos": "chibios",
+        "rtos_bundle": "chibios",
+        "board": "STM32F103RB-NUCLEO64",
+        "board_alias": "chibios_f103rb",
+        "integration": "chibios_hal_driver_layer",
+        "integration_style": "chibios_hal_plus_rt_kernel",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "chibios_generic_hal_i2c1_dma",
+        "platform_id": "chibios_generic_hal",
+        "connection_type": "i2c",
+        "mode": "dma",
+        "bus_instance": "I2CD1",
+        "bus_instance_kind": "hal_driver_instance",
+        "bus_symbol": "I2CD1",
+        "backend": "ChibiOS STM32F1 I2Cv1 HAL DMA",
+        "address_mode": "7-bit",
+        "fixed_attachment": {},
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "tmp105",
+        "attachment_type": "i2c_sensor",
+        "required_bus_type": "i2c",
+        "address_mode": "7-bit",
+        "addressing": {
+          "default": "0x48",
+          "alternates": [
+            "0x49",
+            "0x4A",
+            "0x4B"
+          ],
+          "selection_rule": "A0/A1 select one of the documented TMP105 addresses."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "Minimal driver reads the temperature register directly in polling mode."
+          ]
+        },
+        "optional_attachment": {
+          "alert_pin": "optional",
+          "address_select_pins": [
+            "A0",
+            "A1"
+          ]
+        },
+        "default_overrides": {
+          "bus_instance": "I2CD1",
+          "irq": "dma_completion",
+          "dma": "required",
+          "reset_gpio": null,
+          "power_gpio": null,
+          "mode": "dma",
+          "device_irq": "absent"
+        },
+        "protocol_hints": {
+          "transfer_mode": "dma"
+        }
+      }
+    }
+  },
+  "platform_base_context": {
+    "platform_id": "chibios_generic_hal",
+    "board": "STM32F103RB-NUCLEO64",
+    "board_alias": "chibios_f103rb",
+    "rtos": "chibios",
+    "rtos_bundle": "chibios",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c"
+      ],
+      "available_instances": {
+        "i2c": [
+          "I2CD1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "available_for_dma_completion",
+      "dma": "available_for_selected_connection"
+    },
+    "notes": [
+      "DMA task on the original STM32F103RB-NUCLEO64 target and stm32f103rb MCU.",
+      "Use the selected existing RTOS/BSP/HAL backend and preserve the original bus connection."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "chibios_generic_hal_i2c1_dma",
+    "platform_id": "chibios_generic_hal",
+    "connection_type": "i2c",
+    "mode": "dma",
+    "bus_instance": "I2CD1",
+    "bus_instance_kind": "hal_driver_instance",
+    "bus_symbol": "I2CD1",
+    "backend": "ChibiOS STM32F1 I2Cv1 HAL DMA",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Use the original ST_NUCLEO64_F103RB board and I2CD1.",
+      "Enable the selected STM32 HAL peripheral, its existing DMA channel configuration, and IRQ/completion support.",
+      "Use the HAL completion and timeout conventions before exposing the returned buffer.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use I2C DMA for the complete two-byte temperature register."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c"
+    ],
+    "dma": "required",
+    "completion_irq": "required",
+    "helper_usage_patterns": [],
+    "dma_requirements": {
+      "task_package_id": "chibios_generic_hal__tmp105__i2c1_dma",
+      "mode": "dma",
+      "physical_bus": "i2c",
+      "backend": "ChibiOS STM32F1 I2Cv1 HAL DMA",
+      "access_pattern": "rtos_bus_dma",
+      "candidate_transfer_apis": [
+        "i2cMasterTransmitTimeout",
+        "i2cMasterReceiveTimeout"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 6,
+        "rx": 7
+      },
+      "minimum_core_payload_bytes": 1,
+      "configuration_requirements": [
+        "Use the original ST_NUCLEO64_F103RB board and I2CD1.",
+        "Enable the selected STM32 HAL peripheral, its existing DMA channel configuration, and IRQ/completion support.",
+        "Use the HAL completion and timeout conventions before exposing the returned buffer."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use I2C DMA for the complete two-byte temperature register."
+      ],
+      "device_scenarios": [
+        "Retain register selection.",
+        "Decode signed and fractional values after completion."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c"
+      ]
+    }
+  },
+  "device_attachment_context": {
+    "device_id": "tmp105",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B"
+      ],
+      "selection_rule": "A0/A1 select one of the documented TMP105 addresses."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver reads the temperature register directly in polling mode."
+      ]
+    },
+    "optional_attachment": {
+      "alert_pin": "optional",
+      "address_select_pins": [
+        "A0",
+        "A1"
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": "I2CD1",
+      "irq": "dma_completion",
+      "dma": "required",
+      "reset_gpio": null,
+      "power_gpio": null,
+      "mode": "dma",
+      "device_irq": "absent"
+    },
+    "notes": [
+      "Use I2C DMA for the complete two-byte temperature register.",
+      "Preserve the original device protocol, addressing, units, and hardware attachment."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/tmp105",
+      "DriverGen/data/references/tmp105/*/*_ref.h"
+    ],
+    "protocol_hints": {
+      "transfer_mode": "dma"
+    }
+  },
+  "legacy_board_context": {
+    "task_package_id": "chibios_generic_hal__tmp105__i2c1_dma",
+    "rtos": "chibios",
+    "rtos_bundle": "chibios",
+    "board": "STM32F103RB-NUCLEO64",
+    "board_alias": "chibios_f103rb",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "i2c",
+    "bus_instance": "I2CD1",
+    "bus_instance_kind": "hal_driver_instance",
+    "bus_symbol": "I2CD1",
+    "bus_backend": "ChibiOS STM32F1 I2Cv1 HAL DMA",
+    "address_mode": "7-bit",
+    "mode": "dma",
+    "irq": "dma_completion",
+    "dma": "required",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {},
+    "device_attachment_context_id": "tmp105",
+    "device_addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B"
+      ],
+      "selection_rule": "A0/A1 select one of the documented TMP105 addresses."
+    },
+    "device_irq": "absent",
+    "dma_requirements": {
+      "task_package_id": "chibios_generic_hal__tmp105__i2c1_dma",
+      "mode": "dma",
+      "physical_bus": "i2c",
+      "backend": "ChibiOS STM32F1 I2Cv1 HAL DMA",
+      "access_pattern": "rtos_bus_dma",
+      "candidate_transfer_apis": [
+        "i2cMasterTransmitTimeout",
+        "i2cMasterReceiveTimeout"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 6,
+        "rx": 7
+      },
+      "minimum_core_payload_bytes": 1,
+      "configuration_requirements": [
+        "Use the original ST_NUCLEO64_F103RB board and I2CD1.",
+        "Enable the selected STM32 HAL peripheral, its existing DMA channel configuration, and IRQ/completion support.",
+        "Use the HAL completion and timeout conventions before exposing the returned buffer."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use I2C DMA for the complete two-byte temperature register."
+      ],
+      "device_scenarios": [
+        "Retain register selection.",
+        "Decode signed and fractional values after completion."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c"
+      ]
+    },
+    "source_evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c"
+    ]
+  }
+}

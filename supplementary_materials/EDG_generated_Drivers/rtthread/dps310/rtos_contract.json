@@ -1,0 +1,643 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "dps310",
+  "rtos": "rtthread",
+  "board": "stm32f103rb",
+  "bus_type": "i2c",
+  "connection": {
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_symbol": "i2c1",
+    "address_mode": "7-bit",
+    "backend": "rt-thread i2c bus device / local bsp implementation"
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "rt_thread_mdelay"
+    ],
+    "error_symbols": [
+      "rt_err_t"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "rt_i2c_bus_device_find",
+      "rt_i2c_transfer"
+    ],
+    "bus_api_signatures": {
+      "rt_i2c_bus_device_find": "struct rt_i2c_bus_device rt_i2c_bus_device_find(const char *bus_name)",
+      "rt_i2c_transfer": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)"
+    },
+    "bus_helper_types": [
+      "struct rt_i2c_bus_device_ops",
+      "rt_ssize_t",
+      "rt_i2c_msg"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "bus_instance": "i2c1",
+    "bus_symbol": "i2c1",
+    "include_headers": [],
+    "fixed_attachment": {},
+    "required_helpers": [
+      "rt_thread_mdelay"
+    ],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "i2c1",
+        "fields": {
+          "bus_instance": "i2c1",
+          "bus_symbol": "i2c1",
+          "backend": "rt-thread i2c bus device / local bsp implementation",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "dps310",
+    "required_bus_type": "i2c",
+    "addressing": {
+      "default": "0x77",
+      "alternates": [
+        "0x76"
+      ],
+      "selection_rule": "SDO/address-select pin changes the 7-bit I2C address."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver uses pure polling and does not require an interrupt pin."
+      ]
+    },
+    "optional_attachment": {
+      "sdo_addr_select": "optional",
+      "int_pin": "optional"
+    }
+  },
+  "api_bindings": {
+    "i2c.acquire_or_bind": {
+      "symbol": "rt_i2c_bus_device_find",
+      "kind": "function",
+      "signature": "struct rt_i2c_bus_device rt_i2c_bus_device_find(const char *bus_name)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.key_types": {
+      "symbol": "rt_i2c_bus_device_ops",
+      "kind": "struct",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.6,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_bit_ops.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.read": {
+      "symbol": "rt_i2c_transfer",
+      "kind": "function",
+      "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.transfer": {
+      "symbol": "rt_i2c_transfer",
+      "kind": "function",
+      "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.write": {
+      "symbol": "rt_i2c_transfer",
+      "kind": "function",
+      "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "rt_thread_mdelay",
+      "kind": "function",
+      "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_thread_mdelay": {
+      "symbol": "rt_thread_mdelay",
+      "kind": "function",
+      "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x77",
+            "description": "Default I2C address when SDO pin is left floating or pulled-up to VDDIO",
+            "is_default": true
+          },
+          {
+            "address": "0x76",
+            "description": "Alternate I2C address when SDO pin is pulled-down to GND",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x77",
+              "description": "Default I2C address when SDO pin is left floating or pulled-up to VDDIO",
+              "is_default": true
+            },
+            {
+              "address": "0x76",
+              "description": "Alternate I2C address when SDO pin is pulled-down to GND",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x77",
+          "alternates": [
+            "0x76"
+          ],
+          "selection_rule": "SDO/address-select pin changes the 7-bit I2C address."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "rt_ssize_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "rt_i2c_transfer",
+          "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "rt_i2c_msg",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "rt_i2c_transfer",
+          "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::src/thread.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "rt_thread_mdelay",
+          "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "i2c1",
+        "backend": "rt-thread i2c bus device / local bsp implementation",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x77",
+            "description": "Default I2C address when SDO pin is left floating or pulled-up to VDDIO",
+            "is_default": true
+          },
+          {
+            "address": "0x76",
+            "description": "Alternate I2C address when SDO pin is pulled-down to GND",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x77",
+              "description": "Default I2C address when SDO pin is left floating or pulled-up to VDDIO",
+              "is_default": true
+            },
+            {
+              "address": "0x76",
+              "description": "Alternate I2C address when SDO pin is pulled-down to GND",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x77",
+          "alternates": [
+            "0x76"
+          ],
+          "selection_rule": "SDO/address-select pin changes the 7-bit I2C address."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "i2c1",
+        "backend": "rt-thread i2c bus device / local bsp implementation",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "rt_ssize_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "rt_i2c_transfer",
+          "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "rt_i2c_msg",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "rt_i2c_transfer",
+          "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::src/thread.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "rt_thread_mdelay",
+          "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "rt_i2c_transfer",
+    "rt_thread_mdelay",
+    "rt_i2c_bus_device_find",
+    "rt_i2c_bus_device_ops"
+  ],
+  "allowed_symbol_provenance": {
+    "rt_i2c_transfer": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_thread_mdelay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_i2c_bus_device_find": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_core.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_i2c_bus_device_ops": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::components/drivers/i2c/dev_i2c_bit_ops.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "dps310_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (3 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "dps310_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x00"
+            ],
+            "length": 3,
+            "pointer_target": "PRS_B2",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "rt_i2c_transfer",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x03"
+            ],
+            "length": 3,
+            "pointer_target": "TMP_B2",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "rt_i2c_transfer",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.9,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (2 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 10/10 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/i2c/dev_i2c_core.c",
+      "kind": "declaration",
+      "for_symbol": "rt_i2c_transfer",
+      "slot_id": "i2c.read"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/i2c/dev_i2c_core.c",
+      "kind": "declaration",
+      "for_symbol": "rt_i2c_transfer",
+      "slot_id": "i2c.transfer"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/i2c/dev_i2c_core.c",
+      "kind": "declaration",
+      "for_symbol": "rt_i2c_transfer",
+      "slot_id": "i2c.write"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "src/thread.c",
+      "kind": "declaration",
+      "for_symbol": "rt_thread_mdelay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "src/thread.c",
+      "kind": "declaration",
+      "for_symbol": "rt_thread_mdelay",
+      "slot_id": "task_helper.rt_thread_mdelay"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/i2c/dev_i2c_core.c",
+      "kind": "declaration",
+      "for_symbol": "rt_i2c_bus_device_find",
+      "slot_id": "i2c.acquire_or_bind"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/i2c/dev_i2c_bit_ops.c",
+      "kind": "declaration",
+      "for_symbol": "rt_i2c_bus_device_ops",
+      "slot_id": "i2c.key_types"
+    }
+  ],
+  "requires_human": [
+    "i2c.addressing",
+    "integration.bus_instance_binding"
+  ]
+}

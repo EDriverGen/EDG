@@ -1,0 +1,1133 @@
+{
+  "split_plan_enabled": true,
+  "success": false,
+  "final_attempt": 3,
+  "total_time_s": 165.283,
+  "device_id": "mcp3008",
+  "rtos_id": "freertos",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "layer_failed": "probe",
+  "plan_summary": {
+    "plan_hash": "5caf90a944afcf23",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 3
+  },
+  "final_elf_path": "<RUN_DIR>/attempts/002/stage/out/mcp3008_freertos.elf",
+  "plan_attempts": [
+    {
+      "attempt": 1,
+      "success": true,
+      "total_time_s": 8.803,
+      "plan_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "freertos",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "plan_hash": "5caf90a944afcf23",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 3,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 8.748
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 2,
+        "summary": "3 stim; 2 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: bytes=[0x00, 0x7F, 0xFF] no interp = 511.0"
+            ]
+          },
+          {
+            "name": "ch1_zero",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "ch=ch1:big_endian_u24=0",
+            "warnings": []
+          },
+          {
+            "name": "ch0_full_scale",
+            "verdict": "consistent_l2",
+            "layer": "L2",
+            "evidence": "ch=ch0:derivation `((0xFF & 0x03) << 8) | 0xFF` -> 1023 == expected 1023.0",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH0"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ]
+      },
+      "validation_errors": [
+        "test_plan multi_channel stimulus 'ch0_mid_scale' is only partially checkable: ch=ch0: bytes=[0x00, 0x7F, 0xFF] no interp = 511.0. Every expected_channels entry must have matching mock_preload data and an executable derivation for this same stimulus; do not declare placeholder channels as 0 or 'not read'."
+      ]
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "layer_failed": "link",
+      "success": false,
+      "total_time_s": 4.152,
+      "bundle_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "freertos",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "header_chars": 363,
+        "source_chars": 870,
+        "plan_hash": "5caf90a944afcf23",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 3,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 3.735
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 2,
+        "summary": "3 stim; 2 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: bytes=[0x00, 0x7F, 0xFF] no interp = 511.0"
+            ]
+          },
+          {
+            "name": "ch1_zero",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "ch=ch1:big_endian_u24=0",
+            "warnings": []
+          },
+          {
+            "name": "ch0_full_scale",
+            "verdict": "consistent_l2",
+            "layer": "L2",
+            "evidence": "ch=ch0:derivation `((0xFF & 0x03) << 8) | 0xFF` -> 1023 == expected 1023.0",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH0"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "mcp3008",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "source_chars": 2404,
+        "warnings": []
+      },
+      "link": {
+        "success": false,
+        "errors": 3,
+        "warnings": 0,
+        "elf_path": null,
+        "text_bytes": 0,
+        "data_bytes": 0,
+        "bss_bytes": 0
+      },
+      "feedback_chars": 3105
+    },
+    {
+      "attempt": 2,
+      "layer_failed": "probe",
+      "success": false,
+      "total_time_s": 76.46,
+      "bundle_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "freertos",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "header_chars": 272,
+        "source_chars": 707,
+        "plan_hash": "5caf90a944afcf23",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 3,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 3.438
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 2,
+        "summary": "3 stim; 2 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: bytes=[0x00, 0x7F, 0xFF] no interp = 511.0"
+            ]
+          },
+          {
+            "name": "ch1_zero",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "ch=ch1:big_endian_u24=0",
+            "warnings": []
+          },
+          {
+            "name": "ch0_full_scale",
+            "verdict": "consistent_l2",
+            "layer": "L2",
+            "evidence": "ch=ch0:derivation `((0xFF & 0x03) << 8) | 0xFF` -> 1023 == expected 1023.0",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH0"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "mcp3008",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "source_chars": 2404,
+        "warnings": []
+      },
+      "link": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0,
+        "elf_path": "<RUN_DIR>/attempts/002/stage/out/mcp3008_freertos.elf",
+        "text_bytes": 7283,
+        "data_bytes": 96,
+        "bss_bytes": 64
+      },
+      "probe": {
+        "total": 3,
+        "passed": 1,
+        "expectation_failures": 2,
+        "outcomes": [
+          {
+            "stimulus_name": "ch0_mid_scale",
+            "boot_detected": true,
+            "test_done": true,
+            "result_pass": true,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": 0.0,
+            "read_channels": {
+              "ch0": 0.0,
+              "ch1": 0.0
+            },
+            "mem_bytes": [],
+            "mem_probe_addr": null,
+            "mem_probe_len": null,
+            "memory_size_bytes": null,
+            "memory_page_bytes": null,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/002/stage/probe/spi_trace_ch0_mid_scale.jsonl",
+            "output_lines": [
+              "20:21:42.7104 [INFO] usart2: [host: 0.67s (+0.67s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:21:42.7600 [INFO] usart2: [host: 0.72s (+49.31ms)|virt: 0s (+0s)] read_ch_ch0=0",
+              "20:21:42.7601 [INFO] usart2: [host:  0.72s (+0.11ms)|virt: 0s (+0s)] read_ch_ch1=0",
+              "20:21:42.7602 [INFO] usart2: [host:    0.72s (+79?s)|virt: 0s (+0s)] read_raw=0",
+              "20:21:42.7602 [INFO] usart2: [host:    0.72s (+68?s)|virt: 0s (+0s)] RESULT: PASS",
+              "20:21:42.7603 [INFO] usart2: [host:    0.72s (+92?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+            ],
+            "error": "",
+            "duration_s": 24.13470458984375,
+            "renode_exit": 0,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "command",
+            "bus_kind": "spi"
+          },
+          {
+            "stimulus_name": "ch1_zero",
+            "boot_detected": true,
+            "test_done": true,
+            "result_pass": true,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": 0.0,
+            "read_channels": {
+              "ch0": 0.0,
+              "ch1": 0.0
+            },
+            "mem_bytes": [],
+            "mem_probe_addr": null,
+            "mem_probe_len": null,
+            "memory_size_bytes": null,
+            "memory_page_bytes": null,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/002/stage/probe/spi_trace_ch1_zero.jsonl",
+            "output_lines": [
+              "20:22:06.9462 [INFO] usart2: [host: 0.65s (+0.65s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:22:06.9950 [INFO] usart2: [host: 0.7s (+48.45ms)|virt: 0s (+0s)] read_ch_ch0=0",
+              "20:22:06.9952 [INFO] usart2: [host:  0.7s (+0.11ms)|virt: 0s (+0s)] read_ch_ch1=0",
+              "20:22:06.9952 [INFO] usart2: [host:    0.7s (+81?s)|virt: 0s (+0s)] read_raw=0",
+              "20:22:06.9952 [INFO] usart2: [host:    0.7s (+64?s)|virt: 0s (+0s)] RESULT: PASS",
+              "20:22:06.9953 [INFO] usart2: [host:    0.7s (+90?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+            ],
+            "error": "",
+            "duration_s": 24.30401039123535,
+            "renode_exit": 0,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "command",
+            "bus_kind": "spi"
+          },
+          {
+            "stimulus_name": "ch0_full_scale",
+            "boot_detected": true,
+            "test_done": true,
+            "result_pass": true,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": 0.0,
+            "read_channels": {
+              "ch0": 0.0,
+              "ch1": 0.0
+            },
+            "mem_bytes": [],
+            "mem_probe_addr": null,
+            "mem_probe_len": null,
+            "memory_size_bytes": null,
+            "memory_page_bytes": null,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/002/stage/probe/spi_trace_ch0_full_scale.jsonl",
+            "output_lines": [
+              "20:22:31.0403 [INFO] usart2: [host: 0.62s (+0.62s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:22:31.0904 [INFO] usart2: [host: 0.67s (+49.42ms)|virt: 0s (+0s)] read_ch_ch0=0",
+              "20:22:31.0905 [INFO] usart2: [host:  0.67s (+0.12ms)|virt: 0s (+0s)] read_ch_ch1=0",
+              "20:22:31.0905 [INFO] usart2: [host:    0.67s (+78?s)|virt: 0s (+0s)] read_raw=0",
+              "20:22:31.0905 [INFO] usart2: [host:    0.67s (+64?s)|virt: 0s (+0s)] RESULT: PASS",
+              "20:22:31.0906 [INFO] usart2: [host:    0.68s (+90?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+            ],
+            "error": "",
+            "duration_s": 24.08325743675232,
+            "renode_exit": 0,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "command",
+            "bus_kind": "spi"
+          }
+        ]
+      },
+      "feedback_chars": 3481
+    },
+    {
+      "attempt": 3,
+      "layer_failed": "probe",
+      "success": false,
+      "total_time_s": 75.85,
+      "bundle_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "freertos",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "header_chars": 272,
+        "source_chars": 697,
+        "plan_hash": "5caf90a944afcf23",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 3,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 3.204
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 2,
+        "summary": "3 stim; 2 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: bytes=[0x00, 0x7F, 0xFF] no interp = 511.0"
+            ]
+          },
+          {
+            "name": "ch1_zero",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "ch=ch1:big_endian_u24=0",
+            "warnings": []
+          },
+          {
+            "name": "ch0_full_scale",
+            "verdict": "consistent_l2",
+            "layer": "L2",
+            "evidence": "ch=ch0:derivation `((0xFF & 0x03) << 8) | 0xFF` -> 1023 == expected 1023.0",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write for CH0"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH0"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel: direct read read"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel: write for CH1"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "mcp3008",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "source_chars": 2404,
+        "warnings": []
+      },
+      "link": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0,
+        "elf_path": "<RUN_DIR>/attempts/003/stage/out/mcp3008_freertos.elf",
+        "text_bytes": 7283,
+        "data_bytes": 96,
+        "bss_bytes": 64
+      },
+      "probe": {
+        "total": 3,
+        "passed": 1,
+        "expectation_failures": 2,
+        "outcomes": [
+          {
+            "stimulus_name": "ch0_mid_scale",
+            "boot_detected": true,
+            "test_done": true,
+            "result_pass": true,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": 0.0,
+            "read_channels": {
+              "ch0": 0.0,
+              "ch1": 0.0
+            },
+            "mem_bytes": [],
+            "mem_probe_addr": null,
+            "mem_probe_len": null,
+            "memory_size_bytes": null,
+            "memory_page_bytes": null,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/003/stage/probe/spi_trace_ch0_mid_scale.jsonl",
+            "output_lines": [
+              "20:22:58.7352 [INFO] usart2: [host: 0.63s (+0.63s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:22:58.7853 [INFO] usart2: [host: 0.68s (+49.48ms)|virt: 0s (+0s)] read_ch_ch0=0",
+              "20:22:58.7854 [INFO] usart2: [host:   0.68s (+0.1ms)|virt: 0s (+0s)] read_ch_ch1=0",
+              "20:22:58.7854 [INFO] usart2: [host:    0.68s (+79?s)|virt: 0s (+0s)] read_raw=0",
+              "20:22:58.7855 [INFO] usart2: [host:    0.68s (+64?s)|virt: 0s (+0s)] RESULT: PASS",
+              "20:22:58.7856 [INFO] usart2: [host:    0.68s (+89?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+            ],
+            "error": "",
+            "duration_s": 24.026305198669434,
+            "renode_exit": 0,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "command",
+            "bus_kind": "spi"
+          },
+          {
+            "stimulus_name": "ch1_zero",
+            "boot_detected": true,
+            "test_done": true,
+            "result_pass": true,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": 0.0,
+            "read_channels": {
+              "ch0": 0.0,
+              "ch1": 0.0
+            },
+            "mem_bytes": [],
+            "mem_probe_addr": null,
+            "mem_probe_len": null,
+            "memory_size_bytes": null,
+            "memory_page_bytes": null,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/003/stage/probe/spi_trace_ch1_zero.jsonl",
+            "output_lines": [
+              "20:23:22.7904 [INFO] usart2: [host: 0.63s (+0.63s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:23:22.8361 [INFO] usart2: [host: 0.68s (+45.26ms)|virt: 0s (+0s)] read_ch_ch0=0",
+              "20:23:22.8362 [INFO] usart2: [host:  0.68s (+0.11ms)|virt: 0s (+0s)] read_ch_ch1=0",
+              "20:23:22.8363 [INFO] usart2: [host:    0.68s (+68?s)|virt: 0s (+0s)] read_raw=0",
+              "20:23:22.8363 [INFO] usart2: [host:    0.68s (+62?s)|virt: 0s (+0s)] RESULT: PASS",
+              "20:23:22.8363 [INFO] usart2: [host:    0.68s (+85?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+            ],
+            "error": "",
+            "duration_s": 24.076438426971436,
+            "renode_exit": 0,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "command",
+            "bus_kind": "spi"
+          },
+          {
+            "stimulus_name": "ch0_full_scale",
+            "boot_detected": true,
+            "test_done": true,
+            "result_pass": true,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": 0.0,
+            "read_channels": {
+              "ch0": 0.0,
+              "ch1": 0.0
+            },
+            "mem_bytes": [],
+            "mem_probe_addr": null,
+            "mem_probe_len": null,
+            "memory_size_bytes": null,
+            "memory_page_bytes": null,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/003/stage/probe/spi_trace_ch0_full_scale.jsonl",
+            "output_lines": [
+              "20:23:46.8664 [INFO] usart2: [host: 0.65s (+0.65s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:23:46.9133 [INFO] usart2: [host: 0.7s (+46.48ms)|virt: 0s (+0s)] read_ch_ch0=0",
+              "20:23:46.9159 [INFO] usart2: [host:  0.7s (+0.13ms)|virt: 0s (+0s)] read_ch_ch1=0",
+              "20:23:46.9159 [INFO] usart2: [host:  0.7s (+2.55ms)|virt: 0s (+0s)] read_raw=0",
+              "20:23:46.9160 [INFO] usart2: [host:    0.7s (+81?s)|virt: 0s (+0s)] RESULT: PASS",
+              "20:23:46.9162 [INFO] usart2: [host:  0.7s (+0.18ms)|virt: 0s (+0s)] DRIVER_TEST DONE"
+            ],
+            "error": "",
+            "duration_s": 24.04812502861023,
+            "renode_exit": 0,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "command",
+            "bus_kind": "spi"
+          }
+        ]
+      },
+      "feedback_chars": 3481
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "byte-order",
+      "statement": "raw reads decode as big endian u24",
+      "source_attempt": 1,
+      "evidence": "stim `ch1_zero` matched big_endian_u24"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"freertos.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"mcp3008.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"stm32f1xx_hal.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include <stdint.h>` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=read_cycle requires write <read> to addr spi1",
+      "source_attempt": 1,
+      "evidence": "operation_flows[0].steps[1]"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=read_cycle requires write [0x01, 0x80, 0x00] to addr spi1",
+      "source_attempt": 1,
+      "evidence": "operation_flows[0].steps[0]"
+    },
+    {
+      "kind": "runtime-pass",
+      "statement": "stim `ch1_zero` passed on Renode (multi_channel match)",
+      "source_attempt": 2,
+      "evidence": "Stage 6 result_pass=True, test_done=True"
+    }
+  ]
+}

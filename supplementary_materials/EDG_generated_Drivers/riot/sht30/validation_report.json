@@ -1,0 +1,482 @@
+{
+  "job_id": "riot_generic_periph__sht30__i2c1_polling__deepseek_deepseek-v4-flash",
+  "device_id": "sht30",
+  "rtos_id": "riot",
+  "provider": "deepseek",
+  "run_dir": "<RUN_DIR>",
+  "pipeline_version": "trace-rtos-v4",
+  "context_mode": "v2-mrse",
+  "reusable_inputs": null,
+  "checks": {
+    "rtos_evidence_validation": {
+      "passed_gates": [
+        "root_coverage",
+        "symbol_existence",
+        "root_role",
+        "example_consistency",
+        "no_stub_authority",
+        "cache_provenance"
+      ],
+      "failed_gates": [
+        "slot_coverage"
+      ],
+      "warnings": [
+        "mcu_affinity"
+      ],
+      "gate_results": [
+        {
+          "gate_id": "root_coverage",
+          "passed": true,
+          "severity": "info",
+          "message": "rtos 'riot' is integrated; n_roots=1 (no minimum)",
+          "evidence": {
+            "rtos_id": "riot",
+            "n_roots": 1
+          }
+        },
+        {
+          "gate_id": "slot_coverage",
+          "passed": false,
+          "severity": "error",
+          "message": "1 required slot(s) uncovered: ['i2c.acquire_or_bind']",
+          "evidence": {
+            "missing_required": [
+              "i2c.acquire_or_bind"
+            ],
+            "non_symbol_fulfillments": [
+              "i2c.addressing",
+              "i2c.key_types",
+              "integration.bus_instance_binding",
+              "runtime.error_status"
+            ]
+          }
+        },
+        {
+          "gate_id": "symbol_existence",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings traced to parsed source",
+          "evidence": {
+            "missing": []
+          }
+        },
+        {
+          "gate_id": "root_role",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings come from authoritative roles",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "mcu_affinity",
+          "passed": false,
+          "severity": "warning",
+          "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (6 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+          "evidence": {
+            "other_paths_sample": [
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::sys/include/xtimer.h",
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::core/include/sched.h"
+            ]
+          }
+        },
+        {
+          "gate_id": "example_consistency",
+          "passed": true,
+          "severity": "info",
+          "message": "no exemplar files referenced; gate skipped",
+          "evidence": {}
+        },
+        {
+          "gate_id": "no_stub_authority",
+          "passed": true,
+          "severity": "info",
+          "message": "no stub source_kind in current bindings (or all marked link-only)",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "cache_provenance",
+          "passed": true,
+          "severity": "info",
+          "message": "all cache-provenance fields present",
+          "evidence": {
+            "missing": []
+          }
+        }
+      ]
+    },
+    "ir": {
+      "ok": false,
+      "issues": [
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_8",
+          "message": "Evidence snippet not found: sht30 page 13 -> Heater Disabled: 0x3066"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_11",
+          "message": "Evidence snippet not found: sht30 page 14 -> T[°C] = -45 + 175 * ST / (2^16 - 1)"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_12",
+          "message": "Evidence snippet not found: sht30 page 14 -> RH[%] = 100 * SRH / (2^16 - 1)"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_14",
+          "message": "Evidence snippet not found: sht30 page 13 -> CRC-8, polynomial 0x31, initialization 0xFF, reflect input false, reflect output false, final XOR 0x00"
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    },
+    "ir_flow_risk": {
+      "ok": true,
+      "issues": [
+        {
+          "level": "warning",
+          "check_id": "device_ir.flow_risk.audit_missing",
+          "message": "No device_ir_flow_audit.json receipt found; flow readiness is not fully audited."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.flow_risk.completion_condition.fetch_data_periodic",
+          "message": "flow starts or triggers a conversion/measurement and then reads data, while the datasheet context describes conversion time, data-ready, busy, or ready signalling. Add a concrete delay/poll_until/wait_until_ready/wait_signal step between trigger and result read, or mark the flow requires_human if the supplied content lacks the exact condition."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.flow_risk.completion_condition.read_status_register",
+          "message": "flow starts or triggers a conversion/measurement and then reads data, while the datasheet context describes conversion time, data-ready, busy, or ready signalling. Add a concrete delay/poll_until/wait_until_ready/wait_signal step between trigger and result read, or mark the flow requires_human if the supplied content lacks the exact condition."
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    }
+  },
+  "all_checks_passed": false,
+  "codegen": {
+    "version": "v2",
+    "success": false,
+    "total_time_s": 38.427,
+    "final_attempt": 3,
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "runtime_path": "renode_i2c",
+    "slave_kind": "i2c_register_slave",
+    "spi_sub_mode": "",
+    "layer_failed": "syntax",
+    "final_elf_path": null,
+    "files_written": {
+      "sht30.h": 301,
+      "sht30.c": 1917,
+      "sht30_eval_adapter.c": 2246
+    },
+    "probe": {
+      "total": 0,
+      "pass": 0,
+      "fail": 0,
+      "error": 0
+    },
+    "invariants_count": 11,
+    "attempts": [
+      {
+        "attempt": 1,
+        "layer_failed": "syntax",
+        "success": false,
+        "total_time_s": 7.315,
+        "bundle_summary": {
+          "device_id": "sht30",
+          "rtos_id": "riot",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 301,
+          "source_chars": 1709,
+          "plan_hash": "845621be57dc5ad4",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c"
+          ],
+          "stimuli_count": 2,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 6.953
+        },
+        "syntax": {
+          "success": false,
+          "errors": 1,
+          "warnings": 0
+        },
+        "feedback_chars": 855
+      },
+      {
+        "attempt": 2,
+        "layer_failed": "link",
+        "success": false,
+        "total_time_s": 8.305,
+        "bundle_summary": {
+          "device_id": "sht30",
+          "rtos_id": "riot",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 301,
+          "source_chars": 1917,
+          "plan_hash": "845621be57dc5ad4",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c"
+          ],
+          "stimuli_count": 2,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 7.714
+        },
+        "syntax": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0
+        },
+        "consistency": {
+          "overall": "all_consistent",
+          "ok": true,
+          "inconsistent_count": 0,
+          "llm_only_count": 0,
+          "consistent_count": 2,
+          "summary": "2 stim; 2 L1/L2",
+          "stimuli": [
+            {
+              "name": "mechanical_packed_direct_read_1",
+              "verdict": "consistent_l2",
+              "layer": "L2",
+              "evidence": "ch=temp:derivation `((((0x66 << 8) | 0x66) * 175000) // 65535) - 45000` -> 25000 == expected 25000.0; ch=humidity:derivation `((((0x80 << 8) | 0x00) * 100000) // 65535)` -> 50000 == expected 50000.0",
+              "warnings": []
+            },
+            {
+              "name": "mechanical_packed_direct_read_2",
+              "verdict": "consistent_l2",
+              "layer": "L2",
+              "evidence": "ch=temp:derivation `((((0x80 << 8) | 0x00) * 175000) // 65535) - 45000` -> 42501 == expected 42501.0; ch=humidity:derivation `((0x00 << 8) | 0x00)` -> 0 == expected 0.0",
+              "warnings": []
+            }
+          ]
+        },
+        "coverage": {
+          "ok": true,
+          "superset": true,
+          "covered_count": 4,
+          "missing_count": 0,
+          "llm_extras_count": 0,
+          "merged_count": 4,
+          "summary": "4/4 mechanical covered",
+          "covered": [
+            {
+              "mechanical": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x44",
+                "write_prefix_any_of": [
+                  [
+                    "0x24",
+                    "0x00"
+                  ]
+                ],
+                "note": "single_shot_measurement_high_no_clock_stretching: write",
+                "source": "operation_flows[0].steps[0]"
+              },
+              "llm_match": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x44",
+                "write_prefix_any_of": [
+                  [
+                    "0x24",
+                    "0x00"
+                  ]
+                ],
+                "note": "single_shot_measurement_high_no_clock_stretching: write"
+              },
+              "reason": "prefix overlap: [('0x24', '0x00')] ∈ mechanical [('0x24', '0x00')]",
+              "covered": true
+            },
+            {
+              "mechanical": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x44",
+                "write_prefix_any_of": [],
+                "note": "single_shot_measurement_high_no_clock_stretching: direct read read",
+                "source": "operation_flows[0].steps[2]",
+                "read_any": true,
+                "forbid_write_prefix": true
+              },
+              "llm_match": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x44",
+                "read_any": true,
+                "forbid_write_prefix": true,
+                "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+              },
+              "reason": "read-any match (no prefixes required)",
+              "covered": true
+            },
+            {
+              "mechanical": {
+                "phase": "init",
+                "addr_or_pin": "0x44",
+                "write_prefix_any_of": [
+                  [
+                    "0x30",
+                    "0xA2"
+                  ]
+                ],
+                "note": "soft_reset: write",
+                "source": "operation_flows[5].steps[0]"
+              },
+              "llm_match": {
+                "phase": "init",
+                "addr_or_pin": "0x44",
+                "write_prefix_any_of": [
+                  [
+                    "0x30",
+                    "0xA2"
+                  ]
+                ],
+                "note": "soft_reset"
+              },
+              "reason": "prefix overlap: [('0x30', '0xA2')] ∈ mechanical [('0x30', '0xA2')]",
+              "covered": true
+            },
+            {
+              "mechanical": {
+                "phase": "init",
+                "addr_or_pin": "0x44",
+                "write_prefix_any_of": [
+                  [
+                    "0x00",
+                    "0x06"
+                  ]
+                ],
+                "note": "general_call_reset: write",
+                "source": "operation_flows[6].steps[0]"
+              },
+              "llm_match": {
+                "phase": "init",
+                "addr_or_pin": "0x44",
+                "write_prefix_any_of": [
+                  [
+                    "0x00",
+                    "0x06"
+                  ]
+                ],
+                "note": "general_call_reset"
+              },
+              "reason": "prefix overlap: [('0x00', '0x06')] ∈ mechanical [('0x00', '0x06')]",
+              "covered": true
+            }
+          ],
+          "missing": [],
+          "llm_extras": [],
+          "merged": [
+            {
+              "phase": "init",
+              "addr_or_pin": "0x44",
+              "write_prefix_any_of": [
+                [
+                  "0x30",
+                  "0xA2"
+                ]
+              ],
+              "note": "soft_reset"
+            },
+            {
+              "phase": "init",
+              "addr_or_pin": "0x44",
+              "write_prefix_any_of": [
+                [
+                  "0x00",
+                  "0x06"
+                ]
+              ],
+              "note": "general_call_reset"
+            },
+            {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x44",
+              "write_prefix_any_of": [
+                [
+                  "0x24",
+                  "0x00"
+                ]
+              ],
+              "note": "single_shot_measurement_high_no_clock_stretching: write"
+            },
+            {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x44",
+              "read_any": true,
+              "forbid_write_prefix": true,
+              "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+            }
+          ]
+        },
+        "adapter_summary": {
+          "device_id": "sht30",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "source_chars": 2246,
+          "warnings": []
+        },
+        "link": {
+          "success": false,
+          "errors": 1,
+          "warnings": 0,
+          "elf_path": null,
+          "text_bytes": 0,
+          "data_bytes": 0,
+          "bss_bytes": 0
+        },
+        "feedback_chars": 3082
+      },
+      {
+        "attempt": 3,
+        "layer_failed": "syntax",
+        "success": false,
+        "total_time_s": 8.719,
+        "bundle_summary": {
+          "device_id": "sht30",
+          "rtos_id": "riot",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 321,
+          "source_chars": 2004,
+          "plan_hash": "845621be57dc5ad4",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c"
+          ],
+          "stimuli_count": 2,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 8.362
+        },
+        "syntax": {
+          "success": false,
+          "errors": 1,
+          "warnings": 0
+        },
+        "feedback_chars": 3268
+      }
+    ]
+  }
+}

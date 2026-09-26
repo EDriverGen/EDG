@@ -1,0 +1,567 @@
+
+## Memory Organization [pages 3-5]
+
+SERIAL CLOCK (SCL): The SCL input is used to positive edge clock data into each EEPROM device and negative edge clock data out of each device.
+
+SERIAL DATA (SDA): The SDA pin is bidirectional for serial data transfer. This pin is opendrain driven and may be wire-ORed with any number of other open-drain or open collector devices.
+
+DEVICE/ADDRESSES (A1, A0): The A1 and A0 pins are device address inputs that are hardwired or left not connected for hardware compatibility with other AT24CXX devices. When the pins are hardwired, as many as four 128K/256K devices may be addressed on a single bus system (device addressing is discussed in detail under the Device Addressing section). If the pins are left floating, the A1 and A0 pins will be internally pulled down to GND if the capacitive coupling to the circuit board V CC  plane is <3 pF. If coupling is >3 pF, Atmel recommends connecting the address pins to GND.
+
+WRITE PROTECT (WP): The write protect input, when connected to GND, allows normal write operations. When WP is connected high to V CC , all write operations to the memory are inhibited. If the pin is left floating, the WP pin will be internally pulled down to GND if the capacitive coupling to the circuit board V CC  plane is <3 pF. If coupling is >3 pF, Atmel recommends connecting the pin to GND.
+
+AT24C128/256, 128K/256K SERIAL EEPROM: The 128K/256K is internally organized as 256/512 pages of 64-bytes each. Random word addressing requires a 14/15-bit data word address.
+
+Table 2. Pin Capacitance (1) °
+
+Applicable over recommended operating range from T A  = 25 C, f = 1.0 MHz, V CC  = +1.8V.
+
+| Symbol   | Test Condition                      |   Max | Units   | Conditions   |
+|----------|-------------------------------------|-------|---------|--------------|
+| C I/O    | Input/Output Capacitance (SDA)      |     8 | pF      | V I/O = 0V   |
+| C IN     | Input Capacitance (A 0 , A 1 , SCL) |     6 | pF      | V IN = 0V    |
+
+Note: 1. This parameter is characterized and is not 100% tested.
+
+Table 3. DC Characteristics (1)
+
+Applicable over recommended operating range from: T AI  = -40 ° C to +85 ° C, V CC = +1.8V to +5.5V; T AE = -40 ° C to +125 ° C (2) , V CC  = +2.7V to +5.5V(unless otherwise noted).
+
+| Symbol   | Parameter                     | Test Condition      | Test Condition      | Min        |   Typ | Max        | Units   |
+|----------|-------------------------------|---------------------|---------------------|------------|-------|------------|---------|
+| V CC1    | Supply Voltage                |                     |                     | 1.8        |       | 3.6        | V       |
+| V CC2    | Supply Voltage                |                     |                     | 2.5        |       | 5.5        | V       |
+| V CC3    | Supply Voltage                |                     |                     | 4.5        |       | 5.5        | V       |
+| I CC1    | Supply Current                | V CC = 5.0V         | READ at 400 kHz     |            |   1.0 | 2.0        | mA      |
+| I CC2    | Supply Current                | V CC = 5.0V         | WRITE at 400 kHz    |            |   2.0 | 3.0        | mA      |
+| I SB1    | Standby Current (1.8V option) | V CC = 1.8V         | V IN = V CC or V SS |            |       | 0.2        | µA      |
+| I SB1    | Standby Current (1.8V option) | V CC = 3.6V         | V IN = V CC or V SS |            |       | 2.0        |         |
+| I SB2    | Standby Current (2.5V option) | V CC = 2.5V         | V IN = V CC or V SS |            |       | 0.5        | µA      |
+| I SB2    | Standby Current (2.5V option) | V CC = 5.5V         | V IN = V CC or V SS |            |       | 6.0        |         |
+| I SB3    | Standby Current (5.0V option) | V CC = 4.5 - 5.5V   | V IN = V CC or V SS |            |       | 6.0        | µA      |
+| I LI     | Input Leakage Current         | V IN = V CC orV SS  | V IN = V CC orV SS  |            |  0.10 | 3.0        | µA      |
+| I LO     | Output Leakage Current        | V OUT = V CC orV SS | V OUT = V CC orV SS |            |  0.05 | 3.0        | µA      |
+| V IL     | Input Low Level (1)           |                     |                     | -0.6       |       | V CC x 0.3 | V       |
+| V IH     | Input High Level (1)          |                     |                     | V CC x 0.7 |       | V CC + 0.5 | V       |
+| V OL2    | Output Low Level              | V CC = 3.0V         | I OL = 2.1 mA       |            |       | 0.4        | V       |
+| V OL1    | Output Low Level              | V CC = 1.8V         | I OL = 0.15 mA      |            |       | 0.2        | V       |
+
+Notes:
+
+1. VIL min and V IH max are reference only and are not tested.
+
+2. The AT24C128/256 bearing the process letter 'B' on the package (the mark is located in the lower right corner on the topside of the package) are approved for operation in the extended temperature range.
+
+Table 4. AC Characteristics - Industrial Temperatures
+
+Applicable over recommended operating range from T AI  = -40 ° C to +85 ° C, V CC = +1.8V to +5.5V, CL = 100 pF (unless otherwise noted). Test conditions are listed in Note 2.
+
+|               |                                                                   | 1.8-volt              | 1.8-volt              | 2.5-volt              | 2.5-volt              | 5.0-volt              | 5.0-volt              |              |
+|---------------|-------------------------------------------------------------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|-----------------------|--------------|
+| Symbol        | Parameter                                                         | Min                   | Max                   | Min                   | Max                   | Min                   | Max                   | Units        |
+| f SCL         | Clock Frequency, SCL                                              |                       | 100                   |                       | 400                   |                       | 1000                  | kHz          |
+| t LOW         | Clock Pulse Width Low                                             | 4.7                   |                       | 1.3                   |                       | 0.4                   |                       | µs           |
+| t HIGH        | Clock Pulse Width High                                            | 4.0                   |                       | 0.6                   |                       | 0.4                   |                       | µs           |
+| t AA          | Clock Low to Data Out Valid                                       | 0.1                   | 4.5                   | 0.05                  | 0.9                   | 0.05                  | 0.55                  | µs           |
+| t BUF         | Time the bus must be free before a new transmission can start (1) | 4.7                   |                       | 1.3                   |                       | 0.5                   |                       | µs           |
+| t HD.STA      | Start Hold Time                                                   | 4.0                   |                       | 0.6                   |                       | 0.25                  |                       | µs           |
+| t SU.STA      | Start Set-up Time                                                 | 4.7                   |                       | 0.6                   |                       | 0.25                  |                       | µs           |
+| t HD.DAT      | Data In Hold Time                                                 | 0                     |                       | 0                     |                       | 0                     |                       | µs           |
+| t SU.DAT      | Data In Set-up Time                                               | 200                   |                       | 100                   |                       | 100                   |                       | ns           |
+| t R           | Inputs Rise Time (1)                                              |                       | 1.0                   |                       | 0.3                   |                       | 0.3                   | µs           |
+| t F           | Inputs Fall Time (1)                                              |                       | 300                   |                       | 300                   |                       | 100                   | ns           |
+| t SU.STO      | Stop Set-up Time                                                  | 4.7                   |                       | 0.6                   |                       | 0.25                  |                       | µs           |
+| t DH          | Data Out Hold Time                                                | 100                   |                       | 50                    |                       | 50                    |                       | ns           |
+| t WR          | Write Cycle Time                                                  |                       | 20 or 5 (3)           |                       | 10 or 5 (3)           |                       | 10 or 5 (3)           | ms           |
+| Endurance (1) | 25°C, Page Mode                                                   | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | Write Cycles |
+
+
+## Read Operations [pages 11-12]
+
+Read operations are initiated the same way as write operations with the exception that the read/write select bit in the device address word is set to one. There are three read operations: current address read, random address read and sequential read.
+
+CURRENT ADDRESS READ: The internal data word address counter maintains the last address accessed during the last read or write operation, incremented by one. This address stays valid between operations as long as the chip power is maintained. The address 'roll over' during read is from the last byte of the last memory page, to the first byte of the first page.
+
+Once the device address with the read/write select bit set to one is clocked in and acknowledged by the EEPROM, the current address data word is serially clocked out. The microcontroller does not respond with an input zero but does generate a following stop condition (see Figure 10 on page 12).
+
+RANDOM READ: A random read requires a 'dummy' byte write sequence to load in the data word address. Once the device address word and data word address are clocked in and acknowledged by the EEPROM, the microcontroller must generate another start condition. The microcontroller now initiates a current address read by sending a device address with the read/write select bit high. The EEPROM acknowledges the device address and serially clocks out the data word. The microcontroller does not respond with a zero but does generate a following stop condition (see Figure 11 on page 12).
+
+SEQUENTIAL READ: Sequential reads are initiated by either a current address read or a random address read. After the microcontroller receives a data word, it responds with an acknowledge. As long as the EEPROM receives an acknowledge, it will continue to increment the data word address and serially clock out sequential data words. When the memory address limit is reached, the data word address will 'roll over' and the sequential read will continue. The sequential read operation is terminated when the microcontroller does not respond with a zero but does generate a following stop condition (see Figure 12 on page 12).
+
+Figure 7. Device Address
+
+
+
+Figure 8. Byte Write
+
+
+
+Figure 9. Page Write
+
+Notes:
+
+(* = DON'T CARE bit)
+
+(† = DON'T CARE bit for the 128K)
+
+
+## Description [pages 1-1]
+
+The AT24C128/256 provides 131,072/262,144 bits of serial electrically erasable and programmable read only memory (EEPROM) organized as 16,384/32,768 words of 8 bits each. The device's cascadable feature allows up to 4 devices to share a common Two-wire bus. The device is optimized for use in many industrial and commercial applications where low power and low voltage operation are essential. The devices are available in space-saving 8-lead JEDEC PDIP, 8-lead JEDEC SOIC, 8-lead EIAJ SOIC, 8-lead MAP (24C128), 8-lead TSSOP, 8-lead SOIC Array Package and 8-ball dBGA2 packages. In addition, the entire family is available in 2.7V (2.7V to 5.5V) and 1.8V (1.8V to 3.6V) versions.
+
+Table 1. Pin Configuration
+
+| Pin Name   | Function           |
+|------------|--------------------|
+| A0 - A1    | Address Inputs     |
+| SDA        | Serial Data        |
+| SCL        | Serial Clock Input |
+| WP         | Write Protect      |
+| NC         | No Connect         |
+| GND        | Ground             |
+
+Table 1. Pin Configuration
+
+
+## Absolute Maximum Ratings* [pages 2-2]
+
+| Operating Temperature.................................-55 ° C to +125 ° C                   |
+|---------------------------------------------------------------------------------------------|
+| Storage Temperature....................................-65 ° C to +150 ° C                  |
+| Voltage on Any Pin with Respect to Ground....................................-1.0V to +7.0V |
+| Maximum Operating Voltage .......................................... 6.25V                  |
+| DC Output Current........................................................ 5.0 mA            |
+
+Figure 1. Block Diagram
+
+*NOTICE:
+
+Stresses beyond those listed under 'Absolute Maximum Ratings' may cause permanent damage to the device. This is a stress rating only and functional operation of the device at these or any other conditions beyond those indicated in the operational sections of this specification is not implied. Exposure to absolute maximum rating conditions for extended periods may affect device reliability.
+
+
+## Notes: [pages 5-6]
+
+This parameter is characterized and is not 100% tested.
+
+2. AC measurement conditions: RL  (connects to V CC ): 1.3 k Ω (2.5V, 5V), 10 k Ω (1.8V) Input pulse voltages: 0.3 V CC  to 0.7 V CC Input rise and fall times: ≤ 50 ns
+
+Input and output timing reference voltages: 0.5 V CC
+
+The Write Cycle Time of 5 ms only applies to the AT24C128/256 devices bearing the process letter 'B' on the package (the mark is located in the lower right corner on the top side of the package).
+
+The AT24C128/256 bearing the process letter 'B' in the package (the mark is located in the lower right corner on the top side of the package), guarantees 1 million write cycle endurance (1.8 - 3.6V).
+
+Table 5. AC Characteristics (5)  - Extended Temperatures
+
+Applicable over recommended operating range from T AE  = -40 ° C to +125 ° C, V CC = +2.7V to +5.5V, CL = 100 pF (unless otherwise noted). Test conditions are listed in Note 2.
+
+|               |                                                                   | 2.7-volt              | 2.7-volt              | 5.0-volt              | 5.0-volt              |              |
+|---------------|-------------------------------------------------------------------|-----------------------|-----------------------|-----------------------|-----------------------|--------------|
+| Symbol        | Parameter                                                         | Min                   | Max                   | Min                   | Max                   | Units        |
+| f SCL         | Clock Frequency, SCL                                              |                       | 400                   |                       | 1000                  | kHz          |
+| t LOW         | Clock Pulse Width Low                                             | 1.3                   |                       | 0.4                   |                       | µs           |
+| t HIGH        | Clock Pulse Width High                                            | 0.6                   |                       | 0.4                   |                       | µs           |
+| t AA          | Clock Low to Data Out Valid                                       | 0.05                  | 0.9                   | 0.05                  | 0.55                  | µs           |
+| t BUF         | Time the bus must be free before a new transmission can start (1) | 1.3                   |                       | 0.5                   |                       | µs           |
+| t HD.STA      | Start Hold Time                                                   | 0.6                   |                       | 0.25                  |                       | µs           |
+| t SU.STA      | Start Set-up Time                                                 | 0.6                   |                       | 0.25                  |                       | µs           |
+| t HD.DAT      | Data In Hold Time                                                 | 0                     |                       | 0                     |                       | µs           |
+| t SU.DAT      | Data In Set-up Time                                               | 100                   |                       | 100                   |                       | ns           |
+| t R           | Inputs Rise Time (1)                                              |                       | 0.3                   |                       | 0.3                   | µs           |
+| t F           | Inputs Fall Time (1)                                              |                       | 300                   |                       | 100                   | ns           |
+| t SU.STO      | Stop Set-up Time                                                  | 0.6                   |                       | 0.25                  |                       | µs           |
+| t DH          | Data Out Hold Time                                                | 50                    |                       | 50                    |                       | ns           |
+| t WR          | Write Cycle Time                                                  |                       | 10 or 5 (3)           |                       | 10 or 5 (3)           | ms           |
+| Endurance (1) | 25°C, Page Mode                                                   | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | 100k or 1,000,000 (4) | Write Cycles |
+
+
+## Device Operation [pages 7-9]
+
+CLOCK and DATA TRANSITIONS: The SDA pin is normally pulled high with an external device. Data on the SDA pin may change only during SCL low time periods (see Figure 4 on page 9). Data changes during SCL high periods will indicate a start or stop condition as defined below.
+
+START CONDITION: A high-to-low transition of SDA with SCL high is a start condition which must precede any other command (see Figure 5 on page 9).
+
+STOP CONDITION: A low-to-high transition of SDA with SCL high is a stop condition. After a read sequence, the stop command will place the EEPROM in a standby power mode (see Figure 5 on page 9).
+
+ACKNOWLEDGE: All addresses and data words are serially transmitted to and from the EEPROM in 8-bit words. The EEPROM sends a zero during the ninth clock cycle to acknowledge that it has received each word.
+
+STANDBY MODE: The AT24C128/256 features a low power standby mode which is enabled: a) upon power-up and b) after the receipt of the STOP bit and the completion of any internal operations.
+
+MEMORY RESET: After an interruption in protocol, power loss or system reset, any two-wire part can be reset by following these steps: (a) Clock up to 9 cycles, (b) look for SDA high in each cycle while SCL is high and then (c) create a start condition as SDA is high.
+
+Figure 2. Bus Timing (SCL: Serial Clock, SDA: Serial Data I/O ® )
+
+Figure 3. Write Cycle Timing (SCL: Serial Clock, SDA: Serial Data I/O)
+
+Note: 1. The write cycle time t WR is the time from a valid stop condition of a write sequence to the end of the internal clear/write cycle.
+
+Figure 4. Data Validity
+
+Figure 5. Start and Stop Definition
+
+Figure 6. Output Acknowledge
+
+
+## Write Operations [pages 10-10]
+
+The 128K/256K EEPROM requires an 8-bit device address word following a start condition to enable the chip for a read or write operation (see Figure 7 on page 11). The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown. This is common to all two-wire EEPROM devices.
+
+The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus. These bits must compare to their corresponding hardwired input pins. The A1 and A0 pins use an internal proprietary circuit that biases them to a logic low condition if the pins are allowed to float.
+
+The eighth bit of the device address is the read/write operation select bit. A read operation is initiated if this bit is high and a write operation is initiated if this bit is low.
+
+Upon a compare of the device address, the EEPROM will output a zero. If a compare is not made, the device will return to a standby state.
+
+DATA SECURITY: The AT24C128/256 has a hardware data protection scheme that allows the user to write protect the whole memory when the WP pin is at V CC .
+
+BYTE WRITE: A write operation requires two 8-bit data word addresses following the device address word and acknowledgment. Upon receipt of this address, the EEPROM will again respond with a zero and then clock in the first 8-bit data word. Following receipt of the 8-bit data word, the EEPROM will output a zero. The addressing device, such as a microcontroller, then must terminate the write sequence with a stop condition. At this time the EEPROM enters an internally-timed write cycle, t WR, to the nonvolatile memory. All inputs are disabled during this write cycle and the EEPROM will not respond until the write is complete (see Figure 8 on page 11).
+
+PAGE WRITE: The 128K/256K EEPROM is capable of 64-byte page writes.
+
+A page write is initiated the same way as a byte write, but the microcontroller does not send a stop condition after the first data word is clocked in. Instead, after the EEPROM acknowledges receipt of the first data word, the microcontroller can transmit up to 63 more data words. The EEPROM will respond with a zero after each data word received. The microcontroller must terminate the page write sequence with a stop condition (see Figure 9 on page 12).
+
+The data word address lower 6 bits are internally incremented following the receipt of each data word. The higher data word address bits are not incremented, retaining the memory page row location. When the word address, internally generated, reaches the page boundary, the following byte is placed at the beginning of the same page. If more than 64 data words are transmitted to the EEPROM, the data word address will 'roll over' and previous data will be overwritten. The address 'roll over' during write is from the last byte of the current page to the first byte of the same page.
+
+ACKNOWLEDGE POLLING: Once the internally-timed write cycle has started and the EEPROM inputs are disabled, acknowledge polling can be initiated. This involves sending a start condition followed by the device address word. The read/write bit is representative of the operation desired. Only if the internal write cycle has completed will the EEPROM respond with a zero, allowing the read or write sequence to continue.
+
+
+## Pin Description [pages 3-3]
+
+
+## Device Addressing [pages 10-10]
+
+
+## AT24C128 Ordering Information (1) [pages 13-13]
+
+| Ordering Code                                                                                                                                                                                                                                               | Package                                       | Operation Range                                                    |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|--------------------------------------------------------------------|
+| AT24C128-10PU-2.7 (2) AT24C128-10PU-1.8 (2) AT24C128N-10SU-2.7 (2) AT24C128N-10SU-1.8 (2) AT24C128W-10SU-2.7 (2) AT24C128W-10SU-1.8 (2) AT24C128-10TU-2.7 (2) AT24C128-10TU-1.8 (2) AT24C128U2-10UU-1.8 (2) AT24C128Y1-10YU-1.8 (2) AT24C128Y4-10YU-1.8 (2) | 8P3 8P3 8S1 8S1 8S2 8S2 8A2 8A2 8U2-1 8Y1 8Y4 | Lead-free/Halogen-free/ Industrial Temperature (-40 ° C to 85 ° C) |
+| AT24C128-W1.8-11 (3)                                                                                                                                                                                                                                        | Die Sale                                      | Industrial Temperature (-40 ° C to 85 ° C)                         |
+
+Notes: 1. This device is not recommended for new design. Please refer to AT24C128B datasheet. For 2.7V devices used in the 4.5V to 5.5V range, please refer to performance values in the AC and DC characteristics tables.
+
+2. 'U' designates Green package + RoHS compliant.
+
+3. Available in waffle pack and wafer form; order as SL788 for wafer form. Bumped die available upon request. Please contact Serial EEPROM Marketing.
+
+| Package Type   | Package Type                                                                            |
+|----------------|-----------------------------------------------------------------------------------------|
+| 8P3            | 8-lead, 0.300" Wide, Plastic Dual Inline Package (PDIP)                                 |
+| 8S1            | 8-lead, 0.150" Wide, Plastic Gull Wing Small Outline Package (JEDEC SOIC)               |
+| 8S2            | 8-lead, 0.200" Wide, Plastic Gull Wing Small Outline Package (EIAJ SOIC)                |
+| 8U2-1          | 8-ball, die Ball Grid Array Package (dBGA2)                                             |
+| 8Y1            | 8-lead, 4.90 mmx 3.00 mmBody, Dual Footprint, Non-leaded, Miniature Array Package (MAP) |
+| 8Y4            | 8-lead, 6.00 mmx 4.90 mmBody, Dual Footprint, Non-leaded, Small Array Package (SAP)     |
+| 8A2            | 8-lead, 4.4 mm Body, Plastic Thin Shrink Small Outline Package (TSSOP)                  |
+| Options        | Options                                                                                 |
+| - 2.7          | Low-voltage (2.7V to 5.5V)                                                              |
+| - 1.8          | Low-voltage (1.8V to 3.6V)                                                              |
+
+
+## 8P3 - PDIP [pages 15-15]
+
+Top View
+
+COMMON DIMENSIONS
+
+(Unit of Measure = inches)
+
+| SYMBOL   | MIN       | NOM       | MAX       |   NOTE |
+|----------|-----------|-----------|-----------|--------|
+| A        |           |           | 0.210     |      2 |
+| A2       | 0.115     | 0.130     | 0.195     |        |
+| b        | 0.014     | 0.018     | 0.022     |      5 |
+| b2       | 0.045     | 0.060     | 0.070     |      6 |
+| b3       | 0.030     | 0.039     | 0.045     |      6 |
+| c        | 0.008     | 0.010     | 0.014     |        |
+| D        | 0.355     | 0.365     | 0.400     |      3 |
+| D1       | 0.005     |           |           |      3 |
+| E        | 0.300     | 0.310     | 0.325     |      4 |
+| E1       | 0.240     | 0.250     | 0.280     |      3 |
+| e        | 0.100 BSC | 0.100 BSC | 0.100 BSC |        |
+| eA       | 0.300 BSC | 0.300 BSC | 0.300 BSC |      4 |
+| L        | 0.115     | 0.130     | 0.150     |      2 |
+
+Notes: 1. This drawing is for general information only; refer to JEDEC Drawing MS-001, Variation BA for additional information.
+
+Dimensions A and L are measured with the package seated in JEDEC seating plane Gauge GS-3.
+
+D, D1 and E1 dimensions do not include mold Flash or protrusions.  Mold Flash or protrusions shall not exceed 0.010 inch.
+
+E and eA measured with the leads constrained to be perpendicular to datum.
+
+Pointed or rounded lead tips are preferred to ease insertion.
+
+b2 and b3 maximum dimensions do not include Dambar protrusions.  Dambar protrusions shall not exceed 0.010 (0.25 mm).
+
+01/09/02
+
+| TITLE 8P3 , 8-lead, 0.300" Wide Body, Plastic Dual In-line Package (PDIP)   | DRAWING NO. 8P3   | REV. B   |
+|-----------------------------------------------------------------------------|-------------------|----------|
+
+2325 Orchard Parkway San Jose, CA  95131
+
+
+## 8S2 - EIAJ SOIC [pages 17-17]
+
+Top View
+
+Side View
+
+COMMON DIMENSIONS
+
+(Unit of Measure = mm)
+
+| SYMBOL   | MIN      | NOM      | MAX      | NOTE   |
+|----------|----------|----------|----------|--------|
+| A        | 1.70     |          | 2.16     |        |
+| A1       | 0.05     |          | 0.25     |        |
+| b        | 0.35     |          | 0.48     | 5      |
+| C        | 0.15     |          | 0.35     | 5      |
+| D        | 5.13     |          | 5.35     |        |
+| E1       | 5.18     |          | 5.40     | 2, 3   |
+| E        | 7.70     |          | 8.26     |        |
+| L        | 0.51     |          | 0.85     |        |
+| ∅        | 0˚       |          | 8˚       |        |
+| e        | 1.27 BSC | 1.27 BSC | 1.27 BSC | 4      |
+
+Notes: 1. This drawing is for general information only; refer to EIAJ Drawing EDR-7320 for additional information.
+
+2. Mismatch of the upper and lower dies and resin burrs are not included.
+
+3. It is recommended that upper and lower cavities be equal. If they are different, the larger dimension shall be regarded.
+
+4. Determines the true geometric position.
+
+10/7/03
+
+End View
+
+| 2325 Orchard Parkway San Jose, CA 95131   | TITLE 8S2 , 8-lead, 0.209" Body, Plastic Small Outline Package (EIAJ)   | DRAWING NO. 8S2   | REV. C   |
+|-------------------------------------------|-------------------------------------------------------------------------|-------------------|----------|
+
+End View
+
+
+## 8A2 - TSSOP [pages 21-21]
+
+Top View
+
+COMMON DIMENSIONS (Unit of Measure = mm)
+
+| SYMBOL   | MIN      | NOM      | MAX      | NOTE     |
+|----------|----------|----------|----------|----------|
+| D        | 2.90     | 3.00     | 3.10     | 2, 5     |
+| E        | 6.40 BSC | 6.40 BSC | 6.40 BSC |          |
+| E1       | 4.30     | 4.40     | 4.50     | 3, 5     |
+| A        | -        | -        | 1.20     |          |
+| A2       | 0.80     | 1.00     | 1.05     |          |
+| b        | 0.19     | -        | 0.30     | 4        |
+| e        | 0.65 BSC | 0.65 BSC | 0.65 BSC |          |
+| L        | 0.45     | 0.60     | 0.75     |          |
+| L1       | 1.00 REF | 1.00 REF | 1.00 REF | 1.00 REF |
+
+Notes: 1. This drawing is for general information only. Refer to JEDEC Drawing MO-153, Variation AA, for proper dimensions, tolerances, datums, etc.
+
+Dimension D does not include mold Flash, protrusions or gate burrs. Mold Flash, protrusions and gate burrs shall not exceed 0.15 mm (0.006 in) per side.
+
+Dimension E1 does not include inter-lead Flash or protrusions. Inter-lead Flash and protrusions shall not exceed 0.25 mm (0.010 in) per side.
+
+Dimension b does not include Dambar protrusion. Allowable Dambar protrusion shall be 0.08 mm total in excess of the b dimension at maximum material condition. Dambar cannot be located on the lower radius of the foot. Minimum space between protrusion and adjacent lead is 0.07 mm.
+
+Dimension D and E1 to be determined at Datum Plane H.
+
+2325 Orchard Parkway San Jose, CA  95131
+
+5/30/02
+
+| TITLE 8A2 , 8-lead, 4.4 mm Body, Plastic Thin Shrink Small Outline Package (TSSOP)   | DRAWING NO. 8A2   | REV. B   |
+|--------------------------------------------------------------------------------------|-------------------|----------|
+
+
+## 8S1 - JEDEC SOIC [pages 16-16]
+
+| SYMBOL   | MIN      | NOM      | MAX      | NOTE   |
+|----------|----------|----------|----------|--------|
+| A        | 1.35     | -        | 1.75     |        |
+| A1       | 0.10     | -        | 0.25     |        |
+| b        | 0.31     | -        | 0.51     |        |
+| C        | 0.17     | -        | 0.25     |        |
+| D        | 4.80     | -        | 5.00     |        |
+| E1       | 3.81     | -        | 3.99     |        |
+| E        | 5.79     | -        | 6.20     |        |
+| e        | 1.27 BSC | 1.27 BSC | 1.27 BSC |        |
+| L        | 0.40     | -        | 1.27     |        |
+| ∅        | 0˚       | -        | 8˚       |        |
+
+| TITLE 8S1 , 8-lead (0.150" Wide Body), Plastic Gull Wing Small Outline (JEDEC SOIC)   | DRAWING NO. 8S1   | REV. B   |
+|---------------------------------------------------------------------------------------|-------------------|----------|
+
+
+## 8U2-1 - dBGA2 [pages 18-18]
+
+| S YMBOL   | MIN          | NOM          | MAX          | NOTE         |
+|-----------|--------------|--------------|--------------|--------------|
+| A         | 0. 8 1       | 0.91         | 1.00         |              |
+| A1        | 0.15         | 0.20         | 0.25         |              |
+| A2        | 0.40         | 0.45         | 0.50         |              |
+| b         | 0.25         | 0. 3 0       | 0. 3 5       | 2            |
+| D         | 2. 3 5 B S C | 2. 3 5 B S C | 2. 3 5 B S C | 2. 3 5 B S C |
+| E         | 3 .7 3 B S C | 3 .7 3 B S C | 3 .7 3 B S C |              |
+| e         | 0.75 B S C   | 0.75 B S C   | 0.75 B S C   |              |
+| e1        | 0.74 REF     | 0.74 REF     | 0.74 REF     |              |
+| d         | 0.75 B S C   | 0.75 B S C   | 0.75 B S C   |              |
+| d1        | 0. 8 0 REF   | 0. 8 0 REF   | 0. 8 0 REF   |              |
+
+| TITLE 8 U2-1, 8 - ba ll, 2. 3 5 x 3 .7 3 mm Body, 0.75 mm pitch,   | DRAWING NO.   | REV.   |
+|--------------------------------------------------------------------|---------------|--------|
+| S m a ll Die B a ll Grid Arr a y P a ck a ge (dBGA2)               | PO 8 U2-1     | A      |
+
+
+## 8Y1 - MAP [pages 19-19]
+
+| SYMBOL   | MIN      | NOM      | MAX      | NOTE   |
+|----------|----------|----------|----------|--------|
+| A        | -        | -        | 0.90     |        |
+| A1       | 0.00     | -        | 0.05     |        |
+| D        | 4.70     | 4.90     | 5.10     |        |
+| E        | 2.80     | 3.00     | 3.20     |        |
+| D1       | 0.85     | 1.00     | 1.15     |        |
+| E1       | 0.85     | 1.00     | 1.15     |        |
+| b        | 0.25     | 0.30     | 0.35     |        |
+| e        | 0.65 TYP | 0.65 TYP | 0.65 TYP |        |
+| L        | 0.50     | 0.60     | 0.70     |        |
+
+| TITLE                                                         | DRAWING NO.   | REV.   |
+|---------------------------------------------------------------|---------------|--------|
+| 8Y1, 8-lead (4.90 x 3.00 mm Body) MSOP Array Package (MAP) Y1 | 8Y1           | C      |
+
+
+## 8Y4 - SAP [pages 20-20]
+
+| S YMBOL   | MIN         | NOM         | MAX         | NOTE   |
+|-----------|-------------|-------------|-------------|--------|
+| A         | -           | -           | 0.90        |        |
+| A1        | 0.00        | -           | 0.05        |        |
+| D         | 5. 8 0      | 6.00        | 6.20        |        |
+| E         | 4.70        | 4.90        | 5.10        |        |
+| D1        | 2. 8 5      | 3 .00       | 3 .15       |        |
+| E1        | 2. 8 5      | 3 .00       | 3 .15       |        |
+| b         | 0. 3 5      | 0.40        | 0.45        |        |
+| e         | 1.27 TYP    | 1.27 TYP    | 1.27 TYP    |        |
+| e1        | 3 . 8 1 REF | 3 . 8 1 REF | 3 . 8 1 REF |        |
+| L         | 0.50        | 0.60        | 0.70        |        |
+
+| TITLE                                                                       | DRAWING NO.   | REV.   |
+|-----------------------------------------------------------------------------|---------------|--------|
+| 8 Y4 , 8 -le a d (6.00 x 4.90 mm Body) S OIC Arr a y P a ck a ge ( S AP) Y4 | 8 Y4          | A      |
+
+
+## Notes: [pages 14-14]
+
+1. This device is not recommended for new design. Please refer to AT24C256B datasheet. For 2.7V devices used in the 4.5V to 5.5V range, please refer to performance values in the AC and DC characteristics tables.
+
+2. 'U' designates Green Package + RoHS compliant.
+
+3. Available in waffle pack and wafer form; order as SL788 for wafer form. Bumped die available upon request. Please contact Serial EEPROM Marketing.
+
+| Package Type   | Package Type                                                                            |
+|----------------|-----------------------------------------------------------------------------------------|
+| 8P3            | 8-lead, 0.300" Wide, Plastic Dual Inline Package (PDIP)                                 |
+| 8S1            | 8-lead, 0.150" Wide, Plastic Gull Wing Small Outline Package (JEDEC SOIC)               |
+| 8S2            | 8-lead, 0.200" Wide, Plastic Gull Wing Small Outline Package (EIAJ SOIC)                |
+| 8U2-1          | 8-ball, die Ball Grid Array Package (dBGA2)                                             |
+| 8Y1            | 8-lead, 4.90 mmx 3.00 mmBody, Dual Footprint, Non-leaded, Miniature Array Package (MAP) |
+| 8Y4            | 8-lead, 6.00 mmx 4.90 mmBody, Dual Footprint, Non-leaded, Small Array Package (SAP)     |
+| 8A2            | 8-lead, 4.4 mm Body, Plastic Thin Shrink Small Outline Package (TSSOP)                  |
+| Options        | Options                                                                                 |
+| - 2.7          | Low-voltage (2.7V to 5.5V)                                                              |
+| - 1.8          | Low-voltage (1.8V to 3.6V)                                                              |
+
+
+## AT24C256 Ordering Information (1) [pages 14-14]
+
+| Ordering Code                                                                                                                                                                                                                                               | Package                                       | Operation Range                                                    |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|--------------------------------------------------------------------|
+| AT24C256-10PU-2.7 (2) AT24C256-10PU-1.8 (2) AT24C256N-10SU-2.7 (2) AT24C256N-10SU-1.8 (2) AT24C256W-10SU-2.7 (2) AT24C256W-10SU-1.8 (2) AT24C256-10TU-2.7 (2) AT24C256-10TU-1.8 (2) AT24C256U2-10UU-1.8 (2) AT24C256Y1-10YU-1.8 (2) AT24C256Y4-10YU-1.8 (2) | 8P3 8P3 8S1 8S1 8S2 8S2 8A2 8A2 8U2-1 8Y1 8Y4 | Lead-free/Halogen-free/ Industrial Temperature (-40 ° C to 85 ° C) |
+| AT24C256-W1.8-11 (3)                                                                                                                                                                                                                                        | Die Sale                                      | Industrial Temperature (-40 ° C to 85 ° C)                         |
+
+
+## Revision History [pages 22-23]
+
+| Doc. Rev.   | Date   | Comments                                                                                                                                                 |
+|-------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0670T       | 3/2007 | Added note ' Not recommended for new design' to AT24C128                                                                                                 |
+| 0670S       | 5/2006 | Implemented Revision History page; Added Note 1 'Not recommended for new design; please refer to AT24C256B datasheet' to AT24C256 part on Pages 1 and 14 |
+
+
+## Features [pages 1-1]
+
+Low-voltage and Standard-voltage Operation
+
+2.7 (V CC  = 2.7V to 5.5V)
+
+1.8 (V CC  = 1.8V to 3.6V)
+
+Internally Organized 16,384 x 8 and 32,768 x 8
+
+·
+
+Two-wire Serial Interface
+
+Schmitt Trigger, Filtered Inputs for Noise Suppression
+
+Bidirectional Data Transfer Protocol
+
+1 MHz (5V), 400 kHz (2.7V, 2.5V) and 100 kHz (1.8V) Compatibility
+
+Write Protect Pin for Hardware and Software Data Protection
+
+64-byte Page Write Mode (Partial Page Writes Allowed)
+
+Self-timed Write Cycle (5 ms Max)
+
+High Reliability
+
+Endurance: One Million Write Cycles
+
+Data Retention: 40 Years
+
+Extended Temperature and Lead-free/Halogen-free Devices Available
+
+8-lead JEDEC PDIP, 8-lead JEDEC and EIAJ SOIC, 8-lead MAP, 8-lead TSSOP, 8-lead SAP and 8-ball dBGA2   Packages
+
+Die Sales: Wafer Form, Waffle Pack, and Bumped Wafers
+
+
+## Notes: [pages 6-6]
+
+This parameter is characterized and is not 100% tested.
+
+2. AC measurement conditions: RL  (connects to V CC ): 1.3 k Ω (2.5V, 5V), 10 k Ω (1.8V) Input pulse voltages: 0.3 V CC  to 0.7 V CC Input rise and fall times: ≤ 50 ns
+
+Input and output timing reference voltages: 0.5 V CC
+
+The Write Cycle Time of 5 ms only applies to the AT24C128/256 devices bearing the process letter 'B' on the package (the mark is located in the lower right corner on the top side of the package).
+
+The AT24C128/256 bearing the process letter 'B' in the package (the mark is located in the lower right corner on the top side of the package), guarantees 1 million write cycle endurance (1.8 - 3.6V).
+
+The AT24C128/256 bearing the process letter 'B' on the package (the mark is located in the lower right corner on the topside of the package) are approved for operation in the extended temperature range.
+
+
+## Two-wire Serial EEPROMs [pages 1-1]
+
+128K (16,384 x 8)
+
+256K (32,768 x 8)
+
+
+## AT24C128 (1) AT24C256 (2) [pages 1-2]
+
+Notes:
+
+Not recommended for new design; please refer to AT24C128B datasheet.
+
+Not recommended for new design; please refer to AT24C256B datasheet.
+
+1
+

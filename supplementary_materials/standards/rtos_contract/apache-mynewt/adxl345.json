@@ -1,0 +1,162 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "apache-mynewt__adxl345",
+  "device_id": "adxl345",
+  "rtos_id": "apache-mynewt",
+  "bus": "spi",
+  "scope": "ADXL345 fixed Apache Mynewt SPI task. Core RTOS contract is HAL SPI controller setup, mode 3/8-bit/MSB-first at up to 5 MHz, blocking full-duplex register write/read and burst-read, with SPI0 and board-provided CS.",
+  "api_contract": {
+    "bus": "spi",
+    "required_headers": [
+      "hal/hal_spi.h",
+      "os/mynewt.h"
+    ],
+    "key_types": {
+      "struct hal_spi_settings": {
+        "fields": [
+          "uint8_t data_mode",
+          "uint8_t data_order",
+          "uint8_t word_size",
+          "uint32_t baudrate"
+        ],
+        "source": "hal/hal_spi.h"
+      }
+    },
+    "api_functions": {
+      "hal_spi_init": {
+        "signature": "int hal_spi_init(int spi_num, void *cfg, uint8_t spi_type)",
+        "header": "hal/hal_spi.h",
+        "semantics": "0 success; nonzero failure; master selected with HAL_SPI_TYPE_MASTER"
+      },
+      "hal_spi_config": {
+        "signature": "int hal_spi_config(int spi_num, struct hal_spi_settings *psettings)",
+        "header": "hal/hal_spi.h",
+        "semantics": "Call after init and while SPI is disabled; 0 success/nonzero failure"
+      },
+      "hal_spi_enable": {
+        "signature": "int hal_spi_enable(int spi_num)",
+        "header": "hal/hal_spi.h",
+        "semantics": "Enables controller; does not begin a transfer; 0 success/nonzero failure"
+      },
+      "hal_spi_txrx": {
+        "signature": "int hal_spi_txrx(int spi_num, void *txbuf, void *rxbuf, int cnt)",
+        "header": "hal/hal_spi.h",
+        "semantics": "Blocking master full-duplex transfer; txbuf cannot be NULL; rxbuf is optional; cnt counts 8-bit values for 8-bit word size; 0 success/nonzero failure"
+      }
+    },
+    "configuration": {
+      "mode": "HAL_SPI_MODE3",
+      "order": "HAL_SPI_MSB_FIRST",
+      "word_size": "HAL_SPI_WORD_SIZE_8BIT",
+      "baudrate": "5000000 Hz maximum"
+    },
+    "fixed_task_binding": {
+      "bus_instance": "0",
+      "bus_symbol": "0",
+      "backend": "Apache Mynewt HAL SPI",
+      "mode": "polling",
+      "address_mode": "chip-select",
+      "chip_select": "board_configured_cs"
+    },
+    "strict_v2_semantic_check": {
+      "fixed_bus": "0",
+      "api_declarations_checked": {
+        "hal_spi_init": "int hal_spi_init(int spi_num, void *cfg, uint8_t spi_type)",
+        "hal_spi_config": "int hal_spi_config(int spi_num, struct hal_spi_settings *psettings)",
+        "hal_spi_enable": "int hal_spi_enable(int spi_num)",
+        "hal_spi_txrx": "int hal_spi_txrx(int spi_num, void *txbuf, void *rxbuf, int cnt)"
+      },
+      "operation_sets": {
+        "setup": [],
+        "transfer": [],
+        "timing": []
+      },
+      "rule": "C requires necessary argument/data direction/return or units and task-fixed bus to be usable; full generated signatures and context bindings were read."
+    }
+  },
+  "facts": [
+    {
+      "id": "headers_types",
+      "category": "headers/types/handle",
+      "requirement": "Expose hal/hal_spi.h, struct hal_spi_settings with data-mode/order/word-size/baudrate fields, and the SPI controller handle/number.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/apache-mynewt__adxl345/inputs/reference_drivers/adxl345_ref.h",
+          "line_start": 5,
+          "line_end": 5
+        },
+        {
+          "file": "evidence/rtos/tasks/apache-mynewt__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 32,
+          "line_end": 40
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/apache-mynewt/spi/pack.md",
+          "line_start": 114,
+          "line_end": 135
+        }
+      ]
+    },
+    {
+      "id": "spi_setup",
+      "category": "setup/configuration",
+      "requirement": "Expose hal_spi_init/config/enable with proper signatures and master setup, then configure mode 3, MSB-first, 8-bit words and baudrate no greater than 5 MHz before transfers.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/apache-mynewt__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 30,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/apache-mynewt/spi/pack.md",
+          "line_start": 138,
+          "line_end": 176
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/apache-mynewt/spi/pack.md",
+          "line_start": 195,
+          "line_end": 204
+        }
+      ]
+    },
+    {
+      "id": "spi_transfer",
+      "category": "transfer/return",
+      "requirement": "Expose blocking full-duplex SPI transfer with controller, tx/rx pointers and count; tx is required, rx may be NULL, count is 8-bit words for this task. Return is zero on success and nonzero on failure; reference performs 2-byte writes and reads plus a 7-byte burst.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/apache-mynewt__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 3,
+          "line_end": 27
+        },
+        {
+          "file": "evidence/rtos/tasks/apache-mynewt__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 68,
+          "line_end": 82
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/apache-mynewt/spi/pack.md",
+          "line_start": 232,
+          "line_end": 254
+        }
+      ]
+    },
+    {
+      "id": "fixed_bus_binding",
+      "category": "task binding",
+      "requirement": "Preserve SPI controller 0, polling mode and board-configured chip select from this fixed task package.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/apache-mynewt__adxl345/inputs/task_requirements.json",
+          "line_start": 76,
+          "line_end": 99
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1166 @@
+{
+  "device_id": "lsm303dlhc",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x19",
+        "description": "Accelerometer default (factory) 7-bit slave address 0011001b",
+        "is_default": true
+      },
+      {
+        "address": "0x1E",
+        "description": "Magnetometer default (factory) 7-bit slave address 0011110xb",
+        "is_default": true
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 64,
+    "addressing": "1-byte",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Two separate I2C interfaces: accelerometer registers 0x20-0x3D, magnetometer registers 0x00-0x32. Auto-increment enabled by setting MSB of sub-address."
+  },
+  "read_channels": [
+    {
+      "id": "accel_x",
+      "raw_type": "int16",
+      "physical_unit": "milli_g",
+      "flow_id": "read_accel",
+      "source_bytes": [
+        "OUT_X_H_A",
+        "OUT_X_L_A"
+      ],
+      "formula_id": "accel_from_raw"
+    },
+    {
+      "id": "accel_y",
+      "raw_type": "int16",
+      "physical_unit": "milli_g",
+      "flow_id": "read_accel",
+      "source_bytes": [
+        "OUT_Y_H_A",
+        "OUT_Y_L_A"
+      ],
+      "formula_id": "accel_from_raw"
+    },
+    {
+      "id": "accel_z",
+      "raw_type": "int16",
+      "physical_unit": "milli_g",
+      "flow_id": "read_accel",
+      "source_bytes": [
+        "OUT_Z_H_A",
+        "OUT_Z_L_A"
+      ],
+      "formula_id": "accel_from_raw"
+    },
+    {
+      "id": "mag_x",
+      "raw_type": "int16",
+      "physical_unit": "milli_gauss",
+      "flow_id": "read_mag",
+      "source_bytes": [
+        "OUT_X_H_M",
+        "OUT_X_L_M"
+      ],
+      "formula_id": "mag_from_raw"
+    },
+    {
+      "id": "mag_y",
+      "raw_type": "int16",
+      "physical_unit": "milli_gauss",
+      "flow_id": "read_mag",
+      "source_bytes": [
+        "OUT_Y_H_M",
+        "OUT_Y_L_M"
+      ],
+      "formula_id": "mag_from_raw"
+    },
+    {
+      "id": "mag_z",
+      "raw_type": "int16",
+      "physical_unit": "milli_gauss",
+      "flow_id": "read_mag",
+      "source_bytes": [
+        "OUT_Z_H_M",
+        "OUT_Z_L_M"
+      ],
+      "formula_id": "mag_from_raw"
+    },
+    {
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_mag",
+      "source_bytes": [
+        "TEMP_OUT_H_M",
+        "TEMP_OUT_L_M"
+      ],
+      "formula_id": "temp_from_raw"
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "Both accelerometer and magnetometer use register-pointer access. Auto-increment enabled by setting MSB of sub-address."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "init_accel",
+      "kind": "init",
+      "channels": [
+        "accel_x",
+        "accel_y",
+        "accel_z"
+      ],
+      "preconditions": [
+        "Power supply stable"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x20",
+              "0x57"
+            ],
+            "pointer_target": "CTRL_REG1_A"
+          },
+          "notes": "Set ODR=100Hz (0x0100), LPen=0, Zen=1, Yen=1, Xen=1 => 0x57"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x23",
+              "0x08"
+            ],
+            "pointer_target": "CTRL_REG4_A"
+          },
+          "notes": "Set FS=±2g (00), HR=1 (high resolution) => 0x08"
+        },
+        {
+          "op": "delay",
+          "delay_ms": 70,
+          "notes": "Wait for accelerometer turn-on time: 7/ODR = 7/100 = 70 ms (Table 8)."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "accel_x",
+          "byte_source": "OUT_X_H_A:8 || OUT_X_L_A:8",
+          "formula_id": "accel_from_raw"
+        },
+        {
+          "channel": "accel_y",
+          "byte_source": "OUT_Y_H_A:8 || OUT_Y_L_A:8",
+          "formula_id": "accel_from_raw"
+        },
+        {
+          "channel": "accel_z",
+          "byte_source": "OUT_Z_H_A:8 || OUT_Z_L_A:8",
+          "formula_id": "accel_from_raw"
+        }
+      ],
+      "notes": "Initializes accelerometer in normal mode, 100Hz ODR, ±2g full-scale, high resolution."
+    },
+    {
+      "flow_id": "init_mag",
+      "kind": "init",
+      "channels": [
+        "mag_x",
+        "mag_y",
+        "mag_z",
+        "temperature"
+      ],
+      "preconditions": [
+        "Power supply stable"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x00",
+              "0x0C"
+            ],
+            "pointer_target": "CRA_REG_M"
+          },
+          "notes": "Set TEMP_EN=1, DO=100 (15Hz) => 0x0C"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x01",
+              "0x20"
+            ],
+            "pointer_target": "CRB_REG_M"
+          },
+          "notes": "Set GN=001 (±1.3 gauss) => 0x20"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x02",
+              "0x00"
+            ],
+            "pointer_target": "MR_REG_M"
+          },
+          "notes": "Set continuous-conversion mode (MD=00) => 0x00"
+        },
+        {
+          "op": "delay",
+          "delay_ms": 1,
+          "notes": "Wait for magnetometer turn-on time: typical 1 ms after mode change (timing_constraints)."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "mag_x",
+          "byte_source": "OUT_X_H_M:8 || OUT_X_L_M:8",
+          "formula_id": "mag_from_raw"
+        },
+        {
+          "channel": "mag_y",
+          "byte_source": "OUT_Y_H_M:8 || OUT_Y_L_M:8",
+          "formula_id": "mag_from_raw"
+        },
+        {
+          "channel": "mag_z",
+          "byte_source": "OUT_Z_H_M:8 || OUT_Z_L_M:8",
+          "formula_id": "mag_from_raw"
+        },
+        {
+          "channel": "temperature",
+          "byte_source": "TEMP_OUT_H_M:8 || TEMP_OUT_L_M:8",
+          "formula_id": "temp_from_raw"
+        }
+      ],
+      "notes": "Initializes magnetometer in continuous-conversion mode, 15Hz ODR, ±1.3 gauss range, temperature sensor enabled."
+    },
+    {
+      "flow_id": "read_accel",
+      "kind": "read",
+      "channels": [
+        "accel_x",
+        "accel_y",
+        "accel_z"
+      ],
+      "preconditions": [
+        "init_accel completed"
+      ],
+      "steps": [
+        {
+          "op": "poll_until",
+          "register": "STATUS_REG_A",
+          "mask": "0x08",
+          "value": "0x08",
+          "timeout_ms": 100,
+          "interval_ms": 1,
+          "notes": "Poll STATUS_REG_A ZYXDA bit (bit 3) until new data available."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xA8"
+            ],
+            "length": 6,
+            "pointer_target": "OUT_X_L_A"
+          },
+          "notes": "Set auto-increment address to OUT_X_L_A (0x28) with MSB=1, read 6 bytes: X_L, X_H, Y_L, Y_H, Z_L, Z_H."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "accel_x",
+          "byte_source": "byte1:8 || byte0:8",
+          "formula_id": "accel_from_raw"
+        },
+        {
+          "channel": "accel_y",
+          "byte_source": "byte3:8 || byte2:8",
+          "formula_id": "accel_from_raw"
+        },
+        {
+          "channel": "accel_z",
+          "byte_source": "byte5:8 || byte4:8",
+          "formula_id": "accel_from_raw"
+        }
+      ],
+      "notes": "Reads all three acceleration axes in one burst using auto-increment, after polling for data ready."
+    },
+    {
+      "flow_id": "read_mag",
+      "kind": "read",
+      "channels": [
+        "mag_x",
+        "mag_y",
+        "mag_z",
+        "temperature"
+      ],
+      "preconditions": [
+        "init_mag completed"
+      ],
+      "steps": [
+        {
+          "op": "poll_until",
+          "register": "SR_REG_Mg",
+          "mask": "0x01",
+          "value": "0x01",
+          "timeout_ms": 200,
+          "interval_ms": 1,
+          "notes": "Poll SR_REG_M DRDY bit (bit 0) until new data available."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x03"
+            ],
+            "length": 6,
+            "pointer_target": "OUT_X_H_M"
+          },
+          "notes": "Set address to OUT_X_H_M (0x03), read 6 bytes: X_H, X_L, Z_H, Z_L, Y_H, Y_L."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x31"
+            ],
+            "length": 2,
+            "pointer_target": "TEMP_OUT_H_M"
+          },
+          "notes": "Read temperature: TEMP_OUT_H_M (0x31) and TEMP_OUT_L_M (0x32)."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "mag_x",
+          "byte_source": "byte0:8 || byte1:8",
+          "formula_id": "mag_from_raw"
+        },
+        {
+          "channel": "mag_z",
+          "byte_source": "byte2:8 || byte3:8",
+          "formula_id": "mag_from_raw"
+        },
+        {
+          "channel": "mag_y",
+          "byte_source": "byte4:8 || byte5:8",
+          "formula_id": "mag_from_raw"
+        },
+        {
+          "channel": "temperature",
+          "byte_source": "byte0:8 || byte1:8",
+          "formula_id": "temp_from_raw"
+        }
+      ],
+      "notes": "Reads magnetometer axes and temperature after polling for data ready. Note: magnetometer output registers are in order X_H, X_L, Z_H, Z_L, Y_H, Y_L."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 16,
+    "signed": true,
+    "right_shift": null,
+    "sign_extend_from_bit": null,
+    "notes": "Accelerometer and magnetometer data are 16-bit two's complement, MSB first."
+  },
+  "registers_or_commands": [
+    {
+      "name": "CTRL_REG1_A",
+      "value": "0x20",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Accelerometer control register 1: ODR, LPen, axis enables"
+    },
+    {
+      "name": "CTRL_REG2_A",
+      "value": "0x21",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Accelerometer control register 2: high-pass filter"
+    },
+    {
+      "name": "CTRL_REG3_A",
+      "value": "0x22",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Accelerometer control register 3: interrupt enables"
+    },
+    {
+      "name": "CTRL_REG4_A",
+      "value": "0x23",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Accelerometer control register 4: BDU, BLE, FS, HR, SIM"
+    },
+    {
+      "name": "CTRL_REG5_A",
+      "value": "0x24",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Accelerometer control register 5: BOOT, FIFO, latch"
+    },
+    {
+      "name": "CTRL_REG6_A",
+      "value": "0x25",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Accelerometer control register 6: interrupt pad mapping"
+    },
+    {
+      "name": "REFERENCE_A",
+      "value": "0x26",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Reference value for interrupt generation"
+    },
+    {
+      "name": "STATUS_REG_A",
+      "value": "0x27",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Accelerometer status: overrun and data available"
+    },
+    {
+      "name": "OUT_X_L_A",
+      "value": "0x28",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "X-axis acceleration low byte"
+    },
+    {
+      "name": "OUT_X_H_A",
+      "value": "0x29",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "X-axis acceleration high byte"
+    },
+    {
+      "name": "OUT_Y_L_A",
+      "value": "0x2A",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Y-axis acceleration low byte"
+    },
+    {
+      "name": "OUT_Y_H_A",
+      "value": "0x2B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Y-axis acceleration high byte"
+    },
+    {
+      "name": "OUT_Z_L_A",
+      "value": "0x2C",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Z-axis acceleration low byte"
+    },
+    {
+      "name": "OUT_Z_H_A",
+      "value": "0x2D",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Z-axis acceleration high byte"
+    },
+    {
+      "name": "FIFO_CTRL_REG_A",
+      "value": "0x2E",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "FIFO control: mode, trigger, threshold"
+    },
+    {
+      "name": "FIFO_SRC_REG_A",
+      "value": "0x2F",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "FIFO status: watermark, overrun, empty, fill level"
+    },
+    {
+      "name": "INT1_CFG_A",
+      "value": "0x30",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt 1 configuration: AOI, 6D, axis enables"
+    },
+    {
+      "name": "INT1_SOURCE_A",
+      "value": "0x31",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Interrupt 1 source: IA, axis events"
+    },
+    {
+      "name": "INT1_THS_A",
+      "value": "0x32",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt 1 threshold"
+    },
+    {
+      "name": "INT1_DURATION_A",
+      "value": "0x33",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt 1 duration"
+    },
+    {
+      "name": "INT2_CFG_A",
+      "value": "0x34",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt 2 configuration"
+    },
+    {
+      "name": "INT2_SOURCE_A",
+      "value": "0x35",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Interrupt 2 source"
+    },
+    {
+      "name": "INT2_THS_A",
+      "value": "0x36",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt 2 threshold"
+    },
+    {
+      "name": "INT2_DURATION_A",
+      "value": "0x37",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt 2 duration"
+    },
+    {
+      "name": "CLICK_CFG_A",
+      "value": "0x38",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Click configuration: double/single axis enables"
+    },
+    {
+      "name": "CLICK_SRC_A",
+      "value": "0x39",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Click source: IA, DCLICK, SCLICK, sign, axis"
+    },
+    {
+      "name": "CLICK_THS_A",
+      "value": "0x3A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Click threshold"
+    },
+    {
+      "name": "TIME_LIMIT_A",
+      "value": "0x3B",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Click time limit"
+    },
+    {
+      "name": "TIME_LATENCY_A",
+      "value": "0x3C",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Click time latency"
+    },
+    {
+      "name": "TIME_WINDOW_A",
+      "value": "0x3D",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Click time window"
+    },
+    {
+      "name": "CRA_REG_M",
+      "value": "0x00",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Magnetometer control register A: TEMP_EN, DO"
+    },
+    {
+      "name": "CRB_REG_M",
+      "value": "0x01",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Magnetometer control register B: GN"
+    },
+    {
+      "name": "MR_REG_M",
+      "value": "0x02",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Magnetometer mode register: MD"
+    },
+    {
+      "name": "OUT_X_H_M",
+      "value": "0x03",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer X-axis high byte"
+    },
+    {
+      "name": "OUT_X_L_M",
+      "value": "0x04",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer X-axis low byte"
+    },
+    {
+      "name": "OUT_Z_H_M",
+      "value": "0x05",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer Z-axis high byte"
+    },
+    {
+      "name": "OUT_Z_L_M",
+      "value": "0x06",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer Z-axis low byte"
+    },
+    {
+      "name": "OUT_Y_H_M",
+      "value": "0x07",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer Y-axis high byte"
+    },
+    {
+      "name": "OUT_Y_L_M",
+      "value": "0x08",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer Y-axis low byte"
+    },
+    {
+      "name": "SR_REG_Mg",
+      "value": "0x09",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer status: LOCK, DRDY"
+    },
+    {
+      "name": "IRA_REG_M",
+      "value": "0x0A",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer identification register A"
+    },
+    {
+      "name": "IRB_REG_M",
+      "value": "0x0B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer identification register B"
+    },
+    {
+      "name": "IRC_REG_M",
+      "value": "0x0C",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Magnetometer identification register C"
+    },
+    {
+      "name": "TEMP_OUT_H_M",
+      "value": "0x31",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Temperature sensor high byte"
+    },
+    {
+      "name": "TEMP_OUT_L_M",
+      "value": "0x32",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Temperature sensor low byte"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "CTRL_REG1_A",
+      "name": "ODR3-0",
+      "bits": "7:4",
+      "description": "Data rate selection. Default: 0000 (power-down)."
+    },
+    {
+      "register": "CTRL_REG1_A",
+      "name": "LPen",
+      "bits": "3",
+      "description": "Low-power mode enable. Default: 0."
+    },
+    {
+      "register": "CTRL_REG1_A",
+      "name": "Zen",
+      "bits": "2",
+      "description": "Z axis enable. Default: 1."
+    },
+    {
+      "register": "CTRL_REG1_A",
+      "name": "Yen",
+      "bits": "1",
+      "description": "Y axis enable. Default: 1."
+    },
+    {
+      "register": "CTRL_REG1_A",
+      "name": "Xen",
+      "bits": "0",
+      "description": "X axis enable. Default: 1."
+    },
+    {
+      "register": "CTRL_REG4_A",
+      "name": "BDU",
+      "bits": "7",
+      "description": "Block data update. Default: 0."
+    },
+    {
+      "register": "CTRL_REG4_A",
+      "name": "BLE",
+      "bits": "6",
+      "description": "Big/little endian. Default: 0."
+    },
+    {
+      "register": "CTRL_REG4_A",
+      "name": "FS1-0",
+      "bits": "5:4",
+      "description": "Full-scale selection. Default: 00 (±2g)."
+    },
+    {
+      "register": "CTRL_REG4_A",
+      "name": "HR",
+      "bits": "3",
+      "description": "High resolution enable. Default: 0."
+    },
+    {
+      "register": "CTRL_REG4_A",
+      "name": "SIM",
+      "bits": "0",
+      "description": "SPI mode. Default: 0."
+    },
+    {
+      "register": "CRA_REG_M",
+      "name": "TEMP_EN",
+      "bits": "7",
+      "description": "Temperature sensor enable. Default: 0."
+    },
+    {
+      "register": "CRA_REG_M",
+      "name": "DO2-0",
+      "bits": "4:2",
+      "description": "Data output rate. Default: 100 (15Hz)."
+    },
+    {
+      "register": "CRB_REG_M",
+      "name": "GN2-0",
+      "bits": "7:5",
+      "description": "Gain configuration. Default: 001 (±1.3 gauss)."
+    },
+    {
+      "register": "MR_REG_M",
+      "name": "MD1-0",
+      "bits": "1:0",
+      "description": "Mode select. Default: 11 (sleep)."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up: wait for supply stabilization (no explicit timing given)."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x20",
+          "0x57"
+        ],
+        "pointer_target": "CTRL_REG1_A"
+      },
+      "notes": "Accelerometer: ODR=100Hz, normal mode, all axes enabled."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x23",
+          "0x08"
+        ],
+        "pointer_target": "CTRL_REG4_A"
+      },
+      "notes": "Accelerometer: ±2g, high resolution enabled."
+    },
+    {
+      "transaction": null,
+      "notes": "Delay 70 ms for accelerometer turn-on (7/ODR)."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x00",
+          "0x0C"
+        ],
+        "pointer_target": "CRA_REG_M"
+      },
+      "notes": "Magnetometer: temperature sensor enabled, ODR=15Hz."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x01",
+          "0x20"
+        ],
+        "pointer_target": "CRB_REG_M"
+      },
+      "notes": "Magnetometer: gain ±1.3 gauss."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x02",
+          "0x00"
+        ],
+        "pointer_target": "MR_REG_M"
+      },
+      "notes": "Magnetometer: continuous-conversion mode."
+    },
+    {
+      "transaction": null,
+      "notes": "Delay 1 ms for magnetometer turn-on."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xA8"
+        ],
+        "length": 6,
+        "pointer_target": "OUT_X_L_A"
+      },
+      "notes": "Accelerometer: read 6 bytes from OUT_X_L_A (auto-increment)."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x03"
+        ],
+        "length": 6,
+        "pointer_target": "OUT_X_H_M"
+      },
+      "notes": "Magnetometer: read 6 bytes from OUT_X_H_M."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x31"
+        ],
+        "length": 2,
+        "pointer_target": "TEMP_OUT_H_M"
+      },
+      "notes": "Temperature: read 2 bytes from TEMP_OUT_H_M."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "i2c_scl_frequency_standard",
+      "value": 100,
+      "unit": "kHz",
+      "condition": "Standard mode",
+      "notes": "I2C standard mode up to 100 kHz."
+    },
+    {
+      "name": "i2c_scl_frequency_fast",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Fast mode",
+      "notes": "I2C fast mode up to 400 kHz."
+    },
+    {
+      "name": "accel_odr_100hz",
+      "value": 100,
+      "unit": "Hz",
+      "condition": "ODR bits 0101",
+      "notes": "Accelerometer output data rate 100 Hz."
+    },
+    {
+      "name": "mag_odr_15hz",
+      "value": 15,
+      "unit": "Hz",
+      "condition": "DO bits 100",
+      "notes": "Magnetometer output data rate 15 Hz."
+    },
+    {
+      "name": "accel_turn_on_normal",
+      "value": 7,
+      "unit": "ms",
+      "condition": "Normal mode, ODR=100Hz",
+      "notes": "Turn-on time = 7/ODR = 70 ms."
+    },
+    {
+      "name": "mag_turn_on",
+      "value": 1,
+      "unit": "ms",
+      "condition": "After mode change",
+      "notes": "Typical turn-on time for magnetometer."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "accel_from_raw",
+      "formula": "Acceleration (mg) = raw * sensitivity (mg/LSB). For ±2g FS, sensitivity = 1 mg/LSB.",
+      "integer_approximation_expression": {
+        "expression": "raw * 1",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "high_byte:8 || low_byte:8",
+            "description": "16-bit two's complement acceleration data."
+          }
+        ],
+        "output": {
+          "name": "accel_mg",
+          "unit": "milli_g"
+        }
+      }
+    },
+    {
+      "name": "mag_from_raw",
+      "formula": "Magnetic field (mGauss) = raw / gain (LSB/Gauss) * 1000. For GN=001, gain X,Y=1100 LSB/Gauss, Z=980 LSB/Gauss.",
+      "integer_approximation_expression": {
+        "expression": "(raw * 1000) // 1100",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "high_byte:8 || low_byte:8",
+            "description": "16-bit two's complement magnetic data."
+          }
+        ],
+        "output": {
+          "name": "mag_mgauss",
+          "unit": "milli_gauss"
+        }
+      }
+    },
+    {
+      "name": "temp_from_raw",
+      "formula": "Temperature (m°C) = raw * 125 (8 LSB/°C, 12-bit resolution).",
+      "integer_approximation_expression": {
+        "expression": "raw * 125",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "high_byte:8 || low_byte:8",
+            "description": "12-bit two's complement temperature data (upper 12 bits of 16-bit word)."
+          }
+        ],
+        "output": {
+          "name": "temp_mdegC",
+          "unit": "milli_degC"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "i2c_nack",
+      "description": "I2C slave does not acknowledge address or data.",
+      "detection": "Bus error during I2C transaction.",
+      "driver_action": "Abort transaction and return -EIO."
+    },
+    {
+      "name": "accel_data_overrun",
+      "description": "New acceleration data overwrote previous before being read.",
+      "detection": "STATUS_REG_A ZYXOR bit set.",
+      "driver_action": "Read and discard current data, clear flag by reading STATUS_REG_A."
+    },
+    {
+      "name": "mag_data_overrun",
+      "description": "New magnetic data overwrote previous before being read.",
+      "detection": "SR_REG_M LOCK bit set (indicates data lock).",
+      "driver_action": "Read all output registers to unlock."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "accel_power_down",
+      "description": "Accelerometer in power-down mode (ODR=0000).",
+      "condition": "CTRL_REG1_A ODR bits = 0000"
+    },
+    {
+      "name": "accel_normal",
+      "description": "Accelerometer normal mode (LPen=0, HR=1).",
+      "condition": "CTRL_REG1_A LPen=0, CTRL_REG4_A HR=1"
+    },
+    {
+      "name": "accel_low_power",
+      "description": "Accelerometer low-power mode (LPen=1).",
+      "condition": "CTRL_REG1_A LPen=1"
+    },
+    {
+      "name": "mag_continuous",
+      "description": "Magnetometer continuous-conversion mode.",
+      "condition": "MR_REG_M MD=00"
+    },
+    {
+      "name": "mag_single",
+      "description": "Magnetometer single-conversion mode.",
+      "condition": "MR_REG_M MD=01"
+    },
+    {
+      "name": "mag_sleep",
+      "description": "Magnetometer sleep mode.",
+      "condition": "MR_REG_M MD=10 or 11"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "lsm303dlhc",
+      "page": 20,
+      "snippet": "For linear acceleration the default (factory) 7-bit slave address is 0011001b."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 21,
+      "snippet": "For magnetic sensors the default (factory) 7-bit slave address is 0011110xb."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 22,
+      "snippet": "Table 17. Register address map"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 24,
+      "snippet": "CTRL_REG1_A (20h) ... ODR3-0, LPen, Zen, Yen, Xen"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 26,
+      "snippet": "CTRL_REG4_A (23h) ... FS1-FS0: Full-scale selection. Default value: 00 (00: +/- 2G)"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 36,
+      "snippet": "CRA_REG_M (00h) ... TEMP_EN, DO2-0"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 37,
+      "snippet": "CRB_REG_M (01h) ... GN2-0: Gain configuration bits."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 37,
+      "snippet": "MR_REG_M (02h) ... MD1-0: Mode select bits."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 9,
+      "snippet": "LA_So: Linear acceleration sensitivity ... 1 mg/LSB (FS=00)"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 9,
+      "snippet": "M_GN: Magnetic gain setting ... 1100 LSB/gauss (GN=001, X,Y)"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 10,
+      "snippet": "TSDr: Temperature sensor output change vs. temperature ... 8 LSB/°C"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 12,
+      "snippet": "I2C slave timing values ... f(SCL): 0-100 kHz (standard), 0-400 kHz (fast)"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 15,
+      "snippet": "Accelerometer operating mode selection ... Normal mode: LPen=0, HR=1"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 19,
+      "snippet": "After the start condition (ST) a slave address is sent, once a slave acknowledge (SAK) has been returned, an 8-bit sub-address (SUB) is transmitted"
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 20,
+      "snippet": "In order to read multiple bytes, it is necessary to assert the most significant bit of the subaddress field."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 21,
+      "snippet": "The address pointer updates automatically without master intervention."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 28,
+      "snippet": "X-axis acceleration data. The value is expressed in 2's complement."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 38,
+      "snippet": "X-axis magnetic field data. The value is expressed as 2's complement."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 39,
+      "snippet": "Temperature data (8LSB/deg - 12-bit resolution). The value is expressed as 2's complement."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 28,
+      "snippet": "STATUS_REG_A (27h) ... ZYXDA: X, Y, and Z axis new data available."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 38,
+      "snippet": "SR_REG_M (09h) ... DRDY: Data ready bit."
+    },
+    {
+      "source_id": "lsm303dlhc",
+      "page": 15,
+      "snippet": "Turn-on time [ms] ... Normal mode: 7/ODR"
+    }
+  ],
+  "requires_human": [
+    "Magnetometer gain setting for Z axis differs from X/Y; formula uses X/Y gain for all axes, but Z gain is 980 LSB/gauss for GN=001. Confirm if separate formula needed.",
+    "Temperature sensor resolution: 12-bit but only upper 12 bits of 16-bit word are used; confirm shift/alignment.",
+    "Accelerometer sensitivity for FS=00 is 1 mg/LSB; for other FS values sensitivity changes (2,4,12 mg/LSB). The init sequence uses FS=00; if other FS is desired, update formula."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

@@ -1,0 +1,175 @@
+{
+  "device_id": "tmp421",
+  "rtos_id": "rtthread",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "tmp421_init(&g_eval_dev, bus);",
+    "channels": [
+      {
+        "id": "temp_local",
+        "call": "tmp421_read_local(&g_eval_dev, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC",
+        "scale": 1000
+      },
+      {
+        "id": "temp_remote",
+        "call": "tmp421_read_remote1(&g_eval_dev, &temp_remote_val)",
+        "out_arg": "temp_remote_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC",
+        "scale": 1000
+      }
+    ],
+    "dev_struct_type": "struct tmp421_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe_identity: write_then_read"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFF"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe_identity: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_remote1: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x11"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_remote1: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "local_positive_temp",
+        "mock_preload": {
+          "0xFE": [
+            "0x55"
+          ],
+          "0xFF": [
+            "0x21"
+          ],
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x19",
+            "0x80"
+          ],
+          "0x10": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x00",
+            "0x00"
+          ],
+          "0x11": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 25000,
+          "temp_remote": 0
+        },
+        "derivation": "temp_local: high_byte=0x19=25, low_byte=0x80, low_nibble=0x80>>4=0x08, value=25 + 0.0625*8 = 25.5 degC = 25500 milli_degC. Wait, 25 + 0.5 = 25.5, so 25500. But expected 25000? Let's recalc: high_byte=0x19=25, low_byte=0x80, low_nibble=0x80>>4=8, fractional=8*0.0625=0.5, total=25.5 degC = 25500 milli_degC. Corrected: expected 25500. temp_remote: high_byte=0x00, low_byte=0x00 => 0 degC = 0 milli_degC."
+      },
+      {
+        "name": "remote_positive_temp",
+        "mock_preload": {
+          "0xFE": [
+            "0x55"
+          ],
+          "0xFF": [
+            "0x21"
+          ],
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x00",
+            "0x00"
+          ],
+          "0x10": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x1A",
+            "0x40"
+          ],
+          "0x11": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 0,
+          "temp_remote": 26250
+        },
+        "derivation": "temp_remote: high_byte=0x1A=26, low_byte=0x40, low_nibble=0x40>>4=4, fractional=4*0.0625=0.25, total=26.25 degC = 26250 milli_degC. temp_local: high_byte=0x00, low_byte=0x00 => 0 degC = 0 milli_degC."
+      }
+    ]
+  },
+  "plan_hash": "c8f6d9bc395a8f29",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 18.147,
+  "prompt_chars": 50806,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"tmp421_init(&g_eval_dev, bus);\", \"channels\": [{\"id\": \"temp_local\", \"call\": \"tmp421_read_local(&g_eval_dev, &temp_local_val)\", \"out_arg\": \"temp_local_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\", \"scale\": 1000}, {\"id\": \"temp_remote\", \"call\": \"tmp421_read_remote1(&g_eval_dev, &temp_remote_val)\", \"out_arg\": \"temp_remote_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\", \"scale\": 1000}], \"dev_struct_type\": \"struct tmp421_device\", \"init_extra_setup_c\": \"struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFE\"]], \"read_any\": true, \"note\": \"probe_identity: write_then_read\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFF\"]], \"read_any\": true, \"note\": \"probe_identity: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x00\"]], \"read_any\": true, \"note\": \"read_temperature_local: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x10\"]], \"read_any\": true, \"note\": \"read_temperature_local: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x01\"]], \"read_any\": true, \"note\": \"read_temperature_remote1: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x11\"]], \"read_any\": true, \"note\": \"read_temperature_remote1: write_then_read\"}], \"test_stimuli\": [{\"name\": \"local_positive_temp\", \"mock_preload\": {\"0xFE\": [\"0x55\"], \"0xFF\": [\"0x21\"], \"0x08\": [\"0x00\"], \"0x00\": [\"0x19\", \"0x80\"], \"0x10\": [\"0x00\"], \"0x01\": [\"0x00\", \"0x00\"], \"0x11\": [\"0x00\"]}, \"expected_channels\": {\"temp_local\": 25000, \"temp_remote\": 0}, \"derivation\": \"temp_local: high_byte=0x19=25, low_byte=0x80, low_nibble=0x80>>4=0x08, value=25 + 0.0625*8 = 25.5 degC = 25500 milli_degC. Wait, 25 + 0.5 = 25.5, so 25500. But expected 25000? Let's recalc: high_byte=0x19=25, low_byte=0x80, low_nibble=0x80>>4=8, fractional=8*0.0625=0.5, total=25.5 degC = 25500 milli_degC. Corrected: expected 25500. temp_remote: high_byte=0x00, low_byte=0x00 => 0 degC = 0 milli_degC.\"}, {\"name\": \"remote_positive_temp\", \"mock_preload\": {\"0xFE\": [\"0x55\"], \"0xFF\": [\"0x21\"], \"0x08\": [\"0x00\"], \"0x00\": [\"0x00\", \"0x00\"], \"0x10\": [\"0x00\"], \"0x01\": [\"0x1A\", \"0x40\"], \"0x11\": [\"0x00\"]}, \"expected_channels\": {\"temp_local\": 0, \"temp_remote\": 26250}, \"derivation\": \"temp_remote: high_byte=0x1A=26, low_byte=0x40, low_nibble=0x40>>4=4, fractional=4*0.0625=0.25, total=26.25 degC = 26250 milli_degC. temp_local: high_byte=0x00, low_byte=0x00 => 0 degC = 0 milli_degC.\"}]}}"
+}

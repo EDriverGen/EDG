@@ -1,0 +1,59 @@
+{
+  "device_id": "hcsr04",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "single_channel",
+  "bus_kind": "gpio",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "hcsr04_init(&g_eval_dev, PA0, PA1)",
+    "read_call": "hcsr04_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct hcsr04_dev",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "gpio1",
+        "note": "init: configure pin mode (output then input)"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "read_cycle: pulse / 1-wire handshake then sample bits"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_gpio_pulse_width_positive",
+        "mock_preload": {
+          "schedule": [
+            [
+              1,
+              400
+            ],
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        "expected_read_raw": 68,
+        "raw_tolerance": 3,
+        "derivation": "GPIO pulse schedule drives echo_pulse_width_us high for 400 us; formula input T=400; (400 * 343) // 2000 = 68."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.gpio_measure_pulse+conversion_formulae"
+  },
+  "plan_hash": "249a77320be3842a",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.385,
+  "prompt_chars": 45232,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"hcsr04_init(&g_eval_dev, PA0, PA1)\", \"read_call\": \"hcsr04_read_distance(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"mm\", \"dev_struct_type\": \"struct hcsr04_dev\", \"init_extra_setup_c\": \"\", \"preamble_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"gpio1\", \"note\": \"init: configure pin mode (output then input)\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"gpio1\", \"read_any\": true, \"note\": \"read_cycle: pulse / 1-wire handshake then sample bits\"}], \"test_stimuli\": [{\"name\": \"distance_100mm\", \"mock_preload\": {\"schedule\": [[1, 10], [0, 0], [1, 583], [0, 0]]}, \"expected_read_raw\": 100, \"derivation\": \"Echo pulse width T = 583 us. distance = (T * 343) // 2000 = (583 * 343) // 2000 = 199969 // 2000 = 99.9845, rounded to 100 mm.\"}, {\"name\": \"distance_0mm\", \"mock_preload\": {\"schedule\": [[1, 10], [0, 0], [1, 0], [0, 0]]}, \"expected_read_raw\": 0, \"derivation\": \"Echo pulse width T = 0 us. distance = (0 * 343) // 2000 = 0 mm.\"}, {\"name\": \"distance_500mm\", \"mock_preload\": {\"schedule\": [[1, 10], [0, 0], [1, 2915], [0, 0]]}, \"expected_read_raw\": 500, \"derivation\": \"Echo pulse width T = 2915 us. distance = (2915 * 343) // 2000 = 999845 // 2000 = 499.9225, rounded to 500 mm.\"}]}}"
+}

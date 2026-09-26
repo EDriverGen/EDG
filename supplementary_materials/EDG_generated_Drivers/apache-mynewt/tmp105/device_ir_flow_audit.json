@@ -1,0 +1,221 @@
+{
+  "source": "flow_risk_repair",
+  "cache_hit": false,
+  "cache_key": "dd26aa276d32e9d3",
+  "audit_findings": [
+    {
+      "flow_id": "read_temperature",
+      "summary": "Audit of continuous conversion read flow for temperature channel.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Power-up defaults: continuous conversion (SD=0), 12-bit resolution. No trigger needed.",
+          "action": "No change."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Datasheet states conversion time 220ms typical for 12-bit resolution. Added delay step before read.",
+          "action": "Added delay step with delay_ms=220."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Write pointer 0x00 then read 2 bytes from Temperature Register.",
+          "action": "No change."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack required for continuous conversion read.",
+          "action": "No change."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Power-up defaults: 12-bit resolution, continuous conversion. No config write needed.",
+          "action": "No change."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Byte source: temp_msb:8 || temp_lsb:8 from Temperature Register.",
+          "action": "No change."
+        }
+      ]
+    },
+    {
+      "flow_id": "one_shot_conversion",
+      "summary": "Audit of one-shot conversion flow for temperature channel.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Write 0x81 to Configuration Register (OS=1, SD=1) triggers one-shot conversion.",
+          "action": "No change."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Delay 220ms for conversion time (12-bit resolution).",
+          "action": "No change."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Write pointer 0x00 then read 2 bytes from Temperature Register.",
+          "action": "No change."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack required after one-shot read.",
+          "action": "No change."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Configuration write sets OS and SD bits.",
+          "action": "No change."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Byte source: temp_msb:8 || temp_lsb:8 from Temperature Register.",
+          "action": "No change."
+        }
+      ]
+    },
+    {
+      "flow_id": "init",
+      "summary": "Audit of initialization flow.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Power-up defaults: continuous conversion, 12-bit resolution.",
+          "action": "No change."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Delay 220ms for first conversion to complete.",
+          "action": "No change."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "Init does not require reading temperature.",
+          "action": "No change."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack needed.",
+          "action": "No change."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Power-up defaults are sufficient.",
+          "action": "No change."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output channel.",
+          "action": "No change."
+        }
+      ]
+    },
+    {
+      "flow_id": "probe",
+      "summary": "Audit of probe flow.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Probe only reads Configuration Register.",
+          "action": "No change."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed for probe.",
+          "action": "No change."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Write pointer 0x01 then read 1 byte from Configuration Register.",
+          "action": "No change."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack needed.",
+          "action": "No change."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Probe does not configure.",
+          "action": "No change."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output channel.",
+          "action": "No change."
+        }
+      ]
+    },
+    {
+      "flow_id": "general_call_reset",
+      "summary": "Audit of general call reset flow.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Reset command, not a measurement.",
+          "action": "No change."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed after reset.",
+          "action": "No change."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No read.",
+          "action": "No change."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack needed.",
+          "action": "No change."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Reset command, not configuration.",
+          "action": "No change."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output channel.",
+          "action": "No change."
+        }
+      ]
+    }
+  ],
+  "previous_audit_cache_key": "f11a22cf41a19594",
+  "applied": true,
+  "updated_by": "flow_risk_repair",
+  "changed_fields": []
+}

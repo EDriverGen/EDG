@@ -1,0 +1,243 @@
+{
+  "device_id": "ssd1306",
+  "rtos_id": "apache-mynewt",
+  "eval_class": "display",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef SSD1306_H\n#define SSD1306_H\n\n#include <stdint.h>\n#include <stddef.h>\n\n#define SSD1306_I2C_ADDR 0x3C\n\nstruct ssd1306_dev {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint ssd1306_init(struct ssd1306_dev *dev, void *bus_handle);\nint ssd1306_write_display_data(struct ssd1306_dev *dev, const uint8_t *data, size_t len);\n\n#endif",
+  "driver_source": "#include \"ssd1306.h\"\n#include <stdint.h>\n#include <stddef.h>\n\n#include <hal/hal_i2c.h>\n#include <os/os_time.h>\nstatic int ssd1306_write_cmd(struct ssd1306_dev *dev, uint8_t cmd) {\n    struct hal_i2c_master_data pdata;\n    pdata.address = dev->i2c_addr;\n    pdata.buffer = &cmd;\n    pdata.len = 1;\n    return hal_i2c_master_write(0, &pdata, OS_TIMEOUT_NEVER, 1);\n}\n\nstatic int ssd1306_write_cmd_bytes(struct ssd1306_dev *dev, const uint8_t *bytes, size_t len) {\n    struct hal_i2c_master_data pdata;\n    pdata.address = dev->i2c_addr;\n    pdata.buffer = (uint8_t *)bytes;\n    pdata.len = len;\n    return hal_i2c_master_write(0, &pdata, OS_TIMEOUT_NEVER, 1);\n}\n\nint ssd1306_init(struct ssd1306_dev *dev, void *bus_handle) {\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = SSD1306_I2C_ADDR;\n\n    // Power ON sequence (simplified: assume RES# and VCC are handled externally)\n    os_time_delay(100); // wait tAF\n    ssd1306_write_cmd(dev, 0xAF);\n\n    // Init sequence\n    ssd1306_write_cmd(dev, 0xAE);\n    uint8_t d5[] = {0xD5, 0x80};\n    ssd1306_write_cmd_bytes(dev, d5, 2);\n    uint8_t a8[] = {0xA8, 0x3F};\n    ssd1306_write_cmd_bytes(dev, a8, 2);\n    uint8_t d3[] = {0xD3, 0x00};\n    ssd1306_write_cmd_bytes(dev, d3, 2);\n    ssd1306_write_cmd(dev, 0x40);\n    ssd1306_write_cmd(dev, 0xA1);\n    ssd1306_write_cmd(dev, 0xC8);\n    uint8_t da[] = {0xDA, 0x12};\n    ssd1306_write_cmd_bytes(dev, da, 2);\n    uint8_t ctrl[] = {0x81, 0x7F};\n    ssd1306_write_cmd_bytes(dev, ctrl, 2);\n    ssd1306_write_cmd(dev, 0xA4);\n    ssd1306_write_cmd(dev, 0xA6);\n    ssd1306_write_cmd(dev, 0x2E);\n    uint8_t mode[] = {0x20, 0x00};\n    ssd1306_write_cmd_bytes(dev, mode, 2);\n    uint8_t col[] = {0x21, 0x00, 0x7F};\n    ssd1306_write_cmd_bytes(dev, col, 3);\n    uint8_t page[] = {0x22, 0x00, 0x07};\n    ssd1306_write_cmd_bytes(dev, page, 3);\n    ssd1306_write_cmd(dev, 0xAF);\n\n    return 0;\n}\n\nint ssd1306_write_display_data(struct ssd1306_dev *dev, const uint8_t *data, size_t len) {\n    // Set column address range (0x21, start, end)\n    uint8_t col_cmd[] = {0x21, 0x00, 0x7F};\n    ssd1306_write_cmd_bytes(dev, col_cmd, 3);\n    // Set page address range (0x22, start, end)\n    uint8_t page_cmd[] = {0x22, 0x00, 0x07};\n    ssd1306_write_cmd_bytes(dev, page_cmd, 3);\n    // Write data bytes (control byte with D/C#=1 is handled by HAL? Assume raw data write)\n    struct hal_i2c_master_data pdata;\n    pdata.address = dev->i2c_addr;\n    pdata.buffer = (uint8_t *)data;\n    pdata.len = len;\n    return hal_i2c_master_write(0, &pdata, OS_TIMEOUT_NEVER, 1);\n}\n",
+  "api_contract": {
+    "eval_class": "display",
+    "init_call": "ssd1306_init(&g_eval_dev, (void *)bus_name)",
+    "output_frame_call": "ssd1306_write_display_data(&g_eval_dev, data, len)",
+    "read_status_call": null,
+    "dev_struct_type": "struct ssd1306_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAF"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAE"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD5",
+            "0x80"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA8",
+            "0x3F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD3",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x40"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA1"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xC8"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xDA",
+            "0x12"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x81",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA4"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA6"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x2E"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x20",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21",
+            "0x00",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22",
+            "0x00",
+            "0x07"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21"
+          ]
+        ],
+        "note": "write_display_data: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22"
+          ]
+        ],
+        "note": "write_display_data: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "init_and_frame_output",
+        "mock_preload": {
+          "frame_ok": [
+            "0x00"
+          ]
+        },
+        "expected_frame_err": 0,
+        "derivation": "No read-back; init writes all commands and frame output writes data; frame_ok sentinel ensures no error."
+      },
+      {
+        "name": "frame_output_with_data",
+        "mock_preload": {
+          "frame_ok": [
+            "0x00"
+          ]
+        },
+        "expected_frame_err": 0,
+        "derivation": "Frame output writes 128 bytes of data; no read-back; frame_ok sentinel ensures no error."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_display_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.038,
+  "prompt_chars": 41607,
+  "raw_response": "{\"driver_header\": \"#ifndef SSD1306_H\\n#define SSD1306_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\n#define SSD1306_I2C_ADDR 0x3C\\n\\nstruct ssd1306_dev {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint ssd1306_init(struct ssd1306_dev *dev, void *bus_handle);\\nint ssd1306_write_display_data(struct ssd1306_dev *dev, const uint8_t *data, size_t len);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"ssd1306.h\\\"\\n#include <hal/hal_i2c.h>\\n#include <os/os_time.h>\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstatic int ssd1306_write_cmd(struct ssd1306_dev *dev, uint8_t cmd) {\\n    struct hal_i2c_master_data pdata;\\n    pdata.address = dev->i2c_addr;\\n    pdata.buffer = &cmd;\\n    pdata.len = 1;\\n    return hal_i2c_master_write(0, &pdata, OS_TIMEOUT_NEVER, 1);\\n}\\n\\nstatic int ssd1306_write_cmd_bytes(struct ssd1306_dev *dev, const uint8_t *bytes, size_t len) {\\n    struct hal_i2c_master_data pdata;\\n    pdata.address = dev->i2c_addr;\\n    pdata.buffer = (uint8_t *)bytes;\\n    pdata.len = len;\\n    return hal_i2c_master_write(0, &pdata, OS_TIMEOUT_NEVER, 1);\\n}\\n\\nint ssd1306_init(struct ssd1306_dev *dev, void *bus_handle) {\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = SSD1306_I2C_ADDR;\\n\\n    // Power ON sequence (simplified: assume RES# and VCC are handled externally)\\n    os_time_delay(100); // wait tAF\\n    ssd1306_write_cmd(dev, 0xAF);\\n\\n    // Init sequence\\n    ssd1306_write_cmd(dev, 0xAE);\\n    uint8_t d5[] = {0xD5, 0x80};\\n    ssd1306_write_cmd_bytes(dev, d5, 2);\\n    uint8_t a8[] = {0xA8, 0x3F};\\n    ssd1306_write_cmd_bytes(dev, a8, 2);\\n    uint8_t d3[] = {0xD3, 0x00};\\n    ssd1306_write_cmd_bytes(dev, d3, 2);\\n    ssd1306_write_cmd(dev, 0x40);\\n    ssd1306_write_cmd(dev, 0xA1);\\n    ssd1306_write_cmd(dev, 0xC8);\\n    uint8_t da[] = {0xDA, 0x12};\\n    ssd1306_write_cmd_bytes(dev, da, 2);\\n    uint8_t ctrl[] = {0x81, 0x7F};\\n    ssd1306_write_cmd_bytes(dev, ctrl, 2);\\n    ssd1306_write_cmd(dev, 0xA4);\\n    ssd1306_write_cmd(dev, 0xA6);\\n    ssd1306_write_cmd(dev, 0x2E);\\n    uint8_t mode[] = {0x20, 0x00};\\n    ssd1306_write_cmd_bytes(dev, mode, 2);\\n    uint8_t col[] = {0x21, 0x00, 0x7F};\\n    ssd1306_write_cmd_bytes(dev, col, 3);\\n    uint8_t page[] = {0x22, 0x00, 0x07};\\n    ssd1306_write_cmd_bytes(dev, page, 3);\\n    ssd1306_write_cmd(dev, 0xAF);\\n\\n    return 0;\\n}\\n\\nint ssd1306_write_display_data(struct ssd1306_dev *dev, const uint8_t *data, size_t len) {\\n    // Set column address range (0x21, start, end)\\n    uint8_t col_cmd[] = {0x21, 0x00, 0x7F};\\n    ssd1306_write_cmd_bytes(dev, col_cmd, 3);\\n    // Set page address range (0x22, start, end)\\n    uint8_t page_cmd[] = {0x22, 0x00, 0x07};\\n    ssd1306_write_cmd_bytes(dev, page_cmd, 3);\\n    // Write data bytes (control byte with D/C#=1 is handled by HAL? Assume raw data write)\\n    struct hal_i2c_master_data pdata;\\n    pdata.address = dev->i2c_addr;\\n    pdata.buffer = (uint8_t *)data;\\n    pdata.len = len;\\n    return hal_i2c_master_write(0, &pdata, OS_TIMEOUT_NEVER, 1);\\n}\\n\"}",
+  "plan_hash": "23745400bbd72aca"
+}

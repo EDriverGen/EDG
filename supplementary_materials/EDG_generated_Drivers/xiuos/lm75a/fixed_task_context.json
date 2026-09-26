@@ -1,0 +1,309 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/xiuos_generic_xizi__lm75a__i2c1_polling/task_package.json",
+  "task_package": {
+    "package_id": "xiuos_generic_xizi__lm75a__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/xiuos_generic_xizi.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/xiuos_generic_xizi_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/lm75a.json",
+    "reference_driver_root": "DriverGen/data/references/lm75a/xiuos",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "xiuos_generic_xizi",
+        "rtos": "xiuos",
+        "rtos_bundle": "xiuos",
+        "board": "stm32f103-nano",
+        "board_alias": "xiuos_f103rb",
+        "integration": "xizi_transform_layer",
+        "integration_style": "xiuos_transform_plus_bus_framework",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rbt6"
+      },
+      "connection": {
+        "binding_id": "xiuos_generic_xizi_i2c1_polling",
+        "platform_id": "xiuos_generic_xizi",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "/dev/i2c1",
+        "bus_instance_kind": "device_path",
+        "bus_symbol": "/dev/i2c1",
+        "backend": "XiUOS transform layer I2C device path",
+        "address_mode": "7-bit",
+        "fixed_attachment": {},
+        "required_helpers": [
+          "PrivOpen",
+          "PrivRead",
+          "PrivWrite",
+          "PrivIoctl",
+          "PrivClose",
+          "PrivTaskDelay"
+        ],
+        "helper_usage_patterns": [
+          {
+            "pattern_id": "xizi_i2c_fd_select_slave_address",
+            "applies_to": "i2c",
+            "purpose": "Bind the opened I2C device fd to the selected 7-bit device slave address before PrivWrite/PrivRead.",
+            "required_symbols": [
+              "PrivOpen",
+              "PrivIoctl",
+              "PrivWrite",
+              "PrivRead",
+              "PrivClose"
+            ],
+            "required_types": [
+              "struct PrivIoctlCfg"
+            ],
+            "required_constants": [
+              "OPE_INT",
+              "I2C_TYPE"
+            ],
+            "steps": [
+              "Open the concrete bus_instance with PrivOpen and keep the fd in device state while the driver is active.",
+              "Create a uint16_t variable holding the chosen Device IR 7-bit I2C address.",
+              "Fill struct PrivIoctlCfg with ioctl_driver_type = I2C_TYPE and args = &i2c_addr.",
+              "Call PrivIoctl(fd, OPE_INT, &ioctl_cfg) once after open and before any PrivWrite or PrivRead.",
+              "Use the same configured fd for subsequent PrivWrite and PrivRead calls; close it during deinit or init-error cleanup."
+            ],
+            "evidence": [
+              "DriverGen/data/references/bh1750/xiuos/bh1750_ref.c",
+              "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+            ]
+          }
+        ]
+      },
+      "device": {
+        "device_id": "lm75a",
+        "attachment_type": "i2c_sensor",
+        "required_bus_type": "i2c",
+        "address_mode": "7-bit",
+        "addressing": {
+          "default": "0x48",
+          "alternates": [
+            "0x49",
+            "0x4A",
+            "0x4B",
+            "0x4C",
+            "0x4D",
+            "0x4E",
+            "0x4F"
+          ],
+          "selection_rule": "A2/A1/A0 define the lower address bits."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "Minimal driver only requires I2C power, ground, SDA, and SCL."
+          ]
+        },
+        "optional_attachment": {
+          "os_pin": "optional",
+          "address_select_pins": [
+            "A0",
+            "A1",
+            "A2"
+          ]
+        },
+        "default_overrides": {
+          "bus_instance": null,
+          "irq": "absent",
+          "dma": "absent",
+          "reset_gpio": null,
+          "power_gpio": null
+        },
+        "protocol_hints": {}
+      }
+    },
+    "notes": [
+      "This package freezes a concrete task setup for xiuos + lm75a.",
+      "It is intended for controlled DriverGen experiments and reduces variation in board/integration assumptions."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/xiuos",
+      "DriverGen/data/raw/lm75a",
+      "DriverGen/data/references/lm75a/xiuos"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "xiuos_generic_xizi",
+    "board": "stm32f103-nano",
+    "board_alias": "xiuos_f103rb",
+    "rtos": "xiuos",
+    "rtos_bundle": "xiuos",
+    "integration": "xizi_transform_layer",
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rbt6",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "gpio_timing"
+      ],
+      "available_instances": {
+        "i2c": [
+          "/dev/i2c1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform targets the XiUOS stm32f103-nano board while using the public XiZi transform-layer plus resource framework.",
+      "Board assumptions stay generic and follow the existing XiUOS reference drivers that use device paths."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/xiuos/Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_i2c.h",
+      "DriverGen/data/rtos/xiuos/Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_pin.h",
+      "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "xiuos_generic_xizi_i2c1_polling",
+    "platform_id": "xiuos_generic_xizi",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "/dev/i2c1",
+    "bus_instance_kind": "device_path",
+    "bus_symbol": "/dev/i2c1",
+    "backend": "XiUOS transform layer I2C device path",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "required_helpers": [
+      "PrivOpen",
+      "PrivRead",
+      "PrivWrite",
+      "PrivIoctl",
+      "PrivClose",
+      "PrivTaskDelay"
+    ],
+    "helper_usage_patterns": [
+      {
+        "pattern_id": "xizi_i2c_fd_select_slave_address",
+        "applies_to": "i2c",
+        "purpose": "Bind the opened I2C device fd to the selected 7-bit device slave address before PrivWrite/PrivRead.",
+        "required_symbols": [
+          "PrivOpen",
+          "PrivIoctl",
+          "PrivWrite",
+          "PrivRead",
+          "PrivClose"
+        ],
+        "required_types": [
+          "struct PrivIoctlCfg"
+        ],
+        "required_constants": [
+          "OPE_INT",
+          "I2C_TYPE"
+        ],
+        "steps": [
+          "Open the concrete bus_instance with PrivOpen and keep the fd in device state while the driver is active.",
+          "Create a uint16_t variable holding the chosen Device IR 7-bit I2C address.",
+          "Fill struct PrivIoctlCfg with ioctl_driver_type = I2C_TYPE and args = &i2c_addr.",
+          "Call PrivIoctl(fd, OPE_INT, &ioctl_cfg) once after open and before any PrivWrite or PrivRead.",
+          "Use the same configured fd for subsequent PrivWrite and PrivRead calls; close it during deinit or init-error cleanup."
+        ],
+        "evidence": [
+          "DriverGen/data/references/bh1750/xiuos/bh1750_ref.c",
+          "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+        ]
+      }
+    ],
+    "notes": [
+      "Default XiUOS I2C binding uses the transform-layer device path /dev/i2c1."
+    ],
+    "evidence": [
+      "DriverGen/data/references/bh1750/xiuos/bh1750_sample_ref.c",
+      "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "lm75a",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B",
+        "0x4C",
+        "0x4D",
+        "0x4E",
+        "0x4F"
+      ],
+      "selection_rule": "A2/A1/A0 define the lower address bits."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver only requires I2C power, ground, SDA, and SCL."
+      ]
+    },
+    "optional_attachment": {
+      "os_pin": "optional",
+      "address_select_pins": [
+        "A0",
+        "A1",
+        "A2"
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers treat LM75A as a simple two-byte temperature register device with no explicit measurement trigger."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/lm75a",
+      "DriverGen/data/references/lm75a/*/*_ref.h"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "xiuos_generic_xizi__lm75a__i2c1_polling",
+    "rtos": "xiuos",
+    "rtos_bundle": "xiuos",
+    "board": "stm32f103-nano",
+    "board_alias": "xiuos_f103rb",
+    "integration": "xizi_transform_layer",
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rbt6",
+    "bus_type": "i2c",
+    "bus_instance": "/dev/i2c1",
+    "bus_instance_kind": "device_path",
+    "bus_symbol": "/dev/i2c1",
+    "bus_backend": "XiUOS transform layer I2C device path",
+    "address_mode": "7-bit",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {},
+    "device_attachment_context_id": "lm75a",
+    "device_addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B",
+        "0x4C",
+        "0x4D",
+        "0x4E",
+        "0x4F"
+      ],
+      "selection_rule": "A2/A1/A0 define the lower address bits."
+    }
+  }
+}

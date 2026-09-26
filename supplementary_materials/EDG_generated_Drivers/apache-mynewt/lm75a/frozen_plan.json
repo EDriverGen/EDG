@@ -1,0 +1,75 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "apache-mynewt",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, bus_handle)",
+    "read_call": "lm75a_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct lm75a_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read temperature: write pointer 0x00 then read 2 bytes"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 50000000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x32 0x00 decode to raw=((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400; public value in milli_degC is 400 * 125000 = 50000000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 5) & 0x7FF) = 0; public value in milli_degC is 0 * 125000 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xCE",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -50000000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xCE 0x00 decode to raw=(((((0xCE << 8) | 0x00) >> 5) & 0x7FF) - 2048) = -400; public value in milli_degC is -400 * 125000 = -50000000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "30d6baf62dde243c",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.052,
+  "prompt_chars": 47853,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"lm75a_init(&g_eval_dev, bus_handle)\", \"read_call\": \"lm75a_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct lm75a_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read temperature: write pointer 0x00 then read 2 bytes\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x19\", \"0x00\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw_signed_11 = (0x19 << 3) | (0x00 >> 5) = 200; temp_mdegC = (200 * 125) / 1000 = 25000\"}, {\"name\": \"zero_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw_signed_11 = 0; temp_mdegC = (0 * 125) / 1000 = 0\"}, {\"name\": \"negative_temperature_minus10C\", \"mock_preload\": {\"0x00\": [\"0xF6\", \"0x00\"]}, \"expected_read_raw\": -10000, \"derivation\": \"raw_signed_11 = sign_extend(0xF6 >> 5, 11) = -80; temp_mdegC = (-80 * 125) / 1000 = -10000\"}]}}"
+}

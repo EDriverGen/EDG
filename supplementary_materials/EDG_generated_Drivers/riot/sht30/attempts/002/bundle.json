@@ -1,0 +1,125 @@
+{
+  "device_id": "sht30",
+  "rtos_id": "riot",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef SHT30_H\n#define SHT30_H\n\n#include <stdint.h>\n#include <periph/i2c.h>\n\n#include \"riot.h\"\ntypedef struct {\n    i2c_t bus;\n    uint8_t addr;\n} sht30_t;\n\nvoid sht30_init(sht30_t *dev, i2c_t bus);\nint sht30_read_single_shot(sht30_t *dev, int32_t *temp_val, int32_t *hum_val);\n\n#endif /* SHT30_H */\n",
+  "driver_source": "#include \"sht30.h\"\n#include \"xtimer.h\"\n#include <errno.h>\n#include <stddef.h>\n\n#include \"riot.h\"\n#define SHT30_ADDR 0x44\n#define CMD_SOFT_RESET 0x30A2\n#define CMD_GENERAL_CALL_RESET 0x0006\n#define CMD_SINGLE_SHOT_HIGH 0x2400\n#define MEASUREMENT_DELAY_MS 15\n#define SOFT_RESET_DELAY_MS 2\n\nstatic uint8_t crc8(const uint8_t *data, size_t len) {\n    uint8_t crc = 0xFF;\n    for (size_t i = 0; i < len; i++) {\n        crc ^= data[i];\n        for (int j = 0; j < 8; j++) {\n            if (crc & 0x80)\n                crc = (crc << 1) ^ 0x31;\n            else\n                crc <<= 1;\n        }\n    }\n    return crc;\n}\n\nvoid sht30_init(sht30_t *dev, i2c_t bus) {\n    dev->bus = bus;\n    dev->addr = SHT30_ADDR;\n    uint8_t cmd[2];\n    cmd[0] = (CMD_SOFT_RESET >> 8) & 0xFF;\n    cmd[1] = CMD_SOFT_RESET & 0xFF;\n    i2c_write_bytes(bus, dev->addr, cmd, 2, 0);\n    xtimer_msleep(SOFT_RESET_DELAY_MS);\n    cmd[0] = (CMD_GENERAL_CALL_RESET >> 8) & 0xFF;\n    cmd[1] = CMD_GENERAL_CALL_RESET & 0xFF;\n    i2c_write_bytes(bus, 0x00, cmd, 2, 0);\n    xtimer_msleep(SOFT_RESET_DELAY_MS);\n}\n\nint sht30_read_single_shot(sht30_t *dev, int32_t *temp_val, int32_t *hum_val) {\n    uint8_t cmd[2];\n    cmd[0] = (CMD_SINGLE_SHOT_HIGH >> 8) & 0xFF;\n    cmd[1] = CMD_SINGLE_SHOT_HIGH & 0xFF;\n    int ret = i2c_write_bytes(dev->bus, dev->addr, cmd, 2, 0);\n    if (ret != 0) return -EIO;\n    xtimer_msleep(MEASUREMENT_DELAY_MS);\n    uint8_t buf[6];\n    ret = i2c_read_bytes(dev->bus, dev->addr, buf, 6, 0);\n    if (ret != 0) return -EIO;\n    uint16_t st = ((uint16_t)buf[0] << 8) | buf[1];\n    uint16_t srh = ((uint16_t)buf[3] << 8) | buf[4];\n    if (crc8(buf, 2) != buf[2]) return -EIO;\n    if (crc8(buf + 3, 2) != buf[5]) return -EIO;\n    int64_t temp_raw = (int64_t)st * 175000LL / 65535LL - 45000LL;\n    *temp_val = (int32_t)temp_raw;\n    int64_t hum_raw = (int64_t)srh * 100000LL / 65535LL;\n    *hum_val = (int32_t)hum_raw;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "sht30_init(&g_eval_dev, I2C_DEV(0))",
+    "channels": [
+      {
+        "id": "temp",
+        "call": "sht30_read_single_shot(&g_eval_dev, &temp_val, &hum_val)",
+        "out_arg": "temp_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "humidity",
+        "call": "sht30_read_single_shot(&g_eval_dev, &temp_val, &hum_val)",
+        "out_arg": "hum_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_percent"
+      }
+    ],
+    "dev_struct_type": "sht30_t",
+    "init_extra_setup_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x30",
+            "0xA2"
+          ]
+        ],
+        "note": "soft_reset"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x00",
+            "0x06"
+          ]
+        ],
+        "note": "general_call_reset"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x24",
+            "0x00"
+          ]
+        ],
+        "note": "single_shot_measurement_high_no_clock_stretching: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_packed_direct_read_1",
+        "mock_preload": {
+          "read_bytes": [
+            "0x66",
+            "0x66",
+            "0x93",
+            "0x80",
+            "0x00",
+            "0xA2"
+          ]
+        },
+        "expected_channels": {
+          "temp": 25000,
+          "humidity": 50000
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x66 << 8) | 0x66); ((((0x66 << 8) | 0x66) * 175000) // 65535) - 45000 = 25000; humidity: SRH=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 100000) // 65535) = 50000"
+      },
+      {
+        "name": "mechanical_packed_direct_read_2",
+        "mock_preload": {
+          "read_bytes": [
+            "0x80",
+            "0x00",
+            "0xA2",
+            "0x00",
+            "0x00",
+            "0x81"
+          ]
+        },
+        "expected_channels": {
+          "temp": 42501,
+          "humidity": 0
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 175000) // 65535) - 45000 = 42501; humidity: SRH=((0x00 << 8) | 0x00); ((((0x00 << 8) | 0x00) * 100000) // 65535) = 0"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.714,
+  "prompt_chars": 38842,
+  "raw_response": "{\"driver_header\": \"#ifndef SHT30_H\\n#define SHT30_H\\n\\n#include <stdint.h>\\n#include <periph/i2c.h>\\n\\ntypedef struct {\\n    i2c_t bus;\\n    uint8_t addr;\\n} sht30_t;\\n\\nvoid sht30_init(sht30_t *dev, i2c_t bus);\\nint sht30_read_single_shot(sht30_t *dev, int32_t *temp_val, int32_t *hum_val);\\n\\n#endif /* SHT30_H */\", \"driver_source\": \"#include \\\"sht30.h\\\"\\n#include \\\"xtimer.h\\\"\\n#include <errno.h>\\n#include <stddef.h>\\n\\n#define SHT30_ADDR 0x44\\n#define CMD_SOFT_RESET 0x30A2\\n#define CMD_GENERAL_CALL_RESET 0x0006\\n#define CMD_SINGLE_SHOT_HIGH 0x2400\\n#define MEASUREMENT_DELAY_MS 15\\n#define SOFT_RESET_DELAY_MS 2\\n\\nstatic uint8_t crc8(const uint8_t *data, size_t len) {\\n    uint8_t crc = 0xFF;\\n    for (size_t i = 0; i < len; i++) {\\n        crc ^= data[i];\\n        for (int j = 0; j < 8; j++) {\\n            if (crc & 0x80)\\n                crc = (crc << 1) ^ 0x31;\\n            else\\n                crc <<= 1;\\n        }\\n    }\\n    return crc;\\n}\\n\\nvoid sht30_init(sht30_t *dev, i2c_t bus) {\\n    dev->bus = bus;\\n    dev->addr = SHT30_ADDR;\\n    uint8_t cmd[2];\\n    cmd[0] = (CMD_SOFT_RESET >> 8) & 0xFF;\\n    cmd[1] = CMD_SOFT_RESET & 0xFF;\\n    i2c_write_bytes(bus, dev->addr, cmd, 2, 0);\\n    xtimer_msleep(SOFT_RESET_DELAY_MS);\\n    cmd[0] = (CMD_GENERAL_CALL_RESET >> 8) & 0xFF;\\n    cmd[1] = CMD_GENERAL_CALL_RESET & 0xFF;\\n    i2c_write_bytes(bus, 0x00, cmd, 2, 0);\\n    xtimer_msleep(SOFT_RESET_DELAY_MS);\\n}\\n\\nint sht30_read_single_shot(sht30_t *dev, int32_t *temp_val, int32_t *hum_val) {\\n    uint8_t cmd[2];\\n    cmd[0] = (CMD_SINGLE_SHOT_HIGH >> 8) & 0xFF;\\n    cmd[1] = CMD_SINGLE_SHOT_HIGH & 0xFF;\\n    int ret = i2c_write_bytes(dev->bus, dev->addr, cmd, 2, 0);\\n    if (ret != 0) return -EIO;\\n    xtimer_msleep(MEASUREMENT_DELAY_MS);\\n    uint8_t buf[6];\\n    ret = i2c_read_bytes(dev->bus, dev->addr, buf, 6, 0);\\n    if (ret != 0) return -EIO;\\n    uint16_t st = ((uint16_t)buf[0] << 8) | buf[1];\\n    uint16_t srh = ((uint16_t)buf[3] << 8) | buf[4];\\n    if (crc8(buf, 2) != buf[2]) return -EIO;\\n    if (crc8(buf + 3, 2) != buf[5]) return -EIO;\\n    int64_t temp_raw = (int64_t)st * 175000LL / 65535LL - 45000LL;\\n    *temp_val = (int32_t)temp_raw;\\n    int64_t hum_raw = (int64_t)srh * 100000LL / 65535LL;\\n    *hum_val = (int32_t)hum_raw;\\n    return 0;\\n}\"}",
+  "plan_hash": "845621be57dc5ad4"
+}

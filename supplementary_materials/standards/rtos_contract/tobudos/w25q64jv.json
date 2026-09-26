@@ -1,0 +1,168 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "tobudos__w25q64jv",
+  "device_id": "w25q64jv",
+  "rtos_id": "tobudos",
+  "bus": "spi",
+  "scope": "Polling spi driver contract for w25q64jv on ToBudOS/STM32F1 HAL. The fixed instance comes from task_requirements; include only HAL/timing operations actually used by the reference implementation and waits inside the main driver.",
+  "api_contract": {
+    "profile": "spi",
+    "fixed_binding": {
+      "instance": "spi1",
+      "symbol": "hspi1",
+      "backend": "TencentOS Tiny STM32F1 HAL SPI",
+      "mode": "polling"
+    },
+    "operations": [
+      {
+        "name": "caller-supplied HAL handle",
+        "handle": "SPI_HandleTypeDef *"
+      },
+      {
+        "name": "HAL_SPI_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *, uint8_t *data, uint16_t size, uint32_t timeout)"
+      },
+      {
+        "name": "HAL_SPI_Receive",
+        "signature": "HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *, uint8_t *data, uint16_t size, uint32_t timeout)"
+      },
+      {
+        "name": "HAL_GPIO_WritePin",
+        "signature": "void HAL_GPIO_WritePin(GPIO_TypeDef *, uint16_t pin, GPIO_PinState)"
+      }
+    ],
+    "semantics": {
+      "polling": true,
+      "addressing": "chip-select",
+      "error_reporting": "HAL_StatusTypeDef/HAL_OK at checked call sites",
+      "timeouts": "bounded per-transfer timeout supplied by caller; value from reference call sites"
+    }
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Use the fixed ToBudOS spi polling instance spi1 (symbol hspi1), passing the corresponding HAL handle pointer to the reference driver; retain the task-configured bus type and addressing conventions.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.h",
+          "line_start": 1,
+          "line_end": 3
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 25
+        }
+      ]
+    },
+    {
+      "id": "spi_polling_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Provide the subset of blocking HAL_SPI_Transmit, HAL_SPI_Receive, and/or HAL_SPI_TransmitReceive operations actually used by the reference, with SPI_HandleTypeDef *, buffers, uint16_t lengths, uint32_t timeouts, and HAL_StatusTypeDef returns for caller checks.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 22,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 37,
+          "line_end": 37
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 63,
+          "line_end": 63
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 83,
+          "line_end": 83
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 86,
+          "line_end": 86
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 109,
+          "line_end": 109
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 112,
+          "line_end": 112
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 134,
+          "line_end": 134
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/spi/pack.md",
+          "line_start": 955,
+          "line_end": 957
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_spi.c",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_spi.c",
+          "line_start": 29,
+          "line_end": 29
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_spi.c",
+          "line_start": 38,
+          "line_end": 38
+        }
+      ]
+    },
+    {
+      "id": "chip_select",
+      "category": "gpio_control",
+      "requirement": "Retain HAL_GPIO_WritePin control of CS around fixed SPI transactions; accept the GPIO port, uint16_t pin mask, and GPIO_PinState, and restore the correct chip-select state between transactions.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 8,
+          "line_end": 8
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/gpio_timing/pack.md",
+          "line_start": 437,
+          "line_end": 437
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/gpio_timing/pack.md",
+          "line_start": 447,
+          "line_end": 448
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_gpio.c",
+          "line_start": 64,
+          "line_end": 65
+        }
+      ]
+    }
+  ]
+}

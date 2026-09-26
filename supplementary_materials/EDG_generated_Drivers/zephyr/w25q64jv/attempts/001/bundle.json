@@ -1,0 +1,138 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "zephyr",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef W25Q64JV_H\n#define W25Q64JV_H\n\n#include <stdint.h>\n#include <stddef.h>\n#include <zephyr/drivers/spi.h>\n\n#define W25Q64JV_PAGE_SIZE 256\n#define W25Q64JV_MEMORY_SIZE 8388608\n\nstruct device;\nstruct spi_dt_spec;\n\nint w25q64jv_init(const struct device *dev, const struct spi_dt_spec *spi_cfg);\nint w25q64jv_read(const struct device *dev, uint32_t addr, uint8_t *buf, size_t len);\nint w25q64jv_write_page(const struct device *dev, uint32_t addr, const uint8_t *buf, size_t len);\n\n#endif /* W25Q64JV_H */",
+  "driver_source": "#include \"w25q64jv.h\"\n#include <errno.h>\n#include <zephyr/kernel.h>\n\n#include <zephyr/drivers/spi.h>\n#include <zephyr/sys/byteorder.h>\nstatic int spi_write_then_read(const struct spi_dt_spec *spec, const uint8_t *tx_data, size_t tx_len, uint8_t *rx_data, size_t rx_len)\n{\n    struct spi_buf tx_buf = { .buf = (void *)tx_data, .len = tx_len };\n    struct spi_buf_set tx = { .buffers = &tx_buf, .count = 1 };\n    struct spi_buf rx_buf = { .buf = rx_data, .len = rx_len };\n    struct spi_buf_set rx = { .buffers = &rx_buf, .count = 1 };\n    return spi_transceive_dt(spec, &tx, &rx);\n}\n\nint w25q64jv_init(const struct device *dev, const struct spi_dt_spec *spi_cfg)\n{\n    uint8_t cmd = 0x9F;\n    uint8_t jedec[3];\n    int ret;\n\n    ret = spi_write_then_read(spi_cfg, &cmd, 1, jedec, 3);\n    if (ret < 0) {\n        return ret;\n    }\n    /* JEDEC ID expected: 0xEF 0x40 0x17 for W25Q64JV */\n    if (jedec[0] != 0xEF || jedec[1] != 0x40 || jedec[2] != 0x17) {\n        return -ENODEV;\n    }\n    return 0;\n}\n\nint w25q64jv_read(const struct device *dev, uint32_t addr, uint8_t *buf, size_t len)\n{\n    const struct spi_dt_spec *spec = (const struct spi_dt_spec *)dev;\n    uint8_t tx_buf[4];\n    uint8_t rx_buf[4];\n    int ret;\n\n    if (len == 0) {\n        return 0;\n    }\n\n    tx_buf[0] = 0x03;\n    tx_buf[1] = (addr >> 16) & 0xFF;\n    tx_buf[2] = (addr >> 8) & 0xFF;\n    tx_buf[3] = addr & 0xFF;\n\n    /* Send command + address, then read data in same transaction */\n    struct spi_buf tx_bufs[2];\n    struct spi_buf rx_bufs[2];\n    struct spi_buf_set tx = { .buffers = tx_bufs, .count = 2 };\n    struct spi_buf_set rx = { .buffers = rx_bufs, .count = 2 };\n\n    tx_bufs[0].buf = tx_buf;\n    tx_bufs[0].len = 4;\n    rx_bufs[0].buf = rx_buf;\n    rx_bufs[0].len = 4;\n\n    tx_bufs[1].buf = NULL;\n    tx_bufs[1].len = len;\n    rx_bufs[1].buf = buf;\n    rx_bufs[1].len = len;\n\n    ret = spi_transceive_dt(spec, &tx, &rx);\n    if (ret < 0) {\n        return ret;\n    }\n    return len;\n}\n\nint w25q64jv_write_page(const struct device *dev, uint32_t addr, const uint8_t *buf, size_t len)\n{\n    const struct spi_dt_spec *spec = (const struct spi_dt_spec *)dev;\n    uint8_t cmd_wren = 0x06;\n    uint8_t cmd_pp[4];\n    int ret;\n\n    if (len == 0 || len > 256) {\n        return -EINVAL;\n    }\n\n    /* Write enable */\n    ret = spi_write_then_read(spec, &cmd_wren, 1, NULL, 0);\n    if (ret < 0) {\n        return ret;\n    }\n\n    /* Page program command + address + data */\n    cmd_pp[0] = 0x02;\n    cmd_pp[1] = (addr >> 16) & 0xFF;\n    cmd_pp[2] = (addr >> 8) & 0xFF;\n    cmd_pp[3] = addr & 0xFF;\n\n    struct spi_buf tx_bufs[2];\n    struct spi_buf_set tx = { .buffers = tx_bufs, .count = 2 };\n\n    tx_bufs[0].buf = cmd_pp;\n    tx_bufs[0].len = 4;\n    tx_bufs[1].buf = (void *)buf;\n    tx_bufs[1].len = len;\n\n    ret = spi_transceive_dt(spec, &tx, NULL);\n    if (ret < 0) {\n        return ret;\n    }\n    return len;\n}\n",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, &spi_cfg)",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write_page(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "const struct device *spi_dev = device_get_binding(bus_name);\nif (spi_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\nstruct spi_dt_spec spi_cfg = {\n    .bus = spi_dev,\n    .config = {\n        .frequency = 104000000,\n        .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),\n        .slave = 0,\n        .cs = { .gpio = GPIO_DT_SPEC_GET(DT_NODELABEL(spi1), cs_gpios) }\n    }\n};",
+    "preamble_c": "#include \"zephyr.h\"\n#include <zephyr/drivers/spi.h>\n#include <zephyr/device.h>\n#include <zephyr/kernel.h>\n#include <errno.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write JEDEC ID command"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: direct read JEDEC ID response"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write read command + address"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: direct read data"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write enable"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: page program command + address + data"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.456,
+  "prompt_chars": 41874,
+  "raw_response": "{\"driver_header\": \"#ifndef W25Q64JV_H\\n#define W25Q64JV_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <zephyr/drivers/spi.h>\\n\\n#define W25Q64JV_PAGE_SIZE 256\\n#define W25Q64JV_MEMORY_SIZE 8388608\\n\\nint w25q64jv_init(const struct device *dev, const struct spi_dt_spec *spi_cfg);\\nint w25q64jv_read(const struct device *dev, uint32_t addr, uint8_t *buf, size_t len);\\nint w25q64jv_write_page(const struct device *dev, uint32_t addr, const uint8_t *buf, size_t len);\\n\\n#endif /* W25Q64JV_H */\", \"driver_source\": \"#include \\\"w25q64jv.h\\\"\\n#include <errno.h>\\n#include <zephyr/kernel.h>\\n#include <zephyr/sys/byteorder.h>\\n\\nstatic int spi_write_then_read(const struct spi_dt_spec *spec, const uint8_t *tx_data, size_t tx_len, uint8_t *rx_data, size_t rx_len)\\n{\\n    struct spi_buf tx_buf = { .buf = (void *)tx_data, .len = tx_len };\\n    struct spi_buf_set tx = { .buffers = &tx_buf, .count = 1 };\\n    struct spi_buf rx_buf = { .buf = rx_data, .len = rx_len };\\n    struct spi_buf_set rx = { .buffers = &rx_buf, .count = 1 };\\n    return spi_transceive_dt(spec, &tx, &rx);\\n}\\n\\nint w25q64jv_init(const struct device *dev, const struct spi_dt_spec *spi_cfg)\\n{\\n    uint8_t cmd = 0x9F;\\n    uint8_t jedec[3];\\n    int ret;\\n\\n    ret = spi_write_then_read(spi_cfg, &cmd, 1, jedec, 3);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    /* JEDEC ID expected: 0xEF 0x40 0x17 for W25Q64JV */\\n    if (jedec[0] != 0xEF || jedec[1] != 0x40 || jedec[2] != 0x17) {\\n        return -ENODEV;\\n    }\\n    return 0;\\n}\\n\\nint w25q64jv_read(const struct device *dev, uint32_t addr, uint8_t *buf, size_t len)\\n{\\n    const struct spi_dt_spec *spec = (const struct spi_dt_spec *)dev;\\n    uint8_t tx_buf[4];\\n    uint8_t rx_buf[4];\\n    int ret;\\n\\n    if (len == 0) {\\n        return 0;\\n    }\\n\\n    tx_buf[0] = 0x03;\\n    tx_buf[1] = (addr >> 16) & 0xFF;\\n    tx_buf[2] = (addr >> 8) & 0xFF;\\n    tx_buf[3] = addr & 0xFF;\\n\\n    /* Send command + address, then read data in same transaction */\\n    struct spi_buf tx_bufs[2];\\n    struct spi_buf rx_bufs[2];\\n    struct spi_buf_set tx = { .buffers = tx_bufs, .count = 2 };\\n    struct spi_buf_set rx = { .buffers = rx_bufs, .count = 2 };\\n\\n    tx_bufs[0].buf = tx_buf;\\n    tx_bufs[0].len = 4;\\n    rx_bufs[0].buf = rx_buf;\\n    rx_bufs[0].len = 4;\\n\\n    tx_bufs[1].buf = NULL;\\n    tx_bufs[1].len = len;\\n    rx_bufs[1].buf = buf;\\n    rx_bufs[1].len = len;\\n\\n    ret = spi_transceive_dt(spec, &tx, &rx);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    return len;\\n}\\n\\nint w25q64jv_write_page(const struct device *dev, uint32_t addr, const uint8_t *buf, size_t len)\\n{\\n    const struct spi_dt_spec *spec = (const struct spi_dt_spec *)dev;\\n    uint8_t cmd_wren = 0x06;\\n    uint8_t cmd_pp[4];\\n    int ret;\\n\\n    if (len == 0 || len > 256) {\\n        return -EINVAL;\\n    }\\n\\n    /* Write enable */\\n    ret = spi_write_then_read(spec, &cmd_wren, 1, NULL, 0);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    /* Page program command + address + data */\\n    cmd_pp[0] = 0x02;\\n    cmd_pp[1] = (addr >> 16) & 0xFF;\\n    cmd_pp[2] = (addr >> 8) & 0xFF;\\n    cmd_pp[3] = addr & 0xFF;\\n\\n    struct spi_buf tx_bufs[2];\\n    struct spi_buf_set tx = { .buffers = tx_bufs, .count = 2 };\\n\\n    tx_bufs[0].buf = cmd_pp;\\n    tx_bufs[0].len = 4;\\n    tx_bufs[1].buf = (void *)buf;\\n    tx_bufs[1].len = len;\\n\\n    ret = spi_transceive_dt(spec, &tx, NULL);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    return len;\\n}\\n\"}",
+  "plan_hash": "1d41ab953b46a36d"
+}

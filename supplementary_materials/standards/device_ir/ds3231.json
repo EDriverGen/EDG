@@ -1,0 +1,832 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "ds3231",
+  "scope": "RTC time read/write plusrepresentedalarmsandtemperaturefeatures. Register/bitfieldfamiliesgroupedbyfunction; electrical timingassertionscheckedadditionally.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "pointer",
+        "read_latch",
+        "i2c_resync"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "time_registers",
+        "alarm_registers",
+        "alarm_masks",
+        "aging"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "write_order",
+        "temp_wait",
+        "temp_auto_period",
+        "temp_busy_delay",
+        "sck_limits",
+        "wire_timing_2",
+        "wire_timing_3",
+        "wire_timing_4",
+        "wire_timing_5",
+        "wire_timing_6",
+        "wire_timing_7",
+        "wire_timing_8",
+        "wire_timing_9",
+        "wire_timing_10",
+        "wire_timing_11",
+        "wire_timing_12",
+        "wire_timing_13",
+        "wire_timing_14",
+        "wire_timing_15",
+        "wire_timing_16",
+        "wire_timing_17",
+        "wire_timing_18",
+        "wire_timing_19",
+        "wire_timing_20",
+        "wire_timing_21"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "bcd_seconds_minutes",
+        "hour_mode",
+        "date_fields",
+        "weekday",
+        "century",
+        "temp_layout",
+        "temp_formula",
+        "aging_scale"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "alarm_match_modes",
+        "alarm_enable",
+        "alarm_clear",
+        "osf",
+        "battery_osc",
+        "default_control",
+        "powerup_clock",
+        "temp_trigger",
+        "temp_busy_precheck"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "DS3231.pdf",
+      "pages": 20,
+      "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "7-bitaddress68",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "8-bitpointer autoincrements,wrap12to00",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "time_registers",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "00..06 seconds/minutes/hours/day/date/month/year",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bcd_seconds_minutes",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Seconds/minutesBCD00..59 bits6:4tens3:0units",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        },
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "hour_mode",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Hoursbit6select12h,bit5PMor20hours",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        },
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "date_fields",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Date1..31,month1..12,year00..99BCD",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "weekday",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Weekday1..7 userassignedsequential",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "century",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Monthbit7toggleswhenyear99rollsto00",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_latch",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "STARTorwrapto00latchessecondarytimebuffers",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        },
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "write_order",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Writingsecondsresetsthechain;remainingdate/timewithin1s",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "alarm_registers",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Alarm1at07..0A,alarm2at0B..0D",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        },
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "alarm_masks",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Alarmmaskbit7,day/datebit6",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "alarm_match_modes",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Mask1ignorefield/0match;validpatternstable2",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "alarm_enable",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "INTCNbit2=1andcorrespondingAIEbit enablesalarmoutput",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "alarm_clear",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "StatusA1Fbit0,A2Fbit1 clearbywrite0",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "osf",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Statusbit7OSFflagsinvalidtimeuntilcleared",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "battery_osc",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "EOSCbit7=0 keepsoscillatorinbatterybackup",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "default_control",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "ControlPOR1C,statusOSF/EN32kHzset",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        },
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "powerup_clock",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "VCCorvalidI2Cstartsoscillator;firsttemp~2s",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_layout",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "11/12signed10bitsleftjustified,0.25C/LSB",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Signed10-bit extraction givesquarterdegrees",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_trigger",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "ControlCONVbit5requestsconversionandselfclears",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_busy_precheck",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "CheckBSY=0 beforeforcingnewconversion",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Temperatureconversionmaximum200ms",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_auto_period",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Automatictemperatureupdateevery64s",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        },
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_busy_delay",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "BSYassertiondelayed~2msafterCONV,staysuntilcomplete",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sck_limits",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Fast400kHz/standard100kHz",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        },
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_2",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 2 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_3",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 3 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_4",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 4 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_5",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 5 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_6",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 6 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_7",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 7 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_8",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 8 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_9",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 9 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_10",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 10 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_11",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 11 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_12",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 12 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_13",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 13 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_14",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 14 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_15",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 15 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_16",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 16 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_17",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 17 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_18",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 18 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_19",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 19 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_20",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 20 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_21",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2Ctimingparameter 21 matchesTableAC",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "i2c_resync",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "ToggleSCLuntilSDAhigh,thenSTART",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "aging",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "10signed8agingoffset",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "aging_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Agingtyp0.1ppm/LSBat25C,temperaturedependent",
+      "evidence": [
+        {
+          "document": "DS3231.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/ds3231/DS3231.pages.json"
+        }
+      ]
+    }
+  ]
+}

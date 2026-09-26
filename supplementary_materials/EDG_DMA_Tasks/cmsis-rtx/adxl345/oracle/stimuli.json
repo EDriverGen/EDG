@@ -1,0 +1,273 @@
+{
+    "stimuli": [
+        {
+            "name": "devid_read",
+            "mock_preload": {
+                "0x0": [
+                    229
+                ]
+            },
+            "expected": {
+                "raw": 0,
+                "channels": {
+                    "accel_x": {
+                        "raw": 0,
+                        "tolerance": 5
+                    },
+                    "accel_y": {
+                        "raw": 0,
+                        "tolerance": 5
+                    },
+                    "accel_z": {
+                        "raw": 0,
+                        "tolerance": 5
+                    }
+                }
+            },
+            "note": "DEVID register 0x00 reads 0xE5 (ADXL345 fixed signature)."
+        },
+        {
+            "name": "static_1g_z",
+            "mock_preload": {
+                "0x0": [
+                    229
+                ],
+                "0x2d": [
+                    8
+                ],
+                "0x31": [
+                    8
+                ],
+                "0x32": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1
+                ]
+            },
+            "expected": {
+                "raw": 0,
+                "channels": {
+                    "accel_x": {
+                        "raw": 0,
+                        "tolerance": 5
+                    },
+                    "accel_y": {
+                        "raw": 0,
+                        "tolerance": 5
+                    },
+                    "accel_z": {
+                        "raw": 256,
+                        "tolerance": 5
+                    }
+                }
+            },
+            "note": "Device flat on table: X=0, Y=0, Z=+256 LSB (~1g at FULL_RES). LE 16-bit."
+        },
+        {
+            "name": "tilt_x_plus_1g",
+            "mock_preload": {
+                "0x0": [
+                    229
+                ],
+                "0x2d": [
+                    8
+                ],
+                "0x31": [
+                    8
+                ],
+                "0x32": [
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 256,
+                "channels": {
+                    "accel_x": {
+                        "raw": 256,
+                        "tolerance": 5
+                    },
+                    "accel_y": {
+                        "raw": 0,
+                        "tolerance": 5
+                    },
+                    "accel_z": {
+                        "raw": 0,
+                        "tolerance": 5
+                    }
+                }
+            },
+            "note": "Tilted +X axis down: X=+256, Y=0, Z=0."
+        },
+        {
+            "name": "tilt_x_neg_1g",
+            "mock_preload": {
+                "0x0": [
+                    229
+                ],
+                "0x2d": [
+                    8
+                ],
+                "0x31": [
+                    8
+                ],
+                "0x32": [
+                    0,
+                    255,
+                    0,
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": -256,
+                "channels": {
+                    "accel_x": {
+                        "raw": -256,
+                        "tolerance": 5
+                    },
+                    "accel_y": {
+                        "raw": 0,
+                        "tolerance": 5
+                    },
+                    "accel_z": {
+                        "raw": 0,
+                        "tolerance": 5
+                    }
+                }
+            },
+            "note": "Tilted -X axis down: X=-256 (0xFF00 LE), Y=0, Z=0."
+        },
+        {
+            "name": "full_scale_positive",
+            "mock_preload": {
+                "0x0": [
+                    229
+                ],
+                "0x2d": [
+                    8
+                ],
+                "0x31": [
+                    11
+                ],
+                "0x32": [
+                    255,
+                    7,
+                    232,
+                    3,
+                    24,
+                    252
+                ]
+            },
+            "expected": {
+                "raw": 2047,
+                "channels": {
+                    "accel_x": {
+                        "raw": 2047,
+                        "tolerance": 5
+                    },
+                    "accel_y": {
+                        "raw": 1000,
+                        "tolerance": 5
+                    },
+                    "accel_z": {
+                        "raw": -1000,
+                        "tolerance": 5
+                    }
+                }
+            },
+            "note": "DATA_FORMAT=0x0B (FULL_RES, \u00b116g). X saturated positive 2047."
+        },
+        {
+            "name": "full_scale_negative",
+            "mock_preload": {
+                "0x0": [
+                    229
+                ],
+                "0x2d": [
+                    8
+                ],
+                "0x31": [
+                    11
+                ],
+                "0x32": [
+                    0,
+                    248,
+                    48,
+                    248,
+                    208,
+                    7
+                ]
+            },
+            "expected": {
+                "raw": -2048,
+                "channels": {
+                    "accel_x": {
+                        "raw": -2048,
+                        "tolerance": 5
+                    },
+                    "accel_y": {
+                        "raw": -2000,
+                        "tolerance": 5
+                    },
+                    "accel_z": {
+                        "raw": 2000,
+                        "tolerance": 5
+                    }
+                }
+            },
+            "note": "Full-scale negative X=-2048 (0xF800 LE). Verifies signed decoding."
+        },
+        {
+            "name": "configured_state_readback",
+            "mock_preload": {
+                "0x0": [
+                    229
+                ],
+                "0x2c": [
+                    10
+                ],
+                "0x2d": [
+                    8
+                ],
+                "0x31": [
+                    8
+                ],
+                "0x32": [
+                    26,
+                    0,
+                    205,
+                    255,
+                    0,
+                    1
+                ]
+            },
+            "expected": {
+                "raw": 26,
+                "channels": {
+                    "accel_x": {
+                        "raw": 26,
+                        "tolerance": 5
+                    },
+                    "accel_y": {
+                        "raw": -51,
+                        "tolerance": 5
+                    },
+                    "accel_z": {
+                        "raw": 256,
+                        "tolerance": 5
+                    }
+                }
+            },
+            "note": "After init: BW_RATE=0x0A (100Hz), POWER_CTL=0x08 (measure), DATA_FORMAT=0x08 (FULL_RES \u00b12g), accel \u2248 (+100mg,-200mg,+1g)."
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "xiuos",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, bus_handle)",
+    "read_call": "lm75a_read_temp(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct lm75a_device",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temp: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x32 0x00], raw_count = ((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "8e8a9d2f2108e23a",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.218,
+  "prompt_chars": 44744,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"lm75a_init(&g_eval_dev, bus_handle)\", \"read_call\": \"lm75a_read_temp(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct lm75a_device\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temp: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x01\", \"0x90\"]}, \"expected_read_raw\": 25000, \"derivation\": \"Raw register 0x0190 = 0b0000000110010000; 11-bit value = 0b00000001100 = 12; temp_mdegC = 12 * 125 = 1500; wait, recalc: 0x0190 = 400 decimal; 11-bit value = 400 >> 5 = 12; 12 * 125 = 1500. But 25C = 25000 mdegC. Need raw = 25 / 0.125 = 200; 200 << 5 = 6400 = 0x1900. Correct: 0x1900 = 0b0001100100000000; 11-bit = 0b00011001000 = 200; 200 * 125 = 25000.\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xE0\", \"0x00\"]}, \"expected_read_raw\": -10000, \"derivation\": \"Raw register 0xE000 = 0b1110000000000000; 11-bit two's complement: sign-extend bit 10 (0), value = 0b11100000000 = -512? Wait: 0xE000 >> 5 = 0x700 = 1792; sign-extend from bit 10: bit 10 = 1, so value = 1792 - 2048 = -256; -256 * 125 = -32000. Not -10C. Need raw = -10 / 0.125 = -80; -80 << 5 = -2560 = 0xF600. So 0xF600 = 0b1111011000000000; 11-bit = 0b11110110000 = -80; -80 * 125 = -10000.\"}]}}"
+}

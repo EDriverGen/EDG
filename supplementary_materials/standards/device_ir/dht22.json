@@ -1,0 +1,432 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "dht22",
+  "scope": "Current canonical AM2302/DHT22 manual, single-wire humidity/temperature read.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "single_wire",
+        "idle_high",
+        "pulse_acceptance",
+        "checksum"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": []
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "release_bus"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "start_low",
+        "start_max",
+        "power_wait",
+        "read_interval",
+        "release_wait",
+        "response_low",
+        "response_high",
+        "bit_low",
+        "zero_high",
+        "one_high",
+        "end_low"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "frame_length",
+        "frame_order",
+        "humidity_formula",
+        "temperature_formula",
+        "temperature_sign"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "bad_checksum",
+        "last_measurement",
+        "sleep"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "DHT22.pdf",
+      "pages": 8,
+      "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "single_wire",
+      "component": "B",
+      "category": "interface",
+      "required": true,
+      "expected": "One data line, host initiates40-bit response",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "idle_high",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Bus idles HIGH",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "release_bus",
+      "component": "O",
+      "category": "sequence",
+      "required": true,
+      "expected": "After start low, MCU switches to input/releases data line",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "start_low",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Chosen18ms low lies within source0.8..20ms range",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "start_max",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Start LOW must not exceed20ms",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Wait at least2s after power-on",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        },
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_interval",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Interval between reads at least2s",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        },
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "release_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Host release interval10..200us,typ30us",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "response_low",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Response low75..85us,typ80",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "response_high",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Response high75..85us,typ80",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bit_low",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Per-bit low48..55us,typ50",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "zero_high",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Zero high22..30us,typ26",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "one_high",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "One high68..75us,typ70",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pulse_acceptance",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Accept valid pulse windows22..30us and68..75us",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "frame_length",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "One frame is40 bits",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        },
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "frame_order",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Humidity hi/lo,temperature hi/lo,checksum; MSB first",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "humidity_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "RH=((Hhi<<8)|Hlo)/10 percent",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Temperature magnitude=((Thi&127)<<8|Tlo)/10 degC",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_sign",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Temperature bit15 is sign, bits14:0 magnitude",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "checksum",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Checksum is low8 bits of sum of preceding4 bytes",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bad_checksum",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Discard frame on checksum mismatch",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "end_low",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "After40 bits sensor holds low45..55us then releases",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "last_measurement",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Read returns previous measurement; for fresh data read twice>=2s apart",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        },
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sleep",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Returns to sleep after communication/acquisition",
+      "evidence": [
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        },
+        {
+          "document": "DHT22.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/dht22/DHT22.pages.json"
+        }
+      ]
+    }
+  ]
+}

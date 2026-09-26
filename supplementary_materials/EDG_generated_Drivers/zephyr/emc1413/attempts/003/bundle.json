@@ -1,0 +1,253 @@
+{
+  "device_id": "emc1413",
+  "rtos_id": "zephyr",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef EMC1413_H\n#define EMC1413_H\n\n#include <stdint.h>\n#include <zephyr/device.h>\n\n#define EMC1413_I2C_ADDR 0x4C\n\n#include <zephyr/drivers/i2c.h>\nstruct device;\n\nint emc1413_init(const struct device *dev);\nint emc1413_read_internal_temperature(const struct device *dev, int32_t *temp_local_val);\nint emc1413_read_external_diode_1_temperature(const struct device *dev, int32_t *temp_ext1_val);\nint emc1413_read_external_diode_2_temperature(const struct device *dev, int32_t *temp_ext2_val);\n\n#endif /* EMC1413_H */\n",
+  "driver_source": "#include \"emc1413.h\"\n#include <errno.h>\n#include <stdint.h>\n#include <zephyr/device.h>\n#include <zephyr/drivers/i2c.h>\n#include <zephyr/kernel.h>\n\n#include <zephyr/sys/byteorder.h>\n#define EMC1413_REG_MANUFACTURER_ID 0xFE\n#define EMC1413_REG_PRODUCT_ID 0xFD\n#define EMC1413_REG_CONFIG 0x03\n#define EMC1413_REG_CONV_RATE 0x04\n#define EMC1413_REG_INT_HIGH 0x00\n#define EMC1413_REG_INT_LOW 0x29\n#define EMC1413_REG_EXT1_HIGH 0x01\n#define EMC1413_REG_EXT1_LOW 0x10\n#define EMC1413_REG_EXT2_HIGH 0x23\n#define EMC1413_REG_EXT2_LOW 0x24\n\n#define EMC1413_MANUFACTURER_ID_EXPECTED 0x5D\n#define EMC1413_PRODUCT_ID_EXPECTED 0x21\n\nstatic int emc1413_write_reg(const struct device *dev, uint8_t reg, uint8_t val)\n{\n\tuint8_t buf[2] = {reg, val};\n\tstruct i2c_dt_spec spec = {.bus = dev, .addr = EMC1413_I2C_ADDR};\n\treturn i2c_write_dt(&spec, buf, 2);\n}\n\nstatic int emc1413_read_reg(const struct device *dev, uint8_t reg, uint8_t *val)\n{\n\tstruct i2c_dt_spec spec = {.bus = dev, .addr = EMC1413_I2C_ADDR};\n\tint ret = i2c_write_dt(&spec, &reg, 1);\n\tif (ret < 0) {\n\t\treturn ret;\n\t}\n\treturn i2c_read_dt(&spec, val, 1);\n}\n\nstatic int emc1413_read_temperature(const struct device *dev, uint8_t high_reg, uint8_t low_reg, int32_t *temp_milli)\n{\n\tuint8_t high_byte, low_byte;\n\tint ret;\n\n\tret = emc1413_read_reg(dev, high_reg, &high_byte);\n\tif (ret < 0) {\n\t\treturn ret;\n\t}\n\n\tret = emc1413_read_reg(dev, low_reg, &low_byte);\n\tif (ret < 0) {\n\t\treturn ret;\n\t}\n\n\tint32_t raw = ((int32_t)high_byte << 8) | low_byte;\n\tint32_t high = (raw >> 8) & 0xFF;\n\tint32_t frac = (raw >> 5) & 0x07;\n\t*temp_milli = (high * 1000) + (frac * 125);\n\treturn 0;\n}\n\nint emc1413_init(const struct device *dev)\n{\n\tuint8_t val;\n\tint ret;\n\n\tk_msleep(15);\n\n\tret = emc1413_read_reg(dev, EMC1413_REG_MANUFACTURER_ID, &val);\n\tif (ret < 0 || val != EMC1413_MANUFACTURER_ID_EXPECTED) {\n\t\treturn -EIO;\n\t}\n\n\tret = emc1413_read_reg(dev, EMC1413_REG_PRODUCT_ID, &val);\n\tif (ret < 0 || val != EMC1413_PRODUCT_ID_EXPECTED) {\n\t\treturn -EIO;\n\t}\n\n\tret = emc1413_write_reg(dev, EMC1413_REG_CONFIG, 0x00);\n\tif (ret < 0) {\n\t\treturn ret;\n\t}\n\n\tret = emc1413_write_reg(dev, EMC1413_REG_CONV_RATE, 0x06);\n\tif (ret < 0) {\n\t\treturn ret;\n\t}\n\n\treturn 0;\n}\n\nint emc1413_read_internal_temperature(const struct device *dev, int32_t *temp_local_val)\n{\n\treturn emc1413_read_temperature(dev, EMC1413_REG_INT_HIGH, EMC1413_REG_INT_LOW, temp_local_val);\n}\n\nint emc1413_read_external_diode_1_temperature(const struct device *dev, int32_t *temp_ext1_val)\n{\n\treturn emc1413_read_temperature(dev, EMC1413_REG_EXT1_HIGH, EMC1413_REG_EXT1_LOW, temp_ext1_val);\n}\n\nint emc1413_read_external_diode_2_temperature(const struct device *dev, int32_t *temp_ext2_val)\n{\n\treturn emc1413_read_temperature(dev, EMC1413_REG_EXT2_HIGH, EMC1413_REG_EXT2_LOW, temp_ext2_val);\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "emc1413_init(g_eval_dev)",
+    "channels": [
+      {
+        "id": "temp_local",
+        "call": "emc1413_read_internal_temperature(g_eval_dev, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_ext1",
+        "call": "emc1413_read_external_diode_1_temperature(g_eval_dev, &temp_ext1_val)",
+        "out_arg": "temp_ext1_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_ext2",
+        "call": "emc1413_read_external_diode_2_temperature(g_eval_dev, &temp_ext2_val)",
+        "out_arg": "temp_ext2_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"zephyr.h\"\n#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0xFD"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe: write_then_read Product ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x03",
+            "0x00"
+          ]
+        ],
+        "note": "init: write Configuration"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x04",
+            "0x06"
+          ]
+        ],
+        "note": "init: write Conversion Rate"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_internal_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x29"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_internal_temperature: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_1_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_1_temperature: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x23"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_2_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x24"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_2_temperature: write_then_read low byte"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "mock_preload": {
+          "0x4C:0x00": [
+            "0x1A"
+          ],
+          "0x4C:0x29": [
+            "0x80"
+          ],
+          "0x4C:0x01": [
+            "0x00"
+          ],
+          "0x4C:0x02": [
+            "0xE0"
+          ],
+          "0xFD": [
+            "0x21"
+          ],
+          "0xFE": [
+            "0x5D"
+          ]
+        },
+        "channel_preload_bytes": {
+          "temp_local": [
+            "0x1A",
+            "0x80"
+          ],
+          "temp_ext1": [
+            "0x64",
+            "0x00"
+          ],
+          "temp_ext2": [
+            "0x7F",
+            "0xE0"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 26500,
+          "temp_ext1": 100000,
+          "temp_ext2": 127875
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp_local: (0x1A * 1000) + (((0x80 >> 5) & 0x07) * 125) = 26500; temp_ext1: (0x64 * 1000) + (((0x00 >> 5) & 0x07) * 125) = 100000; temp_ext2: (0x7F * 1000) + (((0xE0 >> 5) & 0x07) * 125) = 127875"
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "mock_preload": {
+          "0x4C:0x00": [
+            "0x64"
+          ],
+          "0x4C:0x29": [
+            "0x00"
+          ],
+          "0x4C:0x01": [
+            "0xE0"
+          ],
+          "0x4C:0x02": [
+            "0x00"
+          ],
+          "0xFD": [
+            "0x21"
+          ],
+          "0xFE": [
+            "0x5D"
+          ]
+        },
+        "channel_preload_bytes": {
+          "temp_local": [
+            "0x64",
+            "0x00"
+          ],
+          "temp_ext1": [
+            "0x7F",
+            "0xE0"
+          ],
+          "temp_ext2": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 100000,
+          "temp_ext1": 127875,
+          "temp_ext2": 0
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp_local: (0x64 * 1000) + (((0x00 >> 5) & 0x07) * 125) = 100000; temp_ext1: (0x7F * 1000) + (((0xE0 >> 5) & 0x07) * 125) = 127875; temp_ext2: (0x00 * 1000) + (((0x00 >> 5) & 0x07) * 125) = 0"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 11.833,
+  "prompt_chars": 55742,
+  "raw_response": "{\"driver_header\": \"#ifndef EMC1413_H\\n#define EMC1413_H\\n\\n#include <stdint.h>\\n#include <zephyr/device.h>\\n\\n#define EMC1413_I2C_ADDR 0x4C\\n\\nint emc1413_init(const struct device *dev);\\nint emc1413_read_internal_temperature(const struct device *dev, int32_t *temp_local_val);\\nint emc1413_read_external_diode_1_temperature(const struct device *dev, int32_t *temp_ext1_val);\\nint emc1413_read_external_diode_2_temperature(const struct device *dev, int32_t *temp_ext2_val);\\n\\n#endif /* EMC1413_H */\", \"driver_source\": \"#include \\\"emc1413.h\\\"\\n#include <errno.h>\\n#include <stdint.h>\\n#include <zephyr/device.h>\\n#include <zephyr/drivers/i2c.h>\\n#include <zephyr/kernel.h>\\n#include <zephyr/sys/byteorder.h>\\n\\n#define EMC1413_REG_MANUFACTURER_ID 0xFE\\n#define EMC1413_REG_PRODUCT_ID 0xFD\\n#define EMC1413_REG_CONFIG 0x03\\n#define EMC1413_REG_CONV_RATE 0x04\\n#define EMC1413_REG_INT_HIGH 0x00\\n#define EMC1413_REG_INT_LOW 0x29\\n#define EMC1413_REG_EXT1_HIGH 0x01\\n#define EMC1413_REG_EXT1_LOW 0x10\\n#define EMC1413_REG_EXT2_HIGH 0x23\\n#define EMC1413_REG_EXT2_LOW 0x24\\n\\n#define EMC1413_MANUFACTURER_ID_EXPECTED 0x5D\\n#define EMC1413_PRODUCT_ID_EXPECTED 0x21\\n\\nstatic int emc1413_write_reg(const struct device *dev, uint8_t reg, uint8_t val)\\n{\\n\\tuint8_t buf[2] = {reg, val};\\n\\tstruct i2c_dt_spec spec = {.bus = dev, .addr = EMC1413_I2C_ADDR};\\n\\treturn i2c_write_dt(&spec, buf, 2);\\n}\\n\\nstatic int emc1413_read_reg(const struct device *dev, uint8_t reg, uint8_t *val)\\n{\\n\\tstruct i2c_dt_spec spec = {.bus = dev, .addr = EMC1413_I2C_ADDR};\\n\\tint ret = i2c_write_dt(&spec, &reg, 1);\\n\\tif (ret < 0) {\\n\\t\\treturn ret;\\n\\t}\\n\\treturn i2c_read_dt(&spec, val, 1);\\n}\\n\\nstatic int emc1413_read_temperature(const struct device *dev, uint8_t high_reg, uint8_t low_reg, int32_t *temp_milli)\\n{\\n\\tuint8_t high_byte, low_byte;\\n\\tint ret;\\n\\n\\tret = emc1413_read_reg(dev, high_reg, &high_byte);\\n\\tif (ret < 0) {\\n\\t\\treturn ret;\\n\\t}\\n\\n\\tret = emc1413_read_reg(dev, low_reg, &low_byte);\\n\\tif (ret < 0) {\\n\\t\\treturn ret;\\n\\t}\\n\\n\\tint32_t raw = ((int32_t)high_byte << 8) | low_byte;\\n\\tint32_t high = (raw >> 8) & 0xFF;\\n\\tint32_t frac = (raw >> 5) & 0x07;\\n\\t*temp_milli = (high * 1000) + (frac * 125);\\n\\treturn 0;\\n}\\n\\nint emc1413_init(const struct device *dev)\\n{\\n\\tuint8_t val;\\n\\tint ret;\\n\\n\\tk_msleep(15);\\n\\n\\tret = emc1413_read_reg(dev, EMC1413_REG_MANUFACTURER_ID, &val);\\n\\tif (ret < 0 || val != EMC1413_MANUFACTURER_ID_EXPECTED) {\\n\\t\\treturn -EIO;\\n\\t}\\n\\n\\tret = emc1413_read_reg(dev, EMC1413_REG_PRODUCT_ID, &val);\\n\\tif (ret < 0 || val != EMC1413_PRODUCT_ID_EXPECTED) {\\n\\t\\treturn -EIO;\\n\\t}\\n\\n\\tret = emc1413_write_reg(dev, EMC1413_REG_CONFIG, 0x00);\\n\\tif (ret < 0) {\\n\\t\\treturn ret;\\n\\t}\\n\\n\\tret = emc1413_write_reg(dev, EMC1413_REG_CONV_RATE, 0x06);\\n\\tif (ret < 0) {\\n\\t\\treturn ret;\\n\\t}\\n\\n\\treturn 0;\\n}\\n\\nint emc1413_read_internal_temperature(const struct device *dev, int32_t *temp_local_val)\\n{\\n\\treturn emc1413_read_temperature(dev, EMC1413_REG_INT_HIGH, EMC1413_REG_INT_LOW, temp_local_val);\\n}\\n\\nint emc1413_read_external_diode_1_temperature(const struct device *dev, int32_t *temp_ext1_val)\\n{\\n\\treturn emc1413_read_temperature(dev, EMC1413_REG_EXT1_HIGH, EMC1413_REG_EXT1_LOW, temp_ext1_val);\\n}\\n\\nint emc1413_read_external_diode_2_temperature(const struct device *dev, int32_t *temp_ext2_val)\\n{\\n\\treturn emc1413_read_temperature(dev, EMC1413_REG_EXT2_HIGH, EMC1413_REG_EXT2_LOW, temp_ext2_val);\\n}\\n\"}",
+  "plan_hash": "9bbd96a6cbb16d67"
+}

@@ -1,0 +1,159 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtthread__mpu6050",
+  "device_id": "mpu6050",
+  "rtos_id": "rtthread",
+  "bus": "i2c",
+  "scope": "rtthread i2c RTOS/BSP API minimum contract for rtthread__mpu6050; based on copied reference implementation and configuration, existing i2c API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "rtthread",
+    "bus": "i2c",
+    "task_binding": {
+      "connection_type": "i2c",
+      "mode": "polling",
+      "bus_instance": "i2c1",
+      "bus_symbol": "i2c1",
+      "backend": "rt-thread i2c bus device / local bsp implementation",
+      "address_mode": "7-bit"
+    },
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "mpu6050_ref.h",
+      "rtthread.h",
+      "rtdevice.h",
+      "stdint.h",
+      "stdio.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "rt_device_find",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_eval_adapter.c",
+            "line": 62,
+            "text": "rt_device_t dev = rt_device_find(bus_name);"
+          }
+        ],
+        "declaration_resolution": "no matching function prototype in supplied harness headers or pack"
+      },
+      {
+        "symbol": "rt_i2c_transfer",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+            "line": 14,
+            "text": "return (rt_i2c_transfer(dev->bus, msgs, 2) == 2) ? 0 : -1;"
+          },
+          {
+            "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+            "line": 21,
+            "text": "return (rt_i2c_transfer(dev->bus, &msg, 1) == 1) ? 0 : -1;"
+          }
+        ],
+        "available_declaration": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 375,
+          "line_end": 377
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/rt-thread/i2c/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's i2c connection context (i2c1; rt-thread i2c bus device / local bsp implementation) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_eval_adapter.c",
+          "line_start": 62,
+          "line_end": 62
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: rt_i2c_transfer. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 14,
+          "line_end": 14
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 21,
+          "line_end": 21
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve the signed message-count/status result of rt_i2c_transfer; the curated RT-Thread source pack declares rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *, struct rt_i2c_msg [], rt_uint32_t), and the driver checks the returned transfer count.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 14,
+          "line_end": 14
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 21,
+          "line_end": 21
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 375,
+          "line_end": 377
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 827,
+          "line_end": 831
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the RT-Thread I2C bus/message types, caller bus context and API declarations. rt_i2c_bus_device_find returns struct rt_i2c_bus_device *; its finder must supply a device pointer rather than a struct value.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/reference_drivers/mpu6050_ref.h",
+          "line_start": 3,
+          "line_end": 20
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__mpu6050/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 364,
+          "line_end": 364
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 811,
+          "line_end": 817
+        }
+      ]
+    }
+  ]
+}

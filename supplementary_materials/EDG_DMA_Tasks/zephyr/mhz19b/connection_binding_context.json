@@ -1,0 +1,104 @@
+{
+  "binding_id": "zephyr_generic_dt_uart1_dma",
+  "platform_id": "zephyr_generic_dt",
+  "connection_type": "uart_dma",
+  "mode": "dma",
+  "bus_instance": "uart1",
+  "bus_instance_kind": "devicetree_node_label",
+  "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(usart1))",
+  "backend": "Zephyr STM32F1 USART1 asynchronous DMA",
+  "address_mode": null,
+  "fixed_attachment": {
+    "baud_rate": 9600,
+    "data_bits": 8,
+    "parity": "none",
+    "stop_bits": 1
+  },
+  "notes": [
+    "Enable CONFIG_UART_ASYNC_API and DMA support; configure usart1 RX/TX DMA1 channels.",
+    "Resolve the original task's uart1 label to the board's usart1 node (PA9/PA10); retain 9600-8N1.",
+    "Move/disable console and shell traffic on this sensor UART.",
+    "Accumulate UART_RX_RDY offsets/lengths and handle buffer-release, stop, and timeout events.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+    "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+    "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+  ],
+  "dma": "required",
+  "completion_irq": "required",
+  "helper_usage_patterns": [],
+  "dma_requirements": {
+    "task_package_id": "zephyr_generic_dt__mhz19b__uart1_dma",
+    "mode": "dma",
+    "physical_bus": "uart",
+    "backend": "Zephyr STM32F1 USART1 asynchronous DMA",
+    "access_pattern": "rtos_async_dma",
+    "candidate_transfer_apis": [
+      "uart_callback_set",
+      "uart_rx_enable",
+      "uart_tx",
+      "uart_rx_disable"
+    ],
+    "dma_channels": {
+      "controller": "DMA1",
+      "tx": 4,
+      "rx": 5
+    },
+    "minimum_core_payload_bytes": 9,
+    "configuration_requirements": [
+      "Enable CONFIG_UART_ASYNC_API and DMA support; configure usart1 RX/TX DMA1 channels.",
+      "Resolve the original task's uart1 label to the board's usart1 node (PA9/PA10); retain 9600-8N1.",
+      "Move/disable console and shell traffic on this sensor UART.",
+      "Accumulate UART_RX_RDY offsets/lengths and handle buffer-release, stop, and timeout events."
+    ],
+    "generation_requirements": [
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+    ],
+    "device_scenarios": [
+      "Arm reception early enough to retain the response.",
+      "Accumulate receive events until the full frame is available.",
+      "Check header, checksum, timeout, and a subsequent request."
+    ],
+    "validation_requirements": [
+      {
+        "id": "dma_payload",
+        "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+      },
+      {
+        "id": "completion_order",
+        "requirement": "Consume receive data and reuse buffers only after the required completion event."
+      },
+      {
+        "id": "error_and_timeout",
+        "requirement": "Return the specified error and release transfer state after failure or timeout."
+      },
+      {
+        "id": "repeat_operation",
+        "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+      }
+    ],
+    "source_evidence": [
+      "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+      "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+      "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+    ]
+  },
+  "bsp_node": "usart1",
+  "task_bus_alias": "uart1"
+}

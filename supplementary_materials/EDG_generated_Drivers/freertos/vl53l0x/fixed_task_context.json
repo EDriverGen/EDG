@@ -1,0 +1,208 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/freertos_stm32f103rb__vl53l0x__i2c1_polling/task_package.json",
+  "task_package": {
+    "package_id": "freertos_stm32f103rb__vl53l0x__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/freertos_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/freertos_stm32f103rb_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/vl53l0x.json",
+    "reference_driver_root": "DriverGen/data/references/vl53l0x/freertos",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "freertos_stm32f103rb",
+        "rtos": "freertos",
+        "rtos_bundle": "freertos-stm32f103-project",
+        "board": "stm32f103rb",
+        "board_alias": "f103rb",
+        "integration": "stm32cubef1_hal",
+        "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "freertos_stm32f103rb_i2c1_polling",
+        "platform_id": "freertos_stm32f103rb",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "i2c1",
+        "bus_instance_kind": "named_hal_handle",
+        "bus_symbol": "hi2c1",
+        "backend": "STM32CubeF1 HAL I2C",
+        "address_mode": "7-bit",
+        "fixed_attachment": {},
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "vl53l0x",
+        "attachment_type": "i2c_sensor",
+        "required_bus_type": "i2c",
+        "address_mode": "7-bit",
+        "addressing": {
+          "default": "0x29",
+          "alternates": [],
+          "selection_rule": "Default boot address before any address reprogramming."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "Minimal reference driver uses only the core I2C register path documented in the datasheet."
+          ]
+        },
+        "optional_attachment": {
+          "xshut_pin": "optional",
+          "gpio1_interrupt_pin": "optional"
+        },
+        "default_overrides": {
+          "bus_instance": null,
+          "irq": "absent",
+          "dma": "absent",
+          "reset_gpio": null,
+          "power_gpio": null
+        },
+        "protocol_hints": {}
+      }
+    },
+    "notes": [
+      "This package freezes a concrete task setup for freertos + vl53l0x.",
+      "It is intended for controlled DriverGen experiments and reduces variation in board/integration assumptions."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project",
+      "DriverGen/data/raw/vl53l0x",
+      "DriverGen/data/references/vl53l0x/freertos"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "freertos_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "freertos",
+    "rtos_bundle": "freertos-stm32f103-project",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Reference drivers use FreeRTOS for scheduling and STM32CubeF1 HAL for bus and GPIO access.",
+      "SPI devices use SPI_HandleTypeDef hspi1; fixed-frame UART sensors use UART_HandleTypeDef huart2.",
+      "Microsecond timing for gpio_timing devices is supplied by board helper hooks, not by the FreeRTOS kernel itself."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/README.md",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "DriverGen/data/references/*/freertos/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "freertos_stm32f103rb_i2c1_polling",
+    "platform_id": "freertos_stm32f103rb",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hi2c1",
+    "backend": "STM32CubeF1 HAL I2C",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Board project is expected to export I2C_HandleTypeDef hi2c1."
+    ],
+    "evidence": [
+      "DriverGen/data/references/*/freertos/*_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "vl53l0x",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x29",
+      "alternates": [],
+      "selection_rule": "Default boot address before any address reprogramming."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal reference driver uses only the core I2C register path documented in the datasheet."
+      ]
+    },
+    "optional_attachment": {
+      "xshut_pin": "optional",
+      "gpio1_interrupt_pin": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "This attachment context intentionally targets the datasheet-backed minimal single-shot flow, not the full ST API stack.",
+      "If a project needs advanced ranging modes or calibration workflows, additional vendor API context should be attached separately."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/vl53l0x/VL53L0X.pdf",
+      "DriverGen/data/references/vl53l0x/*/*_ref.h"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "freertos_stm32f103rb__vl53l0x__i2c1_polling",
+    "rtos": "freertos",
+    "rtos_bundle": "freertos-stm32f103-project",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "i2c",
+    "bus_instance": "i2c1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hi2c1",
+    "bus_backend": "STM32CubeF1 HAL I2C",
+    "address_mode": "7-bit",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {},
+    "device_attachment_context_id": "vl53l0x",
+    "device_addressing": {
+      "default": "0x29",
+      "alternates": [],
+      "selection_rule": "Default boot address before any address reprogramming."
+    }
+  }
+}

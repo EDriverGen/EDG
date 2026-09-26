@@ -1,0 +1,262 @@
+{
+  "device_id": "mcp23017",
+  "rtos_id": "chibios",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef MCP23017_H\n#define MCP23017_H\n\n#include <stdint.h>\n#include <stdbool.h>\n#include \"hal.h\"\n\n#define MCP23017_I2C_ADDR 0x20\n\n#include \"hal_i2c.h\"\nstruct mcp23017_device {\n    I2CDriver *bus;\n    uint8_t i2c_addr;\n};\n\nvoid mcp23017_init(struct mcp23017_device *dev, I2CDriver *bus);\nvoid mcp23017_read_porta(struct mcp23017_device *dev, uint8_t *porta_byte);\nvoid mcp23017_read_portb(struct mcp23017_device *dev, uint8_t *portb_byte);\n\n#endif\n",
+  "driver_source": "#include \"mcp23017.h\"\n#include \"hal_i2c.h\"\n#include <string.h>\n\n#define MCP23017_IODIRA 0x00\n#define MCP23017_IODIRB 0x01\n#define MCP23017_GPIOA  0x12\n#define MCP23017_GPIOB  0x13\n\nstatic msg_t i2c_write(struct mcp23017_device *dev, const uint8_t *txbuf, size_t txbytes)\n{\n    i2cAcquireBus(dev->bus);\n    msg_t ret = i2cMasterTransmitTimeout(dev->bus, dev->i2c_addr, txbuf, txbytes, NULL, 0, TIME_MS2I(100));\n    i2cReleaseBus(dev->bus);\n    return ret;\n}\n\nstatic msg_t i2c_write_then_read(struct mcp23017_device *dev, const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes)\n{\n    i2cAcquireBus(dev->bus);\n    msg_t ret = i2cMasterTransmitTimeout(dev->bus, dev->i2c_addr, txbuf, txbytes, rxbuf, rxbytes, TIME_MS2I(100));\n    i2cReleaseBus(dev->bus);\n    return ret;\n}\n\nvoid mcp23017_init(struct mcp23017_device *dev, I2CDriver *bus)\n{\n    dev->bus = bus;\n    dev->i2c_addr = MCP23017_I2C_ADDR;\n\n    uint8_t txbuf[2];\n\n    txbuf[0] = MCP23017_IODIRA;\n    txbuf[1] = 0x00;\n    i2c_write(dev, txbuf, 2);\n\n    txbuf[0] = MCP23017_IODIRB;\n    txbuf[1] = 0x00;\n    i2c_write(dev, txbuf, 2);\n}\n\nvoid mcp23017_read_porta(struct mcp23017_device *dev, uint8_t *porta_byte)\n{\n    uint8_t txbuf[1];\n    txbuf[0] = MCP23017_GPIOA;\n    i2c_write_then_read(dev, txbuf, 1, porta_byte, 1);\n}\n\nvoid mcp23017_read_portb(struct mcp23017_device *dev, uint8_t *portb_byte)\n{\n    uint8_t txbuf[1];\n    txbuf[0] = MCP23017_GPIOB;\n    i2c_write_then_read(dev, txbuf, 1, portb_byte, 1);\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp23017_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "I2CDriver *bus_handle = (I2CDriver *)bus_name;",
+    "dev_struct_type": "struct mcp23017_device",
+    "channels": [
+      {
+        "id": "gpio_a0",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_a1",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_a2",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_a3",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_a4",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_a5",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_a6",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_a7",
+        "call": "mcp23017_read_porta(&g_eval_dev, &porta_byte)",
+        "out_arg": "porta_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b0",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b1",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b2",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b3",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b4",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b5",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b6",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "gpio_b7",
+        "call": "mcp23017_read_portb(&g_eval_dev, &portb_byte)",
+        "out_arg": "portb_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x20",
+        "write_prefix_any_of": [
+          [
+            "0x00",
+            "0x00"
+          ]
+        ],
+        "note": "IODIRA=0x00: all GPA outputs"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x20",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x00"
+          ]
+        ],
+        "note": "IODIRB=0x00: all GPB outputs"
+      },
+      {
+        "phase": "read_porta",
+        "addr_or_pin": "0x20",
+        "write_prefix_any_of": [
+          [
+            "0x12"
+          ]
+        ],
+        "note": "Set pointer to GPIOA"
+      },
+      {
+        "phase": "read_porta",
+        "addr_or_pin": "0x20",
+        "write_prefix_any_of": [
+          []
+        ],
+        "note": "Read GPIOA byte"
+      },
+      {
+        "phase": "read_portb",
+        "addr_or_pin": "0x20",
+        "write_prefix_any_of": [
+          [
+            "0x13"
+          ]
+        ],
+        "note": "Set pointer to GPIOB"
+      },
+      {
+        "phase": "read_portb",
+        "addr_or_pin": "0x20",
+        "write_prefix_any_of": [
+          []
+        ],
+        "note": "Read GPIOB byte"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "porta_all_high_portb_all_low",
+        "mock_preload": {
+          "0x12": [
+            "0xFF"
+          ],
+          "0x13": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "gpio_a0": 1,
+          "gpio_a1": 1,
+          "gpio_a2": 1,
+          "gpio_a3": 1,
+          "gpio_a4": 1,
+          "gpio_a5": 1,
+          "gpio_a6": 1,
+          "gpio_a7": 1,
+          "gpio_b0": 0,
+          "gpio_b1": 0,
+          "gpio_b2": 0,
+          "gpio_b3": 0,
+          "gpio_b4": 0,
+          "gpio_b5": 0,
+          "gpio_b6": 0,
+          "gpio_b7": 0
+        },
+        "derivation": "GPIOA=0xFF => each bit=1; GPIOB=0x00 => each bit=0"
+      },
+      {
+        "name": "porta_mixed_portb_mixed",
+        "mock_preload": {
+          "0x12": [
+            "0x55"
+          ],
+          "0x13": [
+            "0xAA"
+          ]
+        },
+        "expected_channels": {
+          "gpio_a0": 1,
+          "gpio_a1": 0,
+          "gpio_a2": 1,
+          "gpio_a3": 0,
+          "gpio_a4": 1,
+          "gpio_a5": 0,
+          "gpio_a6": 1,
+          "gpio_a7": 0,
+          "gpio_b0": 0,
+          "gpio_b1": 1,
+          "gpio_b2": 0,
+          "gpio_b3": 1,
+          "gpio_b4": 0,
+          "gpio_b5": 1,
+          "gpio_b6": 0,
+          "gpio_b7": 1
+        },
+        "derivation": "GPIOA=0x55 => bits: 0=1,1=0,2=1,3=0,4=1,5=0,6=1,7=0; GPIOB=0xAA => bits: 0=0,1=1,2=0,3=1,4=0,5=1,6=0,7=1"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 5.401,
+  "prompt_chars": 51436,
+  "raw_response": "{\"driver_header\": \"#ifndef MCP23017_H\\n#define MCP23017_H\\n\\n#include <stdint.h>\\n#include <stdbool.h>\\n#include \\\"hal.h\\\"\\n\\n#define MCP23017_I2C_ADDR 0x20\\n\\nstruct mcp23017_device {\\n    I2CDriver *bus;\\n    uint8_t i2c_addr;\\n};\\n\\nvoid mcp23017_init(struct mcp23017_device *dev, I2CDriver *bus);\\nvoid mcp23017_read_porta(struct mcp23017_device *dev, uint8_t *porta_byte);\\nvoid mcp23017_read_portb(struct mcp23017_device *dev, uint8_t *portb_byte);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"mcp23017.h\\\"\\n#include \\\"hal_i2c.h\\\"\\n#include <string.h>\\n\\n#define MCP23017_IODIRA 0x00\\n#define MCP23017_IODIRB 0x01\\n#define MCP23017_GPIOA  0x12\\n#define MCP23017_GPIOB  0x13\\n\\nstatic msg_t i2c_write(struct mcp23017_device *dev, const uint8_t *txbuf, size_t txbytes)\\n{\\n    i2cAcquireBus(dev->bus);\\n    msg_t ret = i2cMasterTransmitTimeout(dev->bus, dev->i2c_addr, txbuf, txbytes, NULL, 0, TIME_MS2I(100));\\n    i2cReleaseBus(dev->bus);\\n    return ret;\\n}\\n\\nstatic msg_t i2c_write_then_read(struct mcp23017_device *dev, const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes)\\n{\\n    i2cAcquireBus(dev->bus);\\n    msg_t ret = i2cMasterTransmitTimeout(dev->bus, dev->i2c_addr, txbuf, txbytes, rxbuf, rxbytes, TIME_MS2I(100));\\n    i2cReleaseBus(dev->bus);\\n    return ret;\\n}\\n\\nvoid mcp23017_init(struct mcp23017_device *dev, I2CDriver *bus)\\n{\\n    dev->bus = bus;\\n    dev->i2c_addr = MCP23017_I2C_ADDR;\\n\\n    uint8_t txbuf[2];\\n\\n    txbuf[0] = MCP23017_IODIRA;\\n    txbuf[1] = 0x00;\\n    i2c_write(dev, txbuf, 2);\\n\\n    txbuf[0] = MCP23017_IODIRB;\\n    txbuf[1] = 0x00;\\n    i2c_write(dev, txbuf, 2);\\n}\\n\\nvoid mcp23017_read_porta(struct mcp23017_device *dev, uint8_t *porta_byte)\\n{\\n    uint8_t txbuf[1];\\n    txbuf[0] = MCP23017_GPIOA;\\n    i2c_write_then_read(dev, txbuf, 1, porta_byte, 1);\\n}\\n\\nvoid mcp23017_read_portb(struct mcp23017_device *dev, uint8_t *portb_byte)\\n{\\n    uint8_t txbuf[1];\\n    txbuf[0] = MCP23017_GPIOB;\\n    i2c_write_then_read(dev, txbuf, 1, portb_byte, 1);\\n}\\n\"}",
+  "plan_hash": "ea4679010da41c98"
+}

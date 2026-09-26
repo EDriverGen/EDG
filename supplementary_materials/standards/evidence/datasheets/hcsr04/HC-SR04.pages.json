@@ -1,0 +1,34 @@
+[
+  {
+    "pdf_page": 1,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n1                                          WWW.WX-RCWL.COM \n \n \n \n \n \n  \n \n"
+  },
+  {
+    "pdf_page": 2,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n2                                          WWW.WX-RCWL.COM \n \nOverview:\n \n    The HC-SR04 (2020 version) is an open ultrasonic ranging module with the same dimensions as the earlier version,\nwith added UART and IIC functions. By default, its software and hardware\nare fully compatible with the earlier HC-SR04; resistors can select UART or IIC\nmode. It features a 2 CM minimum blind zone, a typical maximum range of 4.5 M, and an operating current of 2.2 mA.\nThe upgraded RCWL-9206 demodulation chip and MCU with UART and IIC functions\nsimplify peripheral circuitry, extend the supply range to 3-5.5 V, and provide more interfaces.\n \n \nFeatures:\n \n- Dedicated RCWL-9206 demodulation and ranging chip\n- Supports GPIO, UART, and IIC interfaces\n- Wide 3 V-5.5 V supply range\n- 2.2 mA operating current\n- 2 cm minimum blind zone\n- Software and hardware fully compatible with the earlier HC-SR04 by default\n- Wide 2 cm-450 cm measurement range (flat wall)\n- Simpler peripheral circuitry\n- Operating temperature: -10 C to 70 C\n \n \n \n \n \n "
+  },
+  {
+    "pdf_page": 3,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n3                                          WWW.WX-RCWL.COM \n \nSpecifications:\n \nParameter\n Notes\n Minimum\n Typical\n Maximum\n Unit\nOperating voltage  3  5.5 V\nOperating current   2.2 3 mA\nMaximum detection distance  Flat wall  350 450 600 CM\nOperating frequency   40  KHz\nBlind zone  Random values within the blind zone  2 4 CM\nDetection accuracy  At the same temperature  +/-2 %\nResolution  Theoretical  1 mm\nDetection angle  Maximum directional angle  +/-15 +/-20 degrees\nMeasurement cycle time   200 mS\nOutput interface mode  GPIO/UART/IIC\nOperating temperature  Plastic-housed transducer (custom order)  -10 60 C\nOperating temperature  Aluminum-housed transducer  -10 70 C\n \n \nInterface definitions:\n \nNo.  Interface  Description\n1 Vcc Power supply\n2 Trig/Rx/SCL GPIO mode:  Trig  Trigger signal\nUART mode:  Rx  Receive signal\nIIC mode:  SCL  Clock signal\n3 Echo/Tx/SDA GPIO mode:  Echo  Echo signal\nUART mode:  Tx  Transmit signal\nICC mode:  SCL  Data signal\n4 Gnd Ground\n \n \nMode selection:\n \nNo.  Mode  R4/R5 resistor settings\n1 GPIO R4=NC    R5=NC    Default\n2 UART R4=NC    R5=10K \n3 IIC R4=10K   R5=NC \n \n "
+  },
+  {
+    "pdf_page": 4,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n4                                          WWW.WX-RCWL.COM \n \nMeasurement procedure:\n \n   1: GPIO mode\n \n     \n  Operation matches the earlier HC-SR04. The external MCU applies a high-level\npulse longer than 10 uS to Trig; the module returns a high-level pulse proportional to distance. From pulse width \"T\",\ncalculate:\nDistance=T*C/2  (C is the speed of sound)\n              \nSpeed of sound versus temperature: c=(331.45+0.61t/C)m*s-1 (330.45 at 0 C)\n     Speed of sound at 0 C: 330.45 M/S\n     Speed of sound at 20 C: 342.62 M/S\n     Speed of sound at 40 C: 354.85 M/S\nThe speed-of-sound variation from 0 C to 40 C is approximately 7%. Applications requiring precise distance values\nmust account for temperature effects and apply temperature compensation.\n \n \n"
+  },
+  {
+    "pdf_page": 5,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n5                                          WWW.WX-RCWL.COM \n \n2: UART mode\n \nUART mode baud-rate setting: 9600 N 1\n \nCommand  Return value  Description\n0XA0 BYTE_H  \nBYTE_M \nBYTE_L \nOutput distance:\n(（BYTE_H<<16）+（BYTE_M<<8）+ BYTE_L)/1000 \nUnit: mm\n0XF1  Company and version information\n   \n Connect the serial port. The external MCU or PC sends 0XA0. After measuring, the module returns three distance\nbytes: BYTE_H, BYTE_M, and BYTE_L.\nDistance is calculated as follows (mm):\n \n      Distance=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000\n       \n \n \n \n \n \n \n \n \n \n \n "
+  },
+  {
+    "pdf_page": 6,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n6                                          WWW.WX-RCWL.COM \n \n3: IIC mode\n \nIIC address: 0X57\nIIC transfer format:\n   Write data:\n   \n \n \nRead data:\n      \n \nCommand format:\n \nAddress  Command  Return value  Description\nWrite address\n0XAE \n0X01  Start ranging command\nRead address\n0XAF \n BYTE_H  \nBYTE_M \nBYTE_L \nOutput distance:\n(（BYTE_H<<16）+（BYTE_M<<8）+ BYTE_L)/1000 \nUnit: mm\n     \n        Write 0X01 to start ranging; wait at least 200 mS (the module's maximum ranging time).\nRead three distance bytes directly: BYTE_H, BYTE_M, and BYTE_L.\nDistance is calculated as follows (mm):\n \n        Distance=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000\n \n"
+  },
+  {
+    "pdf_page": 7,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n7                                          WWW.WX-RCWL.COM \n \nApplication notes:\n \n1: Avoid connecting this module while powered. If a powered connection is necessary, connect Gnd first.\n2: For irregular surfaces or distant objects, use repeated measurements for correction.\n3: The interval between measurements must be at least 200 mS.\n4: Installing the module inside a product enclosure may require adjustments to peripheral parameters;\ncontact the manufacturer to confirm the parameters before volume production.\n \n \nApplication examples:\n  See the attachments for ARDUINO test-board PCB files and example programs.\n \n \n \nOutline dimensions:\n \n \n \n \n \n \n \n"
+  },
+  {
+    "pdf_page": 8,
+    "text": "  Wuxi Richen IoT Technology     2020 edition    HC-SR04 User Manual\n8                                          WWW.WX-RCWL.COM \n \n \n \n \nThe latest materials can be downloaded from Baidu Cloud.\n \nBaidu Cloud download:\n \nhttp://pan.baidu.com/s/1miNGWha \n \nWebsite:\nWWW.WX-RCWL.COM \n \nEmail:\n1126lxb@163.COM \n \nTelephone:\n18851501095 \n \nThis user manual is for reference only. The company reserves the right to provide further information\non reliability, functionality, and design improvements to these products. The manual may change\nwithout notice; customers can download the latest materials for their designs.\nUse is not recommended in applications where failure or other causes may result in personal injury.\nUse as a critical component in lifesaving or life-support devices or systems is not authorized. Wuxi\nRichen IoT Technology Co., Ltd. reserves the right to modify products without prior notice."
+  }
+]

@@ -1,0 +1,164 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "freertos__hcsr04",
+  "device_id": "hcsr04",
+  "rtos_id": "freertos",
+  "bus": "gpio_timing",
+  "scope": "freertos fixed task for hcsr04, bus=gpio_timing, board=stm32f103rb; contract describes only APIs needed by the copied reference driver and task fixed binding.",
+  "api_contract": {
+    "headers": [
+      "stm32f1xx_hal.h",
+      "FreeRTOS.h",
+      "task.h"
+    ],
+    "types": {
+      "bus_or_device": "GPIO_TypeDef",
+      "status": "HAL_StatusTypeDef"
+    },
+    "task_binding": {
+      "bus": "gpio_timing",
+      "instance": "default_gpio_slot",
+      "symbol": "GPIOA/GPIO_PIN_0 + GPIOA/GPIO_PIN_1",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL GPIO + board microsecond timing hooks"
+    },
+    "operations": [
+      {
+        "name": "HAL_GPIO_WritePin",
+        "signature": "void HAL_GPIO_WritePin(GPIO_TypeDef *, uint16_t, GPIO_PinState)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "HAL_GPIO_ReadPin",
+        "signature": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *, uint16_t)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "hcsr04_delay_us",
+        "signature": "void hcsr04_delay_us(uint32_t us)",
+        "semantics": "Board-supplied microsecond delay."
+      },
+      {
+        "name": "hcsr04_get_us_tick",
+        "signature": "uint32_t hcsr04_get_us_tick(void)",
+        "semantics": "Board-supplied monotonic microsecond counter."
+      }
+    ],
+    "preconditions": "Caller provides the task-configured and initialized peripheral handle; helper APIs have the RTOS/HAL context documented in the baseline pack."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Retain the fixed FreeRTOS task's gpio_timing handle/device type and prebound context; the caller supplies the bus instance configured according to task_requirements.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 14,
+          "line_end": 14
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 24,
+          "line_end": 24
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 25,
+          "line_end": 25
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/task_requirements.json",
+          "line_start": 23,
+          "line_end": 29
+        }
+      ]
+    },
+    {
+      "id": "gpio_timing_io",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain the polling operations actually used by the reference implementation: HAL_GPIO_WritePin, HAL_GPIO_ReadPin. Parameter and return semantics must support the gpio_timing access required by hcsr04.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 8,
+          "line_end": 8
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 17,
+          "line_end": 17
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 19,
+          "line_end": 19
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 23,
+          "line_end": 23
+        }
+      ]
+    },
+    {
+      "id": "microsecond_delay",
+      "category": "microsecond_delay",
+      "requirement": "The board provides hcsr04_delay_us(uint32_t us) for the 10 us trigger pulse and 1 us echo-polling intervals.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 20,
+          "line_end": 21
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 15,
+          "line_end": 20
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/freertos/stubs_gpio.c",
+          "line_start": 191,
+          "line_end": 191
+        }
+      ]
+    },
+    {
+      "id": "microsecond_tick",
+      "category": "microsecond_tick",
+      "requirement": "The board provides hcsr04_get_us_tick(void), returning a monotonic microsecond counter for echo high-pulse width and timeout checks.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 20,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 22,
+          "line_end": 27
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/freertos/stubs_gpio.c",
+          "line_start": 192,
+          "line_end": 192
+        }
+      ]
+    }
+  ]
+}

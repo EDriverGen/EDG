@@ -1,0 +1,2467 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "rtems",
+    "board": "generic_devfs",
+    "mcu_family": "stm32f1",
+    "integration": "rtems_devfs_bus_api",
+    "integration_style": "rtems_posix_devfs_driver_api",
+    "bus_intent": {
+      "canonical_bus": "i2c",
+      "connection_type": "i2c",
+      "mode": "polling",
+      "backend": "RTEMS devfs I2C bus",
+      "address_mode": "7-bit",
+      "bus_instance": "/dev/i2c-0"
+    },
+    "device_id": "lsm303dlhc",
+    "device_ir_hash": "9244bb2e4d81adef",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "rtems:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/rtems",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "rtems",
+      "sha": "1b743eb"
+    }
+  ],
+  "slots": {
+    "i2c.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_bus_alloc_and_init"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    },
+    "i2c.addressing": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "macro",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "address_rule",
+      "status": "covered",
+      "bindings": [
+        "I2C_FUNC_10BIT_ADDR"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    },
+    "i2c.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_msg"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "i2c.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "i2c_msg",
+            "kind": "type_ref",
+            "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+            "source_slot": "i2c.transfer",
+            "source_symbol": "i2c_bus_transfer",
+            "signature": "int i2c_bus_transfer(i2c_bus *bus, i2c_msg *msgs, uint32_t msg_count)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.read": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "rtems_libi2c_read_bytes"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "i2c.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_bus_transfer"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "i2c.write": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "rtems_libi2c_write_bytes"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "rtems_status_code"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_api_return_status_convention",
+        "confidence": 0.75,
+        "symbols": [
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+            "source_slot": "i2c.read",
+            "source_symbol": "rtems_libi2c_read_bytes",
+            "signature": "extern int rtems_libi2c_read_bytes(rtems_device_minor_number minor, unsigned char *bytes, int nbytes)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+            "source_slot": "i2c.transfer",
+            "source_symbol": "i2c_bus_transfer",
+            "signature": "int i2c_bus_transfer(i2c_bus *bus, i2c_msg *msgs, uint32_t msg_count)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+            "source_slot": "i2c.write",
+            "source_symbol": "rtems_libi2c_write_bytes",
+            "signature": "extern int rtems_libi2c_write_bytes(rtems_device_minor_number minor, const unsigned char *bytes, int nbytes)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "/dev/i2c-0",
+        "fields": {
+          "bus_instance": "/dev/i2c-0",
+          "bus_symbol": "/dev/i2c-0",
+          "backend": "RTEMS devfs I2C bus",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.release": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_bus_release"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    }
+  },
+  "symbols": {
+    "i2c.acquire_or_bind": {
+      "slot_id": "i2c.acquire_or_bind",
+      "symbol": "i2c_bus_alloc_and_init",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "i2c_bus i2c_bus_alloc_and_init(size_t size)",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/dev/i2c/i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/dev/i2c/i2c-bus.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=2+3.0",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:Top candidates are i2c_bus_alloc_and_init and i2c_bus_init, both from RTEMS I2C framework with same score. i2c_bus_alloc"
+      ]
+    },
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "symbol": "I2C_FUNC_10BIT_ADDR",
+      "kind": "macro",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "0x00000002",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/include/linux/i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/linux/i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/include/linux/i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The slot expects a macro for I2C addressing, and I2C_FUNC_10BIT_ADDR is a public macro from the RTEMS I2C framework that"
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "symbol": "i2c_msg",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "struct i2c_msg",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/include/dev/i2c/i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/dev/i2c/i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/include/dev/i2c/i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:i2c_msg is a public typedef in the RTEMS I2C framework header, matching the slot's intent for I2C message structs. It ha"
+      ]
+    },
+    "i2c.read": {
+      "slot_id": "i2c.read",
+      "symbol": "rtems_libi2c_read_bytes",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "extern int rtems_libi2c_read_bytes(rtems_device_minor_number minor, unsigned char *bytes, int nbytes)",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/rtems/libi2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/include/rtems/libi2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=4+12.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The top-scoring candidate matches the slot's intent for I2C read operations and is declared in the public RTEMS header, "
+      ]
+    },
+    "i2c.transfer": {
+      "slot_id": "i2c.transfer",
+      "symbol": "i2c_bus_transfer",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int i2c_bus_transfer(i2c_bus *bus, i2c_msg *msgs, uint32_t msg_count)",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/dev/i2c/i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/dev/i2c/i2c-bus.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The slot expects an I2C transfer function, and i2c_bus_transfer from the RTEMS public API matches the intent with a clea"
+      ]
+    },
+    "i2c.write": {
+      "slot_id": "i2c.write",
+      "symbol": "rtems_libi2c_write_bytes",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "extern int rtems_libi2c_write_bytes(rtems_device_minor_number minor, const unsigned char *bytes, int nbytes)",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/rtems/libi2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/include/rtems/libi2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=4+12.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The top candidate rtems_libi2c_write_bytes matches the slot intent for i2c write, is a public HAL function from the RTEM"
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "symbol": "rtems_status_code",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "enum { /** * @brief This status code indicates successful completion of a requested * operation. */ ",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/include/rtems/rtems/status.h",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/rtems/rtems/status.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/include/rtems/rtems/status.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "llm_bound:rtems_status_code is the canonical RTEMS status type, defined in a public kernel header, matching the slot's intent for "
+      ]
+    },
+    "i2c.release": {
+      "slot_id": "i2c.release",
+      "symbol": "i2c_bus_release",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void i2c_bus_release(i2c_bus *bus)",
+      "signature_source": "parser",
+      "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+      "implemented_in": null,
+      "required_headers": [
+        "cpukit/include/dev/i2c/i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "rtems:single:0",
+          "path": "cpukit/dev/i2c/i2c-bus.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=2+3.0",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The candidate i2c_bus_release from the public header matches the slot intent exactly and is the preferred RTEMS driver f"
+      ]
+    }
+  },
+  "_symbol_index": {
+    "i2c_bus_alloc_and_init": [
+      "i2c.acquire_or_bind"
+    ],
+    "I2C_FUNC_10BIT_ADDR": [
+      "i2c.addressing"
+    ],
+    "i2c_msg": [
+      "i2c.key_types"
+    ],
+    "rtems_libi2c_read_bytes": [
+      "i2c.read"
+    ],
+    "i2c_bus_transfer": [
+      "i2c.transfer"
+    ],
+    "rtems_libi2c_write_bytes": [
+      "i2c.write"
+    ],
+    "rtems_status_code": [
+      "runtime.error_status"
+    ],
+    "i2c_bus_release": [
+      "i2c.release"
+    ]
+  },
+  "slot_fulfillments": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "i2c_msg",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2c_bus_transfer",
+          "signature": "int i2c_bus_transfer(i2c_bus *bus, i2c_msg *msgs, uint32_t msg_count)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "rtems_libi2c_read_bytes",
+          "signature": "extern int rtems_libi2c_read_bytes(rtems_device_minor_number minor, unsigned char *bytes, int nbytes)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2c_bus_transfer",
+          "signature": "int i2c_bus_transfer(i2c_bus *bus, i2c_msg *msgs, uint32_t msg_count)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+          "source_slot": "i2c.write",
+          "source_symbol": "rtems_libi2c_write_bytes",
+          "signature": "extern int rtems_libi2c_write_bytes(rtems_device_minor_number minor, const unsigned char *bytes, int nbytes)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "/dev/i2c-0",
+      "fields": {
+        "bus_instance": "/dev/i2c-0",
+        "bus_symbol": "/dev/i2c-0",
+        "backend": "RTEMS devfs I2C bus",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "/dev/i2c-0",
+      "fields": {
+        "bus_instance": "/dev/i2c-0",
+        "bus_symbol": "/dev/i2c-0",
+        "backend": "RTEMS devfs I2C bus",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "i2c_msg",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2c_bus_transfer",
+          "signature": "int i2c_bus_transfer(i2c_bus *bus, i2c_msg *msgs, uint32_t msg_count)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "rtems_libi2c_read_bytes",
+          "signature": "extern int rtems_libi2c_read_bytes(rtems_device_minor_number minor, unsigned char *bytes, int nbytes)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2c_bus_transfer",
+          "signature": "int i2c_bus_transfer(i2c_bus *bus, i2c_msg *msgs, uint32_t msg_count)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "rtems:single:0::cpukit/include/rtems/libi2c.h",
+          "source_slot": "i2c.write",
+          "source_symbol": "rtems_libi2c_write_bytes",
+          "signature": "extern int rtems_libi2c_write_bytes(rtems_device_minor_number minor, const unsigned char *bytes, int nbytes)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "/dev/i2c-0",
+    "bus_symbol": "/dev/i2c-0",
+    "backend": "RTEMS devfs I2C bus",
+    "mode": "polling",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "device_attachment": {
+      "device_id": "lsm303dlhc",
+      "attachment_type": "multi_address_i2c_sensor",
+      "required_bus_type": "i2c",
+      "address_mode": "7-bit",
+      "addressing": {
+        "default": {
+          "accelerometer": "0x19",
+          "magnetometer": "0x1E"
+        },
+        "alternates": {
+          "accelerometer": [
+            "0x18"
+          ],
+          "magnetometer": []
+        },
+        "selection_rule": "Accelerometer address depends on SA0_A. Magnetometer address is fixed in the minimal model."
+      },
+      "required_attachment": {
+        "signals": [],
+        "notes": [
+          "Two logical I2C targets share the same physical package: accelerometer and magnetometer."
+        ]
+      },
+      "optional_attachment": {
+        "sa0_a": "optional",
+        "drdy_int_pins": "optional"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "notes": [
+        "Reference drivers probe both the accelerometer path and the fixed magnetometer identification registers."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/lsm303dlhc",
+        "DriverGen/data/references/lsm303dlhc/*/*_ref.h"
+      ]
+    },
+    "include_headers": [
+      "assert.h",
+      "bsp.h",
+      "bsp/default-initial-extension.h",
+      "bsp/i2c.h",
+      "bsp/io.h",
+      "bsp/irq-generic.h",
+      "bsp/irq.h",
+      "bsp/rcc.h",
+      "bsp/stm32_i2c.h",
+      "bsp/stm32_usart.h",
+      "bsp/stm32f10xxx_exti.h",
+      "bsp/stm32f10xxx_gpio.h",
+      "bsp/stm32f10xxx_rcc.h",
+      "bsp/stm32f4.h",
+      "bsp/stm32f4xxxx_adc.h",
+      "bsp/stm32f4xxxx_exti.h",
+      "bsp/stm32f4xxxx_flash.h",
+      "bsp/stm32f4xxxx_gpio.h",
+      "bsp/stm32f4xxxx_otgfs.h",
+      "bsp/stm32f4xxxx_pwr.h",
+      "bsp/stm32f4xxxx_rcc.h",
+      "bsp/stm32f4xxxx_syscfg.h",
+      "bsp/stm32f4xxxx_tim.h",
+      "bsp/utility.h",
+      "bspopts.h",
+      "bsps/arm/stm32f4/include/bsp.h",
+      "bsps/arm/stm32f4/include/bsp/i2c.h",
+      "bsps/arm/stm32f4/include/bsp/io.h",
+      "bsps/arm/stm32f4/include/bsp/irq.h",
+      "bsps/arm/stm32f4/include/bsp/rcc.h",
+      "bsps/arm/stm32f4/include/bsp/stm32_i2c.h",
+      "bsps/arm/stm32f4/include/bsp/stm32f4.h",
+      "bsps/include/bsp/irq-generic.h",
+      "bsps/include/bsp/utility.h",
+      "bsps/include/dev/i2c/cadence-i2c-regs.h",
+      "bsps/include/dev/i2c/cadence-i2c.h",
+      "config.h",
+      "cpukit/include/dev/i2c/eeprom.h",
+      "cpukit/include/dev/i2c/fpga-i2c-slave.h",
+      "cpukit/include/dev/i2c/gpio-nxp-pca9535.h",
+      "cpukit/include/dev/i2c/i2c.h",
+      "cpukit/include/dev/i2c/sensor-lm75a.h",
+      "cpukit/include/dev/i2c/xilinx-axi-i2c.h",
+      "cpukit/include/linux/i2c-dev.h",
+      "cpukit/include/linux/i2c.h",
+      "cpukit/include/rtems.h",
+      "cpukit/include/rtems/blkdev.h",
+      "cpukit/include/rtems/bspIo.h",
+      "cpukit/include/rtems/config.h",
+      "cpukit/include/rtems/counter.h",
+      "cpukit/include/rtems/error.h",
+      "cpukit/include/rtems/fatal.h",
+      "cpukit/include/rtems/imfs.h",
+      "cpukit/include/rtems/inttypes.h",
+      "cpukit/include/rtems/irq-extension.h",
+      "cpukit/include/rtems/libi2c.h",
+      "cpukit/include/rtems/libio.h",
+      "cpukit/include/rtems/posix/pthread.h",
+      "cpukit/include/rtems/rtems/config.h",
+      "cpukit/include/rtems/rtems/status.h",
+      "cpukit/include/rtems/rtems/support.h",
+      "cpukit/include/rtems/rtems/types.h",
+      "cpukit/include/rtems/score/assert.h",
+      "cpukit/include/rtems/score/basedefs.h",
+      "cpukit/include/rtems/score/heapinfo.h",
+      "cpukit/include/rtems/score/status.h",
+      "cpukit/include/rtems/score/sysstate.h",
+      "cpukit/include/rtems/seterr.h",
+      "cpukit/include/rtems/status-checks.h",
+      "cpukit/include/rtems/thread.h",
+      "cpukit/score/cpu/arm/include/rtems/score/cpu.h",
+      "dev/i2c/cadence-i2c-regs.h",
+      "dev/i2c/cadence-i2c.h",
+      "dev/i2c/fpga-i2c-slave.h",
+      "dev/i2c/i2c.h",
+      "dev/i2c/xilinx-axi-i2c.h",
+      "errno.h",
+      "fcntl.h",
+      "inttypes.h",
+      "libchip/i2c-2b-eeprom.h",
+      "libchip/spi-sd-card.h",
+      "limits.h",
+      "linux/i2c-dev.h",
+      "linux/i2c.h",
+      "pthread.h",
+      "rtems.h",
+      "rtems/blkdev.h",
+      "rtems/bspIo.h",
+      "rtems/chain.h",
+      "rtems/config.h",
+      "rtems/diskdevs.h",
+      "rtems/error.h",
+      "rtems/extension.h",
+      "rtems/fatal.h",
+      "rtems/fs.h",
+      "rtems/imfs.h",
+      "rtems/init.h",
+      "rtems/io.h",
+      "rtems/irq-extension.h",
+      "rtems/libi2c.h",
+      "rtems/libio.h",
+      "rtems/libio_.h",
+      "rtems/pipe.h",
+      "rtems/posix/threadsup.h",
+      "rtems/print.h",
+      "rtems/rtems/barrier.h",
+      "rtems/rtems/cache.h",
+      "rtems/rtems/clock.h",
+      "rtems/rtems/config.h",
+      "rtems/rtems/dpmem.h",
+      "rtems/rtems/event.h",
+      "rtems/rtems/intr.h",
+      "rtems/rtems/message.h",
+      "rtems/rtems/modes.h",
+      "rtems/rtems/mp.h",
+      "rtems/rtems/object.h",
+      "rtems/rtems/options.h",
+      "rtems/rtems/part.h",
+      "rtems/rtems/ratemon.h",
+      "rtems/rtems/region.h",
+      "rtems/rtems/scheduler.h",
+      "rtems/rtems/sem.h",
+      "rtems/rtems/signal.h",
+      "rtems/rtems/status.h",
+      "rtems/rtems/support.h",
+      "rtems/rtems/tasks.h",
+      "rtems/rtems/timer.h",
+      "rtems/rtems/types.h",
+      "rtems/score/arm.h",
+      "rtems/score/assert.h",
+      "rtems/score/atomic.h",
+      "rtems/score/basedefs.h",
+      "rtems/score/cpu.h",
+      "rtems/score/cpuopts.h",
+      "rtems/score/heapinfo.h",
+      "rtems/score/interr.h",
+      "rtems/score/isr.h",
+      "rtems/score/memory.h",
+      "rtems/score/mpci.h",
+      "rtems/score/mppkt.h",
+      "rtems/score/object.h",
+      "rtems/score/paravirt.h",
+      "rtems/score/processormask.h",
+      "rtems/score/smp.h",
+      "rtems/score/stack.h",
+      "rtems/score/sysstate.h",
+      "rtems/score/thread.h",
+      "rtems/score/threadidledata.h",
+      "rtems/score/userextdata.h",
+      "rtems/score/watchdogticks.h",
+      "rtems/score/wkspacedata.h",
+      "rtems/seterr.h",
+      "rtems/status-checks.h",
+      "rtems/termiosdevice.h",
+      "rtems/thread.h",
+      "stdarg.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "stdlib.h",
+      "string.h",
+      "sys/_timespec.h",
+      "sys/_timeval.h",
+      "sys/cpuset.h",
+      "sys/ioccom.h",
+      "sys/ioctl.h",
+      "sys/lock.h",
+      "sys/stat.h",
+      "sys/statvfs.h",
+      "sys/time.h",
+      "sys/types.h",
+      "sys/uio.h",
+      "termios.h",
+      "unistd.h"
+    ],
+    "helper_usage_patterns": [
+      {
+        "pattern_id": "rtems_devfs_i2c_posix_transfer",
+        "applies_to": "i2c.transfer",
+        "purpose": "Use the RTEMS devfs I2C node named by bus_instance as the bus handle; do not cast that path string to i2c_bus*.",
+        "required_symbols": [
+          "open",
+          "ioctl",
+          "close"
+        ],
+        "required_types": [
+          "struct i2c_msg",
+          "struct i2c_rdwr_ioctl_data"
+        ],
+        "required_constants": [
+          "O_RDWR",
+          "I2C_RDWR",
+          "I2C_M_RD"
+        ],
+        "required_headers": [
+          "dev/i2c/i2c.h",
+          "fcntl.h",
+          "sys/ioctl.h",
+          "unistd.h"
+        ],
+        "steps": [
+          "Treat adapter bus_name / bus_instance as a const char * devfs path such as /dev/i2c-0.",
+          "Open the path with open(path, O_RDWR).",
+          "Build struct i2c_msg array entries with the 7-bit slave address.",
+          "Wrap the message array in struct i2c_rdwr_ioctl_data.",
+          "Submit the transfer with ioctl(fd, I2C_RDWR, &rdwr), then close(fd)."
+        ]
+      }
+    ],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "cpukit/include/dev/i2c/i2c.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 15,
+        "n_macros": 8,
+        "n_typedefs": 4,
+        "n_structs": 6,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/dev/i2c/xilinx-axi-i2c.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 11,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/include/dev/i2c/cadence-i2c-regs.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/dev/i2c/fpga-i2c-slave.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/linux/i2c.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 45,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/linux/i2c-dev.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 11,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/counter.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/rtems/support.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 8,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/rtems/status.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 4,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/error.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 2,
+        "n_macros": 6,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/status-checks.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 30,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/score/status.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/include/bsp/stm32_i2c.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/include/bsp/i2c.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 3,
+        "n_macros": 1,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/include/dev/i2c/cadence-i2c.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/dev/i2c/eeprom.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/dev/i2c/gpio-nxp-pca9535.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 9,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/dev/i2c/sensor-lm75a.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/include/bsp.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/include/bsp/io.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 5,
+        "n_macros": 54,
+        "n_typedefs": 10,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/include/bsp/irq.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/include/bsp/rcc.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 4,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/include/bsp/stm32f4.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 57,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/include/bsp/irq-generic.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 35,
+        "n_macros": 4,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/include/bsp/utility.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 41,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/blkdev.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 20,
+        "n_macros": 17,
+        "n_typedefs": 4,
+        "n_structs": 3,
+        "n_enums": 1
+      },
+      {
+        "path": "cpukit/include/rtems/bspIo.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "runtime.error_status"
+        ],
+        "n_functions": 7,
+        "n_macros": 1,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/config.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 6,
+        "n_macros": 26,
+        "n_typedefs": 6,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/fatal.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/imfs.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 64,
+        "n_macros": 21,
+        "n_typedefs": 29,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/inttypes.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 0,
+        "n_macros": 35,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/irq-extension.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/libi2c.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 17,
+        "n_macros": 8,
+        "n_typedefs": 8,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/libio.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 75,
+        "n_macros": 37,
+        "n_typedefs": 59,
+        "n_structs": 9,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/posix/pthread.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/rtems/config.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/rtems/types.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 27,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/score/assert.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 1,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/score/basedefs.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 3,
+        "n_macros": 102,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/score/heapinfo.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/score/sysstate.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 6,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/seterr.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/include/rtems/thread.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 40,
+        "n_macros": 6,
+        "n_typedefs": 5,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/score/cpu/arm/include/rtems/score/cpu.h",
+        "root_id": "rtems:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 37,
+        "n_macros": 79,
+        "n_typedefs": 7,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "cpukit/dev/i2c/i2c-bus.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 17,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/dev/i2c/xilinx-axi-i2c.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 46,
+        "n_macros": 60,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/shared/dev/i2c/cadence-i2c.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 15,
+        "n_macros": 8,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/arm/stm32f4/i2c/i2c.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 7,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/dev/i2c/i2c-dev.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 16,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/libi2c/libi2c.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 23,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "cpukit/dev/i2c/fpga-i2c-slave.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 3,
+        "n_macros": 0,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/shared/dev/i2c/i2c-2b-eeprom.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.write"
+        ],
+        "n_functions": 3,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "bsps/shared/dev/i2c/spi-sd-card.c",
+        "root_id": "rtems:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 26,
+        "n_macros": 70,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": []
+  },
+  "transaction_templates": [
+    {
+      "template_id": "lsm303dlhc_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "i2c_write",
+          "args": {
+            "bytes": [
+              "0x20",
+              "0x57"
+            ],
+            "length": null,
+            "pointer_target": "CTRL_REG1_A",
+            "notes": null
+          },
+          "slot_id": "i2c.write",
+          "bound_symbol": "rtems_libi2c_write_bytes",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write",
+          "args": {
+            "bytes": [
+              "0x23",
+              "0x08"
+            ],
+            "length": null,
+            "pointer_target": "CTRL_REG4_A",
+            "notes": null
+          },
+          "slot_id": "i2c.write",
+          "bound_symbol": "rtems_libi2c_write_bytes",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "i2c_write",
+          "args": {
+            "bytes": [
+              "0x00",
+              "0x0C"
+            ],
+            "length": null,
+            "pointer_target": "CRA_REG_M",
+            "notes": null
+          },
+          "slot_id": "i2c.write",
+          "bound_symbol": "rtems_libi2c_write_bytes",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write",
+          "args": {
+            "bytes": [
+              "0x01",
+              "0x20"
+            ],
+            "length": null,
+            "pointer_target": "CRB_REG_M",
+            "notes": null
+          },
+          "slot_id": "i2c.write",
+          "bound_symbol": "rtems_libi2c_write_bytes",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write",
+          "args": {
+            "bytes": [
+              "0x02",
+              "0x00"
+            ],
+            "length": null,
+            "pointer_target": "MR_REG_M",
+            "notes": null
+          },
+          "slot_id": "i2c.write",
+          "bound_symbol": "rtems_libi2c_write_bytes",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.6,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (8 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "lsm303dlhc_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xA8"
+            ],
+            "length": 6,
+            "pointer_target": "OUT_X_L_A",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2c_bus_transfer",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x03"
+            ],
+            "length": 6,
+            "pointer_target": "OUT_X_H_M",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2c_bus_transfer",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x31"
+            ],
+            "length": 2,
+            "pointer_target": "TEMP_OUT_H_M",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2c_bus_transfer",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.9,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (3 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [
+      "slot_coverage"
+    ],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'rtems' is integrated; n_roots=1 (no minimum)",
+        "evidence": {
+          "rtos_id": "rtems",
+          "n_roots": 1
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": false,
+        "severity": "error",
+        "message": "1 required slot(s) uncovered: ['runtime.delay_ms']",
+        "evidence": {
+          "missing_required": [
+            "runtime.delay_ms"
+          ],
+          "non_symbol_fulfillments": [
+            "i2c.key_types",
+            "integration.bus_instance_binding",
+            "runtime.error_status"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (8 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+            "rtems:single:0::cpukit/include/linux/i2c.h",
+            "rtems:single:0::cpukit/include/dev/i2c/i2c.h",
+            "rtems:single:0::cpukit/include/rtems/libi2c.h",
+            "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+            "rtems:single:0::cpukit/include/rtems/libi2c.h",
+            "rtems:single:0::cpukit/include/rtems/rtems/status.h",
+            "rtems:single:0::cpukit/dev/i2c/i2c-bus.c"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [],
+        "missing_slots": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "i2c.release"
+        ],
+        "new_files_added": [
+          "rtems:single:0::cpukit/dev/i2c/i2c-bus.c",
+          "rtems:single:0::cpukit/dev/i2c/xilinx-axi-i2c.c",
+          "rtems:single:0::cpukit/include/dev/i2c/i2c.h",
+          "rtems:single:0::bsps/shared/dev/i2c/cadence-i2c.c",
+          "rtems:single:0::cpukit/include/dev/i2c/xilinx-axi-i2c.h",
+          "rtems:single:0::bsps/arm/stm32f4/i2c/i2c.c",
+          "rtems:single:0::cpukit/dev/i2c/i2c-dev.c",
+          "rtems:single:0::cpukit/libi2c/libi2c.c",
+          "rtems:single:0::bsps/include/dev/i2c/cadence-i2c-regs.h",
+          "rtems:single:0::cpukit/dev/i2c/fpga-i2c-slave.c",
+          "rtems:single:0::bsps/shared/dev/i2c/i2c-2b-eeprom.c",
+          "rtems:single:0::cpukit/include/dev/i2c/fpga-i2c-slave.h",
+          "rtems:single:0::cpukit/include/linux/i2c.h",
+          "rtems:single:0::cpukit/include/linux/i2c-dev.h",
+          "rtems:single:0::bsps/shared/dev/i2c/spi-sd-card.c",
+          "rtems:single:0::cpukit/include/rtems/counter.h",
+          "rtems:single:0::cpukit/include/rtems/rtems/support.h",
+          "rtems:single:0::cpukit/include/rtems/rtems/status.h",
+          "rtems:single:0::cpukit/include/rtems/error.h",
+          "rtems:single:0::cpukit/include/rtems/status-checks.h",
+          "rtems:single:0::cpukit/include/rtems/score/status.h",
+          "rtems:single:0::bsps/arm/stm32f4/include/bsp/stm32_i2c.h",
+          "rtems:single:0::bsps/arm/stm32f4/include/bsp/i2c.h",
+          "rtems:single:0::bsps/include/dev/i2c/cadence-i2c.h",
+          "rtems:single:0::cpukit/include/dev/i2c/eeprom.h",
+          "rtems:single:0::cpukit/include/dev/i2c/gpio-nxp-pca9535.h",
+          "rtems:single:0::cpukit/include/dev/i2c/sensor-lm75a.h",
+          "rtems:single:0::bsps/arm/stm32f4/include/bsp.h",
+          "rtems:single:0::bsps/arm/stm32f4/include/bsp/io.h",
+          "rtems:single:0::bsps/arm/stm32f4/include/bsp/irq.h",
+          "rtems:single:0::bsps/arm/stm32f4/include/bsp/rcc.h",
+          "rtems:single:0::bsps/arm/stm32f4/include/bsp/stm32f4.h",
+          "rtems:single:0::bsps/include/bsp/irq-generic.h",
+          "rtems:single:0::bsps/include/bsp/utility.h",
+          "rtems:single:0::cpukit/include/rtems.h",
+          "rtems:single:0::cpukit/include/rtems/blkdev.h",
+          "rtems:single:0::cpukit/include/rtems/bspIo.h",
+          "rtems:single:0::cpukit/include/rtems/config.h",
+          "rtems:single:0::cpukit/include/rtems/fatal.h",
+          "rtems:single:0::cpukit/include/rtems/imfs.h",
+          "rtems:single:0::cpukit/include/rtems/inttypes.h",
+          "rtems:single:0::cpukit/include/rtems/irq-extension.h",
+          "rtems:single:0::cpukit/include/rtems/libi2c.h",
+          "rtems:single:0::cpukit/include/rtems/libio.h",
+          "rtems:single:0::cpukit/include/rtems/posix/pthread.h",
+          "rtems:single:0::cpukit/include/rtems/rtems/config.h",
+          "rtems:single:0::cpukit/include/rtems/rtems/types.h",
+          "rtems:single:0::cpukit/include/rtems/score/assert.h",
+          "rtems:single:0::cpukit/include/rtems/score/basedefs.h",
+          "rtems:single:0::cpukit/include/rtems/score/heapinfo.h",
+          "rtems:single:0::cpukit/include/rtems/score/sysstate.h",
+          "rtems:single:0::cpukit/include/rtems/seterr.h",
+          "rtems:single:0::cpukit/include/rtems/thread.h",
+          "rtems:single:0::cpukit/score/cpu/arm/include/rtems/score/cpu.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 45733,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "runtime.error_status",
+          "i2c.release"
+        ],
+        "missing_slots": [
+          "runtime.delay_ms",
+          "integration.bus_instance_binding"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 9
+        },
+        "token_usage": {
+          "input_tokens_delta": 24972,
+          "output_tokens_delta": 6300,
+          "input_tokens_total": 70705,
+          "output_tokens_total": 14700
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 10,
+    "n_bound": 8,
+    "n_fulfilled": 9,
+    "n_non_symbol_fulfillments": 3,
+    "n_required": 9,
+    "n_required_bound": 8,
+    "n_required_fulfilled": 8,
+    "n_required_symbol_bound": 7,
+    "provenance": {
+      "manifest_repo": 8,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 2.64,
+      "dir_router_llm": 22638.49,
+      "file_selector": 62.54,
+      "file_selector_llm": 55409.67,
+      "exact_symbol_file_backfill": 63.35,
+      "deep_parse": 69.77,
+      "include_expand": 139.97,
+      "symbol_rank": 310.49,
+      "binder_deterministic": 3.13,
+      "binder_llm": 15427.34,
+      "gap_diagnoser_llm": 4202.45,
+      "source_kind_classifier": 0.02
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 9,
+        "gap_diagnoser": 2
+      },
+      "input_tokens_total": 72440,
+      "output_tokens_total": 15700,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

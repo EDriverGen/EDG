@@ -1,0 +1,86 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "riot",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef BH1750_H\n#define BH1750_H\n\n#include <stdint.h>\n#include \"periph/i2c.h\"\n\ntypedef struct {\n    i2c_t bus;\n    uint8_t addr;\n    uint8_t mtreg;\n} bh1750_device_t;\n\nint bh1750_init(bh1750_device_t *dev, i2c_t bus);\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw);\n\n#endif /* BH1750_H */\n",
+  "driver_source": "#include \"bh1750.h\"\n#include <stdint.h>\n#include <string.h>\n#include \"periph/i2c.h\"\n#include \"ztimer.h\"\n\n#define BH1750_ADDR 0x23\n#define BH1750_CMD_POWER_ON 0x01\n#define BH1750_CMD_CONT_H_RES 0x10\n#define BH1750_DELAY_MS 180\n\nint bh1750_init(bh1750_device_t *dev, i2c_t bus)\n{\n    dev->bus = bus;\n    dev->addr = BH1750_ADDR;\n    dev->mtreg = 69;\n\n    i2c_acquire(dev->bus);\n    int ret = i2c_write_byte(dev->bus, dev->addr, BH1750_CMD_POWER_ON, 0);\n    i2c_release(dev->bus);\n    return ret;\n}\n\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw)\n{\n    uint8_t buf[2];\n    int ret;\n\n    i2c_acquire(dev->bus);\n    ret = i2c_write_byte(dev->bus, dev->addr, BH1750_CMD_CONT_H_RES, 0);\n    if (ret != 0) {\n        i2c_release(dev->bus);\n        return ret;\n    }\n    ztimer_sleep(ZTIMER_MSEC, BH1750_DELAY_MS);\n    ret = i2c_read_bytes(dev->bus, dev->addr, buf, 2, 0);\n    i2c_release(dev->bus);\n    if (ret != 0) {\n        return ret;\n    }\n    *raw = ((uint16_t)buf[0] << 8) | buf[1];\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus_handle)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "uint16_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "bh1750_device_t",
+    "init_extra_setup_c": "i2c_t bus_handle = (i2c_t)(intptr_t)bus_name;",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "continuous_h_resolution_mode: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "continuous_h_resolution_mode: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "low_light_100_lux",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00",
+            "0x96"
+          ]
+        },
+        "expected_read_raw": 150,
+        "derivation": "single_channel raw-primary normalization: bytes [0x00 0x96], raw_count = ((0x00 << 8) | 0x96) = 150. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      },
+      {
+        "name": "medium_light_500_lux",
+        "mock_preload": {
+          "read_bytes": [
+            "0x02",
+            "0x58"
+          ]
+        },
+        "expected_read_raw": 600,
+        "derivation": "single_channel raw-primary normalization: bytes [0x02 0x58], raw_count = ((0x02 << 8) | 0x58) = 600. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      }
+    ],
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.479,
+  "prompt_chars": 26171,
+  "raw_response": "{\"driver_header\": \"#ifndef BH1750_H\\n#define BH1750_H\\n\\n#include <stdint.h>\\n#include \\\"periph/i2c.h\\\"\\n\\ntypedef struct {\\n    i2c_t bus;\\n    uint8_t addr;\\n    uint8_t mtreg;\\n} bh1750_device_t;\\n\\nint bh1750_init(bh1750_device_t *dev, i2c_t bus);\\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw);\\n\\n#endif /* BH1750_H */\\n\", \"driver_source\": \"#include \\\"bh1750.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n#include \\\"periph/i2c.h\\\"\\n#include \\\"ztimer.h\\\"\\n\\n#define BH1750_ADDR 0x23\\n#define BH1750_CMD_POWER_ON 0x01\\n#define BH1750_CMD_CONT_H_RES 0x10\\n#define BH1750_DELAY_MS 180\\n\\nint bh1750_init(bh1750_device_t *dev, i2c_t bus)\\n{\\n    dev->bus = bus;\\n    dev->addr = BH1750_ADDR;\\n    dev->mtreg = 69;\\n\\n    i2c_acquire(dev->bus);\\n    int ret = i2c_write_byte(dev->bus, dev->addr, BH1750_CMD_POWER_ON, 0);\\n    i2c_release(dev->bus);\\n    return ret;\\n}\\n\\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw)\\n{\\n    uint8_t buf[2];\\n    int ret;\\n\\n    i2c_acquire(dev->bus);\\n    ret = i2c_write_byte(dev->bus, dev->addr, BH1750_CMD_CONT_H_RES, 0);\\n    if (ret != 0) {\\n        i2c_release(dev->bus);\\n        return ret;\\n    }\\n    ztimer_sleep(ZTIMER_MSEC, BH1750_DELAY_MS);\\n    ret = i2c_read_bytes(dev->bus, dev->addr, buf, 2, 0);\\n    i2c_release(dev->bus);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n    *raw = ((uint16_t)buf[0] << 8) | buf[1];\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "3921cbc80b083ccb"
+}

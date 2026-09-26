@@ -1,0 +1,130 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtems__mhz19b",
+  "device_id": "mhz19b",
+  "rtos_id": "rtems",
+  "bus": "uart_polling",
+  "scope": "rtems fixed task for mhz19b; bus=uart_polling, board=generic_devfs; only APIs needed by copied reference driver and fixed task configuration.",
+  "api_contract": {
+    "headers": [
+      "fcntl.h",
+      "unistd.h"
+    ],
+    "types": {
+      "resource": "file descriptor / caller-provided GPIO pin",
+      "status": "int, ssize_t, or rtems_status_code according to operation"
+    },
+    "task_binding": {
+      "bus": "uart_polling",
+      "instance": "/dev/ttyS0",
+      "mode": "polling",
+      "rtos": "rtems generic_devfs"
+    },
+    "operations": [
+      {
+        "name": "open",
+        "signature": "int open(const char *pathname, int flags, ...)"
+      },
+      {
+        "name": "write",
+        "signature": "ssize_t write(int fd,const void *buf,size_t nbyte)"
+      },
+      {
+        "name": "read",
+        "signature": "ssize_t read(int fd,void *buf,size_t nbyte)"
+      },
+      {
+        "name": "close",
+        "signature": "int close(int fd)"
+      }
+    ],
+    "preconditions": "Use task_requirements fixed bus and copied reference-driver preconditions; the task owns only its assigned bus."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "The caller binds the fixed RTEMS devfs UART path /dev/ttyS0 and supplies the task's fixed serial settings through application/platform configuration; the driver obtains a descriptor from the device path.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.h",
+          "line_start": 4,
+          "line_end": 4
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 17,
+          "line_end": 17
+        }
+      ]
+    },
+    {
+      "id": "descriptor_lifecycle",
+      "category": "bus_binding",
+      "requirement": "Obtain a device descriptor with open(path, O_RDWR), close(fd) after the operation, and check open/close errors.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 17,
+          "line_end": 17
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 29,
+          "line_end": 29
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 23,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 35,
+          "line_end": 35
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/fcntl.h",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/unistd.h",
+          "line_start": 1,
+          "line_end": 1
+        }
+      ]
+    },
+    {
+      "id": "uart_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain POSIX write(fd, frame, length) for sending frames, read(fd, frame, length) for receiving them, and their byte-count/error semantics; use the task-configured UART without introducing another bus.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 34,
+          "line_end": 34
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/stubs_uart.c",
+          "line_start": 26,
+          "line_end": 45
+        }
+      ]
+    }
+  ]
+}

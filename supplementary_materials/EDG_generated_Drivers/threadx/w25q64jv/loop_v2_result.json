@@ -1,0 +1,1432 @@
+{
+  "split_plan_enabled": true,
+  "success": false,
+  "final_attempt": 3,
+  "total_time_s": 148.469,
+  "device_id": "w25q64jv",
+  "rtos_id": "threadx",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "layer_failed": "probe",
+  "plan_summary": {
+    "plan_hash": "f258ea85541c3d9d",
+    "api_contract_keys": [
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c",
+      "mem_read_call",
+      "mem_write_call",
+      "memory_page_bytes",
+      "memory_size_bytes",
+      "preamble_c"
+    ],
+    "stimuli_count": 2
+  },
+  "final_elf_path": "<RUN_DIR>/attempts/001/stage/out/w25q64jv_threadx.elf",
+  "plan_attempts": [
+    {
+      "attempt": 1,
+      "success": true,
+      "total_time_s": 73.043,
+      "plan_summary": {
+        "device_id": "w25q64jv",
+        "rtos_id": "threadx",
+        "eval_class": "memory",
+        "bus_kind": "spi",
+        "plan_hash": "f258ea85541c3d9d",
+        "api_contract_keys": [
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c",
+          "mem_read_call",
+          "mem_write_call",
+          "memory_page_bytes",
+          "memory_size_bytes",
+          "preamble_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 72.934
+      },
+      "consistency": {
+        "overall": "all_consistent",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 0,
+        "consistent_count": 2,
+        "summary": "2 stim; 2 L1/L2",
+        "stimuli": [
+          {
+            "name": "mechanical_memory_probe_1",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0xDE, 0xAD, 0xBE, 0xEF, 0x10, 0x32, 0x54, 0x76, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67])",
+            "warnings": []
+          },
+          {
+            "name": "mechanical_memory_probe_2",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0x00, 0xFF, 0x55, 0xAA, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xFE, 0xDC, 0x11, 0x22, 0x33, 0x44])",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 6,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 6,
+        "summary": "6/6 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "prefix overlap: [('0x03',)] ∈ mechanical [('0x03',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "read_memory: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[0]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: WRITE_ENABLE"
+            },
+            "reason": "prefix overlap: [('0x06',)] ∈ mechanical [('0x06',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[1]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+            },
+            "reason": "prefix overlap: [('0x02',)] ∈ mechanical [('0x02',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: write",
+              "source": "operation_flows[2].steps[0]"
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "prefix overlap: [('0x9F',)] ∈ mechanical [('0x9F',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "init: direct read read",
+              "source": "operation_flows[2].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x9F"
+              ]
+            ],
+            "note": "init: JEDEC ID command"
+          },
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x03"
+              ]
+            ],
+            "note": "read_memory: READ_DATA command + 3-byte address"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x06"
+              ]
+            ],
+            "note": "write_page: WRITE_ENABLE"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x02"
+              ]
+            ],
+            "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+          }
+        ]
+      }
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "layer_failed": "probe",
+      "success": false,
+      "total_time_s": 28.323,
+      "bundle_summary": {
+        "device_id": "w25q64jv",
+        "rtos_id": "threadx",
+        "eval_class": "memory",
+        "bus_kind": "spi",
+        "header_chars": 1802,
+        "source_chars": 7223,
+        "plan_hash": "f258ea85541c3d9d",
+        "api_contract_keys": [
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c",
+          "mem_read_call",
+          "mem_write_call",
+          "memory_page_bytes",
+          "memory_size_bytes",
+          "preamble_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 18.11
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 1
+      },
+      "consistency": {
+        "overall": "all_consistent",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 0,
+        "consistent_count": 2,
+        "summary": "2 stim; 2 L1/L2",
+        "stimuli": [
+          {
+            "name": "mechanical_memory_probe_1",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0xDE, 0xAD, 0xBE, 0xEF, 0x10, 0x32, 0x54, 0x76, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67])",
+            "warnings": []
+          },
+          {
+            "name": "mechanical_memory_probe_2",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0x00, 0xFF, 0x55, 0xAA, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xFE, 0xDC, 0x11, 0x22, 0x33, 0x44])",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 6,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 6,
+        "summary": "6/6 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "prefix overlap: [('0x03',)] ∈ mechanical [('0x03',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "read_memory: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[0]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: WRITE_ENABLE"
+            },
+            "reason": "prefix overlap: [('0x06',)] ∈ mechanical [('0x06',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[1]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+            },
+            "reason": "prefix overlap: [('0x02',)] ∈ mechanical [('0x02',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: write",
+              "source": "operation_flows[2].steps[0]"
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "prefix overlap: [('0x9F',)] ∈ mechanical [('0x9F',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "init: direct read read",
+              "source": "operation_flows[2].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x9F"
+              ]
+            ],
+            "note": "init: JEDEC ID command"
+          },
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x03"
+              ]
+            ],
+            "note": "read_memory: READ_DATA command + 3-byte address"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x06"
+              ]
+            ],
+            "note": "write_page: WRITE_ENABLE"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x02"
+              ]
+            ],
+            "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "w25q64jv",
+        "eval_class": "memory",
+        "bus_kind": "spi",
+        "source_chars": 1865,
+        "warnings": []
+      },
+      "link": {
+        "success": true,
+        "errors": 0,
+        "warnings": 1,
+        "elf_path": "<RUN_DIR>/attempts/001/stage/out/w25q64jv_threadx.elf",
+        "text_bytes": 9071,
+        "data_bytes": 96,
+        "bss_bytes": 56
+      },
+      "probe": {
+        "total": 1,
+        "passed": 0,
+        "expectation_failures": 1,
+        "outcomes": [
+          {
+            "stimulus_name": "mechanical_memory_probe_1",
+            "boot_detected": true,
+            "test_done": false,
+            "result_pass": false,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": null,
+            "read_channels": {},
+            "mem_bytes": [],
+            "mem_probe_addr": 0,
+            "mem_probe_len": 16,
+            "memory_size_bytes": 8388608,
+            "memory_page_bytes": 256,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/001/stage/probe/spi_trace_mechanical_memory_probe_1.jsonl",
+            "output_lines": [
+              "20:58:45.0656 [INFO] usart2: [host: 0.65s (+0.65s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:58:45.0659 [INFO] usart2: [host: 0.65s (+0.19ms)|virt: 0s (+0s)] memory_size_bytes=8388608",
+              "20:58:45.0660 [INFO] usart2: [host: 0.65s (+0.11ms)|virt: 0s (+0s)] memory_page_bytes=256",
+              "20:58:45.0662 [INFO] usart2: [host:  0.65s (+0.1ms)|virt: 0s (+0s)] mem_probe_addr=0",
+              "20:58:45.0662 [INFO] usart2: [host:   0.65s (+98?s)|virt: 0s (+0s)] mem_probe_len=16",
+              "[ERROR] FATAL UNHANDLED EXCEPTION: Antmicro.Renode.Exceptions.RecoverableException: Python runtime error: name 'jedec_id' is not defined"
+            ],
+            "error": "",
+            "duration_s": 9.461058855056763,
+            "renode_exit": 1,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "register",
+            "bus_kind": "spi"
+          }
+        ]
+      },
+      "feedback_chars": 3788
+    },
+    {
+      "attempt": 2,
+      "layer_failed": "probe",
+      "success": false,
+      "total_time_s": 25.482,
+      "bundle_summary": {
+        "device_id": "w25q64jv",
+        "rtos_id": "threadx",
+        "eval_class": "memory",
+        "bus_kind": "spi",
+        "header_chars": 799,
+        "source_chars": 6670,
+        "plan_hash": "f258ea85541c3d9d",
+        "api_contract_keys": [
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c",
+          "mem_read_call",
+          "mem_write_call",
+          "memory_page_bytes",
+          "memory_size_bytes",
+          "preamble_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 17.772
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 1
+      },
+      "consistency": {
+        "overall": "all_consistent",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 0,
+        "consistent_count": 2,
+        "summary": "2 stim; 2 L1/L2",
+        "stimuli": [
+          {
+            "name": "mechanical_memory_probe_1",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0xDE, 0xAD, 0xBE, 0xEF, 0x10, 0x32, 0x54, 0x76, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67])",
+            "warnings": []
+          },
+          {
+            "name": "mechanical_memory_probe_2",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0x00, 0xFF, 0x55, 0xAA, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xFE, 0xDC, 0x11, 0x22, 0x33, 0x44])",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 6,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 6,
+        "summary": "6/6 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "prefix overlap: [('0x03',)] ∈ mechanical [('0x03',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "read_memory: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[0]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: WRITE_ENABLE"
+            },
+            "reason": "prefix overlap: [('0x06',)] ∈ mechanical [('0x06',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[1]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+            },
+            "reason": "prefix overlap: [('0x02',)] ∈ mechanical [('0x02',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: write",
+              "source": "operation_flows[2].steps[0]"
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "prefix overlap: [('0x9F',)] ∈ mechanical [('0x9F',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "init: direct read read",
+              "source": "operation_flows[2].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x9F"
+              ]
+            ],
+            "note": "init: JEDEC ID command"
+          },
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x03"
+              ]
+            ],
+            "note": "read_memory: READ_DATA command + 3-byte address"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x06"
+              ]
+            ],
+            "note": "write_page: WRITE_ENABLE"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x02"
+              ]
+            ],
+            "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "w25q64jv",
+        "eval_class": "memory",
+        "bus_kind": "spi",
+        "source_chars": 1865,
+        "warnings": []
+      },
+      "link": {
+        "success": true,
+        "errors": 0,
+        "warnings": 1,
+        "elf_path": "<RUN_DIR>/attempts/002/stage/out/w25q64jv_threadx.elf",
+        "text_bytes": 8571,
+        "data_bytes": 96,
+        "bss_bytes": 56
+      },
+      "probe": {
+        "total": 1,
+        "passed": 0,
+        "expectation_failures": 1,
+        "outcomes": [
+          {
+            "stimulus_name": "mechanical_memory_probe_1",
+            "boot_detected": true,
+            "test_done": false,
+            "result_pass": false,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": null,
+            "read_channels": {},
+            "mem_bytes": [],
+            "mem_probe_addr": 0,
+            "mem_probe_len": 16,
+            "memory_size_bytes": 8388608,
+            "memory_page_bytes": 256,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/002/stage/probe/spi_trace_mechanical_memory_probe_1.jsonl",
+            "output_lines": [
+              "20:59:10.5468 [INFO] usart2: [host: 0.6s (+0.6s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:59:10.5471 [INFO] usart2: [host: 0.6s (+0.18ms)|virt: 0s (+0s)] memory_size_bytes=8388608",
+              "20:59:10.5472 [INFO] usart2: [host: 0.6s (+0.11ms)|virt: 0s (+0s)] memory_page_bytes=256",
+              "20:59:10.5473 [INFO] usart2: [host:  0.6s (+0.1ms)|virt: 0s (+0s)] mem_probe_addr=0",
+              "20:59:10.5474 [INFO] usart2: [host:   0.6s (+92?s)|virt: 0s (+0s)] mem_probe_len=16",
+              "[ERROR] FATAL UNHANDLED EXCEPTION: Antmicro.Renode.Exceptions.RecoverableException: Python runtime error: name 'jedec_id' is not defined"
+            ],
+            "error": "",
+            "duration_s": 6.954001426696777,
+            "renode_exit": 1,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "register",
+            "bus_kind": "spi"
+          }
+        ]
+      },
+      "feedback_chars": 3788
+    },
+    {
+      "attempt": 3,
+      "layer_failed": "probe",
+      "success": false,
+      "total_time_s": 21.609,
+      "bundle_summary": {
+        "device_id": "w25q64jv",
+        "rtos_id": "threadx",
+        "eval_class": "memory",
+        "bus_kind": "spi",
+        "header_chars": 484,
+        "source_chars": 5089,
+        "plan_hash": "f258ea85541c3d9d",
+        "api_contract_keys": [
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c",
+          "mem_read_call",
+          "mem_write_call",
+          "memory_page_bytes",
+          "memory_size_bytes",
+          "preamble_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 14.1
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 1
+      },
+      "consistency": {
+        "overall": "all_consistent",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 0,
+        "consistent_count": 2,
+        "summary": "2 stim; 2 L1/L2",
+        "stimuli": [
+          {
+            "name": "mechanical_memory_probe_1",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0xDE, 0xAD, 0xBE, 0xEF, 0x10, 0x32, 0x54, 0x76, 0x89, 0xAB, 0xCD, 0xEF, 0x01, 0x23, 0x45, 0x67])",
+            "warnings": []
+          },
+          {
+            "name": "mechanical_memory_probe_2",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "preload matches expected_mem_bytes exactly ([0x00, 0xFF, 0x55, 0xAA, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xFE, 0xDC, 0x11, 0x22, 0x33, 0x44])",
+            "warnings": []
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 6,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 6,
+        "summary": "6/6 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "prefix overlap: [('0x03',)] ∈ mechanical [('0x03',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "read_memory: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x03"
+                ]
+              ],
+              "note": "read_memory: READ_DATA command + 3-byte address"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[0]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x06"
+                ]
+              ],
+              "note": "write_page: WRITE_ENABLE"
+            },
+            "reason": "prefix overlap: [('0x06',)] ∈ mechanical [('0x06',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: write",
+              "source": "operation_flows[1].steps[1]"
+            },
+            "llm_match": {
+              "phase": "write_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x02"
+                ]
+              ],
+              "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+            },
+            "reason": "prefix overlap: [('0x02',)] ∈ mechanical [('0x02',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: write",
+              "source": "operation_flows[2].steps[0]"
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "prefix overlap: [('0x9F',)] ∈ mechanical [('0x9F',)]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [],
+              "note": "init: direct read read",
+              "source": "operation_flows[2].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "init",
+              "addr_or_pin": "0x00",
+              "write_prefix_any_of": [
+                [
+                  "0x9F"
+                ]
+              ],
+              "note": "init: JEDEC ID command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x9F"
+              ]
+            ],
+            "note": "init: JEDEC ID command"
+          },
+          {
+            "phase": "init",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "init: read 3 JEDEC ID bytes"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "write_prefix_any_of": [
+              [
+                "0x03"
+              ]
+            ],
+            "note": "read_memory: READ_DATA command + 3-byte address"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "0x00",
+            "read_any": true,
+            "note": "read_memory: data bytes"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x06"
+              ]
+            ],
+            "note": "write_page: WRITE_ENABLE"
+          },
+          {
+            "phase": "write_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x02"
+              ]
+            ],
+            "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "w25q64jv",
+        "eval_class": "memory",
+        "bus_kind": "spi",
+        "source_chars": 1865,
+        "warnings": []
+      },
+      "link": {
+        "success": true,
+        "errors": 0,
+        "warnings": 1,
+        "elf_path": "<RUN_DIR>/attempts/003/stage/out/w25q64jv_threadx.elf",
+        "text_bytes": 8839,
+        "data_bytes": 96,
+        "bss_bytes": 56
+      },
+      "probe": {
+        "total": 1,
+        "passed": 0,
+        "expectation_failures": 1,
+        "outcomes": [
+          {
+            "stimulus_name": "mechanical_memory_probe_1",
+            "boot_detected": true,
+            "test_done": false,
+            "result_pass": false,
+            "result_err": false,
+            "read_err": null,
+            "read_raw": null,
+            "read_channels": {},
+            "mem_bytes": [],
+            "mem_probe_addr": 0,
+            "mem_probe_len": 16,
+            "memory_size_bytes": 8388608,
+            "memory_page_bytes": 256,
+            "display_frame_len": null,
+            "display_frame_err": null,
+            "display_status_err": null,
+            "display_status": null,
+            "rtc_get_err": null,
+            "rtc_set_err": null,
+            "rtc_time": {},
+            "trace_path": "<RUN_DIR>/attempts/003/stage/probe/spi_trace_mechanical_memory_probe_1.jsonl",
+            "output_lines": [
+              "20:59:32.1602 [INFO] usart2: [host: 0.59s (+0.59s)|virt: 0s (+0s)] DRIVER_TEST START",
+              "20:59:32.1605 [INFO] usart2: [host: 0.59s (+0.21ms)|virt: 0s (+0s)] memory_size_bytes=8388608",
+              "20:59:32.1606 [INFO] usart2: [host:  0.59s (+0.1ms)|virt: 0s (+0s)] memory_page_bytes=256",
+              "20:59:32.1607 [INFO] usart2: [host:  0.59s (+0.1ms)|virt: 0s (+0s)] mem_probe_addr=0",
+              "20:59:32.1608 [INFO] usart2: [host:   0.59s (+85?s)|virt: 0s (+0s)] mem_probe_len=16",
+              "[ERROR] FATAL UNHANDLED EXCEPTION: Antmicro.Renode.Exceptions.RecoverableException: Python runtime error: name 'jedec_id' is not defined"
+            ],
+            "error": "",
+            "duration_s": 6.818828821182251,
+            "renode_exit": 1,
+            "expected_read_raw": null,
+            "expected_channels": {},
+            "expected_mem_bytes": null,
+            "expected_time": null,
+            "expected_err": null,
+            "runtime_path": "renode_spi",
+            "slave_kind": "spi_generic_slave",
+            "spi_sub_mode": "register",
+            "bus_kind": "spi"
+          }
+        ]
+      },
+      "feedback_chars": 3788
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"stm32f1xx_hal.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"threadx.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"tx_api.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"w25q64jv.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include <stddef.h>` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include <stdint.h>` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include <string.h>` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "init phase must write <read> to addr 0x00",
+      "source_attempt": 1,
+      "evidence": "operation_flows[2].steps[1]"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "init phase must write [0x9F] to addr 0x00",
+      "source_attempt": 1,
+      "evidence": "operation_flows[2].steps[0]"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=read_cycle requires write <read> to addr 0x00",
+      "source_attempt": 1,
+      "evidence": "operation_flows[0].steps[1]"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=read_cycle requires write [0x03] to addr 0x00",
+      "source_attempt": 1,
+      "evidence": "operation_flows[0].steps[0]"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=write_cycle requires write [0x02] to addr spi1",
+      "source_attempt": 1,
+      "evidence": "operation_flows[1].steps[1]"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=write_cycle requires write [0x06] to addr spi1",
+      "source_attempt": 1,
+      "evidence": "operation_flows[1].steps[0]"
+    }
+  ]
+}

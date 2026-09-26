@@ -1,0 +1,124 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "zephyr__hcsr04",
+  "device_id": "hcsr04",
+  "rtos_id": "zephyr",
+  "bus": "gpio_timing",
+  "scope": "Independent standard for hcsr04 on the fixed gpio_timing task configuration, based on its copied reference driver, fixed task requirements, supplied Zephyr API pack and harness. Excludes sample_ref application cadence and device-register behavior.",
+  "api_contract": {
+    "bus": "gpio_timing",
+    "fixed_task_context": "GPIO DT specification(s); task requirements name HC-SR04 trig/echo nodes, while DHT22/DS18B20 own refs describe a single data pin",
+    "handle_and_operations": {
+      "handle": "struct gpio_dt_spec",
+      "operations": [
+        "gpio_pin_configure_dt",
+        "gpio_pin_set_dt",
+        "gpio_pin_get_dt",
+        "k_busy_wait"
+      ],
+      "signatures": {
+        "gpio_pin_configure_dt": "int gpio_pin_configure_dt(const struct gpio_dt_spec *spec, gpio_flags_t flags)",
+        "gpio_pin_set_dt": "int gpio_pin_set_dt(const struct gpio_dt_spec *spec, int value)",
+        "gpio_pin_get_dt": "int gpio_pin_get_dt(const struct gpio_dt_spec *spec)",
+        "k_busy_wait": "void k_busy_wait(uint32_t us)"
+      },
+      "configuration": "GPIO input/output flags and microsecond busy waits"
+    },
+    "headers": [
+      "zephyr/device.h",
+      "zephyr/drivers/gpio.h",
+      "zephyr/kernel.h for timing calls where used"
+    ],
+    "return_semantics": "Use the integer status from fallible bus/configuration calls; GPIO read yields level or error. UART poll_in is nonblocking: 0 means byte received, nonzero means no byte; poll_out returns void."
+  },
+  "facts": [
+    {
+      "id": "binding",
+      "category": "binding",
+      "requirement": "Bind the required gpio_timing handle/configuration on fixed task context: GPIO DT specification(s); task requirements name HC-SR04 trig/echo nodes, while DHT22/DS18B20 own refs describe a single data pin.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 1,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/tasks/zephyr__hcsr04/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 175
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 106,
+          "line_end": 135
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "category": "api_operations",
+      "requirement": "Provide the task-required operations with compatible signatures: int gpio_pin_configure_dt(const struct gpio_dt_spec *spec, gpio_flags_t flags); int gpio_pin_set_dt(const struct gpio_dt_spec *spec, int value); int gpio_pin_get_dt(const struct gpio_dt_spec *spec); void k_busy_wait(uint32_t us). Keep handle/address/configuration, buffer and return levels compatible with the reference.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 17,
+          "line_end": 41
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 106,
+          "line_end": 135
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/zephyr/gpio_timing/pack.md",
+          "line_start": 1,
+          "line_end": 80
+        }
+      ]
+    },
+    {
+      "id": "gpio_timing",
+      "category": "timing",
+      "requirement": "Support reference GPIO configure/set/get operations with microsecond busy-wait timing; DHT22 and DS18B20 also use millisecond sleep in their sensor protocol.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 1,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 106,
+          "line_end": 135
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 229,
+          "line_end": 231
+        }
+      ]
+    },
+    {
+      "id": "status_handling",
+      "category": "return_semantics",
+      "requirement": "Preserve the fallible API status needed to detect or propagate bus/GPIO configuration and transaction failures; do not convert an error return into success.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 1,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 106,
+          "line_end": 135
+        }
+      ]
+    }
+  ]
+}

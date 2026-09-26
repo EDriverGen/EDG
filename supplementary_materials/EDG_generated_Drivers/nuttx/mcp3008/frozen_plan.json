@@ -1,0 +1,101 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "nuttx",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "struct spi_dev_s *bus_handle = (struct spi_dev_s *)bus_name;",
+    "dev_struct_type": "struct mcp3008_dev_s",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x7F",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 511
+        },
+        "derivation": "high_byte=0x7F, low_byte=0xFF; raw = ((0x7F & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023; but 10-bit max is 1023, so 511 is mid-scale? Wait: 0x7F & 0x03 = 0x03, (0x03 << 8) = 0x300, | 0xFF = 0x3FF = 1023. That's full scale. high_byte bits[1:0]=0x01, low_byte=0xFF. So stream bytes: dummy=0x00, high_byte=0x7F? Actually high_byte = (raw >> 8) & 0x03 = 0x01, so byte1 = 0x40? Wait: The response bytes: byte0=dummy, byte1[1:0]=ADC[9:8], byte2=ADC[7:0]. For raw=511 (0x1FF): ADC[9:8]=0x01, ADC[7:0]=0xFF. So byte1 = 0x40? No, byte1[1:0] = 0x01, so byte1 = 0x01? Actually the byte1 is the second byte returned; its top 6 bits are don't care, bottom 2 bits are ADC[9:8]. So byte1 = 0x01. byte2 = 0xFF. So stream = [0x00, 0x01, 0xFF]. But we need to ensure the driver reads 3 bytes. So mock_preload stream = [0x00, 0x01, 0xFF]. Then expected_channels ch0 = ((0x01 & 0x03) << 8) | 0xFF = (1 << 8) | 255 = 256 + 255 = 511."
+      },
+      {
+        "name": "ch1_zero",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch1": 0
+        },
+        "derivation": "high_byte=0x00, low_byte=0x00; raw = ((0x00 & 0x03) << 8) | 0x00 = 0."
+      },
+      {
+        "name": "ch0_full_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x03",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 1023
+        },
+        "derivation": "high_byte=0x03, low_byte=0xFF; raw = ((0x03 & 0x03) << 8) | 0xFF = (3 << 8) | 255 = 768 + 255 = 1023."
+      }
+    ]
+  },
+  "plan_hash": "de03447ed0ba0959",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.974,
+  "prompt_chars": 48697,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"mcp3008_init(&g_eval_dev, bus_handle)\", \"init_extra_setup_c\": \"struct spi_dev_s *bus_handle = (struct spi_dev_s *)bus_name;\", \"dev_struct_type\": \"struct mcp3008_dev_s\", \"channels\": [{\"id\": \"ch0\", \"call\": \"mcp3008_read_channel(&g_eval_dev, 0, &ch0)\", \"out_arg\": \"ch0\", \"out_type\": \"uint16_t\", \"physical_unit\": \"raw\"}, {\"id\": \"ch1\", \"call\": \"mcp3008_read_channel(&g_eval_dev, 1, &ch1)\", \"out_arg\": \"ch1\", \"out_type\": \"uint16_t\", \"physical_unit\": \"raw\"}]}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"write_prefix_any_of\": [[\"0x01\", \"0x80\", \"0x00\"]], \"note\": \"read_channel: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"read_any\": true, \"note\": \"read_channel: direct read read\"}], \"test_stimuli\": [{\"name\": \"ch0_mid_scale\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x7F\", \"0xFF\"]}, \"expected_channels\": {\"ch0\": 511}, \"derivation\": \"high_byte=0x7F, low_byte=0xFF; raw = ((0x7F & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023; but 10-bit max is 1023, so 511 is mid-scale? Wait: 0x7F & 0x03 = 0x03, (0x03 << 8) = 0x300, | 0xFF = 0x3FF = 1023. That's full scale. Let's choose a different value: For 511, raw=511 = 0x1FF. high_byte bits[1:0]=0x01, low_byte=0xFF. So stream bytes: dummy=0x00, high_byte=0x7F? Actually high_byte = (raw >> 8) & 0x03 = 0x01, so byte1 = 0x40? Wait: The response bytes: byte0=dummy, byte1[1:0]=ADC[9:8], byte2=ADC[7:0]. For raw=511 (0x1FF): ADC[9:8]=0x01, ADC[7:0]=0xFF. So byte1 = 0x40? No, byte1[1:0] = 0x01, so byte1 = 0x01? Actually the byte1 is the second byte returned; its top 6 bits are don't care, bottom 2 bits are ADC[9:8]. So byte1 = 0x01. byte2 = 0xFF. So stream = [0x00, 0x01, 0xFF]. But we need to ensure the driver reads 3 bytes. So mock_preload stream = [0x00, 0x01, 0xFF]. Then expected_channels ch0 = ((0x01 & 0x03) << 8) | 0xFF = (1 << 8) | 255 = 256 + 255 = 511.\"}, {\"name\": \"ch1_zero\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"ch1\": 0}, \"derivation\": \"high_byte=0x00, low_byte=0x00; raw = ((0x00 & 0x03) << 8) | 0x00 = 0.\"}, {\"name\": \"ch0_full_scale\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x03\", \"0xFF\"]}, \"expected_channels\": {\"ch0\": 1023}, \"derivation\": \"high_byte=0x03, low_byte=0xFF; raw = ((0x03 & 0x03) << 8) | 0xFF = (3 << 8) | 255 = 768 + 255 = 1023.\"}]}}"
+}

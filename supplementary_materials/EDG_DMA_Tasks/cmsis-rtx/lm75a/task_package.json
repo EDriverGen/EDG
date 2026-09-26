@@ -1,0 +1,98 @@
+{
+  "package_id": "cmsis_rtx_stm32f103rb__lm75a__i2c1_dma",
+  "platform_base_context": "EDG_DMA_Tasks/cmsis-rtx/lm75a/platform_base_context.json",
+  "connection_binding_context": "EDG_DMA_Tasks/cmsis-rtx/lm75a/connection_binding_context.json",
+  "device_attachment_context": "EDG_DMA_Tasks/cmsis-rtx/lm75a/device_attachment_context.json",
+  "reference_driver_root": "DriverGen/data/references/lm75a/cmsis-rtx",
+  "device_ir": "EDG_DMA_Tasks/cmsis-rtx/lm75a/device_ir.json",
+  "dma_requirements": "EDG_DMA_Tasks/cmsis-rtx/lm75a/dma_requirements.json",
+  "evaluation_config": "EDG_DMA_Tasks/cmsis-rtx/lm75a/evaluation_config.json",
+  "mode": "dma",
+  "notes": [
+    "LM75A on cmsis-rtx: DMA payload transfers on the original hardware connection.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use DMA for the complete temperature register value and preserve signed fixed-point conversion."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+  ],
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "cmsis_rtx_stm32f103rb",
+      "rtos": "cmsis-rtx",
+      "rtos_bundle": "cmsis-rtx-stm32f103-project",
+      "board": "stm32f103rb",
+      "board_alias": "f103rb",
+      "integration": "stm32cubef1_hal",
+      "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+      "mcu_family": "stm32f1",
+      "mcu": "stm32f103rb"
+    },
+    "connection": {
+      "binding_id": "cmsis_rtx_stm32f103rb_i2c1_dma",
+      "platform_id": "cmsis_rtx_stm32f103rb",
+      "connection_type": "i2c",
+      "mode": "dma",
+      "bus_instance": "i2c1",
+      "bus_instance_kind": "named_hal_handle",
+      "bus_symbol": "hi2c1",
+      "backend": "STM32CubeF1 HAL I2C DMA with cmsis-rtx completion handling",
+      "address_mode": "7-bit",
+      "fixed_attachment": {},
+      "helper_usage_patterns": []
+    },
+    "device": {
+      "device_id": "lm75a",
+      "attachment_type": "i2c_sensor",
+      "required_bus_type": "i2c",
+      "address_mode": "7-bit",
+      "addressing": {
+        "default": "0x48",
+        "alternates": [
+          "0x49",
+          "0x4A",
+          "0x4B",
+          "0x4C",
+          "0x4D",
+          "0x4E",
+          "0x4F"
+        ],
+        "selection_rule": "A2/A1/A0 define the lower address bits."
+      },
+      "required_attachment": {
+        "signals": [],
+        "notes": [
+          "Minimal driver only requires I2C power, ground, SDA, and SCL."
+        ]
+      },
+      "optional_attachment": {
+        "os_pin": "optional",
+        "address_select_pins": [
+          "A0",
+          "A1",
+          "A2"
+        ]
+      },
+      "default_overrides": {
+        "bus_instance": "i2c1",
+        "irq": "dma_completion",
+        "dma": "required",
+        "reset_gpio": null,
+        "power_gpio": null,
+        "mode": "dma",
+        "device_irq": "absent"
+      },
+      "protocol_hints": {
+        "transfer_mode": "dma"
+      }
+    }
+  }
+}

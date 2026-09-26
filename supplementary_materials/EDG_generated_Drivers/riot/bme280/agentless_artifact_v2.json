@@ -1,0 +1,2599 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "riot",
+    "board": "nucleo-f103rb",
+    "mcu_family": "stm32f1",
+    "integration": "riot_periph_driver_api",
+    "integration_style": "riot_periph_plus_ztimer",
+    "bus_intent": {
+      "canonical_bus": "i2c",
+      "connection_type": "i2c",
+      "mode": "polling",
+      "backend": "RIOT periph I2C driver",
+      "address_mode": "7-bit",
+      "bus_instance": "I2C_DEV(0)"
+    },
+    "device_id": "bme280",
+    "device_ir_hash": "2218267e367ca190",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "riot:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/riot",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "riot",
+      "sha": "7886842b"
+    }
+  ],
+  "slots": {
+    "i2c.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "i2c.addressing": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "macro",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "address_rule",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "i2c.addressing",
+        "fulfillment_kind": "context_binding",
+        "source": "device_ir.address_rule+task_context.device_attachment",
+        "confidence": 0.9,
+        "value": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO=GND (default address)",
+              "is_default": true
+            },
+            {
+              "address": "0x77",
+              "description": "SDO=VDDIO",
+              "is_default": false
+            }
+          ]
+        },
+        "fields": {
+          "address_rule": {
+            "type": "address_pins",
+            "addressing_form": "7-bit",
+            "addresses": [
+              {
+                "address": "0x76",
+                "description": "SDO=GND (default address)",
+                "is_default": true
+              },
+              {
+                "address": "0x77",
+                "description": "SDO=VDDIO",
+                "is_default": false
+              }
+            ]
+          },
+          "addressing": {
+            "default": "0x76",
+            "alternates": [
+              "0x77"
+            ],
+            "selection_rule": "SDO determines the I2C address in I2C mode."
+          },
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+        ]
+      },
+      "confidence": 0.9
+    },
+    "i2c.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "multi_symbol_evidence",
+      "fulfillment": {
+        "slot_id": "i2c.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "i2c_t",
+            "kind": "type_ref",
+            "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "source_slot": "i2c.read",
+            "source_symbol": "i2c_read_bytes",
+            "signature": "int i2c_read_bytes(i2c_t dev, uint16_t addr, void *data, size_t len, uint8_t flags)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.85
+    },
+    "i2c.read": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_read_bytes"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "i2c.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_read_regs"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "i2c.write": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_write_bytes"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "xtimer_msleep"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "thread_status_t"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_api_return_status_convention",
+        "confidence": 0.75,
+        "symbols": [
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "source_slot": "i2c.read",
+            "source_symbol": "i2c_read_bytes",
+            "signature": "int i2c_read_bytes(i2c_t dev, uint16_t addr, void *data, size_t len, uint8_t flags)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "source_slot": "i2c.transfer",
+            "source_symbol": "i2c_read_regs",
+            "signature": "int i2c_read_regs(i2c_t dev, uint16_t addr, uint16_t reg, void *data, size_t len, uint8_t flags)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "source_slot": "i2c.write",
+            "source_symbol": "i2c_write_bytes",
+            "signature": "int i2c_write_bytes(i2c_t dev, uint16_t addr, const void *data, size_t len, uint8_t flags)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+        ]
+      },
+      "confidence": 0.85
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "I2C_DEV(0)",
+        "fields": {
+          "bus_instance": "I2C_DEV(0)",
+          "bus_symbol": "I2C_DEV(0)",
+          "backend": "RIOT periph I2C driver",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.release": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2c_release"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    }
+  },
+  "symbols": {
+    "i2c.read": {
+      "slot_id": "i2c.read",
+      "symbol": "i2c_read_bytes",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int i2c_read_bytes(i2c_t dev, uint16_t addr, void *data, size_t len, uint8_t flags)",
+      "signature_source": "parser",
+      "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+      "implemented_in": null,
+      "required_headers": [],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "riot:single:0",
+          "path": "cpu/rpx0xx/periph/i2c.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "port-specific-source"
+      ]
+    },
+    "i2c.transfer": {
+      "slot_id": "i2c.transfer",
+      "symbol": "i2c_read_regs",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int i2c_read_regs(i2c_t dev, uint16_t addr, uint16_t reg, void *data, size_t len, uint8_t flags)",
+      "signature_source": "parser",
+      "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+      "implemented_in": null,
+      "required_headers": [],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "riot:single:0",
+          "path": "cpu/rpx0xx/periph/i2c.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "port-specific-source"
+      ]
+    },
+    "i2c.write": {
+      "slot_id": "i2c.write",
+      "symbol": "i2c_write_bytes",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int i2c_write_bytes(i2c_t dev, uint16_t addr, const void *data, size_t len, uint8_t flags)",
+      "signature_source": "parser",
+      "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+      "implemented_in": null,
+      "required_headers": [],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "riot:single:0",
+          "path": "cpu/rpx0xx/periph/i2c.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "port-specific-source"
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "symbol": "xtimer_msleep",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "static inline void xtimer_msleep(uint32_t milliseconds)",
+      "signature_source": "parser",
+      "declared_in": "riot:single:0::sys/include/xtimer.h",
+      "implemented_in": null,
+      "required_headers": [
+        "sys/include/xtimer.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "riot:single:0",
+          "path": "sys/include/xtimer.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=2+4.0",
+        "root-role+3.0"
+      ]
+    },
+    "i2c.release": {
+      "slot_id": "i2c.release",
+      "symbol": "i2c_release",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void i2c_release(i2c_t dev)",
+      "signature_source": "parser",
+      "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+      "implemented_in": null,
+      "required_headers": [],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "riot:single:0",
+          "path": "cpu/rpx0xx/periph/i2c.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "port-specific-source"
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "symbol": "thread_status_t",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "enum { STATUS_STOPPED, /**< has terminated */ STATUS_ZOMBIE, /**< has terminated & keeps thread's th",
+      "signature_source": "parser",
+      "declared_in": "riot:single:0::core/include/sched.h",
+      "implemented_in": null,
+      "required_headers": [
+        "core/include/sched.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.85,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "riot:single:0",
+          "path": "core/include/sched.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "root-role+3.0",
+        "llm_bound:thread_status_t is a public kernel typedef for thread status, matching the slot's intent for runtime error/status types."
+      ]
+    }
+  },
+  "_symbol_index": {
+    "i2c_read_bytes": [
+      "i2c.read"
+    ],
+    "i2c_read_regs": [
+      "i2c.transfer"
+    ],
+    "i2c_write_bytes": [
+      "i2c.write"
+    ],
+    "xtimer_msleep": [
+      "runtime.delay_ms"
+    ],
+    "i2c_release": [
+      "i2c.release"
+    ],
+    "thread_status_t": [
+      "runtime.error_status"
+    ]
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x76",
+            "description": "SDO=GND (default address)",
+            "is_default": true
+          },
+          {
+            "address": "0x77",
+            "description": "SDO=VDDIO",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO=GND (default address)",
+              "is_default": true
+            },
+            {
+              "address": "0x77",
+              "description": "SDO=VDDIO",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x76",
+          "alternates": [
+            "0x77"
+          ],
+          "selection_rule": "SDO determines the I2C address in I2C mode."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "i2c_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2c_read_bytes",
+          "signature": "int i2c_read_bytes(i2c_t dev, uint16_t addr, void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2c_read_bytes",
+          "signature": "int i2c_read_bytes(i2c_t dev, uint16_t addr, void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2c_read_regs",
+          "signature": "int i2c_read_regs(i2c_t dev, uint16_t addr, uint16_t reg, void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.write",
+          "source_symbol": "i2c_write_bytes",
+          "signature": "int i2c_write_bytes(i2c_t dev, uint16_t addr, const void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "I2C_DEV(0)",
+      "fields": {
+        "bus_instance": "I2C_DEV(0)",
+        "bus_symbol": "I2C_DEV(0)",
+        "backend": "RIOT periph I2C driver",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x76",
+            "description": "SDO=GND (default address)",
+            "is_default": true
+          },
+          {
+            "address": "0x77",
+            "description": "SDO=VDDIO",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO=GND (default address)",
+              "is_default": true
+            },
+            {
+              "address": "0x77",
+              "description": "SDO=VDDIO",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x76",
+          "alternates": [
+            "0x77"
+          ],
+          "selection_rule": "SDO determines the I2C address in I2C mode."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "I2C_DEV(0)",
+      "fields": {
+        "bus_instance": "I2C_DEV(0)",
+        "bus_symbol": "I2C_DEV(0)",
+        "backend": "RIOT periph I2C driver",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "i2c_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2c_read_bytes",
+          "signature": "int i2c_read_bytes(i2c_t dev, uint16_t addr, void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2c_read_bytes",
+          "signature": "int i2c_read_bytes(i2c_t dev, uint16_t addr, void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2c_read_regs",
+          "signature": "int i2c_read_regs(i2c_t dev, uint16_t addr, uint16_t reg, void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "source_slot": "i2c.write",
+          "source_symbol": "i2c_write_bytes",
+          "signature": "int i2c_write_bytes(i2c_t dev, uint16_t addr, const void *data, size_t len, uint8_t flags)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "I2C_DEV(0)",
+    "bus_symbol": "I2C_DEV(0)",
+    "backend": "RIOT periph I2C driver",
+    "mode": "polling",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "device_attachment": {
+      "device_id": "bme280",
+      "attachment_type": "i2c_sensor",
+      "required_bus_type": "i2c",
+      "address_mode": "7-bit",
+      "addressing": {
+        "default": "0x76",
+        "alternates": [
+          "0x77"
+        ],
+        "selection_rule": "SDO determines the I2C address in I2C mode."
+      },
+      "required_attachment": {
+        "signals": [],
+        "notes": [
+          "For I2C mode the CSB pin must stay inactive/high."
+        ]
+      },
+      "optional_attachment": {
+        "sdo_addr_select": "optional",
+        "csb_mode_pin": "required_for_i2c_mode"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "notes": [
+        "Reference drivers assume forced-mode single conversion reads using calibration values from the sensor."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/bme280",
+        "DriverGen/data/references/bme280/*/*_ref.h"
+      ]
+    },
+    "include_headers": [
+      "architecture.h",
+      "architecture_arch.h",
+      "assert.h",
+      "atomic_utils.h",
+      "atomic_utils_arch.h",
+      "bhp.h",
+      "bitarithm.h",
+      "board.h",
+      "busy_wait.h",
+      "byteorder.h",
+      "cib.h",
+      "clist.h",
+      "compiler_hints.h",
+      "cond.h",
+      "container.h",
+      "core/include/cond.h",
+      "core/include/mbox.h",
+      "core/include/msg.h",
+      "core/include/msg_bus.h",
+      "core/include/mutex.h",
+      "core/include/sched.h",
+      "core/include/stdio.h",
+      "core/include/thread.h",
+      "core/include/thread_flags.h",
+      "core/lib/include/assert.h",
+      "core/lib/include/bitarithm.h",
+      "core/lib/include/cib.h",
+      "core/lib/include/clist.h",
+      "core/lib/include/compiler_hints.h",
+      "core/lib/include/debug.h",
+      "core/lib/include/irq.h",
+      "core/lib/include/kernel_defines.h",
+      "core/lib/include/list.h",
+      "core/lib/include/macros/units.h",
+      "core/lib/include/modules.h",
+      "core/lib/include/rmutex.h",
+      "core/lib/include/thread_config.h",
+      "core_cm0plus.h",
+      "cpu.h",
+      "cpu/cortexm_common/include/cpu.h",
+      "cpu/cortexm_common/include/cpu_conf_common.h",
+      "cpu/cortexm_common/include/thread_arch.h",
+      "cpu/nrf52/include/cpu_conf.h",
+      "cpu/nrf52/include/nrf802154.h",
+      "cpu/nrf52/include/openwsn_defs.h",
+      "cpu/nrf52/include/periph_cpu.h",
+      "cpu/rpx0xx/include/cpu_conf.h",
+      "cpu/rpx0xx/include/io_reg.h",
+      "cpu/rpx0xx/include/periph_cpu.h",
+      "cpu/rpx0xx/include/pio/pio.h",
+      "cpu/rpx0xx/include/vendor/RP2040.h",
+      "cpu/rpx0xx/vendor/boot_stage2/config.h",
+      "cpu/rpx0xx/vendor/boot_stage2/include/hardware/platform_defs.h",
+      "cpu/rpx0xx/vendor/boot_stage2/include/hardware/regs/addressmap.h",
+      "cpu/rpx0xx/vendor/boot_stage2/include/pico/config.h",
+      "cpu_conf.h",
+      "cpu_conf_common.h",
+      "debug.h",
+      "div.h",
+      "endian.h",
+      "errno.h",
+      "event.h",
+      "hardware/platform_defs.h",
+      "i2c.pio.h",
+      "i2c_set_scl_sda.pio.h",
+      "inttypes.h",
+      "io_reg.h",
+      "irq.h",
+      "irq_arch.h",
+      "isrpipe.h",
+      "kernel_defines.h",
+      "limits.h",
+      "list.h",
+      "macros/units.h",
+      "macros/utils.h",
+      "mbox.h",
+      "modules.h",
+      "msg.h",
+      "mutex.h",
+      "net/ieee802154.h",
+      "net/ieee802154/radio.h",
+      "nrf802154.h",
+      "nrf_clock.h",
+      "periph/gpio.h",
+      "periph/i2c.h",
+      "periph/pio.h",
+      "periph/pio/i2c.h",
+      "periph/timer.h",
+      "periph/uart.h",
+      "periph_conf.h",
+      "periph_cpu.h",
+      "periph_cpu_common.h",
+      "pio/pio.h",
+      "riot_version.h",
+      "rmutex.h",
+      "sched.h",
+      "stdarg.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "string.h",
+      "sys/include/architecture.h",
+      "sys/include/atomic_utils.h",
+      "sys/include/base64.h",
+      "sys/include/bhp/event.h",
+      "sys/include/bhp/msg.h",
+      "sys/include/busy_wait.h",
+      "sys/include/byteorder.h",
+      "sys/include/div.h",
+      "sys/include/event/timeout.h",
+      "sys/include/isrpipe.h",
+      "sys/include/isrpipe/read_timeout.h",
+      "sys/include/time_units.h",
+      "sys/include/timex.h",
+      "sys/include/tiny_strerror.h",
+      "sys/include/xtimer.h",
+      "sys/include/xtimer/implementation.h",
+      "sys/include/xtimer/tick_conversion.h",
+      "sys/include/ztimer.h",
+      "sys/include/ztimer/xtimer_compat.h",
+      "sys/include/ztimer64.h",
+      "sys/include/ztimer64/xtimer_compat.h",
+      "system_RP2040.h",
+      "thread.h",
+      "thread_arch.h",
+      "thread_config.h",
+      "thread_flags.h",
+      "time_units.h",
+      "timex.h",
+      "tsrb.h",
+      "unaligned.h",
+      "vendor/RP2040.h",
+      "vendor/nrf52.h",
+      "vendor/nrf52805.h",
+      "vendor/nrf52805_bitfields.h",
+      "vendor/nrf52805_peripherals.h",
+      "vendor/nrf52810.h",
+      "vendor/nrf52810_bitfields.h",
+      "vendor/nrf52810_peripherals.h",
+      "vendor/nrf52811.h",
+      "vendor/nrf52811_bitfields.h",
+      "vendor/nrf52811_peripherals.h",
+      "vendor/nrf52820.h",
+      "vendor/nrf52820_bitfields.h",
+      "vendor/nrf52820_peripherals.h",
+      "vendor/nrf52832_peripherals.h",
+      "vendor/nrf52833.h",
+      "vendor/nrf52833_bitfields.h",
+      "vendor/nrf52833_peripherals.h",
+      "vendor/nrf52840.h",
+      "vendor/nrf52840_bitfields.h",
+      "vendor/nrf52840_peripherals.h",
+      "vendor/nrf52_bitfields.h",
+      "xtimer/implementation.h",
+      "xtimer/tick_conversion.h",
+      "ztimer.h",
+      "ztimer/xtimer_compat.h",
+      "ztimer64.h",
+      "ztimer64/xtimer_compat.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "cpu/rpx0xx/vendor/boot_stage2/include/hardware/regs/addressmap.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 61,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/nrf52/include/periph_cpu.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.write"
+        ],
+        "n_functions": 6,
+        "n_macros": 6,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/vendor/boot_stage2/include/pico/config.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 19,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/include/pio/pio.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.read"
+        ],
+        "n_functions": 62,
+        "n_macros": 66,
+        "n_typedefs": 19,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/vendor/boot_stage2/include/hardware/platform_defs.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 20,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/include/periph_cpu.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types"
+        ],
+        "n_functions": 28,
+        "n_macros": 36,
+        "n_typedefs": 15,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/nrf52/include/cpu_conf.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.write"
+        ],
+        "n_functions": 1,
+        "n_macros": 25,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/nrf52/include/nrf802154.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types"
+        ],
+        "n_functions": 3,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/nrf52/include/openwsn_defs.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/include/cpu_conf.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/vendor/boot_stage2/config.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 23,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/include/io_reg.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 4,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/ztimer/xtimer_compat.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 36,
+        "n_macros": 4,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/xtimer/implementation.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 48,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/cond.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/mbox.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/msg.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 15,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/msg_bus.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "runtime.delay_ms"
+        ],
+        "n_functions": 11,
+        "n_macros": 1,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/mutex.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 11,
+        "n_macros": 5,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/sched.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 15,
+        "n_macros": 10,
+        "n_typedefs": 4,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/stdio.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 2,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/thread.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 34,
+        "n_macros": 8,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/ztimer.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/xtimer.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 40,
+        "n_macros": 20,
+        "n_typedefs": 4,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/ztimer64/xtimer_compat.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 44,
+        "n_macros": 4,
+        "n_typedefs": 5,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/event/timeout.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 5,
+        "n_macros": 0,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/base64.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 5,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/busy_wait.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/isrpipe/read_timeout.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/ztimer64.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 26,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/tiny_strerror.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/include/thread_flags.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 6,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/assert.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 2,
+        "n_macros": 11,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/bitarithm.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write"
+        ],
+        "n_functions": 10,
+        "n_macros": 35,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/cib.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/clist.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 17,
+        "n_macros": 0,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/compiler_hints.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 1,
+        "n_macros": 20,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/debug.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding",
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 13,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/irq.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 5,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/kernel_defines.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/list.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "runtime.delay_ms"
+        ],
+        "n_functions": 3,
+        "n_macros": 0,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/macros/units.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/modules.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/rmutex.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "core/lib/include/thread_config.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/cortexm_common/include/cpu.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.write"
+        ],
+        "n_functions": 11,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/cortexm_common/include/cpu_conf_common.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.write"
+        ],
+        "n_functions": 0,
+        "n_macros": 15,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/cortexm_common/include/thread_arch.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/include/vendor/RP2040.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read"
+        ],
+        "n_functions": 0,
+        "n_macros": 9962,
+        "n_typedefs": 480,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/architecture.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 36,
+        "n_typedefs": 12,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/atomic_utils.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 133,
+        "n_macros": 3,
+        "n_typedefs": 10,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/bhp/event.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/bhp/msg.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/byteorder.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 72,
+        "n_macros": 0,
+        "n_typedefs": 12,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/div.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 8,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/isrpipe.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/time_units.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 17,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/timex.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.read",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 9,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/include/xtimer/tick_conversion.h",
+        "root_id": "riot:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 16,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "cpu/rpx0xx/periph/i2c.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 9,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/pio/i2c/i2c.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 27,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/nrf52/spi_twi_irq.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write"
+        ],
+        "n_functions": 12,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/periph/pio.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write"
+        ],
+        "n_functions": 59,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/periph/timer.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read"
+        ],
+        "n_functions": 20,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/nrf52/radio/nrf802154/nrf802154_radio.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write"
+        ],
+        "n_functions": 29,
+        "n_macros": 9,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/periph/gpio.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write"
+        ],
+        "n_functions": 11,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "cpu/rpx0xx/periph/uart.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 15,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sys/ztimer/util.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 17,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "core/cond.c",
+        "root_id": "riot:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 5,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": []
+  },
+  "transaction_templates": [
+    {
+      "template_id": "bme280_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (4 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "bme280_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xD0"
+            ],
+            "length": 1,
+            "pointer_target": "id",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2c_read_regs",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x88"
+            ],
+            "length": 26,
+            "pointer_target": "calibration",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2c_read_regs",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xE1"
+            ],
+            "length": 7,
+            "pointer_target": "calibration_humidity",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2c_read_regs",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xF7"
+            ],
+            "length": 8,
+            "pointer_target": "press_msb",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2c_read_regs",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.633,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (6 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [
+      "slot_coverage"
+    ],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'riot' is integrated; n_roots=1 (no minimum)",
+        "evidence": {
+          "rtos_id": "riot",
+          "n_roots": 1
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": false,
+        "severity": "error",
+        "message": "1 required slot(s) uncovered: ['i2c.acquire_or_bind']",
+        "evidence": {
+          "missing_required": [
+            "i2c.acquire_or_bind"
+          ],
+          "non_symbol_fulfillments": [
+            "i2c.addressing",
+            "i2c.key_types",
+            "integration.bus_instance_binding",
+            "runtime.error_status"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (6 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "riot:single:0::sys/include/xtimer.h",
+            "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+            "riot:single:0::core/include/sched.h"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "runtime.delay_ms",
+          "i2c.release"
+        ],
+        "missing_slots": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "runtime.error_status",
+          "integration.bus_instance_binding"
+        ],
+        "new_files_added": [
+          "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+          "riot:single:0::cpu/rpx0xx/vendor/boot_stage2/include/hardware/regs/addressmap.h",
+          "riot:single:0::cpu/nrf52/include/periph_cpu.h",
+          "riot:single:0::cpu/rpx0xx/vendor/boot_stage2/include/pico/config.h",
+          "riot:single:0::cpu/rpx0xx/include/pio/pio.h",
+          "riot:single:0::cpu/rpx0xx/vendor/boot_stage2/include/hardware/platform_defs.h",
+          "riot:single:0::cpu/rpx0xx/pio/i2c/i2c.c",
+          "riot:single:0::cpu/rpx0xx/include/periph_cpu.h",
+          "riot:single:0::cpu/nrf52/include/cpu_conf.h",
+          "riot:single:0::cpu/nrf52/include/nrf802154.h",
+          "riot:single:0::cpu/nrf52/include/openwsn_defs.h",
+          "riot:single:0::cpu/rpx0xx/include/cpu_conf.h",
+          "riot:single:0::cpu/rpx0xx/vendor/boot_stage2/config.h",
+          "riot:single:0::cpu/nrf52/spi_twi_irq.c",
+          "riot:single:0::cpu/rpx0xx/periph/pio.c",
+          "riot:single:0::cpu/rpx0xx/periph/timer.c",
+          "riot:single:0::cpu/nrf52/radio/nrf802154/nrf802154_radio.c",
+          "riot:single:0::cpu/rpx0xx/periph/gpio.c",
+          "riot:single:0::cpu/rpx0xx/include/io_reg.h",
+          "riot:single:0::cpu/rpx0xx/periph/uart.c",
+          "riot:single:0::sys/include/ztimer/xtimer_compat.h",
+          "riot:single:0::sys/include/xtimer/implementation.h",
+          "riot:single:0::sys/ztimer/util.c",
+          "riot:single:0::core/cond.c",
+          "riot:single:0::core/include/cond.h",
+          "riot:single:0::core/include/mbox.h",
+          "riot:single:0::core/include/msg.h",
+          "riot:single:0::core/include/msg_bus.h",
+          "riot:single:0::core/include/mutex.h",
+          "riot:single:0::core/include/sched.h",
+          "riot:single:0::core/include/stdio.h",
+          "riot:single:0::core/include/thread.h",
+          "riot:single:0::sys/include/ztimer.h",
+          "riot:single:0::sys/include/xtimer.h",
+          "riot:single:0::sys/include/ztimer64/xtimer_compat.h",
+          "riot:single:0::sys/include/event/timeout.h",
+          "riot:single:0::sys/include/base64.h",
+          "riot:single:0::sys/include/busy_wait.h",
+          "riot:single:0::sys/include/isrpipe/read_timeout.h",
+          "riot:single:0::sys/include/ztimer64.h",
+          "riot:single:0::sys/include/tiny_strerror.h",
+          "riot:single:0::core/include/thread_flags.h",
+          "riot:single:0::core/lib/include/assert.h",
+          "riot:single:0::core/lib/include/bitarithm.h",
+          "riot:single:0::core/lib/include/cib.h",
+          "riot:single:0::core/lib/include/clist.h",
+          "riot:single:0::core/lib/include/compiler_hints.h",
+          "riot:single:0::core/lib/include/debug.h",
+          "riot:single:0::core/lib/include/irq.h",
+          "riot:single:0::core/lib/include/kernel_defines.h",
+          "riot:single:0::core/lib/include/list.h",
+          "riot:single:0::core/lib/include/macros/units.h",
+          "riot:single:0::core/lib/include/modules.h",
+          "riot:single:0::core/lib/include/rmutex.h",
+          "riot:single:0::core/lib/include/thread_config.h",
+          "riot:single:0::cpu/cortexm_common/include/cpu.h",
+          "riot:single:0::cpu/cortexm_common/include/cpu_conf_common.h",
+          "riot:single:0::cpu/cortexm_common/include/thread_arch.h",
+          "riot:single:0::cpu/rpx0xx/include/vendor/RP2040.h",
+          "riot:single:0::sys/include/architecture.h",
+          "riot:single:0::sys/include/atomic_utils.h",
+          "riot:single:0::sys/include/bhp/event.h",
+          "riot:single:0::sys/include/bhp/msg.h",
+          "riot:single:0::sys/include/byteorder.h",
+          "riot:single:0::sys/include/div.h",
+          "riot:single:0::sys/include/isrpipe.h",
+          "riot:single:0::sys/include/time_units.h",
+          "riot:single:0::sys/include/timex.h",
+          "riot:single:0::sys/include/xtimer/tick_conversion.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 39334,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "runtime.error_status"
+        ],
+        "missing_slots": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "integration.bus_instance_binding"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 4
+        },
+        "token_usage": {
+          "input_tokens_delta": 11418,
+          "output_tokens_delta": 2800,
+          "input_tokens_total": 50752,
+          "output_tokens_total": 11200
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 10,
+    "n_bound": 6,
+    "n_fulfilled": 9,
+    "n_non_symbol_fulfillments": 4,
+    "n_required": 9,
+    "n_required_bound": 8,
+    "n_required_fulfilled": 8,
+    "n_required_symbol_bound": 5,
+    "provenance": {
+      "manifest_repo": 6,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 2.79,
+      "dir_router_llm": 23856.48,
+      "file_selector": 37.17,
+      "file_selector_llm": 68761.87,
+      "exact_symbol_file_backfill": 8.07,
+      "deep_parse": 155.64,
+      "include_expand": 311.9,
+      "symbol_rank": 2553.31,
+      "binder_deterministic": 4.01,
+      "binder_llm": 5567.91,
+      "gap_diagnoser_llm": 6121.53,
+      "source_kind_classifier": 0.03
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 4,
+        "gap_diagnoser": 4
+      },
+      "input_tokens_total": 54201,
+      "output_tokens_total": 13200,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

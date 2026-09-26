@@ -1,0 +1,176 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 11.014,
+  "plan_summary": {
+    "device_id": "adxl345",
+    "rtos_id": "openharmony-liteosm",
+    "eval_class": "multi_channel",
+    "bus_kind": "spi",
+    "plan_hash": "a92a8a8500366cfc",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c",
+      "preamble_c"
+    ],
+    "stimuli_count": 2,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 10.924
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 2,
+    "summary": "2 stim; 2 L1/L2",
+    "stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=accel_x:little_endian_u16=1000; ch=accel_y:little_endian_u16=1073; ch=accel_z:little_endian_u16=1146",
+        "warnings": []
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=accel_x:little_endian_i16=-1000; ch=accel_y:little_endian_i16=-1073; ch=accel_z:little_endian_i16=-1146",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 3,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 3,
+    "summary": "3/3 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0x2D",
+              "0x00"
+            ]
+          ],
+          "note": "init_standby: write",
+          "source": "operation_flows[0].steps[0]"
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0x2D",
+              "0x00"
+            ]
+          ],
+          "note": "init_standby: write POWER_CTL"
+        },
+        "reason": "prefix overlap: [('0x2D', '0x00')] ∈ mechanical [('0x2D', '0x00')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0x2D",
+              "0x08"
+            ]
+          ],
+          "note": "enter_measurement: write",
+          "source": "operation_flows[1].steps[0]"
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0x2D",
+              "0x08"
+            ]
+          ],
+          "note": "enter_measurement: write POWER_CTL"
+        },
+        "reason": "prefix overlap: [('0x2D', '0x08')] ∈ mechanical [('0x2D', '0x08')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0xF2"
+            ]
+          ],
+          "note": "read_acceleration: write_then_read",
+          "source": "operation_flows[2].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0xF2"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_acceleration: write_then_read DATAX0"
+        },
+        "reason": "prefix overlap: [('0xF2',)] ∈ mechanical [('0xF2',)]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "init",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x2D",
+            "0x00"
+          ]
+        ],
+        "note": "init_standby: write POWER_CTL"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x2D",
+            "0x08"
+          ]
+        ],
+        "note": "enter_measurement: write POWER_CTL"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0xF2"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_acceleration: write_then_read DATAX0"
+      }
+    ]
+  }
+}

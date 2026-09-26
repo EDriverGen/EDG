@@ -1,0 +1,261 @@
+{
+    "stimuli": [
+        {
+            "name": "time_2025_04_17_10_15_30_temp_25_25c",
+            "mock_preload": {
+                "0": [
+                    48,
+                    21,
+                    16,
+                    4,
+                    23,
+                    4,
+                    37
+                ],
+                "17": [
+                    25,
+                    64
+                ]
+            },
+            "expected": {
+                "err": 0,
+                "time": {
+                    "year": 2025,
+                    "month": 4,
+                    "day": 17,
+                    "hour": 10,
+                    "minute": 15,
+                    "second": 30,
+                    "weekday": 4
+                },
+                "raw_alt": [
+                    25250,
+                    25,
+                    6464,
+                    200
+                ]
+            },
+            "note": "Time (BCD): 10:15:30 Wed 2025-04-17. Temp 0x1940 = 25.25°C = 25250 mC. raw_alt covers drivers that return °C (25), raw register 0x1940=6464, or shifted-right forms."
+        },
+        {
+            "name": "midnight_newyear_2000_temp_0c",
+            "mock_preload": {
+                "0": [
+                    0,
+                    0,
+                    0,
+                    7,
+                    1,
+                    1,
+                    0
+                ],
+                "17": [
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "err": 0,
+                "time": {
+                    "year": 2000,
+                    "month": 1,
+                    "day": 1,
+                    "hour": 0,
+                    "minute": 0,
+                    "second": 0,
+                    "weekday": 7
+                },
+                "raw_alt": [
+                    0
+                ]
+            },
+            "note": "00:00:00 Sat 2000-01-01. Temp 0x00,0x00 = 0 C = 0 mC. Zero-point edge case for both time and temp."
+        },
+        {
+            "name": "leap_year_feb29_temp_25c",
+            "mock_preload": {
+                "0": [
+                    89,
+                    89,
+                    35,
+                    4,
+                    41,
+                    2,
+                    36
+                ],
+                "17": [
+                    25,
+                    0
+                ]
+            },
+            "expected": {
+                "err": 0,
+                "time": {
+                    "year": 2024,
+                    "month": 2,
+                    "day": 29,
+                    "hour": 23,
+                    "minute": 59,
+                    "second": 59,
+                    "weekday": 4
+                },
+                "raw_alt": [
+                    25000,
+                    25,
+                    6400,
+                    200
+                ]
+            },
+            "note": "23:59:59 Thu 2024-02-29 (leap year). Temp 0x19,0x00 = 25.0 C. Exercises month-rollover logic and leap-day."
+        },
+        {
+            "name": "winter_neg10c_fractional",
+            "mock_preload": {
+                "0": [
+                    21,
+                    48,
+                    8,
+                    2,
+                    21,
+                    18,
+                    37
+                ],
+                "17": [
+                    246,
+                    64
+                ]
+            },
+            "expected": {
+                "err": 0,
+                "time": {
+                    "year": 2025,
+                    "month": 12,
+                    "day": 15,
+                    "hour": 8,
+                    "minute": 30,
+                    "second": 15,
+                    "weekday": 2
+                },
+                "raw_alt": [
+                    -9750,
+                    -9,
+                    -10,
+                    63040,
+                    -2496
+                ]
+            },
+            "note": "08:30:15 Mon 2025-12-15. Temp MSB=0xF6 (-10), LSB[7:6]=01 (+0.25) -> -9.75 C = -9750 mC. raw_alt covers: integer C drivers (-9 or -10), unsigned 16-bit 0xF640=63040, signed 16-bit (int16_t)0xF640=-2496. Negative + fractional edge case."
+        },
+        {
+            "name": "summer_40c_peak",
+            "mock_preload": {
+                "0": [
+                    69,
+                    48,
+                    20,
+                    1,
+                    32,
+                    7,
+                    37
+                ],
+                "17": [
+                    40,
+                    64
+                ]
+            },
+            "expected": {
+                "err": 0,
+                "time": {
+                    "year": 2025,
+                    "month": 7,
+                    "day": 20,
+                    "hour": 14,
+                    "minute": 30,
+                    "second": 45,
+                    "weekday": 1
+                },
+                "raw_alt": [
+                    40250,
+                    40,
+                    10304,
+                    322
+                ]
+            },
+            "note": "14:30:45 Sun 2025-07-20. Temp 0x28,0x40 -> 40.25 C = 40250 mC. Hot summer day."
+        },
+        {
+            "name": "datasheet_temp_max_85c",
+            "mock_preload": {
+                "0": [
+                    0,
+                    0,
+                    18,
+                    3,
+                    1,
+                    1,
+                    37
+                ],
+                "17": [
+                    85,
+                    0
+                ]
+            },
+            "expected": {
+                "err": 0,
+                "time": {
+                    "year": 2025,
+                    "month": 1,
+                    "day": 1,
+                    "hour": 12,
+                    "minute": 0,
+                    "second": 0,
+                    "weekday": 3
+                },
+                "raw_alt": [
+                    85000,
+                    85,
+                    21760,
+                    680
+                ]
+            },
+            "note": "Temp 0x55,0x00 = 85.0 C = 85000 mC. DS3231 datasheet operating maximum."
+        },
+        {
+            "name": "datasheet_temp_min_neg40c",
+            "mock_preload": {
+                "0": [
+                    0,
+                    0,
+                    18,
+                    3,
+                    1,
+                    1,
+                    37
+                ],
+                "17": [
+                    216,
+                    0
+                ]
+            },
+            "expected": {
+                "err": 0,
+                "time": {
+                    "year": 2025,
+                    "month": 1,
+                    "day": 1,
+                    "hour": 12,
+                    "minute": 0,
+                    "second": 0,
+                    "weekday": 3
+                },
+                "raw_alt": [
+                    -40000,
+                    -40,
+                    55296,
+                    -1280
+                ]
+            },
+            "note": "Temp MSB=0xD8 (two's complement -40). DS3231 datasheet operating minimum."
+        }
+    ]
+}

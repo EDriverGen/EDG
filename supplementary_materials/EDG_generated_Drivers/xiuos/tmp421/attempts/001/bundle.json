@@ -1,0 +1,181 @@
+{
+  "device_id": "tmp421",
+  "rtos_id": "xiuos",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef TMP421_H\n#define TMP421_H\n\n#include <stdint.h>\n#include \"bus_i2c.h\"\n\n#define TMP421_I2C_ADDR 0x2A\n\nstruct I2cBus;\n\nstruct tmp421_device {\n    struct I2cBus *bus;\n    int fd;\n    uint16_t i2c_addr;\n};\n\nint tmp421_init(struct tmp421_device *dev, struct I2cBus *bus_handle);\nint tmp421_read_local(struct tmp421_device *dev, int32_t *temp_local_val);\nint tmp421_read_remote(struct tmp421_device *dev, int32_t *temp_remote_val);\n\n#endif",
+  "driver_source": "#include \"tmp421.h\"\n#include \"transform.h\"\n#include \"bus.h\"\n#include \"dev_i2c.h\"\n#include <errno.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <string.h>\n\n#include \"bus_i2c.h\"\n#include \"bus_pin.h\"\n#define TMP421_REG_STATUS 0x08\n#define TMP421_REG_LOCAL_HIGH 0x00\n#define TMP421_REG_LOCAL_LOW 0x10\n#define TMP421_REG_REMOTE1_HIGH 0x01\n#define TMP421_REG_REMOTE1_LOW 0x11\n#define TMP421_REG_MANUFACTURER_ID 0xFE\n#define TMP421_REG_DEVICE_ID 0xFF\n#define TMP421_BUSY_BIT 0x80\n#define TMP421_CONVERSION_DELAY_MS 130\n\nstatic int tmp421_write_then_read(struct tmp421_device *dev, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    int ret;\n    ret = PrivWrite(dev->fd, &reg, 1);\n    if (ret < 0) {\n        return -EIO;\n    }\n    ret = PrivRead(dev->fd, buf, len);\n    if (ret < 0) {\n        return -EIO;\n    }\n    return 0;\n}\n\nstatic int tmp421_read_register(struct tmp421_device *dev, uint8_t reg, uint8_t *val)\n{\n    return tmp421_write_then_read(dev, reg, val, 1);\n}\n\nstatic int tmp421_poll_busy(struct tmp421_device *dev)\n{\n    uint8_t status;\n    int ret;\n    int timeout = 200;\n    while (timeout--) {\n        ret = tmp421_read_register(dev, TMP421_REG_STATUS, &status);\n        if (ret < 0) {\n            return ret;\n        }\n        if (!(status & TMP421_BUSY_BIT)) {\n            return 0;\n        }\n        PrivTaskDelay(1);\n    }\n    return -ETIMEDOUT;\n}\n\nstatic int tmp421_read_temperature(struct tmp421_device *dev, uint8_t high_reg, uint8_t low_reg, int32_t *temp_milli)\n{\n    uint8_t high_byte, low_byte;\n    int16_t raw;\n    int ret;\n\n    ret = tmp421_poll_busy(dev);\n    if (ret < 0) {\n        return ret;\n    }\n\n    ret = tmp421_read_register(dev, high_reg, &high_byte);\n    if (ret < 0) {\n        return ret;\n    }\n\n    ret = tmp421_read_register(dev, low_reg, &low_byte);\n    if (ret < 0) {\n        return ret;\n    }\n\n    raw = ((int16_t)((int8_t)high_byte) << 4) | (low_byte >> 4);\n    *temp_milli = ((int32_t)raw * 625) / 10;\n    return 0;\n}\n\nint tmp421_init(struct tmp421_device *dev, struct I2cBus *bus_handle)\n{\n    int ret;\n    uint8_t val;\n    struct PrivIoctlCfg ioctl_cfg;\n\n    dev->bus = bus_handle;\n    dev->i2c_addr = TMP421_I2C_ADDR;\n\n    dev->fd = PrivOpen(\"/dev/i2c1\", 0);\n    if (dev->fd < 0) {\n        return -EIO;\n    }\n\n    uint16_t addr = dev->i2c_addr;\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\n    ioctl_cfg.args = &addr;\n    ret = PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg);\n    if (ret < 0) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    ret = tmp421_read_register(dev, TMP421_REG_MANUFACTURER_ID, &val);\n    if (ret < 0 || val != 0x55) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    ret = tmp421_read_register(dev, TMP421_REG_DEVICE_ID, &val);\n    if (ret < 0 || val != 0x21) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    return 0;\n}\n\nint tmp421_read_local(struct tmp421_device *dev, int32_t *temp_local_val)\n{\n    return tmp421_read_temperature(dev, TMP421_REG_LOCAL_HIGH, TMP421_REG_LOCAL_LOW, temp_local_val);\n}\n\nint tmp421_read_remote(struct tmp421_device *dev, int32_t *temp_remote_val)\n{\n    return tmp421_read_temperature(dev, TMP421_REG_REMOTE1_HIGH, TMP421_REG_REMOTE1_LOW, temp_remote_val);\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "tmp421_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "temp_local",
+        "call": "tmp421_read_local(&g_eval_dev, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_remote",
+        "call": "tmp421_read_remote(&g_eval_dev, &temp_remote_val)",
+        "out_arg": "temp_remote_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct tmp421_device",
+    "init_extra_setup_c": "struct I2cBus *bus_handle = (struct I2cBus *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFF"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Device ID"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x11"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read low byte"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_positive_local_remote",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x19"
+          ],
+          "0x10": [
+            "0x50"
+          ],
+          "0x01": [
+            "0x1A"
+          ],
+          "0x11": [
+            "0x80"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 25312,
+          "temp_remote": 26875
+        },
+        "derivation": "local: high_byte=0x19=25, low_byte=0x50, raw=((25<<4)+(0x50>>4))=408, temp_milli=408*625/10=25500; remote: high_byte=0x1A=26, low_byte=0x80, raw=((26<<4)+(0x80>>4))=424, temp_milli=424*625/10=26500"
+      },
+      {
+        "name": "zero_local_remote",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x00"
+          ],
+          "0x10": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x00"
+          ],
+          "0x11": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 0,
+          "temp_remote": 0
+        },
+        "derivation": "local: high_byte=0, low_byte=0, raw=0, temp_milli=0*625/10=0; remote: high_byte=0, low_byte=0, raw=0, temp_milli=0"
+      },
+      {
+        "name": "negative_local_remote",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0xF6"
+          ],
+          "0x10": [
+            "0x80"
+          ],
+          "0x01": [
+            "0xF0"
+          ],
+          "0x11": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": -6250,
+          "temp_remote": -10000
+        },
+        "derivation": "local: high_byte=0xF6=-10, low_byte=0x80, raw=((-10<<4)+(0x80>>4))=-160+8=-152, temp_milli=-152*625/10=-9500; remote: high_byte=0xF0=-16, low_byte=0x00, raw=((-16<<4)+(0>>4))=-256, temp_milli=-256*625/10=-16000"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 11.009,
+  "prompt_chars": 42527,
+  "raw_response": "{\"driver_header\": \"#ifndef TMP421_H\\n#define TMP421_H\\n\\n#include <stdint.h>\\n#include \\\"bus_i2c.h\\\"\\n\\n#define TMP421_I2C_ADDR 0x2A\\n\\nstruct tmp421_device {\\n    struct I2cBus *bus;\\n    int fd;\\n    uint16_t i2c_addr;\\n};\\n\\nint tmp421_init(struct tmp421_device *dev, struct I2cBus *bus_handle);\\nint tmp421_read_local(struct tmp421_device *dev, int32_t *temp_local_val);\\nint tmp421_read_remote(struct tmp421_device *dev, int32_t *temp_remote_val);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"tmp421.h\\\"\\n#include \\\"transform.h\\\"\\n#include \\\"bus.h\\\"\\n#include \\\"dev_i2c.h\\\"\\n#include <errno.h>\\n#include <stddef.h>\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define TMP421_REG_STATUS 0x08\\n#define TMP421_REG_LOCAL_HIGH 0x00\\n#define TMP421_REG_LOCAL_LOW 0x10\\n#define TMP421_REG_REMOTE1_HIGH 0x01\\n#define TMP421_REG_REMOTE1_LOW 0x11\\n#define TMP421_REG_MANUFACTURER_ID 0xFE\\n#define TMP421_REG_DEVICE_ID 0xFF\\n#define TMP421_BUSY_BIT 0x80\\n#define TMP421_CONVERSION_DELAY_MS 130\\n\\nstatic int tmp421_write_then_read(struct tmp421_device *dev, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    int ret;\\n    ret = PrivWrite(dev->fd, &reg, 1);\\n    if (ret < 0) {\\n        return -EIO;\\n    }\\n    ret = PrivRead(dev->fd, buf, len);\\n    if (ret < 0) {\\n        return -EIO;\\n    }\\n    return 0;\\n}\\n\\nstatic int tmp421_read_register(struct tmp421_device *dev, uint8_t reg, uint8_t *val)\\n{\\n    return tmp421_write_then_read(dev, reg, val, 1);\\n}\\n\\nstatic int tmp421_poll_busy(struct tmp421_device *dev)\\n{\\n    uint8_t status;\\n    int ret;\\n    int timeout = 200;\\n    while (timeout--) {\\n        ret = tmp421_read_register(dev, TMP421_REG_STATUS, &status);\\n        if (ret < 0) {\\n            return ret;\\n        }\\n        if (!(status & TMP421_BUSY_BIT)) {\\n            return 0;\\n        }\\n        PrivTaskDelay(1);\\n    }\\n    return -ETIMEDOUT;\\n}\\n\\nstatic int tmp421_read_temperature(struct tmp421_device *dev, uint8_t high_reg, uint8_t low_reg, int32_t *temp_milli)\\n{\\n    uint8_t high_byte, low_byte;\\n    int16_t raw;\\n    int ret;\\n\\n    ret = tmp421_poll_busy(dev);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    ret = tmp421_read_register(dev, high_reg, &high_byte);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    ret = tmp421_read_register(dev, low_reg, &low_byte);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    raw = ((int16_t)((int8_t)high_byte) << 4) | (low_byte >> 4);\\n    *temp_milli = ((int32_t)raw * 625) / 10;\\n    return 0;\\n}\\n\\nint tmp421_init(struct tmp421_device *dev, struct I2cBus *bus_handle)\\n{\\n    int ret;\\n    uint8_t val;\\n    struct PrivIoctlCfg ioctl_cfg;\\n\\n    dev->bus = bus_handle;\\n    dev->i2c_addr = TMP421_I2C_ADDR;\\n\\n    dev->fd = PrivOpen(\\\"/dev/i2c1\\\", 0);\\n    if (dev->fd < 0) {\\n        return -EIO;\\n    }\\n\\n    uint16_t addr = dev->i2c_addr;\\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\\n    ioctl_cfg.args = &addr;\\n    ret = PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg);\\n    if (ret < 0) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    ret = tmp421_read_register(dev, TMP421_REG_MANUFACTURER_ID, &val);\\n    if (ret < 0 || val != 0x55) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    ret = tmp421_read_register(dev, TMP421_REG_DEVICE_ID, &val);\\n    if (ret < 0 || val != 0x21) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    return 0;\\n}\\n\\nint tmp421_read_local(struct tmp421_device *dev, int32_t *temp_local_val)\\n{\\n    return tmp421_read_temperature(dev, TMP421_REG_LOCAL_HIGH, TMP421_REG_LOCAL_LOW, temp_local_val);\\n}\\n\\nint tmp421_read_remote(struct tmp421_device *dev, int32_t *temp_remote_val)\\n{\\n    return tmp421_read_temperature(dev, TMP421_REG_REMOTE1_HIGH, TMP421_REG_REMOTE1_LOW, temp_remote_val);\\n}\\n\"}",
+  "plan_hash": "bac4336506f5e2df"
+}

@@ -1,0 +1,94 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x71",
+      "write_prefix_any_of": [
+        [
+          "0x08"
+        ]
+      ],
+      "note": "read_pwm_channel: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x71",
+      "read_any": true,
+      "note": "read_pwm_channel: direct read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "led0_duty_50_percent",
+      "mock_preload": {
+        "0x08": [
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00"
+        ],
+        "0x06": [
+          "0x00",
+          "0x00"
+        ],
+        "0xFC": [
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "led0": 0,
+        "led1": 0
+      },
+      "derivation": "For LED0: OFF_L=0x00, OFF_H=0x00 => duty = (0x00 & 0x0F)*256 + 0x00 = 0. For LED1: OFF_L=0x00, OFF_H=0x00 => duty = 0."
+    },
+    {
+      "name": "led0_duty_25_percent",
+      "mock_preload": {
+        "0x08": [
+          "0x00",
+          "0x04",
+          "0x00",
+          "0x00"
+        ],
+        "0x06": [
+          "0x00",
+          "0x00"
+        ],
+        "0xFC": [
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "led0": 1024,
+        "led1": 0
+      },
+      "derivation": "For LED0: OFF_L=0x00, OFF_H=0x04 => duty = (0x04 & 0x0F)*256 + 0x00 = 4*256 = 1024. For LED1: OFF_L=0x00, OFF_H=0x00 => duty = 0."
+    },
+    {
+      "name": "led0_duty_100_percent",
+      "mock_preload": {
+        "0x08": [
+          "0xFF",
+          "0x0F",
+          "0xFF",
+          "0x0F"
+        ],
+        "0x06": [
+          "0x00",
+          "0x00"
+        ],
+        "0xFC": [
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "led0": 4095,
+        "led1": 4095
+      },
+      "derivation": "For LED0: OFF_L=0xFF, OFF_H=0x0F => duty = (0x0F & 0x0F)*256 + 0xFF = 15*256 + 255 = 4095. For LED1: OFF_L=0xFF, OFF_H=0x0F => duty = 4095."
+    }
+  ]
+}

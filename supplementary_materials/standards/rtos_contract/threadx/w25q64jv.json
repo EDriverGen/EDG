@@ -1,0 +1,126 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "threadx__w25q64jv",
+  "device_id": "w25q64jv",
+  "rtos_id": "threadx",
+  "bus": "spi",
+  "scope": "ThreadX + fixed SPI board-binding minimum API contract for W25Q64JV polling access. The selected task context identifies platform_spi_ops as the board-provided bus binding, while the copied W25 reference implements SPI/CS using STM32 HAL directly; retain this source conflict for U assessment. Device flash opcode behavior is summarized only to explain required transfer direction, CS scope and polling wait.",
+  "api_contract": {
+    "rtos": "threadx",
+    "bus": "spi",
+    "task_binding": {
+      "bus_instance": "platform_spi_ops",
+      "backend": "ThreadX board-supplied SPI ops",
+      "mode": "polling",
+      "address_mode": "chip-select"
+    },
+    "reference_implementation_calls": [
+      "HAL_SPI_Transmit",
+      "HAL_SPI_Receive",
+      "HAL_GPIO_WritePin",
+      "tx_thread_sleep"
+    ],
+    "fixed_context_prerequisite": "Caller provides an initialized SPI implementation and active-low CS control context; task context does not define a concrete callback table signature.",
+    "reference_types": [
+      "SPI_HandleTypeDef *",
+      "GPIO_TypeDef *",
+      "uint16_t CS pin",
+      "uint8_t buffer",
+      "HAL_StatusTypeDef"
+    ],
+    "time_signature": "void tx_thread_sleep(ULONG timer_ticks)"
+  },
+  "facts": [
+    {
+      "id": "spi_binding_context",
+      "category": "context",
+      "requirement": "Use the fixed task binding `platform_spi_ops` as caller-provided, preinitialized SPI board context and board-configured CS context. The copied W25 reference instead takes an STM32 HAL handle and direct CS port/pin; the target interface details therefore remain uncertain and must not be inferred from another bus or device.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/task_requirements.json",
+          "line_start": 70,
+          "line_end": 90
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.h",
+          "line_start": 21,
+          "line_end": 25
+        }
+      ]
+    },
+    {
+      "id": "spi_handle_transfer",
+      "category": "transfer",
+      "requirement": "The reference needs polling SPI transmit and receive over byte buffers with a supplied SPI handle, operation results checked against HAL_OK, and transfer lengths matching command/address/data phases. A duplex transfer with a discarded dummy direction is an equivalent capability when its semantics are clear.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 27,
+          "line_end": 39
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 49,
+          "line_end": 62
+        }
+      ]
+    },
+    {
+      "id": "spi_chip_select",
+      "category": "gpio",
+      "requirement": "Assert/deassert the board-provided active-low CS around complete flash command/response transactions; preserve the GPIO port/pin context or an equivalent caller-supplied CS operation.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 5,
+          "line_end": 6
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 27,
+          "line_end": 30
+        }
+      ]
+    },
+    {
+      "id": "threadx_wait_ticks",
+      "category": "timing",
+      "requirement": "Use `tx_thread_sleep(ULONG timer_ticks)` for the busy-poll wait; a one-tick sleep is used between status polls.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 7,
+          "line_end": 14
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/threadx/threadx.h",
+          "line_start": 89,
+          "line_end": 97
+        }
+      ]
+    },
+    {
+      "id": "types_status_headers",
+      "category": "types_headers",
+      "requirement": "Keep a usable SPI handle, CS GPIO port/pin or fixed caller context, byte buffers and HAL transfer status semantics; include ThreadX time declarations for the tick wait. `w25q64jv_init` only binds the handle and CS values; it does not initialize the SPI peripheral.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.h",
+          "line_start": 4,
+          "line_end": 26
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 21,
+          "line_end": 24
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "xiuos__w25q64jv",
+  "device_id": "w25q64jv",
+  "rtos_id": "xiuos",
+  "bus": "spi",
+  "scope": "xiuos spi RTOS/BSP API minimum contract for xiuos__w25q64jv; based on copied reference implementation and configuration, existing spi API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "xiuos",
+    "bus": "spi",
+    "task_binding": {
+      "connection_type": "spi",
+      "mode": "polling",
+      "bus_instance": "/dev/spi0",
+      "bus_symbol": "/dev/spi0",
+      "backend": "XiUOS transform-layer SPI device path",
+      "address_mode": "chip-select"
+    },
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "w25q64jv_ref.h",
+      "stdint.h",
+      "stm32f1xx_hal.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "HAL_GPIO_WritePin",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 8,
+            "text": "HAL_GPIO_WritePin(dev->cs_port, dev->cs_pin, GPIO_PIN_RESET);"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 12,
+            "text": "HAL_GPIO_WritePin(dev->cs_port, dev->cs_pin, GPIO_PIN_SET);"
+          }
+        ],
+        "available_declaration": "void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/xiuos/spi/pack.md",
+          "line_start": 1976,
+          "line_end": 1977
+        }
+      },
+      {
+        "symbol": "HAL_SPI_Init",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_eval_adapter.c",
+            "line": 8,
+            "text": "HAL_SPI_Init(&_hspi);"
+          }
+        ],
+        "declaration_resolution": "no matching function prototype in supplied harness headers or pack"
+      },
+      {
+        "symbol": "HAL_SPI_Receive",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 23,
+            "text": "HAL_SPI_Receive(dev->hspi, &sr1, 1, 100);"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 63,
+            "text": "if (HAL_SPI_Receive(dev->hspi, id, 3, 100) != HAL_OK) {"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 86,
+            "text": "HAL_StatusTypeDef rc = HAL_SPI_Receive(dev->hspi, buf, len, 100);"
+          }
+        ],
+        "declaration_resolution": "no matching function prototype in supplied harness headers or pack"
+      },
+      {
+        "symbol": "HAL_SPI_Transmit",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 22,
+            "text": "HAL_SPI_Transmit(dev->hspi, &cmd, 1, 100);"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 37,
+            "text": "HAL_StatusTypeDef rc = HAL_SPI_Transmit(dev->hspi, &cmd, 1, 100);"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 60,
+            "text": "if (HAL_SPI_Transmit(dev->hspi, &cmd, 1, 100) != HAL_OK) {"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 83,
+            "text": "if (HAL_SPI_Transmit(dev->hspi, cmd, 4, 100) != HAL_OK) {"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 109,
+            "text": "if (HAL_SPI_Transmit(dev->hspi, hdr, 4, 100) != HAL_OK) {"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 112,
+            "text": "if (HAL_SPI_Transmit(dev->hspi, (uint8_t *)(buf + offset),"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+            "line": 134,
+            "text": "HAL_StatusTypeDef rc = HAL_SPI_Transmit(dev->hspi, cmd, 4, 100);"
+          }
+        ],
+        "declaration_resolution": "no matching function prototype in supplied harness headers or pack"
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/xiuos/spi/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's spi connection context (/dev/spi0; XiUOS transform-layer SPI device path) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_eval_adapter.c",
+          "line_start": 8,
+          "line_end": 8
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: HAL_SPI_Init.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_eval_adapter.c",
+          "line_start": 8,
+          "line_end": 8
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: HAL_GPIO_WritePin, HAL_SPI_Receive, HAL_SPI_Transmit. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 8,
+          "line_end": 8
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 37,
+          "line_end": 37
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 8,
+          "line_end": 8
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 37,
+          "line_end": 37
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/reference_drivers/w25q64jv_ref.h",
+          "line_start": 7,
+          "line_end": 40
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__w25q64jv/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

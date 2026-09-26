@@ -1,0 +1,114 @@
+{
+	"stimuli": [
+		{
+			"name": "room_temp_25c",
+			"mock_preload": {
+				"stream": [1, 144, 25, 0]
+			},
+			"expected": {
+				"raw": 25000,
+				"raw_alt": [25, 100],
+				"channels": {
+					"thermocouple": {
+						"raw": 25000,
+						"raw_alt": [25, 100]
+					},
+					"temp_local": {
+						"raw": 25000,
+						"raw_alt": [25, 400]
+					}
+				}
+			},
+			"note": "TC=100*0.25=25.00 C, internal=400*0.0625=25.00 C, no fault."
+		},
+		{
+			"name": "freezing_0c",
+			"mock_preload": {
+				"stream": [0, 0, 0, 0]
+			},
+			"expected": {
+				"raw": 0,
+				"channels": {
+					"thermocouple": {
+						"raw": 0
+					},
+					"temp_local": {
+						"raw": 0
+					}
+				}
+			},
+			"note": "All zeros: TC=0 C, internal=0 C."
+		},
+		{
+			"name": "boiling_100c",
+			"mock_preload": {
+				"stream": [6, 64, 25, 0]
+			},
+			"expected": {
+				"raw": 100000,
+				"raw_alt": [100, 400],
+				"channels": {
+					"thermocouple": {
+						"raw": 100000,
+						"raw_alt": [100, 400]
+					},
+					"temp_local": {
+						"raw": 25000,
+						"raw_alt": [25, 400]
+					}
+				}
+			},
+			"note": "TC=400*0.25=100.00 C, internal=25 C."
+		},
+		{
+			"name": "subzero_neg10c",
+			"mock_preload": {
+				"stream": [255, 96, 0, 0]
+			},
+			"expected": {
+				"raw": -10000,
+				"raw_alt": [-10, -40],
+				"channels": {
+					"thermocouple": {
+						"raw": -10000,
+						"raw_alt": [-10, -40]
+					},
+					"temp_local": {
+						"raw": 0
+					}
+				}
+			},
+			"note": "TC=-40*0.25=-10.00 C. Tests 14-bit signed sign-extension."
+		},
+		{
+			"name": "fault_open_circuit",
+			"mock_preload": {
+				"stream": [0, 1, 0, 1]
+			},
+			"expected": {
+				"err": 1
+			},
+			"note": "D16=1 (fault flag), D0=1 (OC). Driver should return error."
+		},
+		{
+			"name": "fault_short_to_gnd",
+			"mock_preload": {
+				"stream": [0, 1, 0, 2]
+			},
+			"expected": {
+				"err": 1
+			},
+			"note": "D16=1 (fault flag), D1=1 (SCG). Driver should return error."
+		},
+		{
+			"name": "fault_short_to_vcc",
+			"mock_preload": {
+				"stream": [0, 1, 0, 4]
+			},
+			"expected": {
+				"err": 1
+			},
+			"note": "D16=1 (fault flag), D2=1 (SCV). Driver should return error."
+		}
+	]
+}

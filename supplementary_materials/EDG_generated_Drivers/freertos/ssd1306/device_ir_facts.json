@@ -1,0 +1,2214 @@
+{
+  "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+  "source": "device_ir_projection_v1",
+  "device_id": "ssd1306",
+  "bus_type": "i2c",
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "addresses": [
+    {
+      "index": 0,
+      "address": "0x3C",
+      "addressing_form": "7-bit",
+      "is_default": true,
+      "description": "SA0 (D/C# pin) LOW",
+      "raw_record": {
+        "address": "0x3C",
+        "description": "SA0 (D/C# pin) LOW",
+        "is_default": true
+      }
+    },
+    {
+      "index": 1,
+      "address": "0x3D",
+      "addressing_form": "7-bit",
+      "is_default": false,
+      "description": "SA0 (D/C# pin) HIGH",
+      "raw_record": {
+        "address": "0x3D",
+        "description": "SA0 (D/C# pin) HIGH",
+        "is_default": false
+      }
+    }
+  ],
+  "registers": [
+    {
+      "index": 0,
+      "name": "Status Register",
+      "address": null,
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Read status register via I2C (D/C#=0, R/W#=1). D[6]: 1 for display OFF, 0 for display ON.",
+      "semantic_roles": [
+        "status"
+      ],
+      "byte_part": null,
+      "raw_record": {
+        "name": "Status Register",
+        "value": null,
+        "access": "ro",
+        "size_bits": 8,
+        "description": "Read status register via I2C (D/C#=0, R/W#=1). D[6]: 1 for display OFF, 0 for display ON."
+      }
+    },
+    {
+      "index": 1,
+      "name": "GDDRAM",
+      "address": null,
+      "access": "rw",
+      "size_bits": 8192,
+      "description": "Graphic Display Data RAM, 128x64 bits, organized in 8 pages of 128 bytes each.",
+      "semantic_roles": [
+        "data"
+      ],
+      "byte_part": null,
+      "raw_record": {
+        "name": "GDDRAM",
+        "value": null,
+        "access": "rw",
+        "size_bits": 8192,
+        "description": "Graphic Display Data RAM, 128x64 bits, organized in 8 pages of 128 bytes each."
+      }
+    }
+  ],
+  "bitfields": [
+    {
+      "index": 0,
+      "name": "Display ON/OFF status",
+      "register": "Status Register",
+      "bit_range": null,
+      "reset_value": null,
+      "description": "1 for display OFF, 0 for display ON",
+      "semantic_roles": [
+        "status"
+      ],
+      "raw_record": {
+        "name": "Display ON/OFF status",
+        "register": "Status Register",
+        "bit_offset": 6,
+        "bit_width": 1,
+        "access": "ro",
+        "description": "1 for display OFF, 0 for display ON"
+      }
+    }
+  ],
+  "operation_steps": [
+    {
+      "source": "operation_flows",
+      "flow_id": "power_on",
+      "flow_kind": "power",
+      "step_index": 0,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Pull RES# LOW for at least 3us (t1)",
+      "semantic_roles": [
+        "data",
+        "control"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "RES#",
+        "value": "LOW",
+        "duration_us": 3,
+        "notes": "Pull RES# LOW for at least 3us (t1)"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_on",
+      "flow_kind": "power",
+      "step_index": 1,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Release RES# HIGH",
+      "semantic_roles": [
+        "data",
+        "control"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "RES#",
+        "value": "HIGH",
+        "notes": "Release RES# HIGH"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_on",
+      "flow_kind": "power",
+      "step_index": 2,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait at least 3us (t2) after RES# HIGH before powering VCC",
+      "semantic_roles": [
+        "data",
+        "control"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 0.003,
+        "notes": "Wait at least 3us (t2) after RES# HIGH before powering VCC"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_on",
+      "flow_kind": "power",
+      "step_index": 3,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power ON VCC",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "VCC",
+        "value": "ON",
+        "notes": "Power ON VCC"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_on",
+      "flow_kind": "power",
+      "step_index": 4,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait 100ms (tAF) after VCC stable before sending AFh",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 100,
+        "notes": "Wait 100ms (tAF) after VCC stable before sending AFh"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_on",
+      "flow_kind": "power",
+      "step_index": 5,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAF"
+        ],
+        "pointer_target": null,
+        "notes": "Send command AFh (Display ON)"
+      },
+      "length": null,
+      "notes": "Display ON command",
+      "semantic_roles": [
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xAF"
+          ],
+          "pointer_target": null,
+          "notes": "Send command AFh (Display ON)"
+        },
+        "notes": "Display ON command"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_off",
+      "flow_kind": "power",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAE"
+        ],
+        "pointer_target": null,
+        "notes": "Send command AEh (Display OFF)"
+      },
+      "length": null,
+      "notes": "Display OFF command",
+      "semantic_roles": [
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xAE"
+          ],
+          "pointer_target": null,
+          "notes": "Send command AEh (Display OFF)"
+        },
+        "notes": "Display OFF command"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_off",
+      "flow_kind": "power",
+      "step_index": 1,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power OFF VCC",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "VCC",
+        "value": "OFF",
+        "notes": "Power OFF VCC"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_off",
+      "flow_kind": "power",
+      "step_index": 2,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait tOFF (typ 100ms) before powering OFF VDD",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 100,
+        "notes": "Wait tOFF (typ 100ms) before powering OFF VDD"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_off",
+      "flow_kind": "power",
+      "step_index": 3,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power OFF VDD",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "VDD",
+        "value": "OFF",
+        "notes": "Power OFF VDD"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAE"
+        ],
+        "pointer_target": null,
+        "notes": "Display OFF"
+      },
+      "length": null,
+      "notes": "Ensure display is off during initialization",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xAE"
+          ],
+          "pointer_target": null,
+          "notes": "Display OFF"
+        },
+        "notes": "Ensure display is off during initialization"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 1,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xD5",
+          "0x80"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Clock Divide Ratio/Oscillator Frequency (reset value)"
+      },
+      "length": null,
+      "notes": "Default divide ratio=1, oscillator frequency=1000b",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xD5",
+            "0x80"
+          ],
+          "pointer_target": null,
+          "notes": "Set Display Clock Divide Ratio/Oscillator Frequency (reset value)"
+        },
+        "notes": "Default divide ratio=1, oscillator frequency=1000b"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 2,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA8",
+          "0x3F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Multiplex Ratio to 64 (N+1=64)"
+      },
+      "length": null,
+      "notes": "64 MUX for 64 rows",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA8",
+            "0x3F"
+          ],
+          "pointer_target": null,
+          "notes": "Set Multiplex Ratio to 64 (N+1=64)"
+        },
+        "notes": "64 MUX for 64 rows"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 3,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xD3",
+          "0x00"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Offset to 0"
+      },
+      "length": null,
+      "notes": "No vertical shift",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xD3",
+            "0x00"
+          ],
+          "pointer_target": null,
+          "notes": "Set Display Offset to 0"
+        },
+        "notes": "No vertical shift"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 4,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x40"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Start Line to row 0"
+      },
+      "length": null,
+      "notes": "RAM row 0 mapped to COM0",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x40"
+          ],
+          "pointer_target": null,
+          "notes": "Set Display Start Line to row 0"
+        },
+        "notes": "RAM row 0 mapped to COM0"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 5,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA1"
+        ],
+        "pointer_target": null,
+        "notes": "Set Segment Re-map: column 127 mapped to SEG0"
+      },
+      "length": null,
+      "notes": "Horizontal flip",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA1"
+          ],
+          "pointer_target": null,
+          "notes": "Set Segment Re-map: column 127 mapped to SEG0"
+        },
+        "notes": "Horizontal flip"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 6,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xC8"
+        ],
+        "pointer_target": null,
+        "notes": "Set COM Output Scan Direction: remapped mode (scan from COM[N-1] to COM0)"
+      },
+      "length": null,
+      "notes": "Vertical flip",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xC8"
+          ],
+          "pointer_target": null,
+          "notes": "Set COM Output Scan Direction: remapped mode (scan from COM[N-1] to COM0)"
+        },
+        "notes": "Vertical flip"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 7,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xDA",
+          "0x12"
+        ],
+        "pointer_target": null,
+        "notes": "Set COM Pins Hardware Configuration: alternative pin configuration, disable left/right remap"
+      },
+      "length": null,
+      "notes": "Default alternative COM pin configuration",
+      "semantic_roles": [
+        "config",
+        "control"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xDA",
+            "0x12"
+          ],
+          "pointer_target": null,
+          "notes": "Set COM Pins Hardware Configuration: alternative pin configuration, disable left/right remap"
+        },
+        "notes": "Default alternative COM pin configuration"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 8,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x81",
+          "0x7F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Contrast Control to 0x7F (reset value)"
+      },
+      "length": null,
+      "notes": "Medium contrast",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x81",
+            "0x7F"
+          ],
+          "pointer_target": null,
+          "notes": "Set Contrast Control to 0x7F (reset value)"
+        },
+        "notes": "Medium contrast"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 9,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA4"
+        ],
+        "pointer_target": null,
+        "notes": "Entire Display ON: resume to RAM content display"
+      },
+      "length": null,
+      "notes": "Normal display mode",
+      "semantic_roles": [
+        "config"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA4"
+          ],
+          "pointer_target": null,
+          "notes": "Entire Display ON: resume to RAM content display"
+        },
+        "notes": "Normal display mode"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 10,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA6"
+        ],
+        "pointer_target": null,
+        "notes": "Set Normal/Inverse Display: normal display"
+      },
+      "length": null,
+      "notes": "0 in RAM = OFF, 1 = ON",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA6"
+          ],
+          "pointer_target": null,
+          "notes": "Set Normal/Inverse Display: normal display"
+        },
+        "notes": "0 in RAM = OFF, 1 = ON"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 11,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x2E"
+        ],
+        "pointer_target": null,
+        "notes": "Deactivate scroll"
+      },
+      "length": null,
+      "notes": "Ensure scrolling is off",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x2E"
+          ],
+          "pointer_target": null,
+          "notes": "Deactivate scroll"
+        },
+        "notes": "Ensure scrolling is off"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 12,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x20",
+          "0x00"
+        ],
+        "pointer_target": null,
+        "notes": "Set Memory Addressing Mode: Horizontal Addressing Mode"
+      },
+      "length": null,
+      "notes": "Horizontal mode for sequential data write",
+      "semantic_roles": [
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x20",
+            "0x00"
+          ],
+          "pointer_target": null,
+          "notes": "Set Memory Addressing Mode: Horizontal Addressing Mode"
+        },
+        "notes": "Horizontal mode for sequential data write"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 13,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x21",
+          "0x00",
+          "0x7F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Column Address: start=0, end=127"
+      },
+      "length": null,
+      "notes": "Full column range",
+      "semantic_roles": [
+        "result",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x21",
+            "0x00",
+            "0x7F"
+          ],
+          "pointer_target": null,
+          "notes": "Set Column Address: start=0, end=127"
+        },
+        "notes": "Full column range"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 14,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x22",
+          "0x00",
+          "0x07"
+        ],
+        "pointer_target": null,
+        "notes": "Set Page Address: start=0, end=7"
+      },
+      "length": null,
+      "notes": "All 8 pages",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x22",
+            "0x00",
+            "0x07"
+          ],
+          "pointer_target": null,
+          "notes": "Set Page Address: start=0, end=7"
+        },
+        "notes": "All 8 pages"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "init_display",
+      "flow_kind": "init",
+      "step_index": 15,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAF"
+        ],
+        "pointer_target": null,
+        "notes": "Display ON"
+      },
+      "length": null,
+      "notes": "Turn display on",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xAF"
+          ],
+          "pointer_target": null,
+          "notes": "Display ON"
+        },
+        "notes": "Turn display on"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_display_data",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x21",
+          null,
+          null
+        ],
+        "pointer_target": null,
+        "notes": "Set column start and end addresses (runtime values)"
+      },
+      "length": null,
+      "notes": "Column address range for data write",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x21",
+            null,
+            null
+          ],
+          "pointer_target": null,
+          "notes": "Set column start and end addresses (runtime values)"
+        },
+        "notes": "Column address range for data write"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_display_data",
+      "flow_kind": "write",
+      "step_index": 1,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x22",
+          null,
+          null
+        ],
+        "pointer_target": null,
+        "notes": "Set page start and end addresses (runtime values)"
+      },
+      "length": null,
+      "notes": "Page address range for data write",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x22",
+            null,
+            null
+          ],
+          "pointer_target": null,
+          "notes": "Set page start and end addresses (runtime values)"
+        },
+        "notes": "Page address range for data write"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_display_data",
+      "flow_kind": "write",
+      "step_index": 2,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "DATA"
+        ],
+        "length": "DATA",
+        "pointer_target": null,
+        "notes": "Write data bytes to GDDRAM (D/C#=1). Column address auto-increments."
+      },
+      "length": "DATA",
+      "notes": "Data bytes are written sequentially; length determined by application.",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "DATA"
+          ],
+          "length": "DATA",
+          "pointer_target": null,
+          "notes": "Write data bytes to GDDRAM (D/C#=1). Column address auto-increments."
+        },
+        "notes": "Data bytes are written sequentially; length determined by application."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_display",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x21",
+          null,
+          null
+        ],
+        "pointer_target": null,
+        "notes": "Set column start and end addresses (runtime values)"
+      },
+      "length": null,
+      "notes": "Column address range for data read",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x21",
+            null,
+            null
+          ],
+          "pointer_target": null,
+          "notes": "Set column start and end addresses (runtime values)"
+        },
+        "notes": "Column address range for data read"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_display",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x22",
+          null,
+          null
+        ],
+        "pointer_target": null,
+        "notes": "Set page start and end addresses (runtime values)"
+      },
+      "length": null,
+      "notes": "Page address range for data read",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x22",
+            null,
+            null
+          ],
+          "pointer_target": null,
+          "notes": "Set page start and end addresses (runtime values)"
+        },
+        "notes": "Page address range for data read"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_display",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": "DATA",
+        "pointer_target": null,
+        "notes": "Read data bytes from GDDRAM (D/C#=1). A dummy read is required before first data read."
+      },
+      "length": "DATA",
+      "notes": "Data bytes are read sequentially; length determined by application.",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": "DATA",
+          "pointer_target": null,
+          "notes": "Read data bytes from GDDRAM (D/C#=1). A dummy read is required before first data read."
+        },
+        "notes": "Data bytes are read sequentially; length determined by application."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "set_scroll",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x26",
+          "0x00",
+          null,
+          null,
+          null
+        ],
+        "pointer_target": null,
+        "notes": "Continuous Horizontal Scroll Setup (right): 26h, dummy byte, start page, interval, end page"
+      },
+      "length": null,
+      "notes": "Use 27h for left scroll. Parameters: start page, interval (frame frequency), end page.",
+      "semantic_roles": [
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x26",
+            "0x00",
+            null,
+            null,
+            null
+          ],
+          "pointer_target": null,
+          "notes": "Continuous Horizontal Scroll Setup (right): 26h, dummy byte, start page, interval, end page"
+        },
+        "notes": "Use 27h for left scroll. Parameters: start page, interval (frame frequency), end page."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "set_scroll",
+      "flow_kind": "other",
+      "step_index": 1,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x2F"
+        ],
+        "pointer_target": null,
+        "notes": "Activate scroll"
+      },
+      "length": null,
+      "notes": "Start scrolling",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x2F"
+          ],
+          "pointer_target": null,
+          "notes": "Activate scroll"
+        },
+        "notes": "Start scrolling"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "deactivate_scroll",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x2E"
+        ],
+        "pointer_target": null,
+        "notes": "Deactivate scroll"
+      },
+      "length": null,
+      "notes": "After deactivation, RAM data needs to be rewritten.",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x2E"
+          ],
+          "pointer_target": null,
+          "notes": "Deactivate scroll"
+        },
+        "notes": "After deactivation, RAM data needs to be rewritten."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_command",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          null
+        ],
+        "pointer_target": null,
+        "notes": "Send command byte via I2C: start, slave address + write, control byte (Co=0, D/C#=0), command byte, stop."
+      },
+      "length": null,
+      "notes": "Generic command write. The command byte is provided at runtime.",
+      "semantic_roles": [
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            null
+          ],
+          "pointer_target": null,
+          "notes": "Send command byte via I2C: start, slave address + write, control byte (Co=0, D/C#=0), command byte, stop."
+        },
+        "notes": "Generic command write. The command byte is provided at runtime."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_data",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "DATA"
+        ],
+        "length": "DATA",
+        "pointer_target": null,
+        "notes": "Send data byte(s) via I2C: start, slave address + write, control byte (Co=0, D/C#=1), data bytes, stop."
+      },
+      "length": "DATA",
+      "notes": "Data bytes written to GDDRAM. Column address auto-increments.",
+      "semantic_roles": [
+        "data",
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "DATA"
+          ],
+          "length": "DATA",
+          "pointer_target": null,
+          "notes": "Send data byte(s) via I2C: start, slave address + write, control byte (Co=0, D/C#=1), data bytes, stop."
+        },
+        "notes": "Data bytes written to GDDRAM. Column address auto-increments."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power ON sequence must be completed before initialization.",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Power ON sequence must be completed before initialization."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 1,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAE"
+        ],
+        "pointer_target": null,
+        "notes": "Display OFF"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xAE"
+          ],
+          "pointer_target": null,
+          "notes": "Display OFF"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 2,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xD5",
+          "0x80"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Clock Divide Ratio/Oscillator Frequency (reset value)"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xD5",
+            "0x80"
+          ],
+          "pointer_target": null,
+          "notes": "Set Display Clock Divide Ratio/Oscillator Frequency (reset value)"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 3,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA8",
+          "0x3F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Multiplex Ratio to 64"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA8",
+            "0x3F"
+          ],
+          "pointer_target": null,
+          "notes": "Set Multiplex Ratio to 64"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 4,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xD3",
+          "0x00"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Offset to 0"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xD3",
+            "0x00"
+          ],
+          "pointer_target": null,
+          "notes": "Set Display Offset to 0"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 5,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x40"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Start Line to row 0"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x40"
+          ],
+          "pointer_target": null,
+          "notes": "Set Display Start Line to row 0"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 6,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA1"
+        ],
+        "pointer_target": null,
+        "notes": "Set Segment Re-map: column 127 mapped to SEG0"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA1"
+          ],
+          "pointer_target": null,
+          "notes": "Set Segment Re-map: column 127 mapped to SEG0"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 7,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xC8"
+        ],
+        "pointer_target": null,
+        "notes": "Set COM Output Scan Direction: remapped mode"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xC8"
+          ],
+          "pointer_target": null,
+          "notes": "Set COM Output Scan Direction: remapped mode"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 8,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xDA",
+          "0x12"
+        ],
+        "pointer_target": null,
+        "notes": "Set COM Pins Hardware Configuration: alternative pin config"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "config"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xDA",
+            "0x12"
+          ],
+          "pointer_target": null,
+          "notes": "Set COM Pins Hardware Configuration: alternative pin config"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 9,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x81",
+          "0x7F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Contrast Control to 0x7F"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x81",
+            "0x7F"
+          ],
+          "pointer_target": null,
+          "notes": "Set Contrast Control to 0x7F"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 10,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA4"
+        ],
+        "pointer_target": null,
+        "notes": "Entire Display ON: resume to RAM content"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA4"
+          ],
+          "pointer_target": null,
+          "notes": "Entire Display ON: resume to RAM content"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 11,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA6"
+        ],
+        "pointer_target": null,
+        "notes": "Set Normal Display"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xA6"
+          ],
+          "pointer_target": null,
+          "notes": "Set Normal Display"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 12,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x2E"
+        ],
+        "pointer_target": null,
+        "notes": "Deactivate scroll"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x2E"
+          ],
+          "pointer_target": null,
+          "notes": "Deactivate scroll"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 13,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x20",
+          "0x00"
+        ],
+        "pointer_target": null,
+        "notes": "Set Memory Addressing Mode: Horizontal"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "config"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x20",
+            "0x00"
+          ],
+          "pointer_target": null,
+          "notes": "Set Memory Addressing Mode: Horizontal"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 14,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x21",
+          "0x00",
+          "0x7F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Column Address: start=0, end=127"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x21",
+            "0x00",
+            "0x7F"
+          ],
+          "pointer_target": null,
+          "notes": "Set Column Address: start=0, end=127"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 15,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x22",
+          "0x00",
+          "0x07"
+        ],
+        "pointer_target": null,
+        "notes": "Set Page Address: start=0, end=7"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x22",
+            "0x00",
+            "0x07"
+          ],
+          "pointer_target": null,
+          "notes": "Set Page Address: start=0, end=7"
+        }
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 16,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAF"
+        ],
+        "pointer_target": null,
+        "notes": "Display ON"
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xAF"
+          ],
+          "pointer_target": null,
+          "notes": "Display ON"
+        }
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "To read GDDRAM, first set column and page addresses via commands 21h and 22h.",
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": null,
+        "notes": "To read GDDRAM, first set column and page addresses via commands 21h and 22h."
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": "DATA",
+        "pointer_target": null,
+        "notes": "Read data bytes from GDDRAM. A dummy read is required before first data read."
+      },
+      "length": "DATA",
+      "notes": null,
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "read",
+          "length": "DATA",
+          "pointer_target": null,
+          "notes": "Read data bytes from GDDRAM. A dummy read is required before first data read."
+        }
+      }
+    }
+  ],
+  "channels": [
+    {
+      "index": 0,
+      "id": "display",
+      "raw_type": "bytes",
+      "physical_unit": "pixel",
+      "flow_id": "read_display",
+      "source_bytes": [
+        "data_bytes"
+      ],
+      "source_signal": null,
+      "formula_id": null,
+      "notes": "Monochrome 128x64 pixel display. Data bytes written to GDDRAM define pixel states.",
+      "raw_record": {
+        "id": "display",
+        "raw_type": "bytes",
+        "physical_unit": "pixel",
+        "read_call_hint": "write_then_read",
+        "flow_id": "read_display",
+        "source_bytes": [
+          "data_bytes"
+        ],
+        "source_signal": null,
+        "formula_id": null,
+        "notes": "Monochrome 128x64 pixel display. Data bytes written to GDDRAM define pixel states."
+      }
+    }
+  ],
+  "formula_inputs": [
+    {
+      "formula_index": 0,
+      "formula_id": "divide_ratio_from_d5",
+      "input_index": 0,
+      "name": "A_low",
+      "byte_source": "command_byte:4",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "Lower nibble of D5h command byte",
+      "expression": "A_low + 1",
+      "output": {
+        "name": "divide_ratio",
+        "unit": null
+      },
+      "raw_record": {
+        "name": "A_low",
+        "byte_source": "command_byte:4",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "Lower nibble of D5h command byte"
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "ssd1306",
+      "page": 19,
+      "snippet": "Either '0111100' or '0111101', can be selected as the slave address of SSD1306."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 19,
+      "snippet": "D/C# pin acts as SA0 for slave address selection."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 20,
+      "snippet": "The slave address is either 'b0111100' or 'b0111101' by changing the SA0 to LOW or HIGH"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "After VDD become stable, set RES# pin LOW (logic low) for at least 3us (t1) and then HIGH (logic high)."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "After VCC become stable, send command AFh for display ON. SEG/COM will be ON after 100ms (tAF)."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "Send command AEh for display OFF."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "Wait for tOFF. Power OFF VDD .(where Minimum tOFF=0ms, Typical tOFF=100ms)"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 28,
+      "snippet": "AEh, X[0]=0b:Display OFF (sleep mode) (RESET) AFh X[0]=1b:Display ON in normal mode"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 28,
+      "snippet": "81 A[7:0] ... Set Contrast Control"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 29,
+      "snippet": "26/27 ... Continuous Horizontal Scroll"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 30,
+      "snippet": "2E ... Deactivate scroll"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 30,
+      "snippet": "2F ... Activate scroll"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 31,
+      "snippet": "20 A[1:0] ... Set Memory Addressing Mode"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 31,
+      "snippet": "21 A[6:0] B[6:0] ... Set Column Address"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "22 A[2:0] B[2:0] ... Set Page Address"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "40~7F ... Set Display Start Line"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "A0/A1 ... Set Segment Re-map"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "A8 A[5:0] ... Set Multiplex Ratio"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "C0/C8 ... Set COM Output Scan Direction"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "D3 A[5:0] ... Set Display Offset"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "DA A[5:4] ... Set COM Pins Hardware Configuration"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "D5 A[7:0] ... Set Display Clock Divide Ratio/Oscillator Frequency"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "D9 A[7:0] ... Set Pre-charge Period"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "DB A[6:4] ... Set VCOMH Deselect Level"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "E3 ... NOP"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "Status Register Read ... D[6] : '1' for display OFF / '0' for display ON"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t cycle ... 2.5 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t HSTART ... 0.6 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t HD ... 0 ns (for SDA OUT)"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t HD ... 300 ns (for SDA IN)"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t SD ... 100 ns"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t SSTART ... 0.6 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t SSTOP ... 0.6 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t R ... 300 ns"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t F ... 300 ns"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t IDLE ... 1.3 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 25,
+      "snippet": "The GDDRAM is a bit mapped static RAM holding the bit pattern to be displayed. The size of the RAM is 128 x 64 bits"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 25,
+      "snippet": "the RAM is divided into eight pages, from PAGE0 to PAGE7"
+    }
+  ],
+  "coverage_hints": {
+    "identity_registers": [],
+    "identity_registers_not_referenced_by_flows": [],
+    "config_registers": [],
+    "config_registers_not_referenced_by_flows": [],
+    "result_registers": [
+      {
+        "name": "GDDRAM",
+        "address": null,
+        "access": "rw",
+        "semantic_roles": [
+          "data"
+        ]
+      }
+    ],
+    "result_registers_not_referenced_by_flows": [],
+    "coefficient_registers": [],
+    "channels_without_source_bytes": [],
+    "formula_inputs_without_byte_source": [],
+    "non_contiguous_result_hints": [],
+    "default_only_init": []
+  },
+  "coverage_issues": [],
+  "summary": {
+    "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+    "address_count": 2,
+    "register_count": 2,
+    "bitfield_count": 1,
+    "operation_step_count": 56,
+    "channel_count": 1,
+    "formula_input_count": 1,
+    "evidence_span_count": 38,
+    "coverage_issue_count": 0,
+    "coverage_warning_count": 0,
+    "coverage_error_count": 0
+  }
+}

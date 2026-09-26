@@ -1,0 +1,183 @@
+{
+  "device_id": "dps310",
+  "rtos_id": "freertos",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef DPS310_H\n#define DPS310_H\n\n#include <stdint.h>\n#include \"stm32f1xx_hal.h\"\n\n#define DPS310_I2C_ADDR 0x77\n\n#include \"freertos.h\"\nstruct dps310_dev {\n    I2C_HandleTypeDef *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint dps310_init(struct dps310_dev *dev, void *bus_handle);\nint dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw);\nint dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw);\n\n#endif\n",
+  "driver_source": "#include \"dps310.h\"\n#include <stdint.h>\n#include <string.h>\n\n#include \"freertos.h\"\n#include \"stm32f1xx_hal.h\"\n#define DPS310_I2C_TIMEOUT 100\n\nstatic int dps310_read_regs(struct dps310_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), reg, I2C_MEMADD_SIZE_8BIT, buf, len, DPS310_I2C_TIMEOUT);\n    return (ret == HAL_OK) ? 0 : -1;\n}\n\nstatic int dps310_write_reg(struct dps310_dev *dev, uint8_t reg, uint8_t val)\n{\n    uint8_t data[2] = {reg, val};\n    HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), data, 2, DPS310_I2C_TIMEOUT);\n    return (ret == HAL_OK) ? 0 : -1;\n}\n\nint dps310_init(struct dps310_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = (I2C_HandleTypeDef *)bus_handle;\n    dev->i2c_addr = DPS310_I2C_ADDR;\n\n    HAL_Delay(40);\n\n    uint8_t id;\n    if (dps310_read_regs(dev, 0x0D, &id, 1) != 0) return -1;\n\n    if (dps310_write_reg(dev, 0x0C, 0x09) != 0) return -1;\n\n    HAL_Delay(12);\n\n    return 0;\n}\n\nint dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw)\n{\n    uint8_t buf[3];\n    if (dps310_read_regs(dev, 0x00, buf, 3) != 0) return -1;\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\n    if (raw & 0x800000) raw |= 0xFF000000;\n    *pressure_raw = raw;\n    return 0;\n}\n\nint dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw)\n{\n    uint8_t buf[3];\n    if (dps310_read_regs(dev, 0x03, buf, 3) != 0) return -1;\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\n    if (raw & 0x800000) raw |= 0xFF000000;\n    *temp_raw = raw;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "dps310_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "pressure",
+        "call": "dps310_read_pressure(&g_eval_dev, &pressure_raw)",
+        "out_arg": "pressure_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "temp",
+        "call": "dps310_read_temp(&g_eval_dev, &temp_raw)",
+        "out_arg": "temp_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "struct dps310_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0C"
+          ]
+        ],
+        "note": "init: RESET"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0D"
+          ]
+        ],
+        "note": "init: ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "init: COEF"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ],
+          [
+            "0x01"
+          ],
+          [
+            "0x02"
+          ],
+          [
+            "0x03"
+          ],
+          [
+            "0x04"
+          ],
+          [
+            "0x05"
+          ],
+          [
+            "0x06"
+          ],
+          [
+            "0x07"
+          ],
+          [
+            "0x08"
+          ],
+          [
+            "0x09"
+          ],
+          [
+            "0x0A"
+          ],
+          [
+            "0x0B"
+          ],
+          [
+            "0x28"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_cycle: one of CFG_REG, COEF_SRCE, FIFO_STS, INT_STS, MEAS_CFG, PRS_CFG, PSR_B0, PSR_B1, PSR_B2, TMP_B0, TMP_B1, TMP_B2, TMP_CFG"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_pressure_and_temp",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x7A",
+            "0xC0"
+          ],
+          "0x03": [
+            "0x00",
+            "0x7A",
+            "0xC0"
+          ]
+        },
+        "expected_channels": {
+          "pressure": 31424,
+          "temp": 31424
+        },
+        "derivation": "pressure: bytes 0x00,0x7A,0xC0 -> raw = (0x00<<16)|(0x7A<<8)|0xC0 = 31424; temp: same bytes -> raw = 31424"
+      },
+      {
+        "name": "zero_pressure_and_temp",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0x03": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "pressure": 0,
+          "temp": 0
+        },
+        "derivation": "pressure: bytes 0x00,0x00,0x00 -> raw = 0; temp: same -> raw = 0"
+      },
+      {
+        "name": "negative_pressure_and_temp",
+        "mock_preload": {
+          "0x00": [
+            "0xFF",
+            "0xFF",
+            "0x00"
+          ],
+          "0x03": [
+            "0xFF",
+            "0xFF",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "pressure": -256,
+          "temp": -256
+        },
+        "derivation": "pressure: bytes 0xFF,0xFF,0x00 -> raw = (0xFF<<16)|(0xFF<<8)|0x00 = 0xFFFF00, sign-extend from bit 23 -> -256; temp: same -> -256"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.753,
+  "prompt_chars": 41346,
+  "raw_response": "{\"driver_header\": \"#ifndef DPS310_H\\n#define DPS310_H\\n\\n#include <stdint.h>\\n#include \\\"stm32f1xx_hal.h\\\"\\n\\n#define DPS310_I2C_ADDR 0x77\\n\\nstruct dps310_dev {\\n    I2C_HandleTypeDef *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint dps310_init(struct dps310_dev *dev, void *bus_handle);\\nint dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw);\\nint dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"dps310.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define DPS310_I2C_TIMEOUT 100\\n\\nstatic int dps310_read_regs(struct dps310_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), reg, I2C_MEMADD_SIZE_8BIT, buf, len, DPS310_I2C_TIMEOUT);\\n    return (ret == HAL_OK) ? 0 : -1;\\n}\\n\\nstatic int dps310_write_reg(struct dps310_dev *dev, uint8_t reg, uint8_t val)\\n{\\n    uint8_t data[2] = {reg, val};\\n    HAL_StatusTypeDef ret = HAL_I2C_Master_Transmit(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), data, 2, DPS310_I2C_TIMEOUT);\\n    return (ret == HAL_OK) ? 0 : -1;\\n}\\n\\nint dps310_init(struct dps310_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = (I2C_HandleTypeDef *)bus_handle;\\n    dev->i2c_addr = DPS310_I2C_ADDR;\\n\\n    HAL_Delay(40);\\n\\n    uint8_t id;\\n    if (dps310_read_regs(dev, 0x0D, &id, 1) != 0) return -1;\\n\\n    if (dps310_write_reg(dev, 0x0C, 0x09) != 0) return -1;\\n\\n    HAL_Delay(12);\\n\\n    return 0;\\n}\\n\\nint dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw)\\n{\\n    uint8_t buf[3];\\n    if (dps310_read_regs(dev, 0x00, buf, 3) != 0) return -1;\\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\\n    if (raw & 0x800000) raw |= 0xFF000000;\\n    *pressure_raw = raw;\\n    return 0;\\n}\\n\\nint dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw)\\n{\\n    uint8_t buf[3];\\n    if (dps310_read_regs(dev, 0x03, buf, 3) != 0) return -1;\\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\\n    if (raw & 0x800000) raw |= 0xFF000000;\\n    *temp_raw = raw;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "f97cdd19b95db615"
+}

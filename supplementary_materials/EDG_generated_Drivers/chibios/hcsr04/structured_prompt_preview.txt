@@ -1,0 +1,174 @@
+
+## UART mode baud-rate setting: 9600 N 1 [pages 5-6]
+
+| Command | Return value | Description |
+|--------|----------------------|-----------------------------------------------------------------|
+| 0XA0 | BYTE_H BYTE_M BYTE_L | Output distance: ((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000 mm |
+| 0XF1 | | Company and version information |
+
+Connect the serial port. The external MCU or PC sends 0XA0. After measuring, the module returns three distance bytes: BYTE_H, BYTE_M, and BYTE_L.
+
+Distance is calculated as follows (mm):
+
+Distance=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000
+
+5                                                                                    WWW.WX-RCWL.COM
+
+Wuxi Richen IoT Technology
+
+
+## Command format: [pages 6-7]
+
+| Address | Command | Return value | Description |
+|-------------|--------|----------------------|---------------------------------------------------------------------|
+| Write address 0XAE | 0X01 | | Start ranging command |
+| Read address 0XAF | | BYTE_H BYTE_M BYTE_L | Output distance: ((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000 mm |
+
+Write 0X01 to start ranging; wait at least 200 mS (the module's maximum ranging time).
+
+Read three distance bytes directly: BYTE_H, BYTE_M, and BYTE_L.
+
+Distance is calculated as follows (mm):
+
+Distance=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000
+
+6                                                                                    WWW.WX-RCWL.COM
+
+Wuxi Richen IoT Technology
+
+
+## Specifications: [pages 3-3]
+
+| Parameter | Notes | Minimum | Typical | Maximum | Unit |
+|--------------|------------------|---------------|---------------|---------------|--------|
+| Operating voltage | | 3 | | 5.5 | V |
+| Operating current | | | 2.2 | 3 | mA |
+| Maximum detection distance | Flat wall | 350 | 450 | 600 | CM |
+| Operating frequency | | | 40 | | KHz |
+| Blind zone | Random values within the blind zone | | 2 | 4 | CM |
+| Detection accuracy | At the same temperature | | +/-2 | | % |
+| Resolution | Theoretical | | 1 | | mm |
+| Detection angle | Maximum directional angle | | +/-15 | +/-20 | degrees |
+| Measurement cycle time | | | 200 | | mS |
+| Output interface mode | | GPIO/UART/IIC | GPIO/UART/IIC | GPIO/UART/IIC | |
+| Operating temperature | Plastic-housed transducer (custom order) | -10 | | 60 | C |
+| Operating temperature | Aluminum-housed transducer | -10 | | 70 | C |
+
+
+## Interface definitions: [pages 3-3]
+
+| No. | Interface | Description | |
+|--------|-------------|----------------------------------|----------------------------|
+| 1 | Vcc | Power supply | |
+| 2 | Trig/Rx/SCL | GPIO mode: UART mode: | Trigger signal Receive signal |
+| 3 | Echo/Tx/SDA | GPIO mode: UART mode: ICC mode: | Echo signal Transmit signal Data signal |
+| 4 | Gnd | Ground | |
+
+
+## Mode selection: [pages 3-4]
+
+| No. | Mode | R4/R5 resistor settings |
+|--------|--------|------------------|
+| 1 | GPIO | R4=NC R5=NC Default |
+|      2 | UART   | R4=NC R5=10K     |
+|      3 | IIC    | R4=10K R5=NC     |
+
+3                                                                                    WWW.WX-RCWL.COM
+
+Wuxi Richen IoT Technology
+
+
+## Distance=T*C/2  (C is the speed of sound) [pages 4-5]
+
+Speed of sound versus temperature: c=(331.45+0.61t/C)m*s-1 (330.45 at 0 C)
+
+Speed of sound at 0 C: 330.45 M/S
+
+Speed of sound at 20 C: 342.62 M/S
+
+Speed of sound at 40 C: 354.85 M/S
+
+The speed-of-sound variation from 0 C to 40 C is approximately 7%. Applications requiring precise distance values must account for temperature effects and apply temperature compensation.
+
+4                                                                                    WWW.WX-RCWL.COM
+
+Wuxi Richen IoT Technology
+
+
+## Measurement procedure: [pages 4-4]
+
+
+## 1: GPIO mode [pages 4-4]
+
+Ultrasonic timing diagram
+
+Operation matches the earlier HC-SR04. The external MCU applies a high-level pulse longer than 10 uS to Trig; the module returns a high-level pulse proportional to distance, calculated from pulse width 'T':
+
+
+## 2: UART mode [pages 5-5]
+
+
+## 3: IIC mode [pages 6-6]
+
+IIC address: 0X57
+
+IIC transfer format:
+
+Write data:
+
+
+## Read data: [pages 6-6]
+
+
+## Overview: [pages 2-2]
+
+The HC-SR04 (2020 version) is an open ultrasonic ranging module with the same dimensions as the earlier version and added UART and IIC functions. Its software and hardware are fully compatible with the earlier HC-SR04 by default; resistors can select UART or IIC mode. It features a 2 CM minimum blind zone, a typical maximum range of 4.5 M, and a 2.2 mA operating current. The upgraded RCWL-9206 demodulation chip and MCU with UART and IIC functions simplify peripheral circuitry, extend the supply range to 3-5.5 V, and provide more interfaces.
+
+
+## Features: [pages 2-3]
+
+- Dedicated RCWL-9206 demodulation and ranging chip
+
+
+
+Supports GPIO, UART, and IIC interfaces
+
+- Wide 3 V-5.5 V supply range
+
+- 2.2 mA operating current
+
+- 2 cm minimum blind zone
+
+
+
+Software and hardware fully compatible with the earlier HC-SR04 by default
+
+- Wide 2 cm-450 cm measurement range (flat wall)
+
+
+
+Simpler peripheral circuitry
+
+- Operating temperature: -10 C to 70 C
+
+2                                                                                    WWW.WX-RCWL.COM
+
+Wuxi Richen IoT Technology
+
+
+## Application notes: [pages 7-7]
+
+1: Avoid connecting this module while powered. If a powered connection is necessary, connect Gnd first.
+
+2: For irregular surfaces or distant objects, use repeated measurements for correction.
+
+3: The interval between measurements must be at least 200 mS.
+
+4: Installing the module inside a product enclosure may require adjustments to peripheral parameters;
+
+contact the manufacturer to confirm the parameters before volume production.
+
+Application examples:
+
+See the attachments for ARDUINO test-board PCB files and example programs.
+

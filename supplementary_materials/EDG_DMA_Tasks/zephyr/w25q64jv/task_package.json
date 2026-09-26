@@ -1,0 +1,86 @@
+{
+  "package_id": "zephyr_generic_dt__w25q64jv__spi1_dma",
+  "platform_base_context": "EDG_DMA_Tasks/zephyr/w25q64jv/platform_base_context.json",
+  "connection_binding_context": "EDG_DMA_Tasks/zephyr/w25q64jv/connection_binding_context.json",
+  "device_attachment_context": "EDG_DMA_Tasks/zephyr/w25q64jv/device_attachment_context.json",
+  "reference_driver_root": "DriverGen/data/references/w25q64jv/zephyr",
+  "device_ir": "EDG_DMA_Tasks/zephyr/w25q64jv/device_ir.json",
+  "dma_requirements": "EDG_DMA_Tasks/zephyr/w25q64jv/dma_requirements.json",
+  "evaluation_config": "EDG_DMA_Tasks/zephyr/w25q64jv/evaluation_config.json",
+  "mode": "dma",
+  "notes": [
+    "W25Q64JV on zephyr: DMA payload transfers on the original hardware connection.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use DMA for memory read/program payloads. Preserve opcode/address framing, chip-select boundaries, write enable, page boundaries, and device busy waits."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/zephyr/drivers/spi/spi_stm32.c",
+    "DriverGen/data/rtos/zephyr/drivers/spi/Kconfig.stm32"
+  ],
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "zephyr_generic_dt",
+      "rtos": "zephyr",
+      "rtos_bundle": "zephyr",
+      "board": "stm32f103_mini",
+      "board_alias": "zephyr_f103",
+      "integration": "public_driver_api_and_devicetree",
+      "integration_style": "zephyr_core_plus_public_driver_headers",
+      "mcu_family": "stm32f1",
+      "mcu": "stm32f103xb"
+    },
+    "connection": {
+      "binding_id": "zephyr_generic_dt_spi1_dma",
+      "platform_id": "zephyr_generic_dt",
+      "connection_type": "spi",
+      "mode": "dma",
+      "bus_instance": "spi1",
+      "bus_instance_kind": "devicetree_node_label",
+      "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(spi1))",
+      "backend": "Zephyr STM32F1 SPI1 DMA",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "chip_select": "gpio_dt_spec from devicetree"
+      },
+      "helper_usage_patterns": []
+    },
+    "device": {
+      "device_id": "w25q64jv",
+      "attachment_type": "spi_flash",
+      "required_bus_type": "spi",
+      "address_mode": null,
+      "addressing": {
+        "default": "spi1",
+        "selection_rule": "SPI CS# selected by board wiring."
+      },
+      "required_attachment": {
+        "signals": [
+          "CS",
+          "CLK",
+          "MOSI",
+          "MISO"
+        ],
+        "notes": [
+          "Standard SPI quad-pin connection."
+        ]
+      },
+      "optional_attachment": {},
+      "default_overrides": {
+        "bus_instance": "spi1",
+        "irq": "dma_completion",
+        "dma": "required",
+        "mode": "dma",
+        "device_irq": "absent"
+      },
+      "protocol_hints": {
+        "transfer_mode": "dma"
+      }
+    }
+  }
+}

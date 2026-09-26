@@ -1,0 +1,151 @@
+{
+  "attempt": 1,
+  "success": false,
+  "total_time_s": 5.583,
+  "plan_summary": {
+    "device_id": "vl53l0x",
+    "rtos_id": "threadx",
+    "eval_class": "single_channel",
+    "bus_kind": "i2c",
+    "plan_hash": "c470767c0f60678f",
+    "api_contract_keys": [
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c",
+      "primary_raw_type",
+      "primary_raw_unit",
+      "read_call"
+    ],
+    "stimuli_count": 3,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 5.509
+  },
+  "consistency": {
+    "overall": "has_inconsistent",
+    "ok": false,
+    "inconsistent_count": 2,
+    "llm_only_count": 0,
+    "consistent_count": 1,
+    "summary": "3 stim; 1 L1/L2; 2 inconsistent",
+    "stimuli": [
+      {
+        "name": "distance_100mm",
+        "verdict": "inconsistent",
+        "layer": "L1",
+        "evidence": "bytes=[0x00, 0x99] cannot yield expected_read_raw=100.0 under any standard interpretation; derivation=`mock_preload read_bytes = [0x00, 100] => big-endian uint16 = 0x0064 = 100 mm`",
+        "warnings": [
+          "LLM likely flipped endian or miscomputed"
+        ]
+      },
+      {
+        "name": "distance_0mm",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "bytes=[0x00, 0x99] as single_u8 = 0",
+        "warnings": []
+      },
+      {
+        "name": "distance_8191mm",
+        "verdict": "inconsistent",
+        "layer": "L1",
+        "evidence": "bytes=[0x00, 0x99] cannot yield expected_read_raw=8191.0 under any standard interpretation; derivation=`mock_preload read_bytes = [0x1F, 0xFF] => big-endian uint16 = 0x1FFF = 8191 mm`",
+        "warnings": [
+          "LLM likely flipped endian or miscomputed"
+        ]
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 1,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 1,
+    "summary": "1/1 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x52",
+          "write_prefix_any_of": [
+            [
+              "0xC0"
+            ],
+            [
+              "0xC1"
+            ],
+            [
+              "0xC2"
+            ],
+            [
+              "0x51"
+            ],
+            [
+              "0x61"
+            ]
+          ],
+          "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2",
+          "source": "registers_or_commands[0], registers_or_commands[1], registers_or_commands[2], registers_or_commands[3], registers_or_commands[4]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x52",
+          "write_prefix_any_of": [
+            [
+              "0xC0"
+            ],
+            [
+              "0xC1"
+            ],
+            [
+              "0xC2"
+            ],
+            [
+              "0x51"
+            ],
+            [
+              "0x61"
+            ]
+          ],
+          "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+        },
+        "reason": "prefix overlap: [('0x51',), ('0x61',), ('0xC0',), ('0xC1',), ('0xC2',)] ∈ mechanical [('0x51',), ('0x61',), ('0xC0',), ('0xC1',), ('0xC2',)]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x52",
+        "write_prefix_any_of": [
+          [
+            "0xC0"
+          ],
+          [
+            "0xC1"
+          ],
+          [
+            "0xC2"
+          ],
+          [
+            "0x51"
+          ],
+          [
+            "0x61"
+          ]
+        ],
+        "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+      }
+    ]
+  },
+  "validation_errors": [
+    "test_plan consistency failed for 'distance_100mm': bytes=[0x00, 0x99] cannot yield expected_read_raw=100.0 under any standard interpretation; derivation=`mock_preload read_bytes = [0x00, 100] => big-endian uint16 = 0x0064 = 100 mm`",
+    "test_plan consistency failed for 'distance_8191mm': bytes=[0x00, 0x99] cannot yield expected_read_raw=8191.0 under any standard interpretation; derivation=`mock_preload read_bytes = [0x1F, 0xFF] => big-endian uint16 = 0x1FFF = 8191 mm`"
+  ],
+  "feedback_chars": 882
+}

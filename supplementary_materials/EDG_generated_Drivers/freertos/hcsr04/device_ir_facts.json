@@ -1,0 +1,299 @@
+{
+  "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+  "source": "device_ir_projection_v1",
+  "device_id": "hcsr04",
+  "bus_type": "gpio_timing",
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "addresses": [],
+  "registers": [],
+  "bitfields": [],
+  "operation_steps": [
+    {
+      "source": "operation_flows",
+      "flow_id": "gpio_measurement",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Set Trig pin high to start trigger pulse.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "Trig",
+        "value": "high",
+        "notes": "Set Trig pin high to start trigger pulse."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "gpio_measurement",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait at least 10 microseconds (trigger pulse width).",
+      "semantic_roles": [
+        "result",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 0.01,
+        "notes": "Wait at least 10 microseconds (trigger pulse width)."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "gpio_measurement",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Set Trig pin low to end trigger pulse.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "Trig",
+        "value": "low",
+        "notes": "Set Trig pin low to end trigger pulse."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "gpio_measurement",
+      "flow_kind": "read",
+      "step_index": 3,
+      "op": "measure_pulse",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Measure duration of high pulse on Echo pin (time T in microseconds).",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "raw_record": {
+        "op": "measure_pulse",
+        "signal": "Echo",
+        "edge": "rising",
+        "timeout_ms": 100,
+        "notes": "Measure duration of high pulse on Echo pin (time T in microseconds)."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "gpio_measurement",
+      "flow_kind": "read",
+      "step_index": 4,
+      "op": "postprocess",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Compute distance using formula: distance = T * C / 2, where C is speed of sound (mm/us).",
+      "semantic_roles": [
+        "result"
+      ],
+      "raw_record": {
+        "op": "postprocess",
+        "notes": "Compute distance using formula: distance = T * C / 2, where C is speed of sound (mm/us)."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "No bus initialization required for GPIO mode. Ensure Trig and Echo pins are configured as output and input respectively.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "No bus initialization required for GPIO mode. Ensure Trig and Echo pins are configured as output and input respectively."
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "GPIO mode: trigger pulse and echo measurement as described in gpio_measurement flow.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "GPIO mode: trigger pulse and echo measurement as described in gpio_measurement flow."
+      }
+    }
+  ],
+  "channels": [
+    {
+      "index": 0,
+      "id": "distance",
+      "raw_type": "uint32",
+      "physical_unit": "mm",
+      "flow_id": "gpio_measurement",
+      "source_bytes": null,
+      "source_signal": "echo_pulse_width_us",
+      "formula_id": "distance_formula_gpio",
+      "notes": "Distance in mm derived from echo pulse width and speed of sound.",
+      "raw_record": {
+        "id": "distance",
+        "raw_type": "uint32",
+        "physical_unit": "mm",
+        "flow_id": "gpio_measurement",
+        "source_signal": "echo_pulse_width_us",
+        "formula_id": "distance_formula_gpio",
+        "notes": "Distance in mm derived from echo pulse width and speed of sound."
+      }
+    }
+  ],
+  "formula_inputs": [
+    {
+      "formula_index": 0,
+      "formula_id": "distance_formula_gpio",
+      "input_index": 0,
+      "name": "T",
+      "byte_source": null,
+      "source_signal": "echo_pulse_width_us",
+      "default_value": null,
+      "config_source": null,
+      "description": "Echo pulse width in microseconds.",
+      "expression": "(T * 343) // 2000",
+      "output": {
+        "name": "distance_mm",
+        "unit": "mm"
+      },
+      "raw_record": {
+        "name": "T",
+        "source_signal": "echo_pulse_width_us",
+        "description": "Echo pulse width in microseconds."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "The external MCU applies a high-level pulse longer than 10 uS to Trig."
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "The module returns a high-level pulse proportional to distance."
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "Distance=T*C/2"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "Speed of sound versus temperature: c=(331.45+0.61t/C)m*s-1"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Measurement cycle time: 200 mS"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Blind zone: 2 to 4 CM"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Detection accuracy: +/-2 %"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Resolution: 1 mm"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Output interface mode: GPIO/UART/IIC"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Operating voltage: 3 to 5.5 V"
+    }
+  ],
+  "coverage_hints": {
+    "identity_registers": [],
+    "identity_registers_not_referenced_by_flows": [],
+    "config_registers": [],
+    "config_registers_not_referenced_by_flows": [],
+    "result_registers": [],
+    "result_registers_not_referenced_by_flows": [],
+    "coefficient_registers": [],
+    "channels_without_source_bytes": [],
+    "formula_inputs_without_byte_source": [],
+    "non_contiguous_result_hints": [],
+    "default_only_init": [
+      {
+        "source": "init_sequence",
+        "flow_id": "init_sequence",
+        "reason": "default_or_no_bus_init_note"
+      }
+    ]
+  },
+  "coverage_issues": [],
+  "summary": {
+    "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+    "address_count": 0,
+    "register_count": 0,
+    "bitfield_count": 0,
+    "operation_step_count": 7,
+    "channel_count": 1,
+    "formula_input_count": 1,
+    "evidence_span_count": 10,
+    "coverage_issue_count": 0,
+    "coverage_warning_count": 0,
+    "coverage_error_count": 0
+  }
+}

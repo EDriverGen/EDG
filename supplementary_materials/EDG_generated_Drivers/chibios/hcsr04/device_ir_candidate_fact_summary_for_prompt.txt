@@ -1,0 +1,35 @@
+Summary: {"address_count": 3, "bitfield_count": 0, "bus_type": "GPIO", "channel_count": 1, "device_id": "hcsr04", "evidence_span_count": 10, "formula_count": 3, "operation_count": 3, "register_count": 8, "requires_human_count": 6, "timing_count": 3}
+Addresses:
+- 0XAE form=IIC write address default=None desc=IIC write address for IIC mode
+- 0XAF form=IIC read address default=None desc=IIC read address for IIC mode
+- 0X57 form=IIC device address default=None desc=IIC address for IIC mode
+Registers:
+- UART_CMD_0XA0@0XA0 access=write bits=8 roles=trigger desc=UART command to trigger measurement and get distance in mm
+- UART_RESP_BYTE_H@None access=read bits=8 roles=result desc=High byte of distance in UART mode
+- UART_RESP_BYTE_M@None access=read bits=8 roles=result desc=Middle byte of distance in UART mode
+- UART_RESP_BYTE_L@None access=read bits=8 roles=result desc=Low byte of distance in UART mode
+- IIC_CMD_0X01@0X01 access=write bits=8 roles=trigger desc=IIC command to start measurement
+- IIC_RESP_BYTE_H@None access=read bits=8 roles=result desc=High byte of distance in IIC mode
+- IIC_RESP_BYTE_M@None access=read bits=8 roles=result desc=Middle byte of distance in IIC mode
+- IIC_RESP_BYTE_L@None access=read bits=8 roles=result desc=Low byte of distance in IIC mode
+Operations:
+- gpio_measurement kind=read channels=distance outputs=distance summary=GPIO mode: send trigger pulse, measure echo pulse width, compute distance steps=[set_signal:Trig:Set Trig pin high for at least 10 microseconds; delay:None:Wait for at least 10 microseconds; set_signal:Trig:Set Trig pin low; measure_pulse:Echo:Measure the duration of high pulse on Echo pin (time T); postprocess:None:Compute distance using formula distance = T * C / 2]
+- uart_measurement kind=read channels=distance outputs=distance summary=UART mode: send command 0xA0, read three bytes, compute distance steps=[write:UART:Send command byte 0xA0; read:UART:Read three bytes: BYTE_H, BYTE_M, BYTE_L; postprocess:None:Compute distance = ((BYTE_H<<16) + (BYTE_M<<8) + BYTE_L) / 1000 (mm)]
+- iic_measurement kind=read channels=distance outputs=distance summary=IIC mode: write 0x01 to start measurement, wait 200ms, read three bytes, compute distance steps=[write:IIC:Write command 0x01 to start measurement; delay:None:Wait 200ms (maximum measurement time); read:IIC:Read three bytes: BYTE_H, BYTE_M, BYTE_L; postprocess:None:Compute distance = ((BYTE_H<<16) + (BYTE_M<<8) + BYTE_L) / 1000 (mm)]
+Channels:
+- distance source=echo pulse width (GPIO) or serial bytes (UART/IIC) formula=distance_formula desc=Measured distance in mm
+Formulae:
+- distance_formula_gpio inputs=T,C output=distance formula=distance = T * C / 2
+- distance_formula_uart_iic inputs=BYTE_H,BYTE_M,BYTE_L output=distance formula=distance = ((BYTE_H << 16) + (BYTE_M << 8) + BYTE_L) / 1000
+- speed_of_sound_temperature inputs=t output=c formula=c = 331.45 + 0.61 * t
+Timing:
+- trigger_pulse_width=10 us when=GPIO mode
+- measurement_cycle=200 ms when=minimum interval between measurements
+- iic_wait_time=200 ms when=IIC mode: wait after start command
+RequiresHuman:
+- Temperature compensation: if precise distance is needed, temperature must be considered. Formula provided but no automatic compensation.
+- Blind zone: 2-4 cm, values in blind zone are random.
+- Measurement cycle: at least 200ms between measurements.
+- Mode selection via resistors: GPIO (default), UART (R5=10K), IIC (R4=10K).
+- UART baud rate: 9600 N 1.
+- IIC write address 0xAE, read address 0xAF, device address 0x57.

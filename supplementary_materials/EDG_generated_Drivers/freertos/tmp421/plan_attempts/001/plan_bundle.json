@@ -1,0 +1,176 @@
+{
+  "device_id": "tmp421",
+  "rtos_id": "freertos",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "tmp421_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "temp_local",
+        "call": "tmp421_read_local(&g_eval_dev, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_remote",
+        "call": "tmp421_read_remote(&g_eval_dev, &temp_remote_val)",
+        "out_arg": "temp_remote_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct tmp421_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFF"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Device ID"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x11"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read low byte"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_positive",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x19"
+          ],
+          "0x10": [
+            "0x50"
+          ],
+          "0x01": [
+            "0x1A"
+          ],
+          "0x11": [
+            "0x60"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 25625,
+          "temp_remote": 26875
+        },
+        "derivation": "local: high_byte=0x19=25, low_byte=0x50, low_nibble=0x05, raw=((25<<4)+5)=405, milli=405*625/10=25312.5? 5? Actually integer: (25*16+5)*625/10 = 405*625/10 = 253125/10=25312.5? But 405*625=253125, /10=25312.5, not integer. But we want positive. So set low_byte=0x00. For remote: high_byte=0x1A=26, low_byte=0x00, combined=416, milli=416*625/10=26000. So mock_preload: 0x00=[0x19], 0x10=[0x00], 0x01=[0x1A], 0x11=[0x00]. Then expected: local=25000, remote=26000."
+      },
+      {
+        "name": "zero_and_near_zero",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x00"
+          ],
+          "0x10": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x01"
+          ],
+          "0x11": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 0,
+          "temp_remote": 1000
+        },
+        "derivation": "local: high_byte=0, low_byte=0, combined=0, milli=0*625/10=0. remote: high_byte=0x01=1, low_byte=0, combined=16, milli=16*625/10=1000."
+      },
+      {
+        "name": "negative_twos_complement",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0xF6"
+          ],
+          "0x10": [
+            "0x00"
+          ],
+          "0x01": [
+            "0xF6"
+          ],
+          "0x11": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": -10000,
+          "temp_remote": -10000
+        },
+        "derivation": "high_byte=0xF6=-10 (signed), low_byte=0, combined=(-10<<4)|0=-160, milli=-160*625/10=-10000."
+      }
+    ]
+  },
+  "plan_hash": "77016d67c84e6484",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 11.882,
+  "prompt_chars": 55426,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"tmp421_init(&g_eval_dev, bus_handle)\", \"channels\": [{\"id\": \"temp_local\", \"call\": \"tmp421_read_local(&g_eval_dev, &temp_local_val)\", \"out_arg\": \"temp_local_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}, {\"id\": \"temp_remote\", \"call\": \"tmp421_read_remote(&g_eval_dev, &temp_remote_val)\", \"out_arg\": \"temp_remote_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}], \"dev_struct_type\": \"struct tmp421_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFE\"]], \"note\": \"probe_identity: write_then_read Manufacturer ID\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFF\"]], \"note\": \"probe_identity: write_then_read Device ID\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temperature_local: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x10\"]], \"note\": \"read_temperature_local: write_then_read low byte\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x01\"]], \"note\": \"read_temperature_remote1: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x11\"]], \"note\": \"read_temperature_remote1: write_then_read low byte\"}], \"test_stimuli\": [{\"name\": \"nominal_positive\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x00\": [\"0x19\"], \"0x10\": [\"0x50\"], \"0x01\": [\"0x1A\"], \"0x11\": [\"0x60\"]}, \"expected_channels\": {\"temp_local\": 25625, \"temp_remote\": 26875}, \"derivation\": \"local: high_byte=0x19=25, low_byte=0x50, low_nibble=0x05, raw=((25<<4)+5)=405, milli=405*625/10=25312.5? Wait recalc: high_byte=0x19=25, low_byte=0x50, low_nibble=0x05, combined=((25<<4)|0x05)=405, milli=405*625/10=25312.5? Actually integer: (25*16+5)*625/10 = 405*625/10 = 253125/10=25312.5? But 405*625=253125, /10=25312.5, not integer. Let's choose bytes that yield integer: high_byte=0x19=25, low_byte=0x40, low_nibble=0x04, combined=404, milli=404*625/10=25250. But we want positive. Let's use high_byte=0x19=25, low_byte=0x00, combined=400, milli=400*625/10=25000. So set low_byte=0x00. For remote: high_byte=0x1A=26, low_byte=0x00, combined=416, milli=416*625/10=26000. So mock_preload: 0x00=[0x19], 0x10=[0x00], 0x01=[0x1A], 0x11=[0x00]. Then expected: local=25000, remote=26000.\"}, {\"name\": \"zero_and_near_zero\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x00\": [\"0x00\"], \"0x10\": [\"0x00\"], \"0x01\": [\"0x01\"], \"0x11\": [\"0x00\"]}, \"expected_channels\": {\"temp_local\": 0, \"temp_remote\": 1000}, \"derivation\": \"local: high_byte=0, low_byte=0, combined=0, milli=0*625/10=0. remote: high_byte=0x01=1, low_byte=0, combined=16, milli=16*625/10=1000.\"}, {\"name\": \"negative_twos_complement\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x00\": [\"0xF6\"], \"0x10\": [\"0x00\"], \"0x01\": [\"0xF6\"], \"0x11\": [\"0x00\"]}, \"expected_channels\": {\"temp_local\": -10000, \"temp_remote\": -10000}, \"derivation\": \"high_byte=0xF6=-10 (signed), low_byte=0, combined=(-10<<4)|0=-160, milli=-160*625/10=-10000.\"}]}}"
+}

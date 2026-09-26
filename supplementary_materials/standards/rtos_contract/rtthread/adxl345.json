@@ -1,0 +1,158 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtthread__adxl345",
+  "device_id": "adxl345",
+  "rtos_id": "rtthread",
+  "bus": "spi",
+  "scope": "rtthread fixed task for adxl345, bus=spi, board=stm32f103rb; only APIs and preconditions needed by copied reference driver plus fixed task configuration.",
+  "api_contract": {
+    "headers": [
+      "rtthread.h",
+      "rtdevice.h",
+      "drivers/dev_spi.h"
+    ],
+    "types": {
+      "status": "rt_err_t / actual transfer count",
+      "bus_or_pin": "RT-Thread typed device handle or fixed GPIO pin"
+    },
+    "task_binding": {
+      "bus": "spi",
+      "instance": "spi10",
+      "mode": "polling",
+      "backend": "RT-Thread SPI device framework",
+      "fixed_attachment": {
+        "device_name": "spi10",
+        "chip_select": "configured_by_bsp_spi_device"
+      }
+    },
+    "operations": [
+      {
+        "name": "rt_device_find",
+        "signature": "rt_device_t rt_device_find(const char *name)"
+      },
+      {
+        "name": "rt_spi_configure",
+        "signature": "rt_err_t rt_spi_configure(struct rt_spi_device *, struct rt_spi_configuration *)"
+      },
+      {
+        "name": "rt_spi_send",
+        "signature": "rt_size_t rt_spi_send(struct rt_spi_device *, const void *, rt_size_t)"
+      },
+      {
+        "name": "rt_spi_send_then_recv",
+        "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *, const void *, rt_size_t, void *, rt_size_t)"
+      }
+    ],
+    "preconditions": "Use the task_requirements fixed bus/pin, passed device handle, and caller-provided bus initialization/configuration; sample_ref application cadence is outside scope."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Find the fixed SPI device spi10 and provide its struct rt_spi_device * handle; the RT-Thread SPI framework handles BSP bus/chip-select binding.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__adxl345/inputs/reference_drivers/adxl345_ref.h",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__adxl345/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 32,
+          "line_end": 32
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/spi/pack.md",
+          "line_start": 58,
+          "line_end": 70
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 417,
+          "line_end": 420
+        }
+      ]
+    },
+    {
+      "id": "spi_configuration",
+      "category": "bus_configuration",
+      "requirement": "Support rt_spi_configure(device, &cfg) for the task's SPI mode, data width, and clock frequency; obtain the handle from the fixed SPI device name, with chip select managed by the framework.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 37,
+          "line_end": 37
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/spi/pack.md",
+          "line_start": 466,
+          "line_end": 477
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 292,
+          "line_end": 293
+        }
+      ]
+    },
+    {
+      "id": "spi_send",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain the reference rt_spi_send(device, send_buf, length) transmit operation; it returns the actual byte count so the caller can check for a complete transfer.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/spi/pack.md",
+          "line_start": 583,
+          "line_end": 597
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 294,
+          "line_end": 295
+        }
+      ]
+    },
+    {
+      "id": "spi_sendrecv",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain rt_spi_send_then_recv(device, tx, tx_len, rx, rx_len), including command/address and receive-buffer lengths, with a status code for failure detection.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 21,
+          "line_end": 21
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 57,
+          "line_end": 57
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/spi/pack.md",
+          "line_start": 480,
+          "line_end": 495
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 298,
+          "line_end": 300
+        }
+      ]
+    }
+  ]
+}

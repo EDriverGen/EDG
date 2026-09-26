@@ -1,0 +1,204 @@
+{
+  "device_id": "hcsr04",
+  "bus_type": "gpio_timing",
+  "address_rule": {
+    "type": "none",
+    "addressing_form": "none",
+    "addresses": []
+  },
+  "register_map": null,
+  "read_channels": [
+    {
+      "id": "distance",
+      "raw_type": "uint32",
+      "physical_unit": "mm",
+      "flow_id": "gpio_measurement",
+      "source_signal": "echo_pulse_width_us",
+      "formula_id": "distance_formula_gpio",
+      "notes": "Distance in mm derived from echo pulse width and speed of sound."
+    }
+  ],
+  "access_model": {
+    "kind": "gpio_timing",
+    "notes": "GPIO mode: trigger pulse on Trig, measure echo pulse on Echo."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "gpio_measurement",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "preconditions": [
+        "GPIO mode selected (R4=NC, R5=NC)",
+        "At least 200ms since last measurement"
+      ],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "Trig",
+          "value": "high",
+          "notes": "Set Trig pin high to start trigger pulse."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 0.01,
+          "notes": "Wait at least 10 microseconds (trigger pulse width)."
+        },
+        {
+          "op": "set_signal",
+          "signal": "Trig",
+          "value": "low",
+          "notes": "Set Trig pin low to end trigger pulse."
+        },
+        {
+          "op": "measure_pulse",
+          "signal": "Echo",
+          "edge": "rising",
+          "timeout_ms": 100,
+          "notes": "Measure duration of high pulse on Echo pin (time T in microseconds)."
+        },
+        {
+          "op": "postprocess",
+          "notes": "Compute distance using formula: distance = T * C / 2, where C is speed of sound (mm/us)."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "distance",
+          "source_signal": "echo_pulse_width_us",
+          "formula_id": "distance_formula_gpio",
+          "unit": "mm",
+          "notes": "Raw echo pulse width in microseconds."
+        }
+      ],
+      "notes": "GPIO mode measurement flow."
+    }
+  ],
+  "raw_encoding": null,
+  "registers_or_commands": [],
+  "bitfields": [],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "No bus initialization required for GPIO mode. Ensure Trig and Echo pins are configured as output and input respectively."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "GPIO mode: trigger pulse and echo measurement as described in gpio_measurement flow."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "trigger_pulse_width",
+      "value": 10,
+      "unit": "us",
+      "condition": "GPIO mode",
+      "notes": "Trigger pulse must be at least 10 microseconds."
+    },
+    {
+      "name": "measurement_cycle",
+      "value": 200,
+      "unit": "ms",
+      "condition": "all modes",
+      "notes": "Minimum interval between measurements."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "distance_formula_gpio",
+      "formula": "distance = T * C / 2, where T is echo pulse width in microseconds, C is speed of sound in mm/us.",
+      "integer_approximation_expression": {
+        "expression": "(T * 343) // 2000",
+        "inputs": [
+          {
+            "name": "T",
+            "source_signal": "echo_pulse_width_us",
+            "description": "Echo pulse width in microseconds."
+          }
+        ],
+        "output": {
+          "name": "distance_mm",
+          "unit": "mm"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "echo_timeout",
+      "description": "No echo pulse received within expected time (e.g., >100ms).",
+      "detection": "measure_pulse timeout",
+      "driver_action": "return -EIO"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "active",
+      "description": "Normal operation, consuming 2.2-3 mA."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "The external MCU applies a high-level pulse longer than 10 uS to Trig."
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "The module returns a high-level pulse proportional to distance."
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "Distance=T*C/2"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 4,
+      "snippet": "Speed of sound versus temperature: c=(331.45+0.61t/C)m*s-1"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Measurement cycle time: 200 mS"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Blind zone: 2 to 4 CM"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Detection accuracy: +/-2 %"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Resolution: 1 mm"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Output interface mode: GPIO/UART/IIC"
+    },
+    {
+      "source_id": "hcsr04",
+      "page": 3,
+      "snippet": "Operating voltage: 3 to 5.5 V"
+    }
+  ],
+  "requires_human": [
+    "Temperature compensation: if precise distance is needed, temperature must be considered. Formula provided but no automatic compensation.",
+    "Blind zone: 2-4 cm, values in blind zone are random.",
+    "Measurement cycle: at least 200ms between measurements.",
+    "Mode selection via resistors: GPIO (default), UART (R5=10K), IIC (R4=10K).",
+    "UART baud rate: 9600 N 1.",
+    "IIC write address 0xAE, read address 0xAF, device address 0x57."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

@@ -1,0 +1,979 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "lm75a",
+  "rtos": "zephyr",
+  "board": "stm32f103_mini",
+  "bus_type": "i2c",
+  "connection": {
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(i2c1))",
+    "address_mode": "7-bit",
+    "backend": "Zephyr public I2C device API",
+    "helper_usage_patterns": []
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [],
+    "error_symbols": []
+  },
+  "bus_contract": {
+    "bus_api_symbols": [],
+    "bus_api_signatures": {},
+    "bus_helper_types": [
+      "struct i2c_stm32_config",
+      "i2c_omap_regs_t",
+      "struct cdns_i2c_config",
+      "struct i2c_atciic100_config",
+      "struct i2c_config_timing",
+      "struct i2c_emul_config",
+      "struct i2c_enhance_config",
+      "struct i2c_it51xxx_config"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "public_driver_api_and_devicetree",
+    "integration_style": "zephyr_core_plus_public_driver_headers",
+    "bus_instance": "i2c1",
+    "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(i2c1))",
+    "include_headers": [
+      "drivers/i2c/i2c_stm32.h"
+    ],
+    "fixed_attachment": {},
+    "required_helpers": [
+      "device_is_ready",
+      "i2c_write",
+      "i2c_read",
+      "k_msleep"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": [
+      "i2c_read",
+      "i2c_write",
+      "k_msleep"
+    ],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "i2c1",
+        "fields": {
+          "bus_instance": "i2c1",
+          "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(i2c1))",
+          "backend": "Zephyr public I2C device API",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      }
+    },
+    "board_sources": [
+      "include/zephyr/dt-bindings/i2c/it8xxx2-i2c.h",
+      "include/zephyr/dt-bindings/i2c/i2c.h",
+      "include/zephyr/dt-bindings/i2c/npcx-i2c.h",
+      "include/zephyr/dt-bindings/i2c/it51xxx-i2c.h",
+      "include/zephyr/devicetree.h",
+      "include/zephyr/dt-bindings/adc/adc.h",
+      "include/zephyr/dt-bindings/memory-attr/memory-attr-arm.h",
+      "include/zephyr/dt-bindings/pwm/pwm.h"
+    ]
+  },
+  "device_contract": {
+    "device_id": "lm75a",
+    "required_bus_type": "i2c",
+    "addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B",
+        "0x4C",
+        "0x4D",
+        "0x4E",
+        "0x4F"
+      ],
+      "selection_rule": "A2/A1/A0 define the lower address bits."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver only requires I2C power, ground, SDA, and SCL."
+      ]
+    },
+    "optional_attachment": {
+      "os_pin": "optional",
+      "address_select_pins": [
+        "A0",
+        "A1",
+        "A2"
+      ]
+    }
+  },
+  "api_bindings": {
+    "i2c.key_types": {
+      "symbol": "i2c_stm32_config",
+      "kind": "struct",
+      "signature": null,
+      "required_headers": [
+        "drivers/i2c/i2c_stm32.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "zephyr:single:0::drivers/i2c/i2c_stm32.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.device_is_ready": {
+      "symbol": "z_impl_device_is_ready",
+      "kind": "function",
+      "signature": "bool z_impl_device_is_ready(const struct device *dev)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.26666666666666666,
+      "declared_in": "zephyr:single:0::kernel/device.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.i2c_read": {
+      "symbol": "i2c_read",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.i2c_read",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::i2c_read",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    },
+    "task_helper.i2c_write": {
+      "symbol": "i2c_write",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.i2c_write",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::i2c_write",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    },
+    "task_helper.k_msleep": {
+      "symbol": "k_msleep",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.k_msleep",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::k_msleep",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x48",
+            "description": "A2=A1=A0=GND (default)",
+            "is_default": true
+          },
+          {
+            "address": "0x49",
+            "description": "A2=A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4A",
+            "description": "A2=GND, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4B",
+            "description": "A2=GND, A1=Vcc, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4C",
+            "description": "A2=Vcc, A1=GND, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4D",
+            "description": "A2=Vcc, A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4E",
+            "description": "A2=Vcc, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4F",
+            "description": "A2=A1=A0=Vcc",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x48",
+              "description": "A2=A1=A0=GND (default)",
+              "is_default": true
+            },
+            {
+              "address": "0x49",
+              "description": "A2=A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4A",
+              "description": "A2=GND, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4B",
+              "description": "A2=GND, A1=Vcc, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4C",
+              "description": "A2=Vcc, A1=GND, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4D",
+              "description": "A2=Vcc, A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4E",
+              "description": "A2=Vcc, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4F",
+              "description": "A2=A1=A0=Vcc",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x48",
+          "alternates": [
+            "0x49",
+            "0x4A",
+            "0x4B",
+            "0x4C",
+            "0x4D",
+            "0x4E",
+            "0x4F"
+          ],
+          "selection_rule": "A2/A1/A0 define the lower address bits."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "ranked_candidates",
+      "confidence": 0.619,
+      "symbols": [
+        {
+          "symbol": "i2c_omap_regs_t",
+          "kind": "typedef",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_omap.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_omap.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 13.5,
+          "match_reasons": [
+            "name-tok=1+3.0",
+            "sig-tok=2+4.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "cdns_i2c_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_cdns.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_cdns.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_atciic100_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_andes_atciic100.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_andes_atciic100.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_config_timing",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_stm32.h",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_stm32.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_emul_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_emul.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_emul.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_enhance_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_ite_enhance.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_ite_enhance.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_it51xxx_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_ite_it51xxx.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_ite_it51xxx.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_it51xxx_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_ite_it51xxx.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_ite_it51xxx.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot represents a small type vocabulary rather than one canonical call target."
+      ]
+    },
+    "i2c.read": {
+      "slot_id": "i2c.read",
+      "fulfillment_kind": "helper_alias",
+      "source": "task_helper.binding",
+      "confidence": 0.82,
+      "symbols": [
+        {
+          "symbol": "i2c_read",
+          "kind": "function",
+          "declared_in": "task_package::i2c_read",
+          "source_slot": "task_helper.i2c_read",
+          "source_kind": "task_package_helper",
+          "signature": null,
+          "score": 0.85,
+          "match_reasons": [
+            "task-helper-alias"
+          ]
+        }
+      ],
+      "notes": [
+        "A task-package helper with matching bus/operation semantics covers this primitive slot."
+      ]
+    },
+    "i2c.write": {
+      "slot_id": "i2c.write",
+      "fulfillment_kind": "helper_alias",
+      "source": "task_helper.binding",
+      "confidence": 0.82,
+      "symbols": [
+        {
+          "symbol": "i2c_write",
+          "kind": "function",
+          "declared_in": "task_package::i2c_write",
+          "source_slot": "task_helper.i2c_write",
+          "source_kind": "task_package_helper",
+          "signature": null,
+          "score": 0.85,
+          "match_reasons": [
+            "task-helper-alias"
+          ]
+        }
+      ],
+      "notes": [
+        "A task-package helper with matching bus/operation semantics covers this primitive slot."
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "fulfillment_kind": "helper_alias",
+      "source": "task_helper.binding",
+      "confidence": 0.82,
+      "symbols": [
+        {
+          "symbol": "k_msleep",
+          "kind": "function",
+          "declared_in": "task_package::k_msleep",
+          "source_slot": "task_helper.k_msleep",
+          "source_kind": "task_package_helper",
+          "signature": null,
+          "score": 0.85,
+          "match_reasons": [
+            "task-helper-alias"
+          ]
+        }
+      ],
+      "notes": [
+        "A task-package millisecond delay/sleep helper covers this runtime delay slot."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(i2c1))",
+        "backend": "Zephyr public I2C device API",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x48",
+            "description": "A2=A1=A0=GND (default)",
+            "is_default": true
+          },
+          {
+            "address": "0x49",
+            "description": "A2=A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4A",
+            "description": "A2=GND, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4B",
+            "description": "A2=GND, A1=Vcc, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4C",
+            "description": "A2=Vcc, A1=GND, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4D",
+            "description": "A2=Vcc, A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4E",
+            "description": "A2=Vcc, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4F",
+            "description": "A2=A1=A0=Vcc",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x48",
+              "description": "A2=A1=A0=GND (default)",
+              "is_default": true
+            },
+            {
+              "address": "0x49",
+              "description": "A2=A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4A",
+              "description": "A2=GND, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4B",
+              "description": "A2=GND, A1=Vcc, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4C",
+              "description": "A2=Vcc, A1=GND, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4D",
+              "description": "A2=Vcc, A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4E",
+              "description": "A2=Vcc, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4F",
+              "description": "A2=A1=A0=Vcc",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x48",
+          "alternates": [
+            "0x49",
+            "0x4A",
+            "0x4B",
+            "0x4C",
+            "0x4D",
+            "0x4E",
+            "0x4F"
+          ],
+          "selection_rule": "A2/A1/A0 define the lower address bits."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(i2c1))",
+        "backend": "Zephyr public I2C device API",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "ranked_candidates",
+      "confidence": 0.619,
+      "symbols": [
+        {
+          "symbol": "i2c_omap_regs_t",
+          "kind": "typedef",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_omap.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_omap.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 13.5,
+          "match_reasons": [
+            "name-tok=1+3.0",
+            "sig-tok=2+4.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "cdns_i2c_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_cdns.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_cdns.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_atciic100_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_andes_atciic100.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_andes_atciic100.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_config_timing",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_stm32.h",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_stm32.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_emul_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_emul.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_emul.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_enhance_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_ite_enhance.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_ite_enhance.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_it51xxx_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_ite_it51xxx.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_ite_it51xxx.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        },
+        {
+          "symbol": "i2c_it51xxx_config",
+          "kind": "struct",
+          "declared_in": "zephyr:single:0:drivers/i2c/i2c_ite_it51xxx.c",
+          "root_id": "zephyr:single:0",
+          "file": "drivers/i2c/i2c_ite_it51xxx.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[i2c]+2.0"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot represents a small type vocabulary rather than one canonical call target."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "z_impl_device_is_ready",
+    "i2c_stm32_config",
+    "i2c_read",
+    "i2c_write",
+    "k_msleep"
+  ],
+  "allowed_symbol_provenance": {
+    "z_impl_device_is_ready": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "zephyr:single:0::kernel/device.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "i2c_stm32_config": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "zephyr:single:0::drivers/i2c/i2c_stm32.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "i2c_read": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::i2c_read",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "i2c_write": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::i2c_write",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "k_msleep": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::k_msleep",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "lm75a_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "lm75a_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x00"
+            ],
+            "length": 2,
+            "pointer_target": "Temp",
+            "notes": null
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.4,
+      "requires_human": true,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 10/13 required slots covered.",
+    "3 task-package helper hooks declared (stub or board-supplied weak occurrence required at link time)."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "zephyr:single:0",
+      "path": "kernel/device.c",
+      "kind": "declaration",
+      "for_symbol": "z_impl_device_is_ready",
+      "slot_id": "task_helper.device_is_ready"
+    },
+    {
+      "root_id": "zephyr:single:0",
+      "path": "drivers/i2c/i2c_stm32.h",
+      "kind": "declaration",
+      "for_symbol": "i2c_stm32_config",
+      "slot_id": "i2c.key_types"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[i2c_read]",
+      "kind": "contract",
+      "for_symbol": "i2c_read",
+      "slot_id": "task_helper.i2c_read"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[i2c_write]",
+      "kind": "contract",
+      "for_symbol": "i2c_write",
+      "slot_id": "task_helper.i2c_write"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[k_msleep]",
+      "kind": "contract",
+      "for_symbol": "k_msleep",
+      "slot_id": "task_helper.k_msleep"
+    }
+  ],
+  "requires_human": [
+    "runtime.delay_ms",
+    "runtime.error_status",
+    "integration.bus_instance_binding",
+    "task_helper.i2c_read",
+    "task_helper.i2c_write",
+    "task_helper.k_msleep"
+  ]
+}

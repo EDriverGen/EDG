@@ -1,0 +1,93 @@
+{
+  "task_package_id": "rtthread_stm32f103rb__mpu6050__i2c1_dma",
+  "rtos": "rt-thread",
+  "rtos_bundle": "rt-thread",
+  "board": "stm32f103rb",
+  "board_alias": "f103rb",
+  "integration": "repository_local_bsp",
+  "integration_style": "rtos_core_plus_repository_bsp",
+  "mcu_family": "stm32f1",
+  "mcu": "stm32f103rb",
+  "bus_type": "i2c",
+  "bus_instance": "i2c1",
+  "bus_instance_kind": "named_bus",
+  "bus_symbol": "i2c1",
+  "bus_backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+  "address_mode": "7-bit",
+  "mode": "dma",
+  "irq": "dma_completion",
+  "dma": "required",
+  "reset_gpio": null,
+  "power_gpio": null,
+  "fixed_attachment": {},
+  "device_attachment_context_id": "mpu6050",
+  "device_addressing": {
+    "default": "0x68",
+    "alternates": [
+      "0x69"
+    ],
+    "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+  },
+  "device_irq": "absent",
+  "dma_requirements": {
+    "task_package_id": "rtthread_stm32f103rb__mpu6050__i2c1_dma",
+    "mode": "dma",
+    "physical_bus": "i2c",
+    "backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+    "access_pattern": "rtos_bus_dma",
+    "candidate_transfer_apis": [
+      "rt_i2c_transfer"
+    ],
+    "dma_channels": {
+      "controller": "DMA1",
+      "tx": 6,
+      "rx": 7
+    },
+    "minimum_core_payload_bytes": 2,
+    "configuration_requirements": [
+      "Enable BSP_USING_HARD_I2C1, BSP_I2C1_RX_USING_DMA, and BSP_I2C1_TX_USING_DMA; retain i2c1 and its pins.",
+      "Use the existing hardware-I2C registration, with payload messages of at least 2 bytes.",
+      "Preserve combined-message/repeated-start semantics; one-byte register-selection phases may use the backend's control-transfer path."
+    ],
+    "generation_requirements": [
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use the hardware-I2C DMA path for contiguous accelerometer, temperature, and gyroscope data."
+    ],
+    "device_scenarios": [
+      "Read the complete multichannel block.",
+      "Preserve signed interpretation and channel units."
+    ],
+    "validation_requirements": [
+      {
+        "id": "dma_payload",
+        "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+      },
+      {
+        "id": "completion_order",
+        "requirement": "Consume receive data and reuse buffers only after the required completion event."
+      },
+      {
+        "id": "error_and_timeout",
+        "requirement": "Return the specified error and release transfer state after failure or timeout."
+      },
+      {
+        "id": "repeat_operation",
+        "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+      }
+    ],
+    "source_evidence": [
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+    ]
+  },
+  "source_evidence": [
+    "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+    "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "device_id": "ssd1306",
+  "rtos_id": "chibios",
+  "eval_class": "display",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef SSD1306_H\n#define SSD1306_H\n\n#include <stdint.h>\n#include <stddef.h>\n#include \"hal.h\"\n\n#include \"hal_i2c.h\"\ntypedef struct {\n    I2CDriver *i2c;\n    uint8_t addr;\n} SSD1306Driver;\n\nvoid ssd1306_init(SSD1306Driver *dev, I2CDriver *bus_handle);\nvoid ssd1306_write_display_data(SSD1306Driver *dev, const uint8_t *data, size_t len);\n\n#endif /* SSD1306_H */\n",
+  "driver_source": "#include \"ssd1306.h\"\n#include \"hal_i2c.h\"\n#include <string.h>\n\n#define SSD1306_I2C_ADDR 0x3C\n#define SSD1306_CTRL_CMD 0x00\n#define SSD1306_CTRL_DATA 0x40\n\nstatic msg_t i2c_write_cmd(SSD1306Driver *dev, const uint8_t *cmds, size_t len) {\n    uint8_t buf[256];\n    if (len + 1 > sizeof(buf)) return MSG_RESET;\n    buf[0] = SSD1306_CTRL_CMD;\n    memcpy(buf + 1, cmds, len);\n    i2cAcquireBus(dev->i2c);\n    msg_t ret = i2cMasterTransmitTimeout(dev->i2c, dev->addr, buf, len + 1, NULL, 0, TIME_MS2I(100));\n    i2cReleaseBus(dev->i2c);\n    return ret;\n}\n\nvoid ssd1306_init(SSD1306Driver *dev, I2CDriver *bus_handle) {\n    dev->i2c = bus_handle;\n    dev->addr = SSD1306_I2C_ADDR;\n\n    // Power ON sequence: RES# handled externally, just send display ON command\n    // But init sequence includes display OFF first, then full init, then display ON\n    // According to test plan, init phase includes all commands including 0xAF\n    // So we send the full init sequence as per Device IR init_display flow\n    // plus power_on write of 0xAF at the end\n\n    // init_display steps\n    i2c_write_cmd(dev, (uint8_t[]){0xAE}, 1);\n    i2c_write_cmd(dev, (uint8_t[]){0xD5, 0x80}, 2);\n    i2c_write_cmd(dev, (uint8_t[]){0xA8, 0x3F}, 2);\n    i2c_write_cmd(dev, (uint8_t[]){0xD3, 0x00}, 2);\n    i2c_write_cmd(dev, (uint8_t[]){0x40}, 1);\n    i2c_write_cmd(dev, (uint8_t[]){0xA1}, 1);\n    i2c_write_cmd(dev, (uint8_t[]){0xC8}, 1);\n    i2c_write_cmd(dev, (uint8_t[]){0xDA, 0x12}, 2);\n    i2c_write_cmd(dev, (uint8_t[]){0x81, 0x7F}, 2);\n    i2c_write_cmd(dev, (uint8_t[]){0xA4}, 1);\n    i2c_write_cmd(dev, (uint8_t[]){0xA6}, 1);\n    i2c_write_cmd(dev, (uint8_t[]){0x2E}, 1);\n    i2c_write_cmd(dev, (uint8_t[]){0x20, 0x00}, 2);\n    i2c_write_cmd(dev, (uint8_t[]){0x21, 0x00, 0x7F}, 3);\n    i2c_write_cmd(dev, (uint8_t[]){0x22, 0x00, 0x07}, 3);\n    // power_on: display ON\n    i2c_write_cmd(dev, (uint8_t[]){0xAF}, 1);\n}\n\nvoid ssd1306_write_display_data(SSD1306Driver *dev, const uint8_t *data, size_t len) {\n    // Set column address range (0x21, start=0, end=127)\n    i2c_write_cmd(dev, (uint8_t[]){0x21, 0x00, 0x7F}, 3);\n    // Set page address range (0x22, start=0, end=7)\n    i2c_write_cmd(dev, (uint8_t[]){0x22, 0x00, 0x07}, 3);\n\n    // Write data bytes with control byte 0x40\n    uint8_t buf[1025];\n    if (len > 1024) len = 1024;\n    buf[0] = SSD1306_CTRL_DATA;\n    memcpy(buf + 1, data, len);\n    i2cAcquireBus(dev->i2c);\n    i2cMasterTransmitTimeout(dev->i2c, dev->addr, buf, len + 1, NULL, 0, TIME_MS2I(100));\n    i2cReleaseBus(dev->i2c);\n}",
+  "api_contract": {
+    "eval_class": "display",
+    "init_call": "ssd1306_init(&g_eval_dev, bus_handle)",
+    "output_frame_call": "ssd1306_write_display_data(&g_eval_dev, data, len)",
+    "read_status_call": null,
+    "dev_struct_type": "SSD1306Driver",
+    "init_extra_setup_c": "I2CDriver *bus_handle = (I2CDriver *)bus_name;",
+    "preamble_c": "#include \"hal.h\"\n#include \"hal_i2c_lld.h\"\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <string.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAE"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD5",
+            "0x80"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA8",
+            "0x3F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD3",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x40"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA1"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xC8"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xDA",
+            "0x12"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x81",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA4"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA6"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x2E"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x20",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21",
+            "0x00",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22",
+            "0x00",
+            "0x07"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAF"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21"
+          ]
+        ],
+        "note": "write_display_data: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22"
+          ]
+        ],
+        "note": "write_display_data: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "init_and_display_off",
+        "mock_preload": {},
+        "expected_frame_err": 0,
+        "derivation": "No preload needed; init sequence writes commands only."
+      },
+      {
+        "name": "write_frame_all_zeros",
+        "mock_preload": {},
+        "expected_frame_err": 0,
+        "derivation": "Frame buffer of 1024 zero bytes written via output_frame_call; no readback."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_display_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.722,
+  "prompt_chars": 39804,
+  "raw_response": "{\"driver_header\": \"#ifndef SSD1306_H\\n#define SSD1306_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n#include \\\"hal.h\\\"\\n\\ntypedef struct {\\n    I2CDriver *i2c;\\n    uint8_t addr;\\n} SSD1306Driver;\\n\\nvoid ssd1306_init(SSD1306Driver *dev, I2CDriver *bus_handle);\\nvoid ssd1306_write_display_data(SSD1306Driver *dev, const uint8_t *data, size_t len);\\n\\n#endif /* SSD1306_H */\", \"driver_source\": \"#include \\\"ssd1306.h\\\"\\n#include \\\"hal_i2c.h\\\"\\n#include <string.h>\\n\\n#define SSD1306_I2C_ADDR 0x3C\\n#define SSD1306_CTRL_CMD 0x00\\n#define SSD1306_CTRL_DATA 0x40\\n\\nstatic msg_t i2c_write_cmd(SSD1306Driver *dev, const uint8_t *cmds, size_t len) {\\n    uint8_t buf[256];\\n    if (len + 1 > sizeof(buf)) return MSG_RESET;\\n    buf[0] = SSD1306_CTRL_CMD;\\n    memcpy(buf + 1, cmds, len);\\n    i2cAcquireBus(dev->i2c);\\n    msg_t ret = i2cMasterTransmitTimeout(dev->i2c, dev->addr, buf, len + 1, NULL, 0, TIME_MS2I(100));\\n    i2cReleaseBus(dev->i2c);\\n    return ret;\\n}\\n\\nvoid ssd1306_init(SSD1306Driver *dev, I2CDriver *bus_handle) {\\n    dev->i2c = bus_handle;\\n    dev->addr = SSD1306_I2C_ADDR;\\n\\n    // Power ON sequence: RES# handled externally, just send display ON command\\n    // But init sequence includes display OFF first, then full init, then display ON\\n    // According to test plan, init phase includes all commands including 0xAF\\n    // So we send the full init sequence as per Device IR init_display flow\\n    // plus power_on write of 0xAF at the end\\n\\n    // init_display steps\\n    i2c_write_cmd(dev, (uint8_t[]){0xAE}, 1);\\n    i2c_write_cmd(dev, (uint8_t[]){0xD5, 0x80}, 2);\\n    i2c_write_cmd(dev, (uint8_t[]){0xA8, 0x3F}, 2);\\n    i2c_write_cmd(dev, (uint8_t[]){0xD3, 0x00}, 2);\\n    i2c_write_cmd(dev, (uint8_t[]){0x40}, 1);\\n    i2c_write_cmd(dev, (uint8_t[]){0xA1}, 1);\\n    i2c_write_cmd(dev, (uint8_t[]){0xC8}, 1);\\n    i2c_write_cmd(dev, (uint8_t[]){0xDA, 0x12}, 2);\\n    i2c_write_cmd(dev, (uint8_t[]){0x81, 0x7F}, 2);\\n    i2c_write_cmd(dev, (uint8_t[]){0xA4}, 1);\\n    i2c_write_cmd(dev, (uint8_t[]){0xA6}, 1);\\n    i2c_write_cmd(dev, (uint8_t[]){0x2E}, 1);\\n    i2c_write_cmd(dev, (uint8_t[]){0x20, 0x00}, 2);\\n    i2c_write_cmd(dev, (uint8_t[]){0x21, 0x00, 0x7F}, 3);\\n    i2c_write_cmd(dev, (uint8_t[]){0x22, 0x00, 0x07}, 3);\\n    // power_on: display ON\\n    i2c_write_cmd(dev, (uint8_t[]){0xAF}, 1);\\n}\\n\\nvoid ssd1306_write_display_data(SSD1306Driver *dev, const uint8_t *data, size_t len) {\\n    // Set column address range (0x21, start=0, end=127)\\n    i2c_write_cmd(dev, (uint8_t[]){0x21, 0x00, 0x7F}, 3);\\n    // Set page address range (0x22, start=0, end=7)\\n    i2c_write_cmd(dev, (uint8_t[]){0x22, 0x00, 0x07}, 3);\\n\\n    // Write data bytes with control byte 0x40\\n    uint8_t buf[1025];\\n    if (len > 1024) len = 1024;\\n    buf[0] = SSD1306_CTRL_DATA;\\n    memcpy(buf + 1, data, len);\\n    i2cAcquireBus(dev->i2c);\\n    i2cMasterTransmitTimeout(dev->i2c, dev->addr, buf, len + 1, NULL, 0, TIME_MS2I(100));\\n    i2cReleaseBus(dev->i2c);\\n}\\n\"}",
+  "plan_hash": "3dc1330bcd108a0d"
+}

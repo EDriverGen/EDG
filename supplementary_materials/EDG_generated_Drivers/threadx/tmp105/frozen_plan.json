@@ -1,0 +1,75 @@
+{
+  "device_id": "tmp105",
+  "rtos_id": "threadx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "tmp105_init(&g_eval_dev, bus_handle)",
+    "read_call": "tmp105_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct tmp105_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x19",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x19 0x00 decode to raw=((((0x19 << 8) | 0x00) >> 4) & 0xFFF) = 400; public value in milli_degC is (400 * 125) // 2 = 25000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 4) & 0xFFF) = 0; public value in milli_degC is (0 * 125) // 2 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xE7",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xE7 0x00 decode to raw=(((((0xE7 << 8) | 0x00) >> 4) & 0xFFF) - 4096) = -400; public value in milli_degC is (-400 * 125) // 2 = -25000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "9bdae15d9fe94713",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 5.218,
+  "prompt_chars": 47677,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"tmp105_init(&g_eval_dev, bus_handle)\", \"read_call\": \"tmp105_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct tmp105_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temperature: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x19\", \"0x00\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw = (0x19 << 8) | 0x00 = 6400; (6400 >> 4) & 0xFFF = 400; 400 * 625 / 10 = 25000\"}, {\"name\": \"zero_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw = 0; (0 >> 4) & 0xFFF = 0; 0 * 625 / 10 = 0\"}, {\"name\": \"negative_temperature_minus10C\", \"mock_preload\": {\"0x00\": [\"0xFF\", \"0x60\"]}, \"expected_read_raw\": -10000, \"derivation\": \"raw = (0xFF << 8) | 0x60 = 65376; sign-extend 12-bit: (65376 >> 4) & 0xFFF = 4086; since bit 11 set, value = 4086 - 4096 = -10; -10 * 625 / 10 = -6250? Wait recalc: raw=0xFF60=65376, raw>>4=4086, 4086-4096=-10, -10*625/10=-6250. But -10C should be -10000 milli_degC. Let's choose raw=0xF600: raw=62976, raw>>4=3936, 3936-4096=-160, -160*625/10=-10000. So mock_preload: [0xF6, 0x00].\"}]}}"
+}

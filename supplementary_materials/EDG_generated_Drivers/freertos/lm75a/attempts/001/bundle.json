@@ -1,0 +1,58 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "freertos",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef LM75A_H\n#define LM75A_H\n\n#include <stdint.h>\n\nstruct lm75a_dev {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint lm75a_init(struct lm75a_dev *dev, void *bus_handle);\nint lm75a_read_temp(struct lm75a_dev *dev, int32_t *raw);\n\n#endif /* LM75A_H */",
+  "driver_source": "#include \"lm75a.h\"\n#include <stdint.h>\n\n#include \"FreeRTOS.h\"\n#define LM75A_I2C_ADDR 0x48\n#define LM75A_TEMP_REG 0x00\n\nstatic int lm75a_write_then_read(struct lm75a_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    HAL_StatusTypeDef ret;\n    ret = HAL_I2C_Mem_Read((I2C_HandleTypeDef *)dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), reg, I2C_MEMADD_SIZE_8BIT, buf, len, 100);\n    if (ret != HAL_OK) {\n        return -1;\n    }\n    return 0;\n}\n\nint lm75a_init(struct lm75a_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = LM75A_I2C_ADDR;\n    vTaskDelay(100 / portTICK_PERIOD_MS);\n    return 0;\n}\n\nint lm75a_read_temp(struct lm75a_dev *dev, int32_t *raw)\n{\n    uint8_t buf[2];\n    int ret;\n    ret = lm75a_write_then_read(dev, LM75A_TEMP_REG, buf, 2);\n    if (ret != 0) {\n        return ret;\n    }\n    int16_t raw16 = (int16_t)((buf[0] << 8) | buf[1]);\n    *raw = (int32_t)(raw16 >> 5);\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, bus_handle)",
+    "read_call": "lm75a_read_temp(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct lm75a_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temp: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x32 0x00], raw_count = ((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.003,
+  "prompt_chars": 30646,
+  "raw_response": "{\"driver_header\": \"#ifndef LM75A_H\\n#define LM75A_H\\n\\n#include <stdint.h>\\n\\nstruct lm75a_dev {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint lm75a_init(struct lm75a_dev *dev, void *bus_handle);\\nint lm75a_read_temp(struct lm75a_dev *dev, int32_t *raw);\\n\\n#endif /* LM75A_H */\", \"driver_source\": \"#include \\\"lm75a.h\\\"\\n#include \\\"FreeRTOS.h\\\"\\n#include <stdint.h>\\n\\n#define LM75A_I2C_ADDR 0x48\\n#define LM75A_TEMP_REG 0x00\\n\\nstatic int lm75a_write_then_read(struct lm75a_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    HAL_StatusTypeDef ret;\\n    ret = HAL_I2C_Mem_Read((I2C_HandleTypeDef *)dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), reg, I2C_MEMADD_SIZE_8BIT, buf, len, 100);\\n    if (ret != HAL_OK) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint lm75a_init(struct lm75a_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = LM75A_I2C_ADDR;\\n    vTaskDelay(100 / portTICK_PERIOD_MS);\\n    return 0;\\n}\\n\\nint lm75a_read_temp(struct lm75a_dev *dev, int32_t *raw)\\n{\\n    uint8_t buf[2];\\n    int ret;\\n    ret = lm75a_write_then_read(dev, LM75A_TEMP_REG, buf, 2);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n    int16_t raw16 = (int16_t)((buf[0] << 8) | buf[1]);\\n    *raw = (int32_t)(raw16 >> 5);\\n    return 0;\\n}\"}",
+  "plan_hash": "ec37b9ecbf63d1d6"
+}

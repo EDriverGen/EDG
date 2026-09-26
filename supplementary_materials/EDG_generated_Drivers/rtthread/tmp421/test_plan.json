@@ -1,0 +1,120 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0xFE"
+        ]
+      ],
+      "read_any": true,
+      "note": "probe_identity: write_then_read"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0xFF"
+        ]
+      ],
+      "read_any": true,
+      "note": "probe_identity: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x00"
+        ]
+      ],
+      "read_any": true,
+      "note": "read_temperature_local: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x10"
+        ]
+      ],
+      "read_any": true,
+      "note": "read_temperature_local: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x01"
+        ]
+      ],
+      "read_any": true,
+      "note": "read_temperature_remote1: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x11"
+        ]
+      ],
+      "read_any": true,
+      "note": "read_temperature_remote1: write_then_read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "local_positive_temp",
+      "mock_preload": {
+        "0xFE": [
+          "0x55"
+        ],
+        "0xFF": [
+          "0x21"
+        ],
+        "0x08": [
+          "0x00"
+        ],
+        "0x00": [
+          "0x1A"
+        ],
+        "0x10": [
+          "0x40"
+        ]
+      },
+      "expected_channels": {
+        "temp_local": 26250
+      },
+      "derivation": "Local temp: high_byte=0x1A=26, low_byte=0x40, low_nibble=0x40>>4=4, temp=26 + 4*0.0625 = 26.25 degC = 26250 milli_degC."
+    },
+    {
+      "name": "remote_positive_temp",
+      "mock_preload": {
+        "0xFE": [
+          "0x55"
+        ],
+        "0xFF": [
+          "0x21"
+        ],
+        "0x08": [
+          "0x00"
+        ],
+        "0x01": [
+          "0x1A"
+        ],
+        "0x11": [
+          "0x40"
+        ]
+      },
+      "expected_channels": {
+        "temp_remote": 26250
+      },
+      "derivation": "Remote temp: high_byte=0x1A=26, low_byte=0x40, low_nibble=0x40>>4=4, temp=26 + 4*0.0625 = 26.25 degC = 26250 milli_degC."
+    }
+  ]
+}

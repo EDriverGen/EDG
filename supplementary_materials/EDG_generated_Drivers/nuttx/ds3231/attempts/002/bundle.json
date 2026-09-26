@@ -1,0 +1,112 @@
+{
+  "device_id": "ds3231",
+  "rtos_id": "nuttx",
+  "eval_class": "rtc",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef DS3231_H\n#define DS3231_H\n\n#include <stdint.h>\n\nstruct i2c_master_s;\n\nstruct ds3231_dev {\n    struct i2c_master_s *bus;\n    uint8_t addr;\n};\n\nstruct ds3231_time {\n    uint8_t seconds;\n    uint8_t minutes;\n    uint8_t hours;\n    uint8_t day;\n    uint8_t date;\n    uint8_t month;\n    uint8_t year;\n};\n\nint ds3231_init(struct ds3231_dev *dev, struct i2c_master_s *bus);\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t);\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t);\n\n#endif /* DS3231_H */",
+  "driver_source": "#include <nuttx/i2c/i2c_master.h>\n#include <stdint.h>\n#include <stddef.h>\n#include <errno.h>\n#include \"ds3231.h\"\n\n#define DS3231_ADDR 0x68\n\nstatic int ds3231_write_then_read(struct ds3231_dev *dev, uint8_t reg, uint8_t *buf, int len)\n{\n    struct i2c_config_s config;\n    config.frequency = 100000;\n    config.address = DS3231_ADDR;\n    config.addrlen = 7;\n    return i2c_writeread(dev->bus, &config, &reg, 1, buf, len);\n}\n\nstatic int ds3231_write(struct ds3231_dev *dev, uint8_t reg, const uint8_t *data, int len)\n{\n    struct i2c_config_s config;\n    config.frequency = 100000;\n    config.address = DS3231_ADDR;\n    config.addrlen = 7;\n    uint8_t buf[8];\n    buf[0] = reg;\n    for (int i = 0; i < len; i++) buf[1+i] = data[i];\n    return i2c_write(dev->bus, &config, buf, len+1);\n}\n\nint ds3231_init(struct ds3231_dev *dev, struct i2c_master_s *bus)\n{\n    dev->bus = bus;\n    dev->addr = DS3231_ADDR;\n    return 0;\n}\n\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t)\n{\n    uint8_t buf[7];\n    int ret = ds3231_write_then_read(dev, 0x00, buf, 7);\n    if (ret < 0) return ret;\n    t->seconds = buf[0];\n    t->minutes = buf[1];\n    t->hours = buf[2];\n    t->day = buf[3];\n    t->date = buf[4];\n    t->month = buf[5];\n    t->year = buf[6];\n    return 0;\n}\n\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t)\n{\n    uint8_t data[7];\n    data[0] = t->seconds;\n    data[1] = t->minutes;\n    data[2] = t->hours;\n    data[3] = t->day;\n    data[4] = t->date;\n    data[5] = t->month;\n    data[6] = t->year;\n    return ds3231_write(dev, 0x00, data, 7);\n}",
+  "api_contract": {
+    "eval_class": "rtc",
+    "init_call": "ds3231_init(&g_eval_dev, bus_handle)",
+    "get_time_call": "ds3231_get_time(&g_eval_dev, &drv)",
+    "set_time_call": "ds3231_set_time(&g_eval_dev, &drv)",
+    "time_struct_decl": "struct ds3231_time drv;",
+    "time_struct_from_in": "struct ds3231_time drv; drv.seconds = in->second; drv.minutes = in->minute; drv.hours = in->hour; drv.day = in->weekday; drv.date = in->day; drv.month = in->month; drv.year = in->year - 2000;",
+    "time_fields": {
+      "year": "drv.year + 2000",
+      "month": "drv.month",
+      "day": "drv.date",
+      "hour": "drv.hours",
+      "minute": "drv.minutes",
+      "second": "drv.seconds",
+      "weekday": "drv.day"
+    },
+    "dev_struct_type": "struct ds3231_dev",
+    "init_extra_setup_c": "struct i2c_master_s *bus_handle = (struct i2c_master_s *)board_i2cbus_initialize(1); if (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"nuttx.h\"\n#include <nuttx/i2c/i2c_master.h>\n#include <nuttx/config.h>\n#include <stdint.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_time",
+        "mock_preload": {
+          "0x00": [
+            "0x15",
+            "0x30",
+            "0x12",
+            "0x03",
+            "0x15",
+            "0x06",
+            "0x24"
+          ]
+        },
+        "expected_time": {
+          "year": 2024,
+          "month": 6,
+          "day": 15,
+          "hour": 12,
+          "minute": 30,
+          "second": 15,
+          "weekday": 3
+        },
+        "derivation": "BCD bytes: 0x15=15 sec, 0x30=30 min, 0x12=12 hr, 0x03=3 day of week, 0x15=15 date, 0x06=6 month, 0x24=24 year -> 2024"
+      },
+      {
+        "name": "set_time_stimulus",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x01",
+            "0x01",
+            "0x01",
+            "0x00"
+          ]
+        },
+        "expected_time": {
+          "year": 2000,
+          "month": 1,
+          "day": 1,
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "weekday": 1
+        },
+        "derivation": "BCD bytes: 0x00=0 sec, 0x00=0 min, 0x00=0 hr, 0x01=1 day of week, 0x01=1 date, 0x01=1 month, 0x00=0 year -> 2000"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.859,
+  "prompt_chars": 41555,
+  "raw_response": "{\"driver_header\": \"#ifndef DS3231_H\\n#define DS3231_H\\n\\n#include <stdint.h>\\n\\nstruct ds3231_dev {\\n    struct i2c_master_s *bus;\\n    uint8_t addr;\\n};\\n\\nstruct ds3231_time {\\n    uint8_t seconds;\\n    uint8_t minutes;\\n    uint8_t hours;\\n    uint8_t day;\\n    uint8_t date;\\n    uint8_t month;\\n    uint8_t year;\\n};\\n\\nint ds3231_init(struct ds3231_dev *dev, struct i2c_master_s *bus);\\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t);\\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t);\\n\\n#endif /* DS3231_H */\", \"driver_source\": \"#include <nuttx/i2c/i2c_master.h>\\n#include <nuttx/config.h>\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <errno.h>\\n#include \\\"ds3231.h\\\"\\n\\n#define DS3231_ADDR 0x68\\n\\nstatic int ds3231_write_then_read(struct ds3231_dev *dev, uint8_t reg, uint8_t *buf, int len)\\n{\\n    struct i2c_config_s config;\\n    config.frequency = 100000;\\n    config.address = DS3231_ADDR;\\n    config.addrlen = 7;\\n    return i2c_writeread(dev->bus, &config, &reg, 1, buf, len);\\n}\\n\\nstatic int ds3231_write(struct ds3231_dev *dev, uint8_t reg, const uint8_t *data, int len)\\n{\\n    struct i2c_config_s config;\\n    config.frequency = 100000;\\n    config.address = DS3231_ADDR;\\n    config.addrlen = 7;\\n    uint8_t buf[8];\\n    buf[0] = reg;\\n    for (int i = 0; i < len; i++) buf[1+i] = data[i];\\n    return i2c_write(dev->bus, &config, buf, len+1);\\n}\\n\\nint ds3231_init(struct ds3231_dev *dev, struct i2c_master_s *bus)\\n{\\n    dev->bus = bus;\\n    dev->addr = DS3231_ADDR;\\n    return 0;\\n}\\n\\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t)\\n{\\n    uint8_t buf[7];\\n    int ret = ds3231_write_then_read(dev, 0x00, buf, 7);\\n    if (ret < 0) return ret;\\n    t->seconds = buf[0];\\n    t->minutes = buf[1];\\n    t->hours = buf[2];\\n    t->day = buf[3];\\n    t->date = buf[4];\\n    t->month = buf[5];\\n    t->year = buf[6];\\n    return 0;\\n}\\n\\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t)\\n{\\n    uint8_t data[7];\\n    data[0] = t->seconds;\\n    data[1] = t->minutes;\\n    data[2] = t->hours;\\n    data[3] = t->day;\\n    data[4] = t->date;\\n    data[5] = t->month;\\n    data[6] = t->year;\\n    return ds3231_write(dev, 0x00, data, 7);\\n}\\n\"}",
+  "plan_hash": "939bd52fb4734922"
+}

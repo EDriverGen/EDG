@@ -1,0 +1,152 @@
+{
+  "device_id": "pcf8574",
+  "rtos_id": "tobudos",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef PCF8574_H\n#define PCF8574_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct pcf8574_dev {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint pcf8574_init(struct pcf8574_dev *dev, void *bus_handle);\nint pcf8574_read_port(struct pcf8574_dev *dev, uint8_t *port_byte);\n\n#endif /* PCF8574_H */",
+  "driver_source": "#include \"pcf8574.h\"\n#include \"stm32f1xx_hal_i2c.h\"\n#include <stdint.h>\n#include <stddef.h>\n\n#define PCF8574_I2C_ADDR 0x20\n#define PCF8574_TIMEOUT 100\n\nint pcf8574_init(struct pcf8574_dev *dev, void *bus_handle)\n{\n    if (!dev || !bus_handle) return -1;\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = PCF8574_I2C_ADDR;\n    return 0;\n}\n\nint pcf8574_read_port(struct pcf8574_dev *dev, uint8_t *port_byte)\n{\n    if (!dev || !dev->bus_handle || !port_byte) return -1;\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\n    uint16_t addr = (uint16_t)(dev->i2c_addr << 1);\n    HAL_StatusTypeDef ret = HAL_I2C_Master_Receive(hi2c, addr, port_byte, 1, PCF8574_TIMEOUT);\n    if (ret != HAL_OK) return -1;\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "pcf8574_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "p0",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p1",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p2",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p3",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p4",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p5",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p6",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p7",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "struct pcf8574_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x20",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "flow_read_write_1: direct read read_port"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "all_pins_high",
+        "mock_preload": {
+          "read_bytes": [
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "p0": 1,
+          "p1": 1,
+          "p2": 1,
+          "p3": 1,
+          "p4": 1,
+          "p5": 1,
+          "p6": 1,
+          "p7": 1
+        },
+        "derivation": "Port byte 0xFF: bit0=1 => p0=1, bit1=1 => p1=1, bit2=1 => p2=1, bit3=1 => p3=1, bit4=1 => p4=1, bit5=1 => p5=1, bit6=1 => p6=1, bit7=1 => p7=1."
+      },
+      {
+        "name": "all_pins_low",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "p0": 0,
+          "p1": 0,
+          "p2": 0,
+          "p3": 0,
+          "p4": 0,
+          "p5": 0,
+          "p6": 0,
+          "p7": 0
+        },
+        "derivation": "Port byte 0x00: all bits 0 => all channels 0."
+      },
+      {
+        "name": "mixed_pins",
+        "mock_preload": {
+          "read_bytes": [
+            "0x55"
+          ]
+        },
+        "expected_channels": {
+          "p0": 1,
+          "p1": 0,
+          "p2": 1,
+          "p3": 0,
+          "p4": 1,
+          "p5": 0,
+          "p6": 1,
+          "p7": 0
+        },
+        "derivation": "Port byte 0x55 = 0b01010101: bit0=1 => p0=1, bit1=0 => p1=0, bit2=1 => p2=1, bit3=0 => p3=0, bit4=1 => p4=1, bit5=0 => p5=0, bit6=1 => p6=1, bit7=0 => p7=0."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 3.436,
+  "prompt_chars": 44890,
+  "raw_response": "{\"driver_header\": \"#ifndef PCF8574_H\\n#define PCF8574_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct pcf8574_dev {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint pcf8574_init(struct pcf8574_dev *dev, void *bus_handle);\\nint pcf8574_read_port(struct pcf8574_dev *dev, uint8_t *port_byte);\\n\\n#endif /* PCF8574_H */\", \"driver_source\": \"#include \\\"pcf8574.h\\\"\\n#include \\\"stm32f1xx_hal_i2c.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n\\n#define PCF8574_I2C_ADDR 0x20\\n#define PCF8574_TIMEOUT 100\\n\\nint pcf8574_init(struct pcf8574_dev *dev, void *bus_handle)\\n{\\n    if (!dev || !bus_handle) return -1;\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = PCF8574_I2C_ADDR;\\n    return 0;\\n}\\n\\nint pcf8574_read_port(struct pcf8574_dev *dev, uint8_t *port_byte)\\n{\\n    if (!dev || !dev->bus_handle || !port_byte) return -1;\\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\\n    uint16_t addr = (uint16_t)(dev->i2c_addr << 1);\\n    HAL_StatusTypeDef ret = HAL_I2C_Master_Receive(hi2c, addr, port_byte, 1, PCF8574_TIMEOUT);\\n    if (ret != HAL_OK) return -1;\\n    return 0;\\n}\"}",
+  "plan_hash": "7c5efe35d7344eae"
+}

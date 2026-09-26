@@ -1,0 +1,160 @@
+{
+  "task_package_id": "cmsis_rtx_stm32f103rb__adxl345__spi1_polling",
+  "rtos": "cmsis-rtx",
+  "device": "adxl345",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/adxl345/cmsis-rtx",
+  "task_package": {
+    "package_id": "cmsis_rtx_stm32f103rb__adxl345__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/cmsis_rtx_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/cmsis_rtx_stm32f103rb_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/adxl345.json",
+    "reference_driver_root": "DriverGen/data/references/adxl345/cmsis-rtx",
+    "fixed_task_context": {},
+    "notes": [
+      "CMSIS-RTX supplies CMSIS-RTOS2 runtime primitives; STM32CubeF1 HAL supplies SPI access for this ADXL345 polling task.",
+      "The resolver rebuilds fixed_task_context from the referenced platform, connection, and device layers."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/cmsis-rtx",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1",
+      "DriverGen/data/raw/adxl345",
+      "DriverGen/data/references/adxl345/cmsis-rtx"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "cmsis_rtx_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "cmsis-rtx",
+    "rtos_bundle": "cmsis-rtx-stm32f103-project",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "CMSIS-RTX provides CMSIS-RTOS2 runtime primitives; STM32CubeF1 provides the peripheral HAL used by device drivers.",
+      "The raw CMSIS-RTX repository has no I2C/SPI/UART/GPIO framework, so generated STM32F103 drivers should bind to STM32CubeF1 HAL for bus access and use CMSIS-RTOS2 for delays/synchronisation."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/cmsis-rtx/Include/rtx_os.h",
+      "DriverGen/data/rtos/cmsis-rtx/Source",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "DriverGen/data/references/*/cmsis-rtx/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "cmsis_rtx_stm32f103rb_spi1_polling",
+    "platform_id": "cmsis_rtx_stm32f103rb",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "spi1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hspi1",
+    "backend": "STM32CubeF1 HAL SPI with CMSIS-RTOS2 timing",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "board_configured_gpio",
+      "cs_handling": "driver_or_board_specific"
+    },
+    "notes": [
+      "CMSIS-RTX supplies CMSIS-RTOS2 runtime primitives; STM32CubeF1 HAL supplies SPI bus access.",
+      "Reference drivers for ADXL345, MAX31855, and MCP3008 use an SPI_HandleTypeDef pointer and device-specific chip-select semantics."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/cmsis-rtx/Include/cmsis_os2.h",
+      "DriverGen/data/references/adxl345/cmsis-rtx/adxl345_ref.h",
+      "DriverGen/data/references/max31855/cmsis-rtx/max31855_ref.h",
+      "DriverGen/data/references/mcp3008/cmsis-rtx/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "adxl345",
+    "attachment_type": "spi_accelerometer",
+    "required_bus_type": "spi",
+    "address_mode": "chip-select",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCLK",
+        "MOSI",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode3",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 5000000
+      },
+      "notes": [
+        "Use 4-wire SPI with chip select; register address byte encodes read/write and multi-byte burst bits."
+      ]
+    },
+    "optional_attachment": {
+      "interrupt_pins": [
+        "INT1",
+        "INT2"
+      ],
+      "alternate_bus": "i2c"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "protocol_hints": {
+      "spi_proto": "register",
+      "register_read_mask": "0x80",
+      "multi_byte_mask": "0x40",
+      "address_mask": "0x3F",
+      "read_when_set": true,
+      "primary_channels": [
+        "accel_x",
+        "accel_y",
+        "accel_z"
+      ]
+    },
+    "notes": [
+      "Reference drivers use register SPI, verify DEVID, configure DATA_FORMAT/BW_RATE/POWER_CTL, then burst-read DATAX0..DATAZ1.",
+      "Interrupt pins are not required for the minimal polling driver."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/adxl345/adxl345.pdf",
+      "DriverGen/evaluation/oracle/data/adxl345/meta.json",
+      "DriverGen/data/references/adxl345/*/*_ref.c"
+    ]
+  }
+}

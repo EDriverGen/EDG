@@ -1,0 +1,893 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "dht22",
+  "rtos": "threadx",
+  "board": "stm32f103rb",
+  "bus_type": "gpio",
+  "connection": {
+    "connection_type": "gpio_timing",
+    "mode": "polling",
+    "bus_instance": "default_gpio_slot",
+    "bus_symbol": "port0/pin0 + port0/pin1",
+    "address_mode": null,
+    "backend": "board/BSP gpio ops + board microsecond timing hooks",
+    "helper_usage_patterns": []
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "HAL_Delay"
+    ],
+    "error_symbols": [
+      "HAL_StatusTypeDef",
+      "HAL_CF_STATUS_SUCCESS",
+      "NOR_SUCCESS",
+      "PCCARD_SUCCESS"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "HAL_GPIO_Init",
+      "HAL_GPIO_ReadPin",
+      "HAL_GPIO_WritePin"
+    ],
+    "bus_api_signatures": {
+      "HAL_GPIO_Init": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)",
+      "HAL_GPIO_ReadPin": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)",
+      "HAL_GPIO_WritePin": "void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)"
+    },
+    "bus_helper_types": [
+      "GPIO_PinState",
+      "GPIO_TypeDef",
+      "GPIO_InitTypeDef"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "stm32_mw_threadx_plus_board_bsp",
+    "integration_style": "rtos_core_plus_board_supplied_ops",
+    "bus_instance": "default_gpio_slot",
+    "bus_symbol": "port0/pin0 + port0/pin1",
+    "include_headers": [
+      "DLib_Threads.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_legacy.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cec.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_conf_template.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dac.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_eth.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_hcd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2s.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_irda.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_mmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nand.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_smartcard.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sram.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_adc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_fsmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_i2c.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_sdmmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_tim.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usart.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h",
+      "Legacy/stm32_hal_legacy.h",
+      "Legacy/stm32f1xx_hal_can_legacy.h",
+      "arm_ghs.h",
+      "common/inc/tx_api.h",
+      "common/inc/tx_block_pool.h",
+      "common/inc/tx_byte_pool.h",
+      "common/inc/tx_event_flags.h",
+      "common/inc/tx_initialize.h",
+      "common/inc/tx_mutex.h",
+      "common/inc/tx_queue.h",
+      "common/inc/tx_semaphore.h",
+      "common/inc/tx_thread.h",
+      "common/inc/tx_timer.h",
+      "common/inc/tx_trace.h",
+      "common/inc/tx_user_sample.h",
+      "common_modules/inc/txm_module.h",
+      "common_smp/inc/tx_user_sample.h",
+      "fx_api.h",
+      "intrinsics.h",
+      "ports/cortex_m3/ac5/inc/tx_port.h",
+      "ports/cortex_m3/ghs/inc/tx_el.h",
+      "ports/cortex_m3/ghs/inc/tx_ghs.h",
+      "ports_arch/ARMv7-M/threadx/ghs/inc/tx_el.h",
+      "ports_arch/ARMv7-M/threadx/ghs/inc/tx_ghs.h",
+      "ports_arch/ARMv7-M/threadx/ghs/inc/tx_port.h",
+      "ports_arch/ARMv7-M/threadx_modules/inc/tx_port.h",
+      "setjmp.h",
+      "signal.h",
+      "stddef.h",
+      "stdio.h",
+      "stdlib.h",
+      "stm32_assert.h",
+      "stm32f1xx.h",
+      "stm32f1xx_hal.h",
+      "stm32f1xx_hal_adc.h",
+      "stm32f1xx_hal_adc_ex.h",
+      "stm32f1xx_hal_can.h",
+      "stm32f1xx_hal_can_ex_legacy.h",
+      "stm32f1xx_hal_cec.h",
+      "stm32f1xx_hal_conf.h",
+      "stm32f1xx_hal_cortex.h",
+      "stm32f1xx_hal_crc.h",
+      "stm32f1xx_hal_dac.h",
+      "stm32f1xx_hal_dac_ex.h",
+      "stm32f1xx_hal_def.h",
+      "stm32f1xx_hal_dma.h",
+      "stm32f1xx_hal_dma_ex.h",
+      "stm32f1xx_hal_eth.h",
+      "stm32f1xx_hal_exti.h",
+      "stm32f1xx_hal_flash.h",
+      "stm32f1xx_hal_flash_ex.h",
+      "stm32f1xx_hal_gpio.h",
+      "stm32f1xx_hal_gpio_ex.h",
+      "stm32f1xx_hal_hcd.h",
+      "stm32f1xx_hal_i2c.h",
+      "stm32f1xx_hal_i2s.h",
+      "stm32f1xx_hal_irda.h",
+      "stm32f1xx_hal_iwdg.h",
+      "stm32f1xx_hal_mmc.h",
+      "stm32f1xx_hal_nand.h",
+      "stm32f1xx_hal_nor.h",
+      "stm32f1xx_hal_pccard.h",
+      "stm32f1xx_hal_pcd.h",
+      "stm32f1xx_hal_pcd_ex.h",
+      "stm32f1xx_hal_pwr.h",
+      "stm32f1xx_hal_rcc.h",
+      "stm32f1xx_hal_rcc_ex.h",
+      "stm32f1xx_hal_rtc.h",
+      "stm32f1xx_hal_rtc_ex.h",
+      "stm32f1xx_hal_sd.h",
+      "stm32f1xx_hal_smartcard.h",
+      "stm32f1xx_hal_spi.h",
+      "stm32f1xx_hal_sram.h",
+      "stm32f1xx_hal_tim.h",
+      "stm32f1xx_hal_tim_ex.h",
+      "stm32f1xx_hal_uart.h",
+      "stm32f1xx_hal_usart.h",
+      "stm32f1xx_hal_wwdg.h",
+      "stm32f1xx_ll_bus.h",
+      "stm32f1xx_ll_fsmc.h",
+      "stm32f1xx_ll_gpio.h",
+      "stm32f1xx_ll_sdmmc.h",
+      "stm32f1xx_ll_usb.h",
+      "string.h",
+      "time.h",
+      "tx_api.h",
+      "tx_el.h",
+      "tx_execution_profile.h",
+      "tx_ghs.h",
+      "tx_initialize.h",
+      "tx_mutex.h",
+      "tx_port.h",
+      "tx_thread.h",
+      "tx_timer.h",
+      "tx_trace.h",
+      "tx_user.h",
+      "txm_module.h",
+      "txm_module_filex.h",
+      "txm_module_guix.h",
+      "txm_module_netx.h",
+      "txm_module_netxduo.h",
+      "txm_module_port.h",
+      "txm_module_usbx.h",
+      "yvals.h"
+    ],
+    "fixed_attachment": {
+      "trig_pin": {
+        "port": 0,
+        "pin": 0
+      },
+      "echo_pin": {
+        "port": 0,
+        "pin": 1
+      }
+    },
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "default_gpio_slot",
+        "fields": {
+          "bus_instance": "default_gpio_slot",
+          "bus_symbol": "port0/pin0 + port0/pin1",
+          "backend": "board/BSP gpio ops + board microsecond timing hooks",
+          "mode": "polling"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "integration.pin_binding": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "trig_pin": {
+            "port": 0,
+            "pin": 0
+          },
+          "echo_pin": {
+            "port": 0,
+            "pin": 1
+          }
+        },
+        "fields": {
+          "fixed_attachment": {
+            "trig_pin": {
+              "port": 0,
+              "pin": 0
+            },
+            "echo_pin": {
+              "port": 0,
+              "pin": 1
+            }
+          },
+          "required_attachment": {
+            "signals": [
+              "data"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "dht22",
+    "required_bus_type": "gpio",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "data"
+      ],
+      "notes": [
+        "DHT22/AM2302 uses one bidirectional data line with host start pulse, sensor response pulse, then 40 MSB-first bits encoded by pulse width.",
+        "The data pin must be switchable between output drive and input sampling with microsecond-scale delay support."
+      ]
+    },
+    "optional_attachment": {
+      "pull_up": "external or board pull-up required by the single-wire bus"
+    }
+  },
+  "api_bindings": {
+    "gpio.configure": {
+      "symbol": "HAL_GPIO_Init",
+      "kind": "function",
+      "signature": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.key_types": {
+      "symbol": "GPIO_PinState",
+      "kind": "typedef",
+      "signature": "enum { GPIO_PIN_RESET = 0u, GPIO_PIN_SET }",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.read": {
+      "symbol": "HAL_GPIO_ReadPin",
+      "kind": "function",
+      "signature": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.write": {
+      "symbol": "HAL_GPIO_WritePin",
+      "kind": "function",
+      "signature": "void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_us": {
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "signature": "void HAL_Delay(uint32_t Delay)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.7,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.error_status": {
+      "symbol": "HAL_StatusTypeDef",
+      "kind": "typedef",
+      "signature": "enum { HAL_OK = 0x00U, HAL_ERROR = 0x01U, HAL_BUSY = 0x02U, HAL_TIMEOUT = 0x03U }",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.85,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "signature": "void HAL_Delay(uint32_t Delay)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "gpio.key_types": {
+      "slot_id": "gpio.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "GPIO_TypeDef",
+          "kind": "type_ref",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "HAL_GPIO_Init",
+          "signature": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "GPIO_InitTypeDef",
+          "kind": "type_ref",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "HAL_GPIO_Init",
+          "signature": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "GPIO_PinState",
+          "kind": "type_ref",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+          "source_slot": "gpio.read",
+          "source_symbol": "HAL_GPIO_ReadPin",
+          "signature": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "ranked_candidates",
+      "confidence": 0.613,
+      "symbols": [
+        {
+          "symbol": "HAL_CF_STATUS_SUCCESS",
+          "kind": "macro",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2:Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+          "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+          "file": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 13.0,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "sig-tok=2+4.0",
+            "root-role+3.0"
+          ]
+        },
+        {
+          "symbol": "NOR_SUCCESS",
+          "kind": "macro",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2:Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+          "file": "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 10.0,
+          "match_reasons": [
+            "name-tok=1+3.0",
+            "sig-tok=2+4.0",
+            "root-role+3.0"
+          ]
+        },
+        {
+          "symbol": "PCCARD_SUCCESS",
+          "kind": "macro",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2:Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+          "file": "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 10.0,
+          "match_reasons": [
+            "name-tok=1+3.0",
+            "sig-tok=2+4.0",
+            "root-role+3.0"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented as an evidence set; the downstream driver chooses the appropriate value per path."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "default_gpio_slot",
+      "fields": {
+        "bus_instance": "default_gpio_slot",
+        "bus_symbol": "port0/pin0 + port0/pin1",
+        "backend": "board/BSP gpio ops + board microsecond timing hooks",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "trig_pin": {
+          "port": 0,
+          "pin": 0
+        },
+        "echo_pin": {
+          "port": 0,
+          "pin": 1
+        }
+      },
+      "fields": {
+        "fixed_attachment": {
+          "trig_pin": {
+            "port": 0,
+            "pin": 0
+          },
+          "echo_pin": {
+            "port": 0,
+            "pin": 1
+          }
+        },
+        "required_attachment": {
+          "signals": [
+            "data"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "default_gpio_slot",
+      "fields": {
+        "bus_instance": "default_gpio_slot",
+        "bus_symbol": "port0/pin0 + port0/pin1",
+        "backend": "board/BSP gpio ops + board microsecond timing hooks",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "trig_pin": {
+          "port": 0,
+          "pin": 0
+        },
+        "echo_pin": {
+          "port": 0,
+          "pin": 1
+        }
+      },
+      "fields": {
+        "fixed_attachment": {
+          "trig_pin": {
+            "port": 0,
+            "pin": 0
+          },
+          "echo_pin": {
+            "port": 0,
+            "pin": 1
+          }
+        },
+        "required_attachment": {
+          "signals": [
+            "data"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "gpio.key_types": {
+      "slot_id": "gpio.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "GPIO_TypeDef",
+          "kind": "type_ref",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "HAL_GPIO_Init",
+          "signature": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "GPIO_InitTypeDef",
+          "kind": "type_ref",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "HAL_GPIO_Init",
+          "signature": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "GPIO_PinState",
+          "kind": "type_ref",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+          "source_slot": "gpio.read",
+          "source_symbol": "HAL_GPIO_ReadPin",
+          "signature": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "ranked_candidates",
+      "confidence": 0.613,
+      "symbols": [
+        {
+          "symbol": "HAL_CF_STATUS_SUCCESS",
+          "kind": "macro",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2:Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+          "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+          "file": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 13.0,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "sig-tok=2+4.0",
+            "root-role+3.0"
+          ]
+        },
+        {
+          "symbol": "NOR_SUCCESS",
+          "kind": "macro",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2:Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+          "file": "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 10.0,
+          "match_reasons": [
+            "name-tok=1+3.0",
+            "sig-tok=2+4.0",
+            "root-role+3.0"
+          ]
+        },
+        {
+          "symbol": "PCCARD_SUCCESS",
+          "kind": "macro",
+          "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2:Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+          "file": "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 10.0,
+          "match_reasons": [
+            "name-tok=1+3.0",
+            "sig-tok=2+4.0",
+            "root-role+3.0"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented as an evidence set; the downstream driver chooses the appropriate value per path."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "HAL_GPIO_Init",
+    "GPIO_PinState",
+    "HAL_GPIO_ReadPin",
+    "HAL_GPIO_WritePin",
+    "HAL_Delay",
+    "HAL_StatusTypeDef"
+  ],
+  "allowed_symbol_provenance": {
+    "HAL_GPIO_Init": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "GPIO_PinState": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_GPIO_ReadPin": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_GPIO_WritePin": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_Delay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_StatusTypeDef": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "dht22_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (1 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "dht22_read_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 8/8 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_GPIO_Init",
+      "slot_id": "gpio.configure"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "kind": "declaration",
+      "for_symbol": "GPIO_PinState",
+      "slot_id": "gpio.key_types"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_GPIO_ReadPin",
+      "slot_id": "gpio.read"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_GPIO_WritePin",
+      "slot_id": "gpio.write"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_Delay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_Delay",
+      "slot_id": "runtime.delay_us"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_StatusTypeDef",
+      "slot_id": "runtime.error_status"
+    }
+  ],
+  "requires_human": [
+    "integration.bus_instance_binding",
+    "integration.pin_binding",
+    "timing.measure_pulse_width"
+  ]
+}

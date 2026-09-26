@@ -1,0 +1,922 @@
+{
+  "device_id": "mcp23017",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [],
+    "description": "Client address uses fixed bits plus A2/A1/A0 hardware address pins; datasheet does not print the full 7-bit value in the provided text.",
+    "notes": "No specific 7-bit base address values were present in the structured content; exact address bytes depend on A2/A1/A0 pin state."
+  },
+  "register_map": {
+    "total_size_bytes": 22,
+    "addressing": "pointer",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "21 unique register addresses are listed in the provided tables, with IOCON duplicated at two addresses when BANK=0; register pointer supports byte and sequential modes via IOCON.SEQOP."
+  },
+  "read_channels": [
+    {
+      "id": "GPA0",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_0",
+      "description": "Port GPA pin 0 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPA1",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_1",
+      "description": "Port GPA pin 1 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPA2",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_2",
+      "description": "Port GPA pin 2 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPA3",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_3",
+      "description": "Port GPA pin 3 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPA4",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_4",
+      "description": "Port GPA pin 4 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPA5",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_5",
+      "description": "Port GPA pin 5 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPA6",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_6",
+      "description": "Port GPA pin 6 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPA7",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_a_7",
+      "description": "Port GPA pin 7 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB0",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_0",
+      "description": "Port GPB pin 0 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB1",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_1",
+      "description": "Port GPB pin 1 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB2",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_2",
+      "description": "Port GPB pin 2 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB3",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_3",
+      "description": "Port GPB pin 3 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB4",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_4",
+      "description": "Port GPB pin 4 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB5",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_5",
+      "description": "Port GPB pin 5 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB6",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_6",
+      "description": "Port GPB pin 6 — 1=HIGH, 0=LOW"
+    },
+    {
+      "id": "GPB7",
+      "raw_type": "bool",
+      "physical_unit": "bool",
+      "formula_id": "extract_bit_b_7",
+      "description": "Port GPB pin 7 — 1=HIGH, 0=LOW"
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "eval_class": "multi_channel",
+    "notes": "I2C register-pointer device. Write register address, then read/write data. 16 bool GPIO channels across 2 ports."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "read_gpio_porta",
+      "kind": "read",
+      "channels": [
+        "GPA0",
+        "GPA1",
+        "GPA2",
+        "GPA3",
+        "GPA4",
+        "GPA5",
+        "GPA6",
+        "GPA7"
+      ],
+      "description": "Read GPIOA register (0x12) — returns 8-bit port state",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "0x20",
+            "bytes": [
+              "0x12"
+            ],
+            "length": 1,
+            "notes": "Set register pointer to GPIOA (0x12)"
+          }
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "address": "0x20",
+            "length": 1,
+            "notes": "Read GPIOA: bit 0=GPA0, ... bit 7=GPA7"
+          }
+        }
+      ]
+    },
+    {
+      "flow_id": "read_gpio_portb",
+      "kind": "read",
+      "channels": [
+        "GPB0",
+        "GPB1",
+        "GPB2",
+        "GPB3",
+        "GPB4",
+        "GPB5",
+        "GPB6",
+        "GPB7"
+      ],
+      "description": "Read GPIOB register (0x13) — returns 8-bit port state",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "0x20",
+            "bytes": [
+              "0x13"
+            ],
+            "length": 1,
+            "notes": "Set register pointer to GPIOB (0x13)"
+          }
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "address": "0x20",
+            "length": 1,
+            "notes": "Read GPIOB: bit 0=GPB0, ... bit 7=GPB7"
+          }
+        }
+      ]
+    },
+    {
+      "flow_id": "init_gpio",
+      "kind": "init",
+      "description": "Initialize MCP23017: set IODIRA/B to 0x00 (all outputs)",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "0x20",
+            "bytes": [
+              "0x00",
+              "0x00"
+            ],
+            "length": 2,
+            "notes": "IODIRA=0x00: all GPA pins as outputs"
+          }
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "0x20",
+            "bytes": [
+              "0x01",
+              "0x00"
+            ],
+            "length": 2,
+            "notes": "IODIRB=0x00: all GPB pins as outputs"
+          }
+        }
+      ]
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 8,
+    "signed": false,
+    "notes": "Each port register returns 8 bits. Individual channel extraction via bit shift + mask."
+  },
+  "registers_or_commands": [
+    {
+      "name": "IODIRA",
+      "value": "0x00",
+      "access": "read/write",
+      "size": 1,
+      "description": "I/O direction register for Port A: 0=output, 1=input"
+    },
+    {
+      "name": "IODIRB",
+      "value": "0x01",
+      "access": "read/write",
+      "size": 1,
+      "description": "I/O direction register for Port B"
+    },
+    {
+      "name": "GPIOA",
+      "value": "0x12",
+      "access": "read/write",
+      "size": 1,
+      "description": "GPIO Port A register: reflects pin levels"
+    },
+    {
+      "name": "GPIOB",
+      "value": "0x13",
+      "access": "read/write",
+      "size": 1,
+      "description": "GPIO Port B register: reflects pin levels"
+    },
+    {
+      "name": "OLATA",
+      "value": "0x14",
+      "access": "read/write",
+      "size": 1,
+      "description": "Output latch register for Port A"
+    },
+    {
+      "name": "OLATB",
+      "value": "0x15",
+      "access": "read/write",
+      "size": 1,
+      "description": "Output latch register for Port B"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "IODIR",
+      "field": "IO7:IO0",
+      "bits": "7:0",
+      "description": "Direction bits; 1=input, 0=output."
+    },
+    {
+      "register": "IPOL",
+      "field": "IP7:IP0",
+      "bits": "7:0",
+      "description": "Input polarity inversion bits."
+    },
+    {
+      "register": "GPINTEN",
+      "field": "GPINT7:GPINT0",
+      "bits": "7:0",
+      "description": "Enable interrupt-on-change per pin."
+    },
+    {
+      "register": "DEFVAL",
+      "field": "DEF7:DEF0",
+      "bits": "7:0",
+      "description": "Default compare values used for interrupt-on-change from defaults."
+    },
+    {
+      "register": "INTCON",
+      "field": "IOC7:IOC0",
+      "bits": "7:0",
+      "description": "Select compare source: DEFVAL or previous pin value."
+    },
+    {
+      "register": "IOCON",
+      "field": "BANK",
+      "bits": "7",
+      "description": "Register bank mapping select."
+    },
+    {
+      "register": "IOCON",
+      "field": "MIRROR",
+      "bits": "6",
+      "description": "Mirror INT pins together or keep them separate."
+    },
+    {
+      "register": "IOCON",
+      "field": "SEQOP",
+      "bits": "5",
+      "description": "Sequential operation enable/disable; controls address pointer increment."
+    },
+    {
+      "register": "IOCON",
+      "field": "DISSLW",
+      "bits": "4",
+      "description": "SDA slew rate control."
+    },
+    {
+      "register": "IOCON",
+      "field": "HAEN",
+      "bits": "3",
+      "description": "Hardware address enable; MCP23S17 only."
+    },
+    {
+      "register": "IOCON",
+      "field": "ODR",
+      "bits": "2",
+      "description": "INT pin open-drain enable."
+    },
+    {
+      "register": "IOCON",
+      "field": "INTPOL",
+      "bits": "1",
+      "description": "INT pin polarity select."
+    },
+    {
+      "register": "GPPU",
+      "field": "PU7:PU0",
+      "bits": "7:0",
+      "description": "Weak pull-up enable bits."
+    },
+    {
+      "register": "INTF",
+      "field": "INT7:INT0",
+      "bits": "7:0",
+      "description": "Interrupt pending flags per pin."
+    },
+    {
+      "register": "INTCAP",
+      "field": "ICP7:ICP0",
+      "bits": "7:0",
+      "description": "Captured port levels at interrupt time."
+    },
+    {
+      "register": "GPIO",
+      "field": "GP7:GP0",
+      "bits": "7:0",
+      "description": "Port data bits."
+    },
+    {
+      "register": "OLAT",
+      "field": "OL7:OL0",
+      "bits": "7:0",
+      "description": "Output latch bits."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-on reset sets registers to default values and initializes the device state machine."
+    },
+    {
+      "transaction": null,
+      "notes": "RESET low pulse width must be at least 1 µs; after RESET high, the device is active with 0 ns typ. delay."
+    },
+    {
+      "transaction": null,
+      "notes": "I2C bus timing should satisfy START setup 4.7 µs and bus free time 4.7 µs at 100 kHz."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x12"
+        ],
+        "length": 1,
+        "pointer_target": "GPIOA",
+        "notes": "Read PORTA live value."
+      }
+    },
+    {
+      "transaction": null,
+      "notes": "If interrupt clearing is needed, reading GPIOA clears PORTA interrupt condition when IOC is enabled."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "i2c_max_clock",
+      "value": 1700000,
+      "unit": "Hz",
+      "condition": "Fast-mode plus"
+    },
+    {
+      "name": "power_on_reset",
+      "value": 10,
+      "unit": "ms",
+      "condition": "POR to ready"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "formula_id": "extract_bit_a_0",
+      "name": "Extract GPIOA0 from porta register",
+      "expression": "(raw_byte >> 0) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 0) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 0
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_a_1",
+      "name": "Extract GPIOA1 from porta register",
+      "expression": "(raw_byte >> 1) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 1) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 1
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_a_2",
+      "name": "Extract GPIOA2 from porta register",
+      "expression": "(raw_byte >> 2) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 2) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 2
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_a_3",
+      "name": "Extract GPIOA3 from porta register",
+      "expression": "(raw_byte >> 3) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 3) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 3
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_a_4",
+      "name": "Extract GPIOA4 from porta register",
+      "expression": "(raw_byte >> 4) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 4) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 4
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_a_5",
+      "name": "Extract GPIOA5 from porta register",
+      "expression": "(raw_byte >> 5) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 5) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 5
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_a_6",
+      "name": "Extract GPIOA6 from porta register",
+      "expression": "(raw_byte >> 6) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 6) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 6
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_a_7",
+      "name": "Extract GPIOA7 from porta register",
+      "expression": "(raw_byte >> 7) & 1",
+      "input_variables": [
+        "porta_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 7) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x12",
+            "bit": 7
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_0",
+      "name": "Extract GPIOB0 from portb register",
+      "expression": "(raw_byte >> 0) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 0) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 0
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_1",
+      "name": "Extract GPIOB1 from portb register",
+      "expression": "(raw_byte >> 1) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 1) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 1
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_2",
+      "name": "Extract GPIOB2 from portb register",
+      "expression": "(raw_byte >> 2) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 2) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 2
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_3",
+      "name": "Extract GPIOB3 from portb register",
+      "expression": "(raw_byte >> 3) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 3) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 3
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_4",
+      "name": "Extract GPIOB4 from portb register",
+      "expression": "(raw_byte >> 4) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 4) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 4
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_5",
+      "name": "Extract GPIOB5 from portb register",
+      "expression": "(raw_byte >> 5) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 5) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 5
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_6",
+      "name": "Extract GPIOB6 from portb register",
+      "expression": "(raw_byte >> 6) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 6) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 6
+          }
+        ],
+        "output": "bool"
+      }
+    },
+    {
+      "formula_id": "extract_bit_b_7",
+      "name": "Extract GPIOB7 from portb register",
+      "expression": "(raw_byte >> 7) & 1",
+      "input_variables": [
+        "portb_byte"
+      ],
+      "output_unit": "bool",
+      "range": [
+        0,
+        1
+      ],
+      "integer_approximation_expression": {
+        "expression": "(raw_byte >> 7) & 1",
+        "inputs": [
+          {
+            "name": "raw_byte",
+            "source_register": "0x13",
+            "bit": 7
+          }
+        ],
+        "output": "bool"
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "I2C NACK on address or data phase",
+      "detection": "If the controller receives NACK after the control byte, register address, or data byte, the transaction did not complete.",
+      "driver_action": "abort transaction and report -EIO"
+    },
+    {
+      "condition": "Read/write to reserved or invalid register address",
+      "detection": "If the driver programs an address outside the documented register map, the result is undefined and may not ACK or may access unintended state.",
+      "driver_action": "reject in driver and return -EINVAL"
+    },
+    {
+      "condition": "Interrupt expected but INT pin remains asserted after reading associated GPIO or INTCAP",
+      "detection": "If IOC is enabled and the associated GPIO/INTCAP read does not deassert the interrupt, the interrupt condition may still be pending on the other port or mirrored source.",
+      "driver_action": "retry associated port read once then surface error"
+    },
+    {
+      "condition": "RESET pulse too short",
+      "detection": "If RESET low is shorter than 1 us, the reset condition is not guaranteed.",
+      "driver_action": "abort initialization and report -EIO"
+    },
+    {
+      "condition": "GPIO/INTCAP read returns stale interrupt capture after another pending IOC",
+      "detection": "If GPIO is read before INTCAP while another IOC is pending, the datasheet warns INTCAP may update after the clear; captured data can be lost.",
+      "driver_action": "prefer INTCAP first; if lost capture is detected, report data corruption"
+    },
+    {
+      "condition": "Unexpected reserved bit value in IOCON readback",
+      "detection": "If bit 0 of IOCON reads as nonzero, it contradicts the documented unimplemented/read-as-0 behavior.",
+      "driver_action": "mask reserved bits and continue, or report -EIO if strict validation is enabled"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "reset",
+      "description": "Device held in reset while RESET is low or during POR.",
+      "entry_conditions": [
+        "RESET low or VDD below POR release threshold"
+      ],
+      "exit_conditions": [
+        "RESET high and POR released"
+      ],
+      "notes": "Output pins are high-impedance during RESET low."
+    },
+    {
+      "name": "active",
+      "description": "Normal operating state after POR/reset release.",
+      "entry_conditions": [
+        "RESET high",
+        "POR released"
+      ],
+      "exit_conditions": [
+        "RESET low"
+      ],
+      "notes": "Registers operate according to their POR values until configured."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "mcp23017",
+      "page": 15,
+      "snippet": "MCP23017 is a client I 2 C interface device that supports 7-bit client addressing, with the read/write bit filling out the control byte."
+    },
+    {
+      "source_id": "mcp23017",
+      "page": 13,
+      "snippet": "The I 2 C write operation includes the control byte and register address sequence"
+    },
+    {
+      "source_id": "mcp23017",
+      "page": 14,
+      "snippet": "followed by another control byte (including the Start condition and ACK) with the R/W bit set (R/W = 1 )."
+    },
+    {
+      "source_id": "mcp23017",
+      "page": 20,
+      "snippet": "If BANK = 0 , the A/B registers are paired."
+    }
+  ],
+  "requires_human": [
+    "The provided structured text does not include the actual 7-bit base address bits for MCP23017, only that A2/A1/A0 select the client address; please confirm the default address value if a concrete board-side address is needed.",
+    "The datasheet text in the provided extract does not show a full address table for the I2C client address bits, so per-pin address variants were not enumerated.",
+    "The read_sequence in the source content describes GPIOA as a representative read; if your driver needs mirrored or byte-mode continuous reads for both ports, confirm the desired BANK/SEQOP defaults."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

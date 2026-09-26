@@ -1,0 +1,1175 @@
+{
+  "device_id": "ssd1306",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x3C",
+        "description": "SA0 (D/C# pin) LOW",
+        "is_default": true
+      },
+      {
+        "address": "0x3D",
+        "description": "SA0 (D/C# pin) HIGH",
+        "is_default": false
+      }
+    ],
+    "default_address_resolution": {
+      "method": "first-fallback",
+      "confidence": "low",
+      "warning": "Multiple address entries without an explicit default; selecting the first as default. Confirm against the datasheet — see DEFAULT_KEYWORD_PATTERNS in drivergen.core.ir_canonicalize."
+    }
+  },
+  "register_map": {
+    "total_size_bytes": 1024,
+    "addressing": "pointer",
+    "auto_increment": true,
+    "page_size_bytes": 128,
+    "write_busy_ms": null,
+    "notes": "GDDRAM: 128x64 bits, organized as 8 pages of 128 bytes each. Column address auto-increments after each data write/read."
+  },
+  "read_channels": [
+    {
+      "id": "display",
+      "raw_type": "bytes",
+      "physical_unit": "pixel",
+      "read_call_hint": "write_then_read",
+      "flow_id": "read_display",
+      "source_bytes": [
+        "data_bytes"
+      ],
+      "source_signal": null,
+      "formula_id": null,
+      "notes": "Monochrome 128x64 pixel display. Data bytes written to GDDRAM define pixel states."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "I2C interface uses control byte with D/C# bit to distinguish command vs data. No separate register pointer; commands are sent directly."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "power_on",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [
+        "VDD stable"
+      ],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "RES#",
+          "value": "LOW",
+          "duration_us": 3,
+          "notes": "Pull RES# LOW for at least 3us (t1)"
+        },
+        {
+          "op": "set_signal",
+          "signal": "RES#",
+          "value": "HIGH",
+          "notes": "Release RES# HIGH"
+        },
+        {
+          "op": "delay",
+          "delay_ms": 0.003,
+          "notes": "Wait at least 3us (t2) after RES# HIGH before powering VCC"
+        },
+        {
+          "op": "set_signal",
+          "signal": "VCC",
+          "value": "ON",
+          "notes": "Power ON VCC"
+        },
+        {
+          "op": "delay",
+          "delay_ms": 100,
+          "notes": "Wait 100ms (tAF) after VCC stable before sending AFh"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xAF"
+            ],
+            "pointer_target": null,
+            "notes": "Send command AFh (Display ON)"
+          },
+          "notes": "Display ON command"
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Power ON sequence per datasheet Figure 8-16"
+    },
+    {
+      "flow_id": "power_off",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xAE"
+            ],
+            "pointer_target": null,
+            "notes": "Send command AEh (Display OFF)"
+          },
+          "notes": "Display OFF command"
+        },
+        {
+          "op": "set_signal",
+          "signal": "VCC",
+          "value": "OFF",
+          "notes": "Power OFF VCC"
+        },
+        {
+          "op": "delay",
+          "delay_ms": 100,
+          "notes": "Wait tOFF (typ 100ms) before powering OFF VDD"
+        },
+        {
+          "op": "set_signal",
+          "signal": "VDD",
+          "value": "OFF",
+          "notes": "Power OFF VDD"
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Power OFF sequence per datasheet Figure 8-17"
+    },
+    {
+      "flow_id": "init_display",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Power ON sequence completed"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xAE"
+            ],
+            "pointer_target": null,
+            "notes": "Display OFF"
+          },
+          "notes": "Ensure display is off during initialization"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xD5",
+              "0x80"
+            ],
+            "pointer_target": null,
+            "notes": "Set Display Clock Divide Ratio/Oscillator Frequency (reset value)"
+          },
+          "notes": "Default divide ratio=1, oscillator frequency=1000b"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xA8",
+              "0x3F"
+            ],
+            "pointer_target": null,
+            "notes": "Set Multiplex Ratio to 64 (N+1=64)"
+          },
+          "notes": "64 MUX for 64 rows"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xD3",
+              "0x00"
+            ],
+            "pointer_target": null,
+            "notes": "Set Display Offset to 0"
+          },
+          "notes": "No vertical shift"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x40"
+            ],
+            "pointer_target": null,
+            "notes": "Set Display Start Line to row 0"
+          },
+          "notes": "RAM row 0 mapped to COM0"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xA1"
+            ],
+            "pointer_target": null,
+            "notes": "Set Segment Re-map: column 127 mapped to SEG0"
+          },
+          "notes": "Horizontal flip"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xC8"
+            ],
+            "pointer_target": null,
+            "notes": "Set COM Output Scan Direction: remapped mode (scan from COM[N-1] to COM0)"
+          },
+          "notes": "Vertical flip"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xDA",
+              "0x12"
+            ],
+            "pointer_target": null,
+            "notes": "Set COM Pins Hardware Configuration: alternative pin configuration, disable left/right remap"
+          },
+          "notes": "Default alternative COM pin configuration"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x81",
+              "0x7F"
+            ],
+            "pointer_target": null,
+            "notes": "Set Contrast Control to 0x7F (reset value)"
+          },
+          "notes": "Medium contrast"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xA4"
+            ],
+            "pointer_target": null,
+            "notes": "Entire Display ON: resume to RAM content display"
+          },
+          "notes": "Normal display mode"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xA6"
+            ],
+            "pointer_target": null,
+            "notes": "Set Normal/Inverse Display: normal display"
+          },
+          "notes": "0 in RAM = OFF, 1 = ON"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x2E"
+            ],
+            "pointer_target": null,
+            "notes": "Deactivate scroll"
+          },
+          "notes": "Ensure scrolling is off"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x20",
+              "0x00"
+            ],
+            "pointer_target": null,
+            "notes": "Set Memory Addressing Mode: Horizontal Addressing Mode"
+          },
+          "notes": "Horizontal mode for sequential data write"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x21",
+              "0x00",
+              "0x7F"
+            ],
+            "pointer_target": null,
+            "notes": "Set Column Address: start=0, end=127"
+          },
+          "notes": "Full column range"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x22",
+              "0x00",
+              "0x07"
+            ],
+            "pointer_target": null,
+            "notes": "Set Page Address: start=0, end=7"
+          },
+          "notes": "All 8 pages"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xAF"
+            ],
+            "pointer_target": null,
+            "notes": "Display ON"
+          },
+          "notes": "Turn display on"
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Typical initialization sequence based on datasheet command descriptions."
+    },
+    {
+      "flow_id": "write_display_data",
+      "kind": "write",
+      "channels": [
+        "display"
+      ],
+      "preconditions": [
+        "Display initialized"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x21",
+              null,
+              null
+            ],
+            "pointer_target": null,
+            "notes": "Set column start and end addresses (runtime values)"
+          },
+          "notes": "Column address range for data write"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x22",
+              null,
+              null
+            ],
+            "pointer_target": null,
+            "notes": "Set page start and end addresses (runtime values)"
+          },
+          "notes": "Page address range for data write"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "DATA"
+            ],
+            "length": "DATA",
+            "pointer_target": null,
+            "notes": "Write data bytes to GDDRAM (D/C#=1). Column address auto-increments."
+          },
+          "notes": "Data bytes are written sequentially; length determined by application."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "display",
+          "byte_source": "data_bytes",
+          "source_signal": null,
+          "formula_id": null,
+          "unit": null,
+          "notes": "Data bytes written to GDDRAM define pixel states."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Write display data after setting column and page addresses."
+    },
+    {
+      "flow_id": "read_display",
+      "kind": "read",
+      "channels": [
+        "display"
+      ],
+      "preconditions": [
+        "Display initialized"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x21",
+              null,
+              null
+            ],
+            "pointer_target": null,
+            "notes": "Set column start and end addresses (runtime values)"
+          },
+          "notes": "Column address range for data read"
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x22",
+              null,
+              null
+            ],
+            "pointer_target": null,
+            "notes": "Set page start and end addresses (runtime values)"
+          },
+          "notes": "Page address range for data read"
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": "DATA",
+            "pointer_target": null,
+            "notes": "Read data bytes from GDDRAM (D/C#=1). A dummy read is required before first data read."
+          },
+          "notes": "Data bytes are read sequentially; length determined by application."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "display",
+          "byte_source": "data_bytes",
+          "source_signal": null,
+          "formula_id": null,
+          "unit": null,
+          "notes": "Data bytes read from GDDRAM."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Read display data. Note: I2C read mode requires control byte with D/C#=1 and R/W#=1."
+    },
+    {
+      "flow_id": "set_scroll",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Display initialized"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x26",
+              "0x00",
+              null,
+              null,
+              null
+            ],
+            "pointer_target": null,
+            "notes": "Continuous Horizontal Scroll Setup (right): 26h, dummy byte, start page, interval, end page"
+          },
+          "notes": "Use 27h for left scroll. Parameters: start page, interval (frame frequency), end page."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x2F"
+            ],
+            "pointer_target": null,
+            "notes": "Activate scroll"
+          },
+          "notes": "Start scrolling"
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Setup and activate continuous horizontal scroll. Parameters depend on application."
+    },
+    {
+      "flow_id": "deactivate_scroll",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x2E"
+            ],
+            "pointer_target": null,
+            "notes": "Deactivate scroll"
+          },
+          "notes": "After deactivation, RAM data needs to be rewritten."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Stop scrolling."
+    },
+    {
+      "flow_id": "write_command",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null
+            ],
+            "pointer_target": null,
+            "notes": "Send command byte via I2C: start, slave address + write, control byte (Co=0, D/C#=0), command byte, stop."
+          },
+          "notes": "Generic command write. The command byte is provided at runtime."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "I2C write command sequence per Figure 8-7."
+    },
+    {
+      "flow_id": "write_data",
+      "kind": "write",
+      "channels": [
+        "display"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "DATA"
+            ],
+            "length": "DATA",
+            "pointer_target": null,
+            "notes": "Send data byte(s) via I2C: start, slave address + write, control byte (Co=0, D/C#=1), data bytes, stop."
+          },
+          "notes": "Data bytes written to GDDRAM. Column address auto-increments."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "display",
+          "byte_source": "data_bytes",
+          "source_signal": null,
+          "formula_id": null,
+          "unit": null,
+          "notes": "Data bytes written to GDDRAM."
+        }
+      ],
+      "requires_human": false,
+      "notes": "I2C write data sequence per Figure 8-7."
+    }
+  ],
+  "raw_encoding": null,
+  "registers_or_commands": [
+    {
+      "name": "Status Register",
+      "value": null,
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Read status register via I2C (D/C#=0, R/W#=1). D[6]: 1 for display OFF, 0 for display ON."
+    },
+    {
+      "name": "GDDRAM",
+      "value": null,
+      "access": "rw",
+      "size_bits": 8192,
+      "description": "Graphic Display Data RAM, 128x64 bits, organized in 8 pages of 128 bytes each."
+    }
+  ],
+  "bitfields": [
+    {
+      "name": "Display ON/OFF status",
+      "register": "Status Register",
+      "bit_offset": 6,
+      "bit_width": 1,
+      "access": "ro",
+      "description": "1 for display OFF, 0 for display ON"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power ON sequence must be completed before initialization."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAE"
+        ],
+        "pointer_target": null,
+        "notes": "Display OFF"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xD5",
+          "0x80"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Clock Divide Ratio/Oscillator Frequency (reset value)"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA8",
+          "0x3F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Multiplex Ratio to 64"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xD3",
+          "0x00"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Offset to 0"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x40"
+        ],
+        "pointer_target": null,
+        "notes": "Set Display Start Line to row 0"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA1"
+        ],
+        "pointer_target": null,
+        "notes": "Set Segment Re-map: column 127 mapped to SEG0"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xC8"
+        ],
+        "pointer_target": null,
+        "notes": "Set COM Output Scan Direction: remapped mode"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xDA",
+          "0x12"
+        ],
+        "pointer_target": null,
+        "notes": "Set COM Pins Hardware Configuration: alternative pin config"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x81",
+          "0x7F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Contrast Control to 0x7F"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA4"
+        ],
+        "pointer_target": null,
+        "notes": "Entire Display ON: resume to RAM content"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xA6"
+        ],
+        "pointer_target": null,
+        "notes": "Set Normal Display"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x2E"
+        ],
+        "pointer_target": null,
+        "notes": "Deactivate scroll"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x20",
+          "0x00"
+        ],
+        "pointer_target": null,
+        "notes": "Set Memory Addressing Mode: Horizontal"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x21",
+          "0x00",
+          "0x7F"
+        ],
+        "pointer_target": null,
+        "notes": "Set Column Address: start=0, end=127"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x22",
+          "0x00",
+          "0x07"
+        ],
+        "pointer_target": null,
+        "notes": "Set Page Address: start=0, end=7"
+      }
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xAF"
+        ],
+        "pointer_target": null,
+        "notes": "Display ON"
+      }
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "To read GDDRAM, first set column and page addresses via commands 21h and 22h."
+    },
+    {
+      "transaction": {
+        "kind": "read",
+        "length": "DATA",
+        "pointer_target": null,
+        "notes": "Read data bytes from GDDRAM. A dummy read is required before first data read."
+      }
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "i2c_clock_cycle_time",
+      "value": 2.5,
+      "unit": "us",
+      "condition": "I2C interface",
+      "notes": "Clock Cycle Time (t cycle)"
+    },
+    {
+      "name": "i2c_start_hold_time",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "I2C start condition",
+      "notes": "Start condition Hold Time (t HSTART)"
+    },
+    {
+      "name": "i2c_data_hold_time_sda_out",
+      "value": 0,
+      "unit": "ns",
+      "condition": "I2C SDA OUT",
+      "notes": "Data Hold Time for SDA OUT (t HD)"
+    },
+    {
+      "name": "i2c_data_hold_time_sda_in",
+      "value": 300,
+      "unit": "ns",
+      "condition": "I2C SDA IN",
+      "notes": "Data Hold Time for SDA IN (t HD)"
+    },
+    {
+      "name": "i2c_data_setup_time",
+      "value": 100,
+      "unit": "ns",
+      "condition": "I2C",
+      "notes": "Data Setup Time (t SD)"
+    },
+    {
+      "name": "i2c_repeated_start_setup_time",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "I2C repeated start",
+      "notes": "Start condition Setup Time (t SSTART)"
+    },
+    {
+      "name": "i2c_stop_setup_time",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "I2C stop condition",
+      "notes": "Stop condition Setup Time (t SSTOP)"
+    },
+    {
+      "name": "i2c_rise_time",
+      "value": 300,
+      "unit": "ns",
+      "condition": "I2C data and clock",
+      "notes": "Rise Time (t R)"
+    },
+    {
+      "name": "i2c_fall_time",
+      "value": 300,
+      "unit": "ns",
+      "condition": "I2C data and clock",
+      "notes": "Fall Time (t F)"
+    },
+    {
+      "name": "i2c_idle_time",
+      "value": 1.3,
+      "unit": "us",
+      "condition": "I2C before new transmission",
+      "notes": "Idle Time (t IDLE)"
+    },
+    {
+      "name": "wait_after_reset_high",
+      "value": 3,
+      "unit": "us",
+      "condition": "Power ON sequence",
+      "notes": "Wait after RES# high before VCC ON (t2)"
+    },
+    {
+      "name": "display_on_delay",
+      "value": 100,
+      "unit": "ms",
+      "condition": "After AFh command",
+      "notes": "Delay after AFh for display ON (tAF)"
+    },
+    {
+      "name": "power_off_wait",
+      "value": 100,
+      "unit": "ms",
+      "condition": "Power OFF sequence",
+      "notes": "Wait after VCC OFF before VDD OFF (tOFF typical)"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "divide_ratio_from_d5",
+      "formula": "Divide ratio = A[3:0] + 1",
+      "integer_approximation_expression": {
+        "expression": "A_low + 1",
+        "inputs": [
+          {
+            "name": "A_low",
+            "byte_source": "command_byte:4",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Lower nibble of D5h command byte"
+          }
+        ],
+        "output": {
+          "name": "divide_ratio",
+          "unit": null
+        }
+      }
+    },
+    {
+      "name": "vcomh_deselect_level",
+      "formula": "VCOMH = 0.77 x VCC (default) or other values based on A[6:4]",
+      "integer_approximation_expression": null,
+      "notes": "Complex analog level; not expressible as integer arithmetic without VCC value."
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "i2c_nack",
+      "description": "I2C NACK during address or data transmission",
+      "detection": "I2C controller detects NACK",
+      "driver_action": "abort transaction and report error"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "display_off",
+      "description": "Display OFF (sleep mode). SEG/COM outputs high impedance.",
+      "command": "AEh"
+    },
+    {
+      "name": "display_on",
+      "description": "Display ON in normal mode.",
+      "command": "AFh"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "ssd1306",
+      "page": 19,
+      "snippet": "Either '0111100' or '0111101', can be selected as the slave address of SSD1306."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 19,
+      "snippet": "D/C# pin acts as SA0 for slave address selection."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 20,
+      "snippet": "The slave address is either 'b0111100' or 'b0111101' by changing the SA0 to LOW or HIGH"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "After VDD become stable, set RES# pin LOW (logic low) for at least 3us (t1) and then HIGH (logic high)."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "After VCC become stable, send command AFh for display ON. SEG/COM will be ON after 100ms (tAF)."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "Send command AEh for display OFF."
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 27,
+      "snippet": "Wait for tOFF. Power OFF VDD .(where Minimum tOFF=0ms, Typical tOFF=100ms)"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 28,
+      "snippet": "AEh, X[0]=0b:Display OFF (sleep mode) (RESET) AFh X[0]=1b:Display ON in normal mode"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 28,
+      "snippet": "81 A[7:0] ... Set Contrast Control"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 29,
+      "snippet": "26/27 ... Continuous Horizontal Scroll"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 30,
+      "snippet": "2E ... Deactivate scroll"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 30,
+      "snippet": "2F ... Activate scroll"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 31,
+      "snippet": "20 A[1:0] ... Set Memory Addressing Mode"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 31,
+      "snippet": "21 A[6:0] B[6:0] ... Set Column Address"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "22 A[2:0] B[2:0] ... Set Page Address"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "40~7F ... Set Display Start Line"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "A0/A1 ... Set Segment Re-map"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "A8 A[5:0] ... Set Multiplex Ratio"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "C0/C8 ... Set COM Output Scan Direction"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 32,
+      "snippet": "D3 A[5:0] ... Set Display Offset"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "DA A[5:4] ... Set COM Pins Hardware Configuration"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "D5 A[7:0] ... Set Display Clock Divide Ratio/Oscillator Frequency"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "D9 A[7:0] ... Set Pre-charge Period"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "DB A[6:4] ... Set VCOMH Deselect Level"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "E3 ... NOP"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 33,
+      "snippet": "Status Register Read ... D[6] : '1' for display OFF / '0' for display ON"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t cycle ... 2.5 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t HSTART ... 0.6 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t HD ... 0 ns (for SDA OUT)"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t HD ... 300 ns (for SDA IN)"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t SD ... 100 ns"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t SSTART ... 0.6 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t SSTOP ... 0.6 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t R ... 300 ns"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t F ... 300 ns"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 54,
+      "snippet": "t IDLE ... 1.3 us"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 25,
+      "snippet": "The GDDRAM is a bit mapped static RAM holding the bit pattern to be displayed. The size of the RAM is 128 x 64 bits"
+    },
+    {
+      "source_id": "ssd1306",
+      "page": 25,
+      "snippet": "the RAM is divided into eight pages, from PAGE0 to PAGE7"
+    }
+  ],
+  "requires_human": [
+    "I2C slave address selection via SA0 (D/C# pin) must be known from hardware design.",
+    "BS[2:0] pins must be set to 001 for I2C mode; this is a hardware configuration.",
+    "Power sequence timing (t1, t2, tAF, tOFF) may need adjustment based on power supply characteristics.",
+    "Contrast value (81h) and VCOMH level (DBh) may need tuning for specific OLED panel.",
+    "Memory addressing mode (20h) choice depends on application requirements.",
+    "Scrolling setup parameters (start/end page, interval) depend on desired visual effect."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

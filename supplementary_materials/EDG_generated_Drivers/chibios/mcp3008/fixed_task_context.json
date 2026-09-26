@@ -1,0 +1,264 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/chibios_generic_hal__mcp3008__spi1_polling/task_package.json",
+  "task_package": {
+    "package_id": "chibios_generic_hal__mcp3008__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/chibios_generic_hal.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/chibios_generic_hal_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mcp3008.json",
+    "reference_driver_root": "DriverGen/data/references/mcp3008/chibios",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "chibios_generic_hal",
+        "rtos": "chibios",
+        "rtos_bundle": "chibios",
+        "board": "STM32F103RB-NUCLEO64",
+        "board_alias": "chibios_f103rb",
+        "integration": "chibios_hal_driver_layer",
+        "integration_style": "chibios_hal_plus_rt_kernel",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "chibios_generic_hal_spi1_polling",
+        "platform_id": "chibios_generic_hal",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "SPID1",
+        "bus_instance_kind": "hal_driver_instance",
+        "bus_symbol": "SPID1",
+        "backend": "ChibiOS HAL SPI driver",
+        "address_mode": "chip-select",
+        "fixed_attachment": {
+          "chip_select": "GPIOA:4"
+        },
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "mcp3008",
+        "attachment_type": "spi_adc",
+        "required_bus_type": "spi",
+        "address_mode": "chip-select",
+        "addressing": null,
+        "required_attachment": {
+          "signals": [
+            "SCLK",
+            "MOSI",
+            "MISO",
+            "CS"
+          ],
+          "spi": {
+            "mode": "mode0",
+            "data_width_bits": 8,
+            "bit_order": "msb_first",
+            "max_hz": 3600000
+          },
+          "vref_mv": 3300,
+          "notes": [
+            "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+          ]
+        },
+        "optional_attachment": {
+          "differential_mode": "optional",
+          "vref_mv": "board_dependent"
+        },
+        "default_overrides": {
+          "bus_instance": null,
+          "irq": "absent",
+          "dma": "absent",
+          "reset_gpio": null,
+          "power_gpio": null,
+          "vref_mv": 3300
+        },
+        "protocol_hints": {
+          "spi_proto": "command",
+          "command_bytes": 3,
+          "single_ended_default": true,
+          "channels": [
+            "ch0",
+            "ch1",
+            "ch2",
+            "ch3",
+            "ch4",
+            "ch5",
+            "ch6",
+            "ch7"
+          ],
+          "result_bits": 10,
+          "result_formula": "((rx[1] & 0x03) << 8) | rx[2]"
+        }
+      }
+    },
+    "notes": [
+      "Manual task package completing the fixed-context RTOS/device matrix; fixed_task_context is resolved from the referenced layers."
+    ],
+    "evidence": [
+      "DriverGen/data/references/mcp3008/chibios",
+      "DriverGen/data/raw/mcp3008"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "chibios_generic_hal",
+    "board": "STM32F103RB-NUCLEO64",
+    "board_alias": "chibios_f103rb",
+    "rtos": "chibios",
+    "rtos_bundle": "chibios",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "I2CD1"
+        ],
+        "spi": [
+          "SPID1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "SD2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "optional"
+    },
+    "notes": [
+      "This platform targets the ChibiOS STM32F103RB-NUCLEO64 demo family while using the portable HAL I2C driver and PAL GPIO layer.",
+      "I2C uses I2CDriver instances (I2CD1, I2CD2) with i2cMasterTransmitTimeout/i2cMasterReceiveTimeout.",
+      "SPI uses SPIDriver instances such as SPID1 with spiStart/spiExchange, and UART polling uses SerialDriver SD2.",
+      "GPIO uses the PAL layer with port+pad or line-level access."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_i2c.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_spi.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_serial.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_pal.h",
+      "DriverGen/data/rtos/chibios/testhal/STM32/STM32F1xx/I2C/main.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "chibios_generic_hal_spi1_polling",
+    "platform_id": "chibios_generic_hal",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "SPID1",
+    "bus_instance_kind": "hal_driver_instance",
+    "bus_symbol": "SPID1",
+    "backend": "ChibiOS HAL SPI driver",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "GPIOA:4"
+    },
+    "notes": [
+      "Default ChibiOS SPI polling binding uses SPID1 with SPIConfig-provided chip-select."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_spi.h",
+      "DriverGen/data/references/adxl345/chibios/adxl345_sample_ref.c",
+      "DriverGen/data/references/mcp3008/chibios/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "mcp3008",
+    "attachment_type": "spi_adc",
+    "required_bus_type": "spi",
+    "address_mode": "chip-select",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCLK",
+        "MOSI",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 3600000
+      },
+      "vref_mv": 3300,
+      "notes": [
+        "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+      ]
+    },
+    "optional_attachment": {
+      "differential_mode": "optional",
+      "vref_mv": "board_dependent"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null,
+      "vref_mv": 3300
+    },
+    "protocol_hints": {
+      "spi_proto": "command",
+      "command_bytes": 3,
+      "single_ended_default": true,
+      "channels": [
+        "ch0",
+        "ch1",
+        "ch2",
+        "ch3",
+        "ch4",
+        "ch5",
+        "ch6",
+        "ch7"
+      ],
+      "result_bits": 10,
+      "result_formula": "((rx[1] & 0x03) << 8) | rx[2]"
+    },
+    "notes": [
+      "Reference drivers expose raw 10-bit ADC counts and optional millivolt conversion using vref_mv.",
+      "The main generated path should preserve all 8 single-ended channels; differential mode is optional."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mcp3008/MCP3008.pdf",
+      "DriverGen/evaluation/oracle/data/mcp3008/meta.json",
+      "DriverGen/data/references/mcp3008/*/*_ref.c"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "chibios_generic_hal__mcp3008__spi1_polling",
+    "rtos": "chibios",
+    "rtos_bundle": "chibios",
+    "board": "STM32F103RB-NUCLEO64",
+    "board_alias": "chibios_f103rb",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "spi",
+    "bus_instance": "SPID1",
+    "bus_instance_kind": "hal_driver_instance",
+    "bus_symbol": "SPID1",
+    "bus_backend": "ChibiOS HAL SPI driver",
+    "address_mode": "chip-select",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {
+      "chip_select": "GPIOA:4"
+    },
+    "device_attachment_context_id": "mcp3008",
+    "device_addressing": null
+  }
+}

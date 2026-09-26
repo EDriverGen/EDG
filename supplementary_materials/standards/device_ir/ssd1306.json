@@ -1,0 +1,746 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "ssd1306",
+  "scope": "I2C initialization, window configuration, and display writes for a 128x64 OLED with external VCC under the supplied Rev1.0 manual; scrolling and readback claims are checked separately.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "interface_pins",
+        "command_control",
+        "data_control",
+        "scroll",
+        "i2c_read_claim"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "horizontal_mode",
+        "column_range",
+        "page_range",
+        "contrast",
+        "mux",
+        "start_offset",
+        "segment_remap",
+        "com_scan",
+        "com_pins",
+        "status_bit"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "increment",
+        "horizontal_wrap",
+        "write_window",
+        "power_off",
+        "scroll_stop"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "power_reset",
+        "display_on_wait",
+        "clock_max",
+        "wire_1",
+        "wire_2",
+        "wire_3",
+        "wire_4",
+        "wire_5",
+        "wire_6",
+        "wire_7",
+        "wire_8",
+        "wire_9"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "control_encoding",
+        "geometry",
+        "pixel_mapping",
+        "normal_pixels",
+        "clock",
+        "vcomh"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "display_switch",
+        "ram_display",
+        "off_output_electrical"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "SSD1306.pdf",
+      "pages": 59,
+      "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "SA0 low/high selects 7-bit address 3C/3D.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interface_pins",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "I2C corresponds to BS2:BS0=010.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "command_control",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "An I2C command stream starts with a control byte having Co=0 and D/C=0.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "data_control",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "An I2C data stream uses Co=0 and D/C=1, followed by data written to GDDRAM.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "control_encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "The control byte has Co at bit7, D/C at bit6, and zeros elsewhere; 00 selects continuous commands and 40 continuous data.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "geometry",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "GDDRAM has 128x64 bits=1024 bytes, arranged as 8 pages of 128 bytes.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pixel_mapping",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Each GDDRAM byte represents 8 vertical pixels in one column, with D0 at the top and D7 at the bottom when remapping is disabled.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "horizontal_mode",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "20h followed by 00h selects horizontal addressing.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "column_range",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "21h is followed by the starting and ending column addresses, each in 0..127.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 35,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "page_range",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "22h is followed by the starting and ending page addresses, each in 0..7.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "increment",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "The column address increments after every data byte written.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 35,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "horizontal_wrap",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "In horizontal mode, reaching the column end wraps to the start and advances the page; reaching both ends wraps to the window start.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 35,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "write_window",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Set the column/page range first, then send pixel data in order.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 35,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "display_switch",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "AEh turns the display off; AFh turns it on.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "contrast",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "81h is followed by an 8-bit contrast value; the default is 7F.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "ram_display",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "A4h resumes display from RAM.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "normal_pixels",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "A6h selects normal display: RAM bit1 is on and bit0 is off.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mux",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "A8h followed by 3Fh selects 64-row multiplexing.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "start_offset",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "40h sets start line 0; D3h followed by 00 sets offset 0.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "segment_remap",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "A1h maps column 127 to SEG0.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "com_scan",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "C8h scans from COM[N-1] to COM0.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "com_pins",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "DAh followed by 12h selects alternate COM and disables left/right remapping.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clock",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "The low 4 bits of D5h plus 1 determine the clock divide ratio; default 80h selects divide-by-1 and frequency setting 8.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_reset",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "After VDD stabilizes, hold RESET low for at least 3 us before powering VCC.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "display_on_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "After VCC stabilizes and AFh is sent, SEG/COM activate after approximately 100 ms.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_off",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "After AEh, turn off VCC, then wait tOFF before turning off VDD; tOFF has minimum 0 and typical 100 ms.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clock_max",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The I2C clock period is at least 2.5 us, equivalent to a maximum of 400 kHz.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_1",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "START hold>=0.6us",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_2",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SDA OUT hold>=0ns",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_3",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SDA IN hold>=300ns",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_4",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "data setup>=100ns",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_5",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "repeated START setup>=0.6us",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_6",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "STOP setup>=0.6us",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_7",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "rise<=300ns",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_8",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "fall<=300ns",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_9",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "idle>=1.3us",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 54,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scroll",
+      "component": "B",
+      "category": "protocol",
+      "required": false,
+      "expected": "In this manual revision, 26/27 are followed by dummy/start/interval/end; 2F activates scrolling.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scroll_stop",
+      "component": "O",
+      "category": "procedure",
+      "required": false,
+      "expected": "After 2E stops scrolling, RAM must be rewritten.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "vcomh",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "The default VCOMH is 0.77 times VCC.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "status_bit",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Status-register bit6=1 indicates display off; 0 indicates on.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "i2c_read_claim",
+      "component": "B",
+      "category": "protocol",
+      "required": false,
+      "expected": "Whether the current I2C mode supports GDDRAM or status reads, and whether a dummy read is required.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "Page 19 generally describes R/W=1 as read, page 20 defines only writes, and page 33 restricts data reads to parallel mode while stating serial mode always writes. The IR's I2C read sequence lacks explicit support; this manual inconsistency remains unconfirmed."
+    },
+    {
+      "id": "off_output_electrical",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "SEG/COM output levels or high-impedance state when the display is off.",
+      "evidence": [
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        },
+        {
+          "document": "SSD1306.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/ssd1306/SSD1306.pages.json"
+        }
+      ],
+      "source_note": "Page 14 states SEG is at VSS and COM is high impedance; page 37 states both are high impedance. The IR follows the latter and is not classified as wrong."
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 18.478,
+  "plan_summary": {
+    "device_id": "tmp105",
+    "rtos_id": "rtthread",
+    "eval_class": "single_channel",
+    "bus_kind": "i2c",
+    "plan_hash": "12bd699da69efb29",
+    "api_contract_keys": [
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c",
+      "primary_raw_type",
+      "primary_raw_unit",
+      "read_call"
+    ],
+    "stimuli_count": 1,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 18.424
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 1,
+    "summary": "1 stim; 1 L1/L2",
+    "stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "derivation `(400 * 125) // 2` -> 25000 == expected 25000.0",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 2,
+    "missing_count": 0,
+    "llm_extras_count": 1,
+    "merged_count": 2,
+    "summary": "2/2 mechanical covered; 1 LLM extras",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x48",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_temperature: write",
+          "source": "operation_flows[1].steps[0]"
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x48",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_temperature: write pointer 0x00"
+        },
+        "reason": "prefix overlap: [('0x00',)] ∈ mechanical [('0x00',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x48",
+          "write_prefix_any_of": [],
+          "note": "read_temperature: direct read read",
+          "source": "operation_flows[1].steps[2]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x48",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_temperature: write pointer 0x00"
+        },
+        "reason": "mechanical is read-any; LLM adds specific prefix",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "read_any": true,
+        "note": "read_temperature: direct read"
+      }
+    ],
+    "merged": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature: write pointer 0x00"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "read_any": true,
+        "note": "read_temperature: direct read"
+      }
+    ]
+  }
+}

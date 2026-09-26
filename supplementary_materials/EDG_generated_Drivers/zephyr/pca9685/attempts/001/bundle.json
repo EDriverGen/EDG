@@ -1,0 +1,111 @@
+{
+  "device_id": "pca9685",
+  "rtos_id": "zephyr",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef PCA9685_H\n#define PCA9685_H\n\n#include <stdint.h>\n#include <zephyr/drivers/i2c.h>\n\n#define PCA9685_I2C_ADDR 0x40\n#define PCA9685_ALL_CALL_ADDR 0x70\n\n#include <zephyr/device.h>\nstruct device;\n\nstruct pca9685_dev {\n    const struct device *bus;\n    uint8_t i2c_addr;\n};\n\nint pca9685_init(struct pca9685_dev *dev);\nint pca9685_read_pwm_channel(struct pca9685_dev *dev, uint8_t channel, uint16_t *out);\n\n#endif /* PCA9685_H */\n",
+  "driver_source": "#include \"pca9685.h\"\n#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>\n#include <errno.h>\n#include <stdint.h>\n\n#include <zephyr/sys/byteorder.h>\n#define PCA9685_REG_MODE1 0x00\n#define PCA9685_REG_MODE2 0x01\n#define PCA9685_REG_LED0_OFF_L 0x08\n#define PCA9685_REG_PRE_SCALE 0xFE\n\nint pca9685_init(struct pca9685_dev *dev)\n{\n    dev->i2c_addr = PCA9685_I2C_ADDR;\n    return 0;\n}\n\nint pca9685_read_pwm_channel(struct pca9685_dev *dev, uint8_t channel, uint16_t *out)\n{\n    if (channel > 1) {\n        return -EINVAL;\n    }\n\n    uint8_t reg = PCA9685_REG_LED0_OFF_L + (channel * 4);\n    uint8_t tx_buf[1] = { reg };\n    uint8_t rx_buf[4];\n    int ret;\n\n    struct i2c_msg msgs[2];\n\n    msgs[0].buf = tx_buf;\n    msgs[0].len = 1;\n    msgs[0].flags = I2C_MSG_WRITE;\n\n    msgs[1].buf = rx_buf;\n    msgs[1].len = 4;\n    msgs[1].flags = I2C_MSG_READ | I2C_MSG_STOP;\n\n    ret = i2c_transfer(dev->bus, msgs, 2, PCA9685_ALL_CALL_ADDR);\n    if (ret < 0) {\n        return -EIO;\n    }\n\n    uint8_t off_l = rx_buf[0];\n    uint8_t off_h = rx_buf[1];\n    uint16_t duty = ((uint16_t)(off_h & 0x0F) * 256) + off_l;\n    *out = duty;\n\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "pca9685_init(&g_eval_dev, g_eval_dev->bus)",
+    "channels": [
+      {
+        "id": "led0",
+        "call": "pca9685_read_pwm_channel(&g_eval_dev, 0, &led0)",
+        "out_arg": "led0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "led1",
+        "call": "pca9685_read_pwm_channel(&g_eval_dev, 1, &led1)",
+        "out_arg": "led1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ],
+    "dev_struct_type": "struct pca9685_dev",
+    "init_extra_setup_c": "g_eval_dev.bus = device_get_binding(bus_name);\nif (g_eval_dev.bus == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"zephyr.h\"\n#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x71",
+        "write_prefix_any_of": [
+          [
+            "0x08"
+          ]
+        ],
+        "note": "read_pwm_channel: write pointer to LED0_OFF_L"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x71",
+        "read_any": true,
+        "note": "read_pwm_channel: direct read 4 bytes"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "pwm_50_percent",
+        "mock_preload": {
+          "0x08": [
+            "0x00",
+            "0x08",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "led0": 2048,
+          "led1": 0
+        },
+        "derivation": "led0: off_l=0x00, off_h=0x08 => ((0x08 & 0x0F)*256)+0x00 = 2048; led1: off_l=0x00, off_h=0x00 => 0"
+      },
+      {
+        "name": "pwm_0_percent",
+        "mock_preload": {
+          "0x08": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "led0": 0,
+          "led1": 0
+        },
+        "derivation": "all bytes zero => both channels 0"
+      },
+      {
+        "name": "pwm_full_scale",
+        "mock_preload": {
+          "0x08": [
+            "0xFF",
+            "0x0F",
+            "0xFF",
+            "0x0F"
+          ]
+        },
+        "expected_channels": {
+          "led0": 4095,
+          "led1": 4095
+        },
+        "derivation": "led0: off_l=0xFF, off_h=0x0F => ((0x0F & 0x0F)*256)+0xFF = 4095; led1 same"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.937,
+  "prompt_chars": 37473,
+  "raw_response": "{\"driver_header\": \"#ifndef PCA9685_H\\n#define PCA9685_H\\n\\n#include <stdint.h>\\n#include <zephyr/drivers/i2c.h>\\n\\n#define PCA9685_I2C_ADDR 0x40\\n#define PCA9685_ALL_CALL_ADDR 0x70\\n\\nstruct pca9685_dev {\\n    const struct device *bus;\\n    uint8_t i2c_addr;\\n};\\n\\nint pca9685_init(struct pca9685_dev *dev);\\nint pca9685_read_pwm_channel(struct pca9685_dev *dev, uint8_t channel, uint16_t *out);\\n\\n#endif /* PCA9685_H */\", \"driver_source\": \"#include \\\"pca9685.h\\\"\\n#include <zephyr/kernel.h>\\n#include <zephyr/drivers/i2c.h>\\n#include <errno.h>\\n#include <stdint.h>\\n\\n#define PCA9685_REG_MODE1 0x00\\n#define PCA9685_REG_MODE2 0x01\\n#define PCA9685_REG_LED0_OFF_L 0x08\\n#define PCA9685_REG_PRE_SCALE 0xFE\\n\\nint pca9685_init(struct pca9685_dev *dev)\\n{\\n    dev->i2c_addr = PCA9685_I2C_ADDR;\\n    return 0;\\n}\\n\\nint pca9685_read_pwm_channel(struct pca9685_dev *dev, uint8_t channel, uint16_t *out)\\n{\\n    if (channel > 1) {\\n        return -EINVAL;\\n    }\\n\\n    uint8_t reg = PCA9685_REG_LED0_OFF_L + (channel * 4);\\n    uint8_t tx_buf[1] = { reg };\\n    uint8_t rx_buf[4];\\n    int ret;\\n\\n    struct i2c_msg msgs[2];\\n\\n    msgs[0].buf = tx_buf;\\n    msgs[0].len = 1;\\n    msgs[0].flags = I2C_MSG_WRITE;\\n\\n    msgs[1].buf = rx_buf;\\n    msgs[1].len = 4;\\n    msgs[1].flags = I2C_MSG_READ | I2C_MSG_STOP;\\n\\n    ret = i2c_transfer(dev->bus, msgs, 2, PCA9685_ALL_CALL_ADDR);\\n    if (ret < 0) {\\n        return -EIO;\\n    }\\n\\n    uint8_t off_l = rx_buf[0];\\n    uint8_t off_h = rx_buf[1];\\n    uint16_t duty = ((uint16_t)(off_h & 0x0F) * 256) + off_l;\\n    *out = duty;\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "85e8a102653cb56d"
+}

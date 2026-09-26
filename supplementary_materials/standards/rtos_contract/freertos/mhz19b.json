@@ -1,0 +1,108 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "freertos__mhz19b",
+  "device_id": "mhz19b",
+  "rtos_id": "freertos",
+  "bus": "uart_polling",
+  "scope": "freertos fixed task for mhz19b, bus=uart_polling, board=stm32f103rb; contract describes only APIs needed by the copied reference driver and task fixed binding.",
+  "api_contract": {
+    "headers": [
+      "stm32f1xx_hal.h",
+      "FreeRTOS.h",
+      "task.h"
+    ],
+    "types": {
+      "bus_or_device": "UART_HandleTypeDef",
+      "status": "HAL_StatusTypeDef"
+    },
+    "task_binding": {
+      "bus": "uart_polling",
+      "instance": "uart2",
+      "symbol": "huart2",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL UART with FreeRTOS timing"
+    },
+    "operations": [
+      {
+        "name": "HAL_UART_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "HAL_UART_Receive",
+        "signature": "HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "hcsr04_delay_us",
+        "signature": "void hcsr04_delay_us(uint32_t us)",
+        "semantics": "Board-supplied microsecond delay hook."
+      },
+      {
+        "name": "hcsr04_get_us_tick",
+        "signature": "uint32_t hcsr04_get_us_tick(void)",
+        "semantics": "Board-supplied monotonic microsecond tick source."
+      }
+    ],
+    "preconditions": "Caller provides the task-configured and initialized peripheral handle; helper APIs have the RTOS/HAL context documented in the baseline pack."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Retain the UART_HandleTypeDef handle bound to the fixed UART2/huart2 instance, configured for 9600 baud, 8 data bits, no parity, and 1 stop bit; the caller configures the bus and passes it in.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/reference_drivers/mhz19b_ref.h",
+          "line_start": 25,
+          "line_end": 25
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/reference_drivers/mhz19b_ref.h",
+          "line_start": 28,
+          "line_end": 28
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/task_requirements.json",
+          "line_start": 33,
+          "line_end": 39
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/task_requirements.json",
+          "line_start": 83,
+          "line_end": 88
+        }
+      ]
+    },
+    {
+      "id": "bus_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain the polling operations actually used by the reference implementation: HAL_UART_Transmit, HAL_UART_Receive. Parameter and return semantics must support the uart_polling access required by mhz19b.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 30,
+          "line_end": 30
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 50,
+          "line_end": 50
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 31,
+          "line_end": 31
+        }
+      ]
+    }
+  ]
+}

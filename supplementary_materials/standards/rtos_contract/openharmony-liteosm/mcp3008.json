@@ -1,0 +1,193 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "openharmony-liteosm__mcp3008",
+  "device_id": "mcp3008",
+  "rtos_id": "openharmony-liteosm",
+  "bus": "spi",
+  "scope": "mcp3008/openharmony-liteosm: fixed task bus is spi. Contract is limited to RTOS/BSP headers, handles, called setup/transfer APIs, fixed controller binding and driver-level waits.",
+  "api_contract": {
+    "bus": "spi",
+    "required_headers": [
+      "hdf_base.h",
+      "spi_if.h",
+      "stdint.h"
+    ],
+    "api_functions": {
+      "SpiOpen": {
+        "signature": "DevHandle SpiOpen(const struct SpiDevInfo *info);",
+        "header": "data/rtos/openharmony-liteosm-project/drivers_hdf_core/framework/include/platform/spi_if.h",
+        "pack_line": 189,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+            "line": 12
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/openharmony-liteosm/spi/pack.md",
+          "line_start": 189,
+          "line_end": 189
+        }
+      },
+      "SpiClose": {
+        "signature": "void SpiClose(DevHandle handle);",
+        "header": "data/rtos/openharmony-liteosm-project/drivers_hdf_core/framework/include/platform/spi_if.h",
+        "pack_line": 198,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+            "line": 20
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/openharmony-liteosm/spi/pack.md",
+          "line_start": 198,
+          "line_end": 198
+        }
+      },
+      "SpiTransfer": {
+        "signature": "int32_t SpiTransfer(DevHandle handle, struct SpiMsg *msgs, uint32_t count);",
+        "header": "data/rtos/openharmony-liteosm-project/drivers_hdf_core/framework/include/platform/spi_if.h",
+        "pack_line": 211,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+            "line": 31
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/openharmony-liteosm/spi/pack.md",
+          "line_start": 211,
+          "line_end": 211
+        }
+      }
+    },
+    "unresolved_reference_symbols": [
+      {
+        "symbol": "HDF",
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "fixed_task_binding": {
+      "binding_id": "openharmony_liteosm_generic_hdf_spi0_polling",
+      "platform_id": "openharmony_liteosm_generic_hdf",
+      "connection_type": "spi",
+      "mode": "polling",
+      "bus_instance": "0",
+      "bus_instance_kind": "hdf_spi_bus",
+      "bus_symbol": "bus 0, cs 0",
+      "backend": "OpenHarmony HDF SPI interface",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "bus": 0,
+        "chip_select": 0
+      },
+      "notes": [
+        "Default LiteOS-M HDF SPI binding follows references that open bus 0 chip-select 0."
+      ],
+      "evidence": [
+        "DriverGen/data/rtos/openharmony-liteosm-project/drivers_hdf_core/framework/include/platform/spi_if.h",
+        "DriverGen/data/references/adxl345/openharmony/adxl345_sample_ref.c",
+        "DriverGen/data/references/mcp3008/openharmony/mcp3008_ref.h"
+      ]
+    },
+    "setup_symbols": [
+      "SpiOpen",
+      "SpiClose"
+    ],
+    "transfer_symbols": [
+      "SpiTransfer"
+    ],
+    "timing_symbols": [],
+    "transaction_symbols": [
+      "SpiTransfer"
+    ],
+    "strict_v2_semantic_check": {
+      "fixed_bus": "0",
+      "api_declarations_checked": {
+        "SpiOpen": "DevHandle SpiOpen(const struct SpiDevInfo *info);",
+        "SpiClose": "void SpiClose(DevHandle handle);",
+        "SpiTransfer": "int32_t SpiTransfer(DevHandle handle, struct SpiMsg *msgs, uint32_t count);"
+      },
+      "operation_sets": {
+        "setup": [
+          "SpiOpen",
+          "SpiClose"
+        ],
+        "transfer": [
+          "SpiTransfer"
+        ],
+        "timing": []
+      },
+      "rule": "C requires the full task-required operation/directions, useful parameter types, return or time-unit semantics and the fixed bus binding. Reviewed complete generated bindings, context and notes."
+    }
+  },
+  "facts": [
+    {
+      "id": "header_types",
+      "category": "headers/types/handle",
+      "requirement": "Expose usable reference-driver RTOS/BSP include headers and the required bus handle/type context. Header set: spi_if.h. Bus type references in declared API signatures: struct SpiDevInfo, struct SpiMsg",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.h",
+          "line_start": 8,
+          "line_end": 8
+        }
+      ]
+    },
+    {
+      "id": "fixed_bus_binding",
+      "category": "task binding",
+      "requirement": "Preserve the task-fixed spi controller/instance and mode from connection_binding_context; a device alternate bus is irrelevant. Binding: {\"address_mode\": \"chip-select\", \"backend\": \"OpenHarmony HDF SPI interface\", \"binding_id\": \"openharmony_liteosm_generic_hdf_spi0_polling\", \"bus_instance\": \"0\", \"bus_instance_kind\": \"hdf_spi_bus\", \"bus_symbol\": \"bus 0, cs 0\", \"connection_type\": \"spi\", \"evidence\": [\"DriverGen/data/rtos/openharmony-liteosm-project/drivers_hdf_core/framework/include/platform/spi_if.h\", \"DriverGen/data/references/adxl345/openharmony/adxl345_sample_ref.c\", \"DriverGen/data/references/mcp3008/openharmony/mcp3008_ref.h\"], \"fixed_attachment\": {\"bus\": 0, \"chip_select\": 0}, \"mode\": \"polling\", \"notes\": [\"Default LiteOS-M HDF SPI binding follows references that open bus 0 chip-select 0.\"], \"platform_id\": \"openharmony_liteosm_generic_hdf\"}",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/task_requirements.json",
+          "line_start": 10,
+          "line_end": 40
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_api",
+      "category": "setup/configuration/acquisition",
+      "requirement": "Expose required reference setup/acquire APIs with source signature, types and documented return/sequence: SpiOpen, SpiClose. Supplied declarations are in api_contract.api_functions; caller-supplied fixed bus may provide controller initialization. Required reference operations/signatures: SpiOpen: DevHandle SpiOpen(const struct SpiDevInfo *info);; SpiClose: void SpiClose(DevHandle handle);.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+          "line_start": 20,
+          "line_end": 20
+        }
+      ]
+    },
+    {
+      "id": "bus_transfer_api",
+      "category": "transfer/return",
+      "requirement": "Expose the fixed-task spi transfer/GPIO calls and signatures used by this reference, including direction, buffer/count, timeout and return semantics when supplied: SpiTransfer. Required reference operations/signatures: SpiTransfer: int32_t SpiTransfer(DevHandle handle, struct SpiMsg *msgs, uint32_t count);.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/openharmony-liteosm__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+          "line_start": 31,
+          "line_end": 31
+        }
+      ]
+    }
+  ]
+}

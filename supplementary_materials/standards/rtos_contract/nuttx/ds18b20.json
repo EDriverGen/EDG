@@ -1,0 +1,370 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "nuttx__ds18b20",
+  "device_id": "ds18b20",
+  "rtos_id": "nuttx",
+  "bus": "gpio_timing",
+  "scope": "nuttx gpio_timing RTOS/BSP API minimum contract for nuttx__ds18b20; based on copied reference implementation and configuration, existing gpio_timing API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "nuttx",
+    "bus": "gpio_timing",
+    "task_binding": {
+      "connection_type": "gpio_timing",
+      "mode": "polling",
+      "bus_instance": "default_gpio_slot",
+      "bus_symbol": "/dev/gpio0,/dev/gpio1",
+      "backend": "NuttX GPIO character driver",
+      "address_mode": null
+    },
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "ds18b20_ref.h",
+      "nuttx.h",
+      "fcntl.h",
+      "unistd.h",
+      "sys/ioctl.h",
+      "nuttx/ioexpander/gpio.h",
+      "nuttx/config.h",
+      "stdint.h",
+      "stdio.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "close",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 91,
+            "text": "{ if(dev&&dev->fd>=0){close(dev->fd);dev->fd=-1;} }"
+          }
+        ],
+        "available_declaration": "int close(int fd);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 20,
+          "line_end": 23
+        }
+      },
+      {
+        "symbol": "ioctl",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 38,
+            "text": "{ bool v=val?true:false; ioctl(fd,GPIOC_WRITE,(unsigned long)&v); }"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 41,
+            "text": "{ bool v; ioctl(fd,GPIOC_READ,(unsigned long)&v); return v?1:0; }"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 46,
+            "text": "ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)pt);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 52,
+            "text": "ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)pt);"
+          }
+        ],
+        "available_declaration": "int ioctl(int fd, int req, ...);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 31,
+          "line_end": 31
+        }
+      },
+      {
+        "symbol": "open",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 85,
+            "text": "dev->fd=open(gpio_path,O_RDWR);"
+          }
+        ],
+        "available_declaration": "int open(FAR const char *path, int oflag, ...);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/nuttx/gpio_timing/pack.md",
+          "line_start": 556,
+          "line_end": 557
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/nuttx/gpio_timing/pack.md",
+    "reference_api_calls": [
+      {
+        "symbol": "ioctl",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 38,
+            "text": "{ bool v=val?true:false; ioctl(fd,GPIOC_WRITE,(unsigned long)&v); }"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 41,
+            "text": "{ bool v; ioctl(fd,GPIOC_READ,(unsigned long)&v); return v?1:0; }"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 46,
+            "text": "ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)pt);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 52,
+            "text": "ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)pt);"
+          }
+        ],
+        "available_declaration": "int ioctl(int fd, int req, ...);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 31,
+          "line_end": 31
+        }
+      },
+      {
+        "symbol": "usleep",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 58,
+            "text": "gpio_set_output(fd); gpio_set(fd,0); usleep(480);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 59,
+            "text": "gpio_set_input(fd); usleep(60);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 60,
+            "text": "present=(gpio_get(fd)==0)?0:-1; usleep(420);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 66,
+            "text": "if(bit){usleep(5);gpio_set_input(fd);usleep(55);}"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 67,
+            "text": "else{usleep(60);gpio_set_input(fd);usleep(5);}"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 71,
+            "text": "{ int v; gpio_set_output(fd); gpio_set(fd,0); usleep(2);"
+          }
+        ],
+        "available_declaration": "int usleep(unsigned int usec);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 50,
+          "line_end": 52
+        }
+      },
+      {
+        "symbol": "open",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 85,
+            "text": "dev->fd=open(gpio_path,O_RDWR);"
+          }
+        ],
+        "declaration_resolution": "call observed in reference; no exact prototype found in inspected harness headers"
+      },
+      {
+        "symbol": "close",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+            "line": 91,
+            "text": "{ if(dev&&dev->fd>=0){close(dev->fd);dev->fd=-1;} }"
+          }
+        ],
+        "available_declaration": "int close(int fd);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 20,
+          "line_end": 23
+        }
+      }
+    ],
+    "driver_to_board_boundary": "NuttX reference driver receives a struct i2c_master_s / spi_dev_s handle or a path/fd as shown in its copied source; board initialization, lower-half binding and POSIX wrappers are distinct from the device-driver call interface."
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's gpio_timing connection context (default_gpio_slot; NuttX GPIO character driver) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 85,
+          "line_end": 85
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: open.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 85,
+          "line_end": 85
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: ioctl. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 38,
+          "line_end": 38
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 41,
+          "line_end": 41
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 52,
+          "line_end": 52
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 38,
+          "line_end": 38
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 41,
+          "line_end": 41
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 52,
+          "line_end": 52
+        }
+      ]
+    },
+    {
+      "id": "gpio_or_chip_select",
+      "category": "gpio",
+      "requirement": "Provide the GPIO input/output and chip-select control used by the reference; for GPIO-timed tasks this includes switching the pin direction/level and sampling input as needed.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 38,
+          "line_end": 38
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 41,
+          "line_end": 41
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 52,
+          "line_end": 52
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.h",
+          "line_start": 7,
+          "line_end": 26
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "The reference calls usleep(unsigned int usec), so preserve a blocking wait at microsecond input granularity; a millisecond scheduler wait is equivalent where the requested delay is an integral millisecond and the conversion is explicit.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 58,
+          "line_end": 58
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 59,
+          "line_end": 59
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__ds18b20/inputs/reference_drivers/ds18b20_ref.c",
+          "line_start": 66,
+          "line_end": 66
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/nuttx/unistd.h",
+          "line_start": 4,
+          "line_end": 4
+        }
+      ]
+    }
+  ]
+}

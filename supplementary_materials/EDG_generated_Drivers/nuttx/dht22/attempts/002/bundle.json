@@ -1,0 +1,114 @@
+{
+  "device_id": "dht22",
+  "rtos_id": "nuttx",
+  "eval_class": "multi_channel",
+  "bus_kind": "gpio",
+  "driver_header": "#ifndef DHT22_H\n#define DHT22_H\n\n#include <stdint.h>\n\nstruct dht22_dev {\n    int trig_fd;\n    int echo_fd;\n};\n\nint dht22_init(struct dht22_dev *dev, const char *trig_path, const char *echo_path);\nint dht22_read_sensor(struct dht22_dev *dev, int32_t *humidity_val, int32_t *temp_val);\n\n#endif /* DHT22_H */",
+  "driver_source": "#include \"dht22.h\"\n#include \"arch.h\"\n#include <errno.h>\n#include <nuttx/ioexpander/gpio.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <unistd.h>\n\n#define DHT22_POWERUP_DELAY_MS 1000\n#define DHT22_START_SIGNAL_LOW_MS 18\n#define DHT22_RESPONSE_WAIT_US 30\n#define DHT22_RESPONSE_LOW_US 80\n#define DHT22_RESPONSE_HIGH_US 80\n#define DHT22_BIT_LOW_US 50\n#define DHT22_BIT_0_HIGH_US 27\n#define DHT22_BIT_1_HIGH_US 70\n#define DHT22_TIMEOUT_US 200\n\nstatic int gpio_set_output(int fd, bool value)\n{\n    return ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)0);\n}\n\nstatic int gpio_set_input(int fd)\n{\n    return ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)1);\n}\n\nstatic int gpio_write(int fd, bool value)\n{\n    return ioctl(fd, GPIOC_WRITE, (unsigned long)value);\n}\n\nstatic int gpio_read(int fd, bool *value)\n{\n    return ioctl(fd, GPIOC_READ, (unsigned long)value);\n}\n\nstatic int wait_for_level(int fd, bool target, int timeout_us)\n{\n    bool level;\n    int elapsed = 0;\n    while (elapsed < timeout_us) {\n        if (gpio_read(fd, &level) < 0)\n            return -EIO;\n        if (level == target)\n            return 0;\n        up_mdelay(0);\n        elapsed += 1;\n    }\n    return -ETIMEDOUT;\n}\n\nstatic int measure_pulse_high(int fd, int timeout_us)\n{\n    bool level;\n    int width = 0;\n    while (width < timeout_us) {\n        if (gpio_read(fd, &level) < 0)\n            return -EIO;\n        if (!level)\n            break;\n        width++;\n        up_mdelay(0);\n    }\n    return width;\n}\n\nint dht22_init(struct dht22_dev *dev, const char *trig_path, const char *echo_path)\n{\n    dev->trig_fd = open(trig_path, O_RDWR);\n    if (dev->trig_fd < 0)\n        return -errno;\n    dev->echo_fd = open(echo_path, O_RDWR);\n    if (dev->echo_fd < 0) {\n        close(dev->trig_fd);\n        return -errno;\n    }\n    up_mdelay(DHT22_POWERUP_DELAY_MS);\n    return 0;\n}\n\nint dht22_read_sensor(struct dht22_dev *dev, int32_t *humidity_val, int32_t *temp_val)\n{\n    int ret;\n    bool level;\n    uint8_t data[5];\n    int bit_idx;\n    int byte_idx;\n    int pulse_width;\n    \n    /* Send start signal: pull low for at least 18ms */\n    ret = gpio_set_output(dev->trig_fd, 0);\n    if (ret < 0) return ret;\n    ret = gpio_write(dev->trig_fd, 0);\n    if (ret < 0) return ret;\n    up_mdelay(DHT22_START_SIGNAL_LOW_MS);\n    \n    /* Release line and switch to input */\n    ret = gpio_set_input(dev->echo_fd);\n    if (ret < 0) return ret;\n    \n    /* Wait for sensor response: pull low */\n    ret = wait_for_level(dev->echo_fd, false, DHT22_RESPONSE_WAIT_US + 100);\n    if (ret < 0) return -EIO;\n    \n    /* Wait for response low duration */\n    ret = wait_for_level(dev->echo_fd, true, DHT22_RESPONSE_LOW_US + 100);\n    if (ret < 0) return -EIO;\n    \n    /* Wait for response high duration */\n    ret = wait_for_level(dev->echo_fd, false, DHT22_RESPONSE_HIGH_US + 100);\n    if (ret < 0) return -EIO;\n    \n    /* Read 40 bits */\n    for (bit_idx = 0; bit_idx < 40; bit_idx++) {\n        /* Wait for bit low */\n        ret = wait_for_level(dev->echo_fd, true, DHT22_BIT_LOW_US + 100);\n        if (ret < 0) return -EIO;\n        /* Wait for bit high */\n        ret = wait_for_level(dev->echo_fd, false, DHT22_BIT_1_HIGH_US + 100);\n        if (ret < 0) return -EIO;\n        /* Measure high pulse width */\n        pulse_width = measure_pulse_high(dev->echo_fd, DHT22_BIT_1_HIGH_US + 50);\n        if (pulse_width < 0) return pulse_width;\n        \n        byte_idx = bit_idx / 8;\n        data[byte_idx] <<= 1;\n        if (pulse_width > (DHT22_BIT_0_HIGH_US + DHT22_BIT_1_HIGH_US) / 2)\n            data[byte_idx] |= 1;\n    }\n    \n    /* Verify checksum */\n    uint8_t sum = data[0] + data[1] + data[2] + data[3];\n    if (sum != data[4])\n        return -EIO;\n    \n    /* Convert humidity: integral_RH * 100 + decimal_RH */\n    uint16_t integral_rh = (uint16_t)data[0];\n    uint16_t decimal_rh = (uint16_t)data[1];\n    *humidity_val = (int32_t)(integral_rh * 100 + decimal_rh);\n    \n    /* Convert temperature: integral_T * 100 + decimal_T */\n    uint16_t integral_t = (uint16_t)data[2];\n    uint16_t decimal_t = (uint16_t)data[3];\n    *temp_val = (int32_t)(integral_t * 100 + decimal_t);\n    \n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "dht22_init(&g_eval_dev, \"/dev/gpio0\", \"/dev/gpio1\")",
+    "channels": [
+      {
+        "id": "humidity",
+        "call": "dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)",
+        "out_arg": "humidity_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_percent_rh"
+      },
+      {
+        "id": "temp",
+        "call": "dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)",
+        "out_arg": "temp_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct dht22_dev",
+    "init_extra_setup_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "gpio1",
+        "note": "init: configure pin mode (output then input)"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "read_cycle: pulse / 1-wire handshake then sample bits"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_gpio_byte_frame_1",
+        "mock_preload": {
+          "payload": [
+            "0x02",
+            "0x58",
+            "0x02",
+            "0x7D",
+            "0xD9"
+          ]
+        },
+        "channel_preload_bytes": {
+          "humidity": [
+            "0x02",
+            "0x58"
+          ],
+          "temp": [
+            "0x02",
+            "0x7D"
+          ]
+        },
+        "expected_channels": {
+          "humidity": 60600,
+          "temp": 64337
+        },
+        "raw_tolerance": 0,
+        "derivation": "humidity: ((0x02 << 8) | 0x58) = 600; ((0x02 << 8) | 0x58) * 100 + ((0x02 << 8) | 0x58) = 60600; temp: ((0x02 << 8) | 0x7D) = 637; ((0x02 << 8) | 0x7D) * 100 + ((0x02 << 8) | 0x7D) = 64337; checksum: sum payload data bytes modulo 256 = 0xD9"
+      },
+      {
+        "name": "mechanical_gpio_byte_frame_2",
+        "mock_preload": {
+          "payload": [
+            "0x01",
+            "0xC7",
+            "0x01",
+            "0xEC",
+            "0xB5"
+          ]
+        },
+        "channel_preload_bytes": {
+          "humidity": [
+            "0x01",
+            "0xC7"
+          ],
+          "temp": [
+            "0x01",
+            "0xEC"
+          ]
+        },
+        "expected_channels": {
+          "humidity": 45955,
+          "temp": 49692
+        },
+        "raw_tolerance": 0,
+        "derivation": "humidity: ((0x01 << 8) | 0xC7) = 455; ((0x01 << 8) | 0xC7) * 100 + ((0x01 << 8) | 0xC7) = 45955; temp: ((0x01 << 8) | 0xEC) = 492; ((0x01 << 8) | 0xEC) * 100 + ((0x01 << 8) | 0xEC) = 49692; checksum: sum payload data bytes modulo 256 = 0xB5"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.gpio_byte_frame+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_gpio_pulse",
+  "slave_kind": "gpio_pulse_injector",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.921,
+  "prompt_chars": 40655,
+  "raw_response": "{\"driver_header\": \"#ifndef DHT22_H\\n#define DHT22_H\\n\\n#include <stdint.h>\\n\\nstruct dht22_dev {\\n    int trig_fd;\\n    int echo_fd;\\n};\\n\\nint dht22_init(struct dht22_dev *dev, const char *trig_path, const char *echo_path);\\nint dht22_read_sensor(struct dht22_dev *dev, int32_t *humidity_val, int32_t *temp_val);\\n\\n#endif /* DHT22_H */\", \"driver_source\": \"#include \\\"dht22.h\\\"\\n#include \\\"arch.h\\\"\\n#include <errno.h>\\n#include <nuttx/ioexpander/gpio.h>\\n#include <stdbool.h>\\n#include <stdint.h>\\n#include <unistd.h>\\n#include <sys/ioctl.h>\\n#include <fcntl.h>\\n\\n#define DHT22_POWERUP_DELAY_MS 1000\\n#define DHT22_START_SIGNAL_LOW_MS 18\\n#define DHT22_RESPONSE_WAIT_US 30\\n#define DHT22_RESPONSE_LOW_US 80\\n#define DHT22_RESPONSE_HIGH_US 80\\n#define DHT22_BIT_LOW_US 50\\n#define DHT22_BIT_0_HIGH_US 27\\n#define DHT22_BIT_1_HIGH_US 70\\n#define DHT22_TIMEOUT_US 200\\n\\nstatic int gpio_set_output(int fd, bool value)\\n{\\n    return ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)0);\\n}\\n\\nstatic int gpio_set_input(int fd)\\n{\\n    return ioctl(fd, GPIOC_SETPINTYPE, (unsigned long)1);\\n}\\n\\nstatic int gpio_write(int fd, bool value)\\n{\\n    return ioctl(fd, GPIOC_WRITE, (unsigned long)value);\\n}\\n\\nstatic int gpio_read(int fd, bool *value)\\n{\\n    return ioctl(fd, GPIOC_READ, (unsigned long)value);\\n}\\n\\nstatic int wait_for_level(int fd, bool target, int timeout_us)\\n{\\n    bool level;\\n    int elapsed = 0;\\n    while (elapsed < timeout_us) {\\n        if (gpio_read(fd, &level) < 0)\\n            return -EIO;\\n        if (level == target)\\n            return 0;\\n        up_mdelay(0);\\n        elapsed += 1;\\n    }\\n    return -ETIMEDOUT;\\n}\\n\\nstatic int measure_pulse_high(int fd, int timeout_us)\\n{\\n    bool level;\\n    int width = 0;\\n    while (width < timeout_us) {\\n        if (gpio_read(fd, &level) < 0)\\n            return -EIO;\\n        if (!level)\\n            break;\\n        width++;\\n        up_mdelay(0);\\n    }\\n    return width;\\n}\\n\\nint dht22_init(struct dht22_dev *dev, const char *trig_path, const char *echo_path)\\n{\\n    dev->trig_fd = open(trig_path, O_RDWR);\\n    if (dev->trig_fd < 0)\\n        return -errno;\\n    dev->echo_fd = open(echo_path, O_RDWR);\\n    if (dev->echo_fd < 0) {\\n        close(dev->trig_fd);\\n        return -errno;\\n    }\\n    up_mdelay(DHT22_POWERUP_DELAY_MS);\\n    return 0;\\n}\\n\\nint dht22_read_sensor(struct dht22_dev *dev, int32_t *humidity_val, int32_t *temp_val)\\n{\\n    int ret;\\n    bool level;\\n    uint8_t data[5];\\n    int bit_idx;\\n    int byte_idx;\\n    int pulse_width;\\n    \\n    /* Send start signal: pull low for at least 18ms */\\n    ret = gpio_set_output(dev->trig_fd, 0);\\n    if (ret < 0) return ret;\\n    ret = gpio_write(dev->trig_fd, 0);\\n    if (ret < 0) return ret;\\n    up_mdelay(DHT22_START_SIGNAL_LOW_MS);\\n    \\n    /* Release line and switch to input */\\n    ret = gpio_set_input(dev->echo_fd);\\n    if (ret < 0) return ret;\\n    \\n    /* Wait for sensor response: pull low */\\n    ret = wait_for_level(dev->echo_fd, false, DHT22_RESPONSE_WAIT_US + 100);\\n    if (ret < 0) return -EIO;\\n    \\n    /* Wait for response low duration */\\n    ret = wait_for_level(dev->echo_fd, true, DHT22_RESPONSE_LOW_US + 100);\\n    if (ret < 0) return -EIO;\\n    \\n    /* Wait for response high duration */\\n    ret = wait_for_level(dev->echo_fd, false, DHT22_RESPONSE_HIGH_US + 100);\\n    if (ret < 0) return -EIO;\\n    \\n    /* Read 40 bits */\\n    for (bit_idx = 0; bit_idx < 40; bit_idx++) {\\n        /* Wait for bit low */\\n        ret = wait_for_level(dev->echo_fd, true, DHT22_BIT_LOW_US + 100);\\n        if (ret < 0) return -EIO;\\n        /* Wait for bit high */\\n        ret = wait_for_level(dev->echo_fd, false, DHT22_BIT_1_HIGH_US + 100);\\n        if (ret < 0) return -EIO;\\n        /* Measure high pulse width */\\n        pulse_width = measure_pulse_high(dev->echo_fd, DHT22_BIT_1_HIGH_US + 50);\\n        if (pulse_width < 0) return pulse_width;\\n        \\n        byte_idx = bit_idx / 8;\\n        data[byte_idx] <<= 1;\\n        if (pulse_width > (DHT22_BIT_0_HIGH_US + DHT22_BIT_1_HIGH_US) / 2)\\n            data[byte_idx] |= 1;\\n    }\\n    \\n    /* Verify checksum */\\n    uint8_t sum = data[0] + data[1] + data[2] + data[3];\\n    if (sum != data[4])\\n        return -EIO;\\n    \\n    /* Convert humidity: integral_RH * 100 + decimal_RH */\\n    uint16_t integral_rh = (uint16_t)data[0];\\n    uint16_t decimal_rh = (uint16_t)data[1];\\n    *humidity_val = (int32_t)(integral_rh * 100 + decimal_rh);\\n    \\n    /* Convert temperature: integral_T * 100 + decimal_T */\\n    uint16_t integral_t = (uint16_t)data[2];\\n    uint16_t decimal_t = (uint16_t)data[3];\\n    *temp_val = (int32_t)(integral_t * 100 + decimal_t);\\n    \\n    return 0;\\n}\"}",
+  "plan_hash": "32d13f6185a1b00f"
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "freertos__ssd1306",
+  "device_id": "ssd1306",
+  "rtos_id": "freertos",
+  "bus": "i2c",
+  "scope": "freertos fixed task for ssd1306, bus=i2c, board=stm32f103rb; contract describes only APIs needed by the copied reference driver and task fixed binding.",
+  "api_contract": {
+    "headers": [
+      "stm32f1xx_hal.h",
+      "FreeRTOS.h",
+      "task.h"
+    ],
+    "types": {
+      "bus_or_device": "I2C_HandleTypeDef",
+      "status": "HAL_StatusTypeDef"
+    },
+    "task_binding": {
+      "bus": "i2c",
+      "instance": "i2c1",
+      "symbol": "hi2c1",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL I2C"
+    },
+    "operations": [
+      {
+        "name": "HAL_I2C_Master_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "HAL_I2C_Master_Receive",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "HAL_I2C_Mem_Read",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *, uint16_t, uint16_t, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      }
+    ],
+    "preconditions": "Caller provides the task-configured and initialized peripheral handle; helper APIs have the RTOS/HAL context documented in the baseline pack."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Retain the fixed FreeRTOS task's i2c handle/device type and prebound context; the caller supplies the bus instance configured according to task_requirements.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.h",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.h",
+          "line_start": 21,
+          "line_end": 21
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/task_requirements.json",
+          "line_start": 33,
+          "line_end": 39
+        }
+      ]
+    },
+    {
+      "id": "bus_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain the polling operations actually used by the reference implementation: HAL_I2C_Master_Transmit, HAL_I2C_Master_Receive, HAL_I2C_Mem_Read. Parameter and return semantics must support the i2c access required by ssd1306.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 9,
+          "line_end": 9
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 44,
+          "line_end": 44
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 18,
+          "line_end": 18
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 32,
+          "line_end": 32
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 39,
+          "line_end": 39
+        }
+      ]
+    }
+  ]
+}

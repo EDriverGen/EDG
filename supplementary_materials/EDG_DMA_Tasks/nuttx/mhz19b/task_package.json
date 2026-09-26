@@ -1,0 +1,96 @@
+{
+  "package_id": "nuttx_generic_devfs__mhz19b__uart1_dma",
+  "platform_base_context": "EDG_DMA_Tasks/nuttx/mhz19b/platform_base_context.json",
+  "connection_binding_context": "EDG_DMA_Tasks/nuttx/mhz19b/connection_binding_context.json",
+  "device_attachment_context": "EDG_DMA_Tasks/nuttx/mhz19b/device_attachment_context.json",
+  "reference_driver_root": "DriverGen/data/references/mhz19b/nuttx",
+  "device_ir": "EDG_DMA_Tasks/nuttx/mhz19b/device_ir.json",
+  "dma_requirements": "EDG_DMA_Tasks/nuttx/mhz19b/dma_requirements.json",
+  "evaluation_config": "EDG_DMA_Tasks/nuttx/mhz19b/evaluation_config.json",
+  "mode": "dma",
+  "notes": [
+    "MHZ19B on nuttx: DMA payload transfers on the original hardware connection.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/nuttx-project/nuttx/arch/arm/src/stm32/stm32_serial.c",
+    "DriverGen/data/rtos/nuttx-project/nuttx/arch/arm/src/stm32/Kconfig"
+  ],
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "nuttx_generic_devfs",
+      "rtos": "nuttx",
+      "rtos_bundle": "nuttx",
+      "board": "nucleo-f103rb",
+      "board_alias": "nuttx_f103rb",
+      "integration": "public_i2c_master_and_gpio_char_driver",
+      "integration_style": "nuttx_core_plus_apps_and_public_headers",
+      "mcu_family": "stm32f1",
+      "mcu": "stm32f103rb"
+    },
+    "connection": {
+      "binding_id": "nuttx_generic_devfs_uart1_dma",
+      "platform_id": "nuttx_generic_devfs",
+      "connection_type": "uart_dma",
+      "mode": "dma",
+      "bus_instance": "/dev/ttyS1",
+      "bus_instance_kind": "devfs_path",
+      "bus_symbol": "/dev/ttyS1",
+      "backend": "NuttX STM32F103 serial driver with USART RX/TX DMA",
+      "address_mode": null,
+      "fixed_attachment": {
+        "device_path": "/dev/ttyS1",
+        "baud_rate": 9600,
+        "data_bits": 8,
+        "parity": "none",
+        "stop_bits": 1
+      },
+      "helper_usage_patterns": []
+    },
+    "device": {
+      "device_id": "mhz19b",
+      "attachment_type": "uart_fixed_frame_sensor",
+      "required_bus_type": "uart",
+      "address_mode": null,
+      "addressing": null,
+      "required_attachment": {
+        "signals": [
+          "uart_tx",
+          "uart_rx"
+        ],
+        "notes": [
+          "MH-Z19B communicates over UART using fixed 9-byte command and response frames.",
+          "The task assumes a local UART instance configured for 9600 baud, 8 data bits, no parity, 1 stop bit."
+        ]
+      },
+      "optional_attachment": {
+        "pwm_output": "not used by this UART task",
+        "abc_calibration": "optional command path"
+      },
+      "default_overrides": {
+        "bus_instance": "/dev/ttyS1",
+        "irq": "dma_completion",
+        "dma": "required",
+        "reset_gpio": null,
+        "power_gpio": null,
+        "mode": "dma",
+        "device_irq": "optional"
+      },
+      "protocol_hints": {
+        "uart_proto": "fixed",
+        "frame_len": 9,
+        "baud_rate": 9600,
+        "read_co2_command": "0xFF 0x01 0x86 0x00 0x00 0x00 0x00 0x00 checksum",
+        "checksum": "one-byte complement checksum over bytes 1..7",
+        "transfer_mode": "dma"
+      }
+    }
+  }
+}

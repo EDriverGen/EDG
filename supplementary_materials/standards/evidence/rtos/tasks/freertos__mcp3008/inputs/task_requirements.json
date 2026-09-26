@@ -1,0 +1,158 @@
+{
+  "task_package_id": "freertos_stm32f103rb__mcp3008__spi1_polling",
+  "rtos": "freertos",
+  "device": "mcp3008",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/mcp3008/freertos",
+  "task_package": {
+    "package_id": "freertos_stm32f103rb__mcp3008__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/freertos_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/freertos_stm32f103rb_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mcp3008.json",
+    "reference_driver_root": "DriverGen/data/references/mcp3008/freertos",
+    "fixed_task_context": {},
+    "notes": [
+      "Manual task package completing the fixed-context RTOS/device matrix; fixed_task_context is resolved from the referenced layers."
+    ],
+    "evidence": [
+      "DriverGen/data/references/mcp3008/freertos",
+      "DriverGen/data/raw/mcp3008"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "freertos_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "freertos",
+    "rtos_bundle": "freertos-stm32f103-project",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Reference drivers use FreeRTOS for scheduling and STM32CubeF1 HAL for bus and GPIO access.",
+      "SPI devices use SPI_HandleTypeDef hspi1; fixed-frame UART sensors use UART_HandleTypeDef huart2.",
+      "Microsecond timing for gpio_timing devices is supplied by board helper hooks, not by the FreeRTOS kernel itself."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/README.md",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "DriverGen/data/references/*/freertos/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "freertos_stm32f103rb_spi1_polling",
+    "platform_id": "freertos_stm32f103rb",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "spi1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hspi1",
+    "backend": "STM32CubeF1 HAL SPI with FreeRTOS timing",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "GPIOA:GPIO_PIN_4"
+    },
+    "notes": [
+      "Default FreeRTOS SPI polling binding follows the STM32CubeF1 HAL references that pass SPI_HandleTypeDef hspi1 and a GPIO chip-select."
+    ],
+    "evidence": [
+      "DriverGen/data/references/adxl345/freertos/adxl345_sample_ref.c",
+      "DriverGen/data/references/max31855/freertos/max31855_ref.h",
+      "DriverGen/data/references/mcp3008/freertos/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "mcp3008",
+    "attachment_type": "spi_adc",
+    "required_bus_type": "spi",
+    "address_mode": "chip-select",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCLK",
+        "MOSI",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 3600000
+      },
+      "vref_mv": 3300,
+      "notes": [
+        "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+      ]
+    },
+    "optional_attachment": {
+      "differential_mode": "optional",
+      "vref_mv": "board_dependent"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null,
+      "vref_mv": 3300
+    },
+    "protocol_hints": {
+      "spi_proto": "command",
+      "command_bytes": 3,
+      "single_ended_default": true,
+      "channels": [
+        "ch0",
+        "ch1",
+        "ch2",
+        "ch3",
+        "ch4",
+        "ch5",
+        "ch6",
+        "ch7"
+      ],
+      "result_bits": 10,
+      "result_formula": "((rx[1] & 0x03) << 8) | rx[2]"
+    },
+    "notes": [
+      "Reference drivers expose raw 10-bit ADC counts and optional millivolt conversion using vref_mv.",
+      "The main generated path should preserve all 8 single-ended channels; differential mode is optional."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mcp3008/MCP3008.pdf",
+      "DriverGen/evaluation/oracle/data/mcp3008/meta.json",
+      "DriverGen/data/references/mcp3008/*/*_ref.c"
+    ]
+  }
+}

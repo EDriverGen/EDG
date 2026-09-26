@@ -1,0 +1,133 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "tobudos__pca9685",
+  "device_id": "pca9685",
+  "rtos_id": "tobudos",
+  "bus": "i2c",
+  "scope": "Polling i2c driver contract for pca9685 on ToBudOS/STM32F1 HAL. The fixed instance comes from task_requirements; include only HAL/timing operations actually used by the reference implementation and waits inside the main driver.",
+  "api_contract": {
+    "profile": "i2c",
+    "fixed_binding": {
+      "instance": "i2c1",
+      "symbol": "hi2c1",
+      "backend": "STM32F1 HAL I2C through ChipAdaptation",
+      "mode": "polling"
+    },
+    "operations": [
+      {
+        "name": "caller-supplied HAL handle",
+        "handle": "I2C_HandleTypeDef *"
+      },
+      {
+        "name": "HAL_I2C_Master_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *, uint16_t addr, uint8_t *data, uint16_t size, uint32_t timeout)"
+      },
+      {
+        "name": "HAL_I2C_Mem_Read",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *, uint16_t addr, uint16_t mem_addr, uint16_t mem_addr_size, uint8_t *data, uint16_t size, uint32_t timeout)"
+      },
+      {
+        "name": "HAL_Delay",
+        "signature": "void HAL_Delay(uint32_t ms)"
+      }
+    ],
+    "semantics": {
+      "polling": true,
+      "addressing": "7-bit",
+      "error_reporting": "HAL_StatusTypeDef/HAL_OK at checked call sites",
+      "timeouts": "bounded per-transfer timeout supplied by caller; value from reference call sites"
+    }
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Use the fixed ToBudOS i2c polling instance i2c1 (symbol hi2c1), passing the corresponding HAL handle pointer to the reference driver; retain the task-configured bus type and addressing conventions.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__pca9685/inputs/reference_drivers/pca9685_ref.h",
+          "line_start": 1,
+          "line_end": 3
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__pca9685/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 25
+        }
+      ]
+    },
+    {
+      "id": "i2c_polling_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Provide the subset of polling HAL_I2C_Master_Transmit/Receive and HAL_I2C_Mem_Read/Write operations actually called by this driver. Use I2C_HandleTypeDef *, the HAL address and memory-address formats, buffers/lengths, HAL_StatusTypeDef returns, and transfer timeouts.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/i2c/pack.md",
+          "line_start": 772,
+          "line_end": 772
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/i2c/pack.md",
+          "line_start": 830,
+          "line_end": 831
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/i2c/pack.md",
+          "line_start": 838,
+          "line_end": 839
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_i2c.c",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_i2c.c",
+          "line_start": 23,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_i2c.c",
+          "line_start": 48,
+          "line_end": 48
+        }
+      ]
+    },
+    {
+      "id": "driver_wait",
+      "category": "driver_wait",
+      "requirement": "Retain the millisecond semantics of HAL_Delay calls inside the main reference driver; application sampling periods in sample_ref are excluded from driver requirements.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 30,
+          "line_end": 30
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/i2c/pack.md",
+          "line_start": 1427,
+          "line_end": 1427
+        }
+      ]
+    }
+  ]
+}

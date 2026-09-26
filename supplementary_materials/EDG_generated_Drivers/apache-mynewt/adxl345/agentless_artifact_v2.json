@@ -1,0 +1,2266 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "apache-mynewt",
+    "board": "generic_hal",
+    "mcu_family": "stm32f1",
+    "integration": "mynewt_native_hal",
+    "integration_style": "integrated_rtos_hal_bsp",
+    "bus_intent": {
+      "canonical_bus": "spi",
+      "connection_type": "spi",
+      "mode": "polling",
+      "backend": "Apache Mynewt HAL SPI",
+      "address_mode": "chip-select",
+      "bus_instance": "0"
+    },
+    "device_id": "adxl345",
+    "device_ir_hash": "8e16cada1d13796c",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "apache-mynewt:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/apache-mynewt",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "apache-mynewt",
+      "sha": "2ba18b2"
+    }
+  ],
+  "slots": {
+    "spi.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "bus_spi_hal_dev_init_func"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    },
+    "spi.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "hal_spi_settings"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "spi.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "os_time_t",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+            "source_slot": "spi.transfer_registers",
+            "source_symbol": "bus_node_duplex_write_read",
+            "signature": "int bus_node_duplex_write_read(struct os_dev *node, const void *wbuf, void *rbuf, uint16_t length, os_time_t timeout, uint16_t flags)",
+            "score": 0.65,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.85
+    },
+    "spi.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "os_time_delay"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.9
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "os_error_t"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_api_return_status_convention",
+        "confidence": 0.75,
+        "symbols": [
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+            "source_slot": "spi.acquire_or_bind",
+            "source_symbol": "bus_spi_hal_dev_init_func",
+            "signature": "int bus_spi_hal_dev_init_func(struct os_dev *odev, void *arg)",
+            "score": 0.65,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+            "source_slot": "spi.transfer_registers",
+            "source_symbol": "bus_node_duplex_write_read",
+            "signature": "int bus_node_duplex_write_read(struct os_dev *node, const void *wbuf, void *rbuf, uint16_t length, os_time_t timeout, uint16_t flags)",
+            "score": 0.65,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "0",
+        "fields": {
+          "bus_instance": "0",
+          "bus_symbol": "0",
+          "backend": "Apache Mynewt HAL SPI",
+          "mode": "polling",
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.pin_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "fixed_attachment",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "spi_num": 0,
+          "chip_select": "board_configured_cs"
+        },
+        "fields": {
+          "fixed_attachment": {
+            "spi_num": 0,
+            "chip_select": "board_configured_cs"
+          },
+          "required_attachment": {
+            "signals": [
+              "SCLK",
+              "MOSI",
+              "MISO",
+              "CS"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "spi.cs_control": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "driver_framework"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "spi.transaction_begin": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "spi.transaction_end": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "spi.transfer_registers": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "bus_node_duplex_write_read"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    }
+  },
+  "symbols": {
+    "spi.acquire_or_bind": {
+      "slot_id": "spi.acquire_or_bind",
+      "symbol": "bus_spi_hal_dev_init_func",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int bus_spi_hal_dev_init_func(struct os_dev *odev, void *arg)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=2+3.0",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:The slot expects a function to acquire or bind a SPI bus device. The top candidates are bus_spi_hal_dev_init_func and bu"
+      ]
+    },
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "symbol": "hal_spi_settings",
+      "kind": "struct",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": null,
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/hal/include/hal/hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.85,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/hal/include/hal/hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:hal_spi_settings is a public struct from the HAL header, matching the slot's expected kind and SPI bus context. It is pr"
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "symbol": "os_time_delay",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void os_time_delay(os_time_t osticks)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::kernel/os/include/os/os_time.h",
+      "implemented_in": null,
+      "required_headers": [
+        "kernel/os/include/os/os_time.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.9,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "kernel/os/include/os/os_time.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "root-role+3.0",
+        "llm_bound:os_time_delay is a millisecond-level delay function from the Apache MyNewt kernel, matching the slot's intent and task c"
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "symbol": "os_error_t",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "enum os_error",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::kernel/os/include/os/os_error.h",
+      "implemented_in": null,
+      "required_headers": [
+        "kernel/os/include/os/os_error.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "kernel/os/include/os/os_error.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "llm_bound:os_error_t is a typedef for the os_error enum, matching the slot's intent for a status/error type. It is from the kernel"
+      ]
+    },
+    "spi.transfer_registers": {
+      "slot_id": "spi.transfer_registers",
+      "symbol": "bus_node_duplex_write_read",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int bus_node_duplex_write_read(struct os_dev *node, const void *wbuf, void *rbuf, uint16_t length, os_time_t timeout, uint16_t flags)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/bus/include/bus/bus.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/bus/include/bus/bus.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=2+4.0",
+        "root-role+3.0",
+        "llm_bound:Top candidates are all from the Apache MyNewt bus framework, matching the RTOS context. bus_node_duplex_write_read is a "
+      ]
+    }
+  },
+  "_symbol_index": {
+    "bus_spi_hal_dev_init_func": [
+      "spi.acquire_or_bind"
+    ],
+    "hal_spi_settings": [
+      "spi.key_types"
+    ],
+    "os_time_delay": [
+      "runtime.delay_ms"
+    ],
+    "os_error_t": [
+      "runtime.error_status"
+    ],
+    "bus_node_duplex_write_read": [
+      "spi.transfer_registers"
+    ]
+  },
+  "slot_fulfillments": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "os_time_t",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+          "source_slot": "spi.transfer_registers",
+          "source_symbol": "bus_node_duplex_write_read",
+          "signature": "int bus_node_duplex_write_read(struct os_dev *node, const void *wbuf, void *rbuf, uint16_t length, os_time_t timeout, uint16_t flags)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "bus_spi_hal_dev_init_func",
+          "signature": "int bus_spi_hal_dev_init_func(struct os_dev *odev, void *arg)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+          "source_slot": "spi.transfer_registers",
+          "source_symbol": "bus_node_duplex_write_read",
+          "signature": "int bus_node_duplex_write_read(struct os_dev *node, const void *wbuf, void *rbuf, uint16_t length, os_time_t timeout, uint16_t flags)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "0",
+      "fields": {
+        "bus_instance": "0",
+        "bus_symbol": "0",
+        "backend": "Apache Mynewt HAL SPI",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "spi_num": 0,
+        "chip_select": "board_configured_cs"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "spi_num": 0,
+          "chip_select": "board_configured_cs"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCLK",
+            "MOSI",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "0",
+      "fields": {
+        "bus_instance": "0",
+        "bus_symbol": "0",
+        "backend": "Apache Mynewt HAL SPI",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "spi_num": 0,
+        "chip_select": "board_configured_cs"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "spi_num": 0,
+          "chip_select": "board_configured_cs"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCLK",
+            "MOSI",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "os_time_t",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+          "source_slot": "spi.transfer_registers",
+          "source_symbol": "bus_node_duplex_write_read",
+          "signature": "int bus_node_duplex_write_read(struct os_dev *node, const void *wbuf, void *rbuf, uint16_t length, os_time_t timeout, uint16_t flags)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "bus_spi_hal_dev_init_func",
+          "signature": "int bus_spi_hal_dev_init_func(struct os_dev *odev, void *arg)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+          "source_slot": "spi.transfer_registers",
+          "source_symbol": "bus_node_duplex_write_read",
+          "signature": "int bus_node_duplex_write_read(struct os_dev *node, const void *wbuf, void *rbuf, uint16_t length, os_time_t timeout, uint16_t flags)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "0",
+    "bus_symbol": "0",
+    "backend": "Apache Mynewt HAL SPI",
+    "mode": "polling",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "spi_num": 0,
+      "chip_select": "board_configured_cs"
+    },
+    "device_attachment": {
+      "device_id": "adxl345",
+      "attachment_type": "spi_accelerometer",
+      "required_bus_type": "spi",
+      "address_mode": "chip-select",
+      "addressing": null,
+      "required_attachment": {
+        "signals": [
+          "SCLK",
+          "MOSI",
+          "MISO",
+          "CS"
+        ],
+        "spi": {
+          "mode": "mode3",
+          "data_width_bits": 8,
+          "bit_order": "msb_first",
+          "max_hz": 5000000
+        },
+        "notes": [
+          "Use 4-wire SPI with chip select; register address byte encodes read/write and multi-byte burst bits."
+        ]
+      },
+      "optional_attachment": {
+        "interrupt_pins": [
+          "INT1",
+          "INT2"
+        ],
+        "alternate_bus": "i2c"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "protocol_hints": {
+        "spi_proto": "register",
+        "register_read_mask": "0x80",
+        "multi_byte_mask": "0x40",
+        "address_mask": "0x3F",
+        "read_when_set": true,
+        "primary_channels": [
+          "accel_x",
+          "accel_y",
+          "accel_z"
+        ]
+      },
+      "notes": [
+        "Reference drivers use register SPI, verify DEVID, configure DATA_FORMAT/BW_RATE/POWER_CTL, then burst-read DATAX0..DATAZ1.",
+        "Interrupt pins are not required for the minimal polling driver."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/adxl345/adxl345.pdf",
+        "DriverGen/evaluation/oracle/data/adxl345/meta.json",
+        "DriverGen/data/references/adxl345/*/*_ref.c"
+      ]
+    },
+    "include_headers": [
+      "adc_stm32f4/adc_stm32f4.h",
+      "assert.h",
+      "bsp/bsp.h",
+      "bus/bus.h",
+      "bus/bus_debug.h",
+      "bus/bus_driver.h",
+      "bus/drivers/spi_common.h",
+      "bus/drivers/spi_hal.h",
+      "bus/drivers/spi_stm32.h",
+      "callout_test.h",
+      "crypto/crypto.h",
+      "crypto_stm32/crypto_stm32.h",
+      "defs/error.h",
+      "eventq_test.h",
+      "hal/hal_gpio.h",
+      "hal/hal_i2c.h",
+      "hal/hal_spi.h",
+      "hal/hal_system.h",
+      "hal/hal_timer.h",
+      "hash/hash.h",
+      "hash_stm32/hash_stm32.h",
+      "hw/bus/drivers/spi_common/include/bus/drivers/spi_common.h",
+      "hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+      "hw/bus/drivers/spi_stm32/include/bus/drivers/spi_stm32.h",
+      "hw/bus/drivers/spi_stm32/stm32f1xx/include/spidmacfg.h",
+      "hw/bus/include/bus/bus.h",
+      "hw/bus/include/bus/bus_debug.h",
+      "hw/bus/include/bus/bus_driver.h",
+      "hw/hal/include/hal/hal_bsp.h",
+      "hw/hal/include/hal/hal_debug.h",
+      "hw/hal/include/hal/hal_flash.h",
+      "hw/hal/include/hal/hal_flash_int.h",
+      "hw/hal/include/hal/hal_gpio.h",
+      "hw/hal/include/hal/hal_i2c.h",
+      "hw/hal/include/hal/hal_nvreg.h",
+      "hw/hal/include/hal/hal_os_tick.h",
+      "hw/hal/include/hal/hal_spi.h",
+      "hw/hal/include/hal/hal_system.h",
+      "hw/hal/include/hal/hal_timer.h",
+      "hw/hal/include/hal/hal_uart.h",
+      "hw/mcu/stm/stm32_common/include/stm32_common/stm32_dma.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/cmsis_nvic.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/cortex_m3.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/mcu.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/stm32_hal.h",
+      "inttypes.h",
+      "kernel/os/include/os/arch/arc/os/os_arch.h",
+      "kernel/os/include/os/arch/common.h",
+      "kernel/os/include/os/arch/cortex_m0/os/os_arch.h",
+      "kernel/os/include/os/arch/cortex_m3/os/os_arch.h",
+      "kernel/os/include/os/arch/cortex_m33/os/os_arch.h",
+      "kernel/os/include/os/arch/cortex_m4/os/os_arch.h",
+      "kernel/os/include/os/arch/pic32/os/cp0defs.h",
+      "kernel/os/include/os/mynewt.h",
+      "kernel/os/include/os/os.h",
+      "kernel/os/include/os/os_cputime.h",
+      "kernel/os/include/os/os_dev.h",
+      "kernel/os/include/os/os_error.h",
+      "kernel/os/include/os/os_mutex.h",
+      "kernel/os/include/os/os_sanity.h",
+      "kernel/os/include/os/os_task.h",
+      "kernel/os/include/os/os_time.h",
+      "kernel/os/include/os/queue.h",
+      "kernel/os/selftest/src/eventq_test.h",
+      "kernel/os/selftest/src/os_test_priv.h",
+      "logcfg/logcfg.h",
+      "mbuf_test.h",
+      "mcu/cmsis_nvic.h",
+      "mcu/cortex_m0.h",
+      "mcu/cortex_m3.h",
+      "mcu/cortex_m33.h",
+      "mcu/cortex_m4.h",
+      "mcu/mcu.h",
+      "mcu/mcu_arc.h",
+      "mcu/stm32_hal.h",
+      "mcu/stm32f1_bsp.h",
+      "mcu/stm32f1xx_mynewt_hal.h",
+      "mempool_test.h",
+      "mutex_test.h",
+      "os/arch/common.h",
+      "os/endian.h",
+      "os/mynewt.h",
+      "os/os.h",
+      "os/os_arch.h",
+      "os/os_callout.h",
+      "os/os_cputime.h",
+      "os/os_dev.h",
+      "os/os_error.h",
+      "os/os_eventq.h",
+      "os/os_fault.h",
+      "os/os_heap.h",
+      "os/os_mbuf.h",
+      "os/os_mempool.h",
+      "os/os_mutex.h",
+      "os/os_sanity.h",
+      "os/os_sched.h",
+      "os/os_sem.h",
+      "os/os_task.h",
+      "os/os_time.h",
+      "os/os_trace_api.h",
+      "os/queue.h",
+      "os/util.h",
+      "os_test/os_test.h",
+      "os_test_priv.h",
+      "pwm_stm32/pwm_stm32.h",
+      "sem_test.h",
+      "spidmacfg.h",
+      "spiflash/spiflash.h",
+      "stats/stats.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdlib.h",
+      "stm32_common/mcu.h",
+      "stm32_common/stm32_dma.h",
+      "stm32_common/stm32_hal.h",
+      "stm32_eth/stm32_eth.h",
+      "stm32_eth/stm32_eth_cfg.h",
+      "stm32f1xx.h",
+      "stm32f1xx_hal.h",
+      "stm32f1xx_hal_def.h",
+      "stm32f1xx_hal_dma.h",
+      "stm32f1xx_hal_flash.h",
+      "stm32f1xx_hal_flash_ex.h",
+      "stm32f1xx_hal_gpio.h",
+      "stm32f1xx_hal_gpio_ex.h",
+      "stm32f1xx_hal_i2c.h",
+      "stm32f1xx_hal_iwdg.h",
+      "stm32f1xx_hal_rcc.h",
+      "stm32f1xx_hal_spi.h",
+      "stm32f1xx_hal_tim.h",
+      "stm32f1xx_hal_uart.h",
+      "stm32f1xx_ll_bus.h",
+      "stm32f1xx_ll_gpio.h",
+      "stm32f1xx_ll_tim.h",
+      "stm32f1xx_mynewt_hal.h",
+      "stm32f4xx_hal_adc.h",
+      "stm32f4xx_hal_dma.h",
+      "stm32l1xx_hal.h",
+      "string.h",
+      "sys/debug_panic.h",
+      "sys/queue.h",
+      "syscfg/syscfg.h",
+      "sysdown/sysdown.h",
+      "sysflash/sysflash.h",
+      "sysinit/sysinit.h",
+      "testutil/testutil.h",
+      "trng/trng.h",
+      "trng_stm32/trng_stm32.h",
+      "uart/uart.h",
+      "uart_hal/uart_hal.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "hw/bus/drivers/spi_common/include/bus/drivers/spi_common.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 1,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/spi_stm32/include/bus/drivers/spi_stm32.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/include/bus/bus.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "n_functions": 12,
+        "n_macros": 4,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/include/bus/bus_debug.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "n_functions": 0,
+        "n_macros": 11,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/include/bus/bus_driver.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "n_functions": 3,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 7,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/spi_stm32/stm32f1xx/include/spidmacfg.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_spi.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 12,
+        "n_macros": 11,
+        "n_typedefs": 1,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_i2c.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.key_types"
+        ],
+        "n_functions": 8,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_timer.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.key_types"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_uart.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types"
+        ],
+        "n_functions": 7,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 2
+      },
+      {
+        "path": "kernel/os/include/os/os_cputime.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 15,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_time.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 14,
+        "n_macros": 16,
+        "n_typedefs": 3,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_bsp.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 9,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_debug.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 2,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_flash.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_flash_int.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_gpio.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 6
+      },
+      {
+        "path": "hw/hal/include/hal/hal_nvreg.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_os_tick.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_error.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 2
+      },
+      {
+        "path": "kernel/os/selftest/src/eventq_test.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 8,
+        "n_macros": 13,
+        "n_typedefs": 0,
+        "n_structs": 12,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_dev.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 11,
+        "n_macros": 11,
+        "n_typedefs": 5,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/pic32/os/cp0defs.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 916,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_task.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 10,
+        "n_typedefs": 2,
+        "n_structs": 5,
+        "n_enums": 1
+      },
+      {
+        "path": "kernel/os/include/os/arch/arc/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/common.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 14,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m0/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m3/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m33/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m4/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_system.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 8,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 2
+      },
+      {
+        "path": "hw/mcu/stm/stm32_common/include/stm32_common/stm32_dma.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 20,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/cmsis_nvic.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/cortex_m3.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/mcu.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/stm32_hal.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/mynewt.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 7,
+        "n_macros": 10,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_mutex.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_sanity.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/queue.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/selftest/src/os_test_priv.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "hw/bus/drivers/spi_stm32/src/spi_stm32.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 39,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 18,
+        "n_enums": 2
+      },
+      {
+        "path": "hw/bus/drivers/spi_hal/src/spi_hal.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 11,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/src/bus.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "n_functions": 20,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/spi_stm32/stm32f1xx/src/spidmacfg.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32_common/src/hal_spi.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 29,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 9,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32_common/src/stm32_driver_mod_spi.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 11,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32_common/src/stm32_periph.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 14,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 65,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/src/hal_common.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 4,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/selftest/src/eventq_test.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 8,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 12,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": [
+      {
+        "path": "hw/bus/drivers/spi_common/pkg.yml",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "config",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.transaction_end"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ]
+  },
+  "transaction_templates": [
+    {
+      "template_id": "adxl345_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "spi_write",
+          "args": {
+            "bytes": [
+              "0x2D",
+              "0x00"
+            ],
+            "length": null,
+            "pointer_target": "POWER_CTL",
+            "notes": null
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "spi_write",
+          "args": {
+            "bytes": [
+              "0x2D",
+              "0x08"
+            ],
+            "length": null,
+            "pointer_target": "POWER_CTL",
+            "notes": null
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.22,
+      "requires_human": true,
+      "notes": "Translated from device_ir.init_sequence (5 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "adxl345_read_sequence",
+      "steps": [
+        {
+          "op": "spi_write_then_read",
+          "args": {
+            "bytes": [
+              "0xF2"
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": null
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.25,
+      "requires_human": true,
+      "notes": "Translated from device_ir.read_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [
+      "slot_coverage"
+    ],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'apache-mynewt' is integrated; n_roots=1 (no minimum)",
+        "evidence": {
+          "rtos_id": "apache-mynewt",
+          "n_roots": 1
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": false,
+        "severity": "error",
+        "message": "1 required slot(s) uncovered: ['spi.transfer']",
+        "evidence": {
+          "missing_required": [
+            "spi.transfer"
+          ],
+          "non_symbol_fulfillments": [
+            "integration.bus_instance_binding",
+            "integration.pin_binding",
+            "runtime.error_status",
+            "spi.key_types"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (5 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "apache-mynewt:single:0::hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+            "apache-mynewt:single:0::hw/hal/include/hal/hal_spi.h",
+            "apache-mynewt:single:0::kernel/os/include/os/os_time.h",
+            "apache-mynewt:single:0::kernel/os/include/os/os_error.h",
+            "apache-mynewt:single:0::hw/bus/include/bus/bus.h"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [],
+        "missing_slots": [
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transfer",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer_registers"
+        ],
+        "new_files_added": [
+          "apache-mynewt:single:0::hw/bus/drivers/spi_stm32/src/spi_stm32.c",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_common/include/bus/drivers/spi_common.h",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_hal/src/spi_hal.c",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_hal/include/bus/drivers/spi_hal.h",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_stm32/include/bus/drivers/spi_stm32.h",
+          "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+          "apache-mynewt:single:0::hw/bus/include/bus/bus_debug.h",
+          "apache-mynewt:single:0::hw/bus/include/bus/bus_driver.h",
+          "apache-mynewt:single:0::hw/bus/src/bus.c",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_stm32/stm32f1xx/src/spidmacfg.c",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_stm32/stm32f1xx/include/spidmacfg.h",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_common/pkg.yml",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_spi.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_timer.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_uart.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32_common/src/hal_spi.c",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32_common/src/stm32_driver_mod_spi.c",
+          "apache-mynewt:single:0::kernel/os/include/os/os_cputime.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_time.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_bsp.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_debug.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_flash.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_flash_int.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_gpio.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_nvreg.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_os_tick.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_error.h",
+          "apache-mynewt:single:0::kernel/os/selftest/src/eventq_test.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_dev.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/pic32/os/cp0defs.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_task.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/arc/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/common.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m0/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m3/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m33/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m4/os/os_arch.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32_common/src/stm32_periph.c",
+          "apache-mynewt:single:0::hw/hal/src/hal_common.c",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_system.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32_common/include/stm32_common/stm32_dma.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/cmsis_nvic.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/cortex_m3.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/mcu.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/stm32_hal.h",
+          "apache-mynewt:single:0::kernel/os/include/os/mynewt.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_mutex.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_sanity.h",
+          "apache-mynewt:single:0::kernel/os/include/os/queue.h",
+          "apache-mynewt:single:0::kernel/os/selftest/src/eventq_test.c",
+          "apache-mynewt:single:0::kernel/os/selftest/src/os_test_priv.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 32164,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "spi.transfer_registers"
+        ],
+        "missing_slots": [
+          "spi.transfer",
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 9
+        },
+        "token_usage": {
+          "input_tokens_delta": 25167,
+          "output_tokens_delta": 6300,
+          "input_tokens_total": 57331,
+          "output_tokens_total": 14700
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 11,
+    "n_bound": 5,
+    "n_fulfilled": 7,
+    "n_non_symbol_fulfillments": 4,
+    "n_required": 7,
+    "n_required_bound": 6,
+    "n_required_fulfilled": 6,
+    "n_required_symbol_bound": 4,
+    "provenance": {
+      "manifest_repo": 5,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 1.71,
+      "dir_router_llm": 15045.39,
+      "file_selector": 26.15,
+      "file_selector_llm": 69599.92,
+      "exact_symbol_file_backfill": 5.69,
+      "deep_parse": 177.54,
+      "include_expand": 41.8,
+      "symbol_rank": 374.65,
+      "binder_deterministic": 2.76,
+      "binder_llm": 14402.33,
+      "gap_diagnoser_llm": 9007.93,
+      "source_kind_classifier": 0.11
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 9,
+        "gap_diagnoser": 5
+      },
+      "input_tokens_total": 61769,
+      "output_tokens_total": 17200,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

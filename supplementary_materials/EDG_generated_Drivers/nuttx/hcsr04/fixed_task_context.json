@@ -1,0 +1,208 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/nuttx_generic_devfs__hcsr04__gpio_timing_default/task_package.json",
+  "task_package": {
+    "package_id": "nuttx_generic_devfs__hcsr04__gpio_timing_default",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/nuttx_generic_devfs.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/nuttx_generic_devfs_gpio_timing_default.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/hcsr04.json",
+    "reference_driver_root": "DriverGen/data/references/hcsr04/nuttx",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "nuttx_generic_devfs",
+        "rtos": "nuttx",
+        "rtos_bundle": "nuttx",
+        "board": "nucleo-f103rb",
+        "board_alias": "nuttx_f103rb",
+        "integration": "public_i2c_master_and_gpio_char_driver",
+        "integration_style": "nuttx_core_plus_apps_and_public_headers",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "nuttx_generic_devfs_gpio_timing_default",
+        "platform_id": "nuttx_generic_devfs",
+        "connection_type": "gpio_timing",
+        "mode": "polling",
+        "bus_instance": "default_gpio_slot",
+        "bus_instance_kind": "gpio_char_devices",
+        "bus_symbol": "/dev/gpio0,/dev/gpio1",
+        "backend": "NuttX GPIO character driver",
+        "address_mode": null,
+        "fixed_attachment": {
+          "trig_path": "/dev/gpio0",
+          "echo_path": "/dev/gpio1"
+        },
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "hcsr04",
+        "attachment_type": "gpio_echo_sensor",
+        "required_bus_type": "gpio_timing",
+        "address_mode": null,
+        "addressing": null,
+        "required_attachment": {
+          "signals": [
+            "trig",
+            "echo"
+          ],
+          "notes": [
+            "TRIG must be a digital output. ECHO must be a digital input that can be polled or timestamped at microsecond scale."
+          ]
+        },
+        "optional_attachment": {
+          "power_enable": "optional"
+        },
+        "default_overrides": {
+          "bus_instance": null,
+          "irq": "absent",
+          "dma": "absent",
+          "reset_gpio": null,
+          "power_gpio": null
+        },
+        "protocol_hints": {}
+      }
+    },
+    "notes": [
+      "This package freezes a concrete task setup for nuttx + hcsr04.",
+      "It is intended for controlled DriverGen experiments and reduces variation in board/integration assumptions."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/nuttx",
+      "DriverGen/data/raw/hcsr04",
+      "DriverGen/data/references/hcsr04/nuttx"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "nuttx_generic_devfs",
+    "board": "nucleo-f103rb",
+    "board_alias": "nuttx_f103rb",
+    "rtos": "nuttx",
+    "rtos_bundle": "nuttx",
+    "integration": "public_i2c_master_and_gpio_char_driver",
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "1"
+        ],
+        "spi": [
+          "0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "/dev/ttyS1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "optional"
+    },
+    "notes": [
+      "This platform targets the NuttX nucleo-f103rb board while using i2c_master lower-half devices and GPIO character devices.",
+      "Task packages follow the existing NuttX reference drivers that use board_i2cbus_initialize, up_spiinitialize, /dev/ttyS1, and /dev/gpio* paths."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/i2c/i2c_master.h",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/spi/spi.h",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/ioexpander/gpio.h",
+      "DriverGen/data/rtos/nuttx-project/apps/system/i2c/i2c_main.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "nuttx_generic_devfs_gpio_timing_default",
+    "platform_id": "nuttx_generic_devfs",
+    "connection_type": "gpio_timing",
+    "mode": "polling",
+    "bus_instance": "default_gpio_slot",
+    "bus_instance_kind": "gpio_char_devices",
+    "bus_symbol": "/dev/gpio0,/dev/gpio1",
+    "backend": "NuttX GPIO character driver",
+    "address_mode": null,
+    "fixed_attachment": {
+      "trig_path": "/dev/gpio0",
+      "echo_path": "/dev/gpio1"
+    },
+    "notes": [
+      "This default NuttX gpio_timing binding follows the HC-SR04 reference sample gpio device paths."
+    ],
+    "evidence": [
+      "DriverGen/data/references/hcsr04/nuttx/hcsr04_sample_ref.c",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/ioexpander/gpio.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "hcsr04",
+    "attachment_type": "gpio_echo_sensor",
+    "required_bus_type": "gpio_timing",
+    "address_mode": null,
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "trig",
+        "echo"
+      ],
+      "notes": [
+        "TRIG must be a digital output. ECHO must be a digital input that can be polled or timestamped at microsecond scale."
+      ]
+    },
+    "optional_attachment": {
+      "power_enable": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers require microsecond delay and timestamp support from the board layer or RTOS adaptation layer."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/hcsr04",
+      "DriverGen/data/references/hcsr04/*/*_ref.h"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "nuttx_generic_devfs__hcsr04__gpio_timing_default",
+    "rtos": "nuttx",
+    "rtos_bundle": "nuttx",
+    "board": "nucleo-f103rb",
+    "board_alias": "nuttx_f103rb",
+    "integration": "public_i2c_master_and_gpio_char_driver",
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "gpio_timing",
+    "bus_instance": "default_gpio_slot",
+    "bus_instance_kind": "gpio_char_devices",
+    "bus_symbol": "/dev/gpio0,/dev/gpio1",
+    "bus_backend": "NuttX GPIO character driver",
+    "address_mode": null,
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {
+      "trig_path": "/dev/gpio0",
+      "echo_path": "/dev/gpio1"
+    },
+    "device_attachment_context_id": "hcsr04",
+    "device_addressing": null
+  }
+}

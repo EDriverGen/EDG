@@ -1,0 +1,346 @@
+{
+  "device_id": "lsm303dlhc",
+  "rtos_id": "xiuos",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef LSM303DLHC_H\n#define LSM303DLHC_H\n\n#include <stdint.h>\n#include \"bus_i2c.h\"\n\n#define LSM303DLHC_ACCEL_ADDR 0x19\n#define LSM303DLHC_MAG_ADDR   0x1E\n\nstruct I2cBus;\n\nstruct lsm303dlhc_dev {\n    struct I2cBus *bus;\n    int fd;\n};\n\nint lsm303dlhc_init(struct lsm303dlhc_dev *dev, struct I2cBus *bus_handle);\nint lsm303dlhc_read_accel(struct lsm303dlhc_dev *dev, int16_t *ax, int16_t *ay, int16_t *az);\nint lsm303dlhc_read_mag(struct lsm303dlhc_dev *dev, int16_t *mx, int16_t *my, int16_t *mz);\nint lsm303dlhc_read_temp(struct lsm303dlhc_dev *dev, int32_t *t);\n\n#endif",
+  "driver_source": "#include \"lsm303dlhc.h\"\n#include \"transform.h\"\n#include \"bus.h\"\n#include \"dev_i2c.h\"\n#include <errno.h>\n#include <stddef.h>\n#include <string.h>\n\n#include \"bus_i2c.h\"\n#include \"bus_pin.h\"\n#define ACCEL_ADDR 0x19\n#define MAG_ADDR   0x1E\n\n#define CTRL_REG1_A 0x20\n#define CTRL_REG4_A 0x23\n#define CRA_REG_M   0x00\n#define CRB_REG_M   0x01\n#define MR_REG_M    0x02\n#define OUT_X_L_A   0x28\n#define OUT_X_H_M   0x03\n#define TEMP_OUT_H_M 0x31\n\nstatic int i2c_write(struct lsm303dlhc_dev *dev, uint8_t addr, uint8_t reg, uint8_t data)\n{\n    uint8_t buf[2] = {reg, data};\n    struct PrivIoctlCfg ioctl_cfg;\n    uint16_t i2c_addr = addr;\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\n    ioctl_cfg.args = &i2c_addr;\n    if (PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg) != 0)\n        return -EIO;\n    if (PrivWrite(dev->fd, buf, 2) != 2)\n        return -EIO;\n    return 0;\n}\n\nstatic int i2c_write_then_read(struct lsm303dlhc_dev *dev, uint8_t addr, uint8_t reg, uint8_t *rxbuf, uint16_t len)\n{\n    struct PrivIoctlCfg ioctl_cfg;\n    uint16_t i2c_addr = addr;\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\n    ioctl_cfg.args = &i2c_addr;\n    if (PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg) != 0)\n        return -EIO;\n    if (PrivWrite(dev->fd, &reg, 1) != 1)\n        return -EIO;\n    if (PrivRead(dev->fd, rxbuf, len) != len)\n        return -EIO;\n    return 0;\n}\n\nint lsm303dlhc_init(struct lsm303dlhc_dev *dev, struct I2cBus *bus_handle)\n{\n    dev->bus = bus_handle;\n    dev->fd = PrivOpen(\"/dev/i2c1\", 0);\n    if (dev->fd < 0)\n        return -EIO;\n\n    if (i2c_write(dev, ACCEL_ADDR, CTRL_REG1_A, 0x57) != 0)\n        goto err;\n    if (i2c_write(dev, ACCEL_ADDR, CTRL_REG4_A, 0x08) != 0)\n        goto err;\n    PrivTaskDelay(70);\n\n    if (i2c_write(dev, MAG_ADDR, CRA_REG_M, 0x0C) != 0)\n        goto err;\n    if (i2c_write(dev, MAG_ADDR, CRB_REG_M, 0x20) != 0)\n        goto err;\n    if (i2c_write(dev, MAG_ADDR, MR_REG_M, 0x00) != 0)\n        goto err;\n    PrivTaskDelay(1);\n\n    return 0;\nerr:\n    PrivClose(dev->fd);\n    dev->fd = -1;\n    return -EIO;\n}\n\nint lsm303dlhc_read_accel(struct lsm303dlhc_dev *dev, int16_t *ax, int16_t *ay, int16_t *az)\n{\n    uint8_t buf[6];\n    if (i2c_write_then_read(dev, ACCEL_ADDR, 0xA8, buf, 6) != 0)\n        return -EIO;\n    *ax = (int16_t)((buf[1] << 8) | buf[0]);\n    *ay = (int16_t)((buf[3] << 8) | buf[2]);\n    *az = (int16_t)((buf[5] << 8) | buf[4]);\n    return 0;\n}\n\nint lsm303dlhc_read_mag(struct lsm303dlhc_dev *dev, int16_t *mx, int16_t *my, int16_t *mz)\n{\n    uint8_t buf[6];\n    if (i2c_write_then_read(dev, MAG_ADDR, 0x03, buf, 6) != 0)\n        return -EIO;\n    *mx = (int16_t)((buf[0] << 8) | buf[1]);\n    *mz = (int16_t)((buf[2] << 8) | buf[3]);\n    *my = (int16_t)((buf[4] << 8) | buf[5]);\n    return 0;\n}\n\nint lsm303dlhc_read_temp(struct lsm303dlhc_dev *dev, int32_t *t)\n{\n    uint8_t buf[2];\n    if (i2c_write_then_read(dev, MAG_ADDR, 0x31, buf, 2) != 0)\n        return -EIO;\n    int16_t raw = (int16_t)((buf[0] << 8) | buf[1]);\n    *t = (int32_t)raw * 125;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "lsm303dlhc_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "struct I2cBus *bus_handle = (struct I2cBus *)bus_name;",
+    "dev_struct_type": "struct lsm303dlhc_dev",
+    "channels": [
+      {
+        "id": "accel_x",
+        "call": "lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)",
+        "out_arg": "ax",
+        "out_type": "int16_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "accel_y",
+        "call": "lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)",
+        "out_arg": "ay",
+        "out_type": "int16_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "accel_z",
+        "call": "lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)",
+        "out_arg": "az",
+        "out_type": "int16_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "mag_x",
+        "call": "lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz)",
+        "out_arg": "mx",
+        "out_type": "int16_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "mag_y",
+        "call": "lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz)",
+        "out_arg": "my",
+        "out_type": "int16_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "mag_z",
+        "call": "lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz)",
+        "out_arg": "mz",
+        "out_type": "int16_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "temp",
+        "call": "lsm303dlhc_read_temp(&g_eval_dev, &t)",
+        "out_arg": "t",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x19",
+        "write_prefix_any_of": [
+          [
+            "0x20",
+            "0x57"
+          ]
+        ],
+        "note": "init_accel: write CTRL_REG1_A"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x19",
+        "write_prefix_any_of": [
+          [
+            "0x23",
+            "0x08"
+          ]
+        ],
+        "note": "init_accel: write CTRL_REG4_A"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x00",
+            "0x0C"
+          ]
+        ],
+        "note": "init_mag: write CRA_REG_M"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x20"
+          ]
+        ],
+        "note": "init_mag: write CRB_REG_M"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x02",
+            "0x00"
+          ]
+        ],
+        "note": "init_mag: write MR_REG_M"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x19",
+        "write_prefix_any_of": [
+          [
+            "0xA8"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_accel: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_mag: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x31"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_mag: write_then_read temp"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "mock_preload": {
+          "0x19:0x29": [
+            "0x03"
+          ],
+          "0x19:0x28": [
+            "0xE8"
+          ],
+          "0x19:0x2B": [
+            "0x04"
+          ],
+          "0x19:0x2A": [
+            "0x31"
+          ],
+          "0x19:0x2D": [
+            "0x04"
+          ],
+          "0x19:0x2C": [
+            "0x7A"
+          ],
+          "0x1E:0x03": [
+            "0x04"
+          ],
+          "0x1E:0x04": [
+            "0xC3"
+          ],
+          "0x1E:0x07": [
+            "0x05"
+          ],
+          "0x1E:0x08": [
+            "0x0C"
+          ],
+          "0x1E:0x05": [
+            "0x05"
+          ],
+          "0x1E:0x06": [
+            "0x55"
+          ],
+          "0x1E:0x31": [
+            "0x05"
+          ],
+          "0x1E:0x32": [
+            "0x9E"
+          ]
+        },
+        "channel_preload_bytes": {
+          "accel_x": [
+            "0xE8",
+            "0x03"
+          ],
+          "accel_y": [
+            "0x31",
+            "0x04"
+          ],
+          "accel_z": [
+            "0x7A",
+            "0x04"
+          ],
+          "mag_x": [
+            "0x04",
+            "0xC3"
+          ],
+          "mag_y": [
+            "0x05",
+            "0x0C"
+          ],
+          "mag_z": [
+            "0x05",
+            "0x55"
+          ],
+          "temp": [
+            "0x05",
+            "0x9E"
+          ]
+        },
+        "expected_channels": {
+          "accel_x": 1000,
+          "accel_y": 1073,
+          "accel_z": 1146,
+          "mag_x": 1219,
+          "mag_y": 1292,
+          "mag_z": 1365,
+          "temp": 179750
+        },
+        "raw_tolerance": 0,
+        "derivation": "accel_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x03 << 8) | 0xE8) = 1000; accel_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x04 << 8) | 0x31) = 1073; accel_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x04 << 8) | 0x7A) = 1146; mag_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x04 << 8) | 0xC3) = 1219; mag_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x05 << 8) | 0x0C) = 1292; mag_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x05 << 8) | 0x55) = 1365; temp: ((0x05 << 8) | 0x9E) = 1438; (((0x05 << 8) | 0x9E)) * 125 = 179750"
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "mock_preload": {
+          "0x19:0x29": [
+            "0xFC"
+          ],
+          "0x19:0x28": [
+            "0x18"
+          ],
+          "0x19:0x2B": [
+            "0xFB"
+          ],
+          "0x19:0x2A": [
+            "0xCF"
+          ],
+          "0x19:0x2D": [
+            "0xFB"
+          ],
+          "0x19:0x2C": [
+            "0x86"
+          ],
+          "0x1E:0x03": [
+            "0xFB"
+          ],
+          "0x1E:0x04": [
+            "0x3D"
+          ],
+          "0x1E:0x07": [
+            "0xFA"
+          ],
+          "0x1E:0x08": [
+            "0xF4"
+          ],
+          "0x1E:0x05": [
+            "0xFA"
+          ],
+          "0x1E:0x06": [
+            "0xAB"
+          ],
+          "0x1E:0x31": [
+            "0xFA"
+          ],
+          "0x1E:0x32": [
+            "0x62"
+          ]
+        },
+        "channel_preload_bytes": {
+          "accel_x": [
+            "0x18",
+            "0xFC"
+          ],
+          "accel_y": [
+            "0xCF",
+            "0xFB"
+          ],
+          "accel_z": [
+            "0x86",
+            "0xFB"
+          ],
+          "mag_x": [
+            "0xFB",
+            "0x3D"
+          ],
+          "mag_y": [
+            "0xFA",
+            "0xF4"
+          ],
+          "mag_z": [
+            "0xFA",
+            "0xAB"
+          ],
+          "temp": [
+            "0xFA",
+            "0x62"
+          ]
+        },
+        "expected_channels": {
+          "accel_x": -1000,
+          "accel_y": -1073,
+          "accel_z": -1146,
+          "mag_x": -1219,
+          "mag_y": -1292,
+          "mag_z": -1365,
+          "temp": -179750
+        },
+        "raw_tolerance": 0,
+        "derivation": "accel_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFC << 8) | 0x18) - 65536) = -1000; accel_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFB << 8) | 0xCF) - 65536) = -1073; accel_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFB << 8) | 0x86) - 65536) = -1146; mag_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFB << 8) | 0x3D) - 65536) = -1219; mag_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFA << 8) | 0xF4) - 65536) = -1292; mag_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFA << 8) | 0xAB) - 65536) = -1365; temp: (((0xFA << 8) | 0x62) - 65536) = -1438; ((((0xFA << 8) | 0x62) - 65536)) * 125 = -179750"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.868,
+  "prompt_chars": 51050,
+  "raw_response": "{\"driver_header\": \"#ifndef LSM303DLHC_H\\n#define LSM303DLHC_H\\n\\n#include <stdint.h>\\n#include \\\"bus_i2c.h\\\"\\n\\n#define LSM303DLHC_ACCEL_ADDR 0x19\\n#define LSM303DLHC_MAG_ADDR   0x1E\\n\\nstruct lsm303dlhc_dev {\\n    struct I2cBus *bus;\\n    int fd;\\n};\\n\\nint lsm303dlhc_init(struct lsm303dlhc_dev *dev, struct I2cBus *bus_handle);\\nint lsm303dlhc_read_accel(struct lsm303dlhc_dev *dev, int16_t *ax, int16_t *ay, int16_t *az);\\nint lsm303dlhc_read_mag(struct lsm303dlhc_dev *dev, int16_t *mx, int16_t *my, int16_t *mz);\\nint lsm303dlhc_read_temp(struct lsm303dlhc_dev *dev, int32_t *t);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"lsm303dlhc.h\\\"\\n#include \\\"transform.h\\\"\\n#include \\\"bus.h\\\"\\n#include \\\"dev_i2c.h\\\"\\n#include <errno.h>\\n#include <stddef.h>\\n#include <string.h>\\n\\n#define ACCEL_ADDR 0x19\\n#define MAG_ADDR   0x1E\\n\\n#define CTRL_REG1_A 0x20\\n#define CTRL_REG4_A 0x23\\n#define CRA_REG_M   0x00\\n#define CRB_REG_M   0x01\\n#define MR_REG_M    0x02\\n#define OUT_X_L_A   0x28\\n#define OUT_X_H_M   0x03\\n#define TEMP_OUT_H_M 0x31\\n\\nstatic int i2c_write(struct lsm303dlhc_dev *dev, uint8_t addr, uint8_t reg, uint8_t data)\\n{\\n    uint8_t buf[2] = {reg, data};\\n    struct PrivIoctlCfg ioctl_cfg;\\n    uint16_t i2c_addr = addr;\\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\\n    ioctl_cfg.args = &i2c_addr;\\n    if (PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg) != 0)\\n        return -EIO;\\n    if (PrivWrite(dev->fd, buf, 2) != 2)\\n        return -EIO;\\n    return 0;\\n}\\n\\nstatic int i2c_write_then_read(struct lsm303dlhc_dev *dev, uint8_t addr, uint8_t reg, uint8_t *rxbuf, uint16_t len)\\n{\\n    struct PrivIoctlCfg ioctl_cfg;\\n    uint16_t i2c_addr = addr;\\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\\n    ioctl_cfg.args = &i2c_addr;\\n    if (PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg) != 0)\\n        return -EIO;\\n    if (PrivWrite(dev->fd, &reg, 1) != 1)\\n        return -EIO;\\n    if (PrivRead(dev->fd, rxbuf, len) != len)\\n        return -EIO;\\n    return 0;\\n}\\n\\nint lsm303dlhc_init(struct lsm303dlhc_dev *dev, struct I2cBus *bus_handle)\\n{\\n    dev->bus = bus_handle;\\n    dev->fd = PrivOpen(\\\"/dev/i2c1\\\", 0);\\n    if (dev->fd < 0)\\n        return -EIO;\\n\\n    if (i2c_write(dev, ACCEL_ADDR, CTRL_REG1_A, 0x57) != 0)\\n        goto err;\\n    if (i2c_write(dev, ACCEL_ADDR, CTRL_REG4_A, 0x08) != 0)\\n        goto err;\\n    PrivTaskDelay(70);\\n\\n    if (i2c_write(dev, MAG_ADDR, CRA_REG_M, 0x0C) != 0)\\n        goto err;\\n    if (i2c_write(dev, MAG_ADDR, CRB_REG_M, 0x20) != 0)\\n        goto err;\\n    if (i2c_write(dev, MAG_ADDR, MR_REG_M, 0x00) != 0)\\n        goto err;\\n    PrivTaskDelay(1);\\n\\n    return 0;\\nerr:\\n    PrivClose(dev->fd);\\n    dev->fd = -1;\\n    return -EIO;\\n}\\n\\nint lsm303dlhc_read_accel(struct lsm303dlhc_dev *dev, int16_t *ax, int16_t *ay, int16_t *az)\\n{\\n    uint8_t buf[6];\\n    if (i2c_write_then_read(dev, ACCEL_ADDR, 0xA8, buf, 6) != 0)\\n        return -EIO;\\n    *ax = (int16_t)((buf[1] << 8) | buf[0]);\\n    *ay = (int16_t)((buf[3] << 8) | buf[2]);\\n    *az = (int16_t)((buf[5] << 8) | buf[4]);\\n    return 0;\\n}\\n\\nint lsm303dlhc_read_mag(struct lsm303dlhc_dev *dev, int16_t *mx, int16_t *my, int16_t *mz)\\n{\\n    uint8_t buf[6];\\n    if (i2c_write_then_read(dev, MAG_ADDR, 0x03, buf, 6) != 0)\\n        return -EIO;\\n    *mx = (int16_t)((buf[0] << 8) | buf[1]);\\n    *mz = (int16_t)((buf[2] << 8) | buf[3]);\\n    *my = (int16_t)((buf[4] << 8) | buf[5]);\\n    return 0;\\n}\\n\\nint lsm303dlhc_read_temp(struct lsm303dlhc_dev *dev, int32_t *t)\\n{\\n    uint8_t buf[2];\\n    if (i2c_write_then_read(dev, MAG_ADDR, 0x31, buf, 2) != 0)\\n        return -EIO;\\n    int16_t raw = (int16_t)((buf[0] << 8) | buf[1]);\\n    *t = (int32_t)raw * 125;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "272970ca4dc5d7bd"
+}

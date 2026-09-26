@@ -1,0 +1,83 @@
+{
+  "device_id": "ds18b20",
+  "rtos_id": "zephyr",
+  "eval_class": "single_channel",
+  "bus_kind": "gpio",
+  "driver_header": "#ifndef DS18B20_H\n#define DS18B20_H\n\n#include <stdint.h>\n#include <zephyr/drivers/gpio.h>\n\nstruct device;\n\nstruct ds18b20_dev {\n    const struct device *port;\n    gpio_pin_t pin;\n};\n\nint ds18b20_init(struct ds18b20_dev *dev, const struct device *port, gpio_pin_t pin);\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw);\n\n#endif /* DS18B20_H */",
+  "driver_source": "#include \"ds18b20.h\"\n#include <errno.h>\n#include <stdint.h>\n#include <zephyr/drivers/gpio.h>\n#include <zephyr/kernel.h>\n\n#define DS18B20_SKIP_ROM 0xCC\n#define DS18B20_CONVERT_T 0x44\n#define DS18B20_READ_SCRATCHPAD 0xBE\n\n#define RESET_PULSE_US 480\n#define PRESENCE_WAIT_US 480\n#define CONVERSION_DELAY_MS 750\n\nstatic int ds18b20_reset_pulse(struct ds18b20_dev *dev)\n{\n    int ret;\n    struct gpio_dt_spec spec = { .port = dev->port, .pin = dev->pin, .dt_flags = GPIO_OUTPUT_INACTIVE };\n\n    ret = gpio_pin_configure_dt(&spec, GPIO_OUTPUT_INACTIVE);\n    if (ret < 0) return ret;\n\n    ret = gpio_pin_set_dt(&spec, 0);\n    if (ret < 0) return ret;\n\n    k_busy_wait(RESET_PULSE_US);\n\n    ret = gpio_pin_configure_dt(&spec, GPIO_INPUT);\n    if (ret < 0) return ret;\n\n    k_busy_wait(PRESENCE_WAIT_US);\n\n    int presence = gpio_pin_get_dt(&spec);\n    if (presence < 0) return presence;\n    if (presence != 0) return -ENODEV;\n\n    return 0;\n}\n\nstatic int ds18b20_write_byte(struct ds18b20_dev *dev, uint8_t byte)\n{\n    struct gpio_dt_spec spec = { .port = dev->port, .pin = dev->pin, .dt_flags = GPIO_OUTPUT_INACTIVE };\n    int ret;\n\n    for (int i = 0; i < 8; i++) {\n        ret = gpio_pin_configure_dt(&spec, GPIO_OUTPUT_INACTIVE);\n        if (ret < 0) return ret;\n\n        if (byte & (1 << i)) {\n            gpio_pin_set_dt(&spec, 0);\n            k_busy_wait(1);\n            gpio_pin_set_dt(&spec, 1);\n            k_busy_wait(60);\n        } else {\n            gpio_pin_set_dt(&spec, 0);\n            k_busy_wait(60);\n            gpio_pin_set_dt(&spec, 1);\n            k_busy_wait(1);\n        }\n    }\n\n    ret = gpio_pin_configure_dt(&spec, GPIO_INPUT);\n    if (ret < 0) return ret;\n\n    return 0;\n}\n\nstatic int ds18b20_read_byte(struct ds18b20_dev *dev, uint8_t *byte)\n{\n    struct gpio_dt_spec spec = { .port = dev->port, .pin = dev->pin, .dt_flags = GPIO_OUTPUT_INACTIVE };\n    int ret;\n    uint8_t val = 0;\n\n    for (int i = 0; i < 8; i++) {\n        ret = gpio_pin_configure_dt(&spec, GPIO_OUTPUT_INACTIVE);\n        if (ret < 0) return ret;\n\n        gpio_pin_set_dt(&spec, 0);\n        k_busy_wait(1);\n        gpio_pin_set_dt(&spec, 1);\n        k_busy_wait(1);\n\n        ret = gpio_pin_configure_dt(&spec, GPIO_INPUT);\n        if (ret < 0) return ret;\n\n        int bit = gpio_pin_get_dt(&spec);\n        if (bit < 0) return bit;\n        if (bit) val |= (1 << i);\n\n        k_busy_wait(60);\n    }\n\n    *byte = val;\n    return 0;\n}\n\nint ds18b20_init(struct ds18b20_dev *dev, const struct device *port, gpio_pin_t pin)\n{\n    dev->port = port;\n    dev->pin = pin;\n\n    int ret = ds18b20_reset_pulse(dev);\n    if (ret < 0) return ret;\n\n    ret = ds18b20_write_byte(dev, DS18B20_SKIP_ROM);\n    if (ret < 0) return ret;\n\n    return 0;\n}\n\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw)\n{\n    int ret;\n    uint8_t lsb, msb;\n\n    ret = ds18b20_reset_pulse(dev);\n    if (ret < 0) return ret;\n\n    ret = ds18b20_write_byte(dev, DS18B20_SKIP_ROM);\n    if (ret < 0) return ret;\n\n    ret = ds18b20_write_byte(dev, DS18B20_CONVERT_T);\n    if (ret < 0) return ret;\n\n    k_msleep(CONVERSION_DELAY_MS);\n\n    ret = ds18b20_reset_pulse(dev);\n    if (ret < 0) return ret;\n\n    ret = ds18b20_write_byte(dev, DS18B20_SKIP_ROM);\n    if (ret < 0) return ret;\n\n    ret = ds18b20_write_byte(dev, DS18B20_READ_SCRATCHPAD);\n    if (ret < 0) return ret;\n\n    ret = ds18b20_read_byte(dev, &lsb);\n    if (ret < 0) return ret;\n\n    ret = ds18b20_read_byte(dev, &msb);\n    if (ret < 0) return ret;\n\n    int16_t raw_temp = (int16_t)((msb << 8) | lsb);\n    *raw = (int32_t)raw_temp * 625 / 10;\n\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "ds18b20_init(&g_eval_dev, g_eval_dev.port, g_eval_dev.pin)",
+    "read_call": "ds18b20_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct ds18b20_dev",
+    "init_extra_setup_c": "g_eval_dev.port = device_get_binding(bus_name);\nif (g_eval_dev.port == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\ng_eval_dev.pin = 0;",
+    "preamble_c": "#include \"zephyr.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "write_prefix_any_of": [
+          [
+            "0x44"
+          ]
+        ],
+        "note": "convert_t: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "convert_t: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "positive_temperature_25C",
+        "mock_preload": {
+          "payload": [
+            "0x90",
+            "0x01"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "derivation": "Raw 16-bit signed: 0x0190 = 400. Temperature = 400 * 0.0625 = 25.0 °C. In milli_degC: 25.0 * 1000 = 25000."
+      },
+      {
+        "name": "zero_temperature",
+        "mock_preload": {
+          "payload": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "Raw 16-bit signed: 0x0000 = 0. Temperature = 0 * 0.0625 = 0.0 °C. In milli_degC: 0."
+      },
+      {
+        "name": "negative_temperature_minus10C",
+        "mock_preload": {
+          "payload": [
+            "0x60",
+            "0xFF"
+          ]
+        },
+        "expected_read_raw": -10000,
+        "derivation": "Raw 16-bit signed: 0xFF60 = -160 (sign-extended from bit 11). Temperature = -160 * 0.0625 = -10.0 °C. In milli_degC: -10.0 * 1000 = -10000."
+      }
+    ]
+  },
+  "runtime_path": "renode_gpio_pulse",
+  "slave_kind": "gpio_pulse_injector",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 9.965,
+  "prompt_chars": 42510,
+  "raw_response": "{\"driver_header\": \"#ifndef DS18B20_H\\n#define DS18B20_H\\n\\n#include <stdint.h>\\n#include <zephyr/drivers/gpio.h>\\n\\nstruct ds18b20_dev {\\n    const struct device *port;\\n    gpio_pin_t pin;\\n};\\n\\nint ds18b20_init(struct ds18b20_dev *dev, const struct device *port, gpio_pin_t pin);\\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw);\\n\\n#endif /* DS18B20_H */\", \"driver_source\": \"#include \\\"ds18b20.h\\\"\\n#include <errno.h>\\n#include <stdint.h>\\n#include <zephyr/drivers/gpio.h>\\n#include <zephyr/kernel.h>\\n\\n#define DS18B20_SKIP_ROM 0xCC\\n#define DS18B20_CONVERT_T 0x44\\n#define DS18B20_READ_SCRATCHPAD 0xBE\\n\\n#define RESET_PULSE_US 480\\n#define PRESENCE_WAIT_US 480\\n#define CONVERSION_DELAY_MS 750\\n\\nstatic int ds18b20_reset_pulse(struct ds18b20_dev *dev)\\n{\\n    int ret;\\n    struct gpio_dt_spec spec = { .port = dev->port, .pin = dev->pin, .dt_flags = GPIO_OUTPUT_INACTIVE };\\n\\n    ret = gpio_pin_configure_dt(&spec, GPIO_OUTPUT_INACTIVE);\\n    if (ret < 0) return ret;\\n\\n    ret = gpio_pin_set_dt(&spec, 0);\\n    if (ret < 0) return ret;\\n\\n    k_busy_wait(RESET_PULSE_US);\\n\\n    ret = gpio_pin_configure_dt(&spec, GPIO_INPUT);\\n    if (ret < 0) return ret;\\n\\n    k_busy_wait(PRESENCE_WAIT_US);\\n\\n    int presence = gpio_pin_get_dt(&spec);\\n    if (presence < 0) return presence;\\n    if (presence != 0) return -ENODEV;\\n\\n    return 0;\\n}\\n\\nstatic int ds18b20_write_byte(struct ds18b20_dev *dev, uint8_t byte)\\n{\\n    struct gpio_dt_spec spec = { .port = dev->port, .pin = dev->pin, .dt_flags = GPIO_OUTPUT_INACTIVE };\\n    int ret;\\n\\n    for (int i = 0; i < 8; i++) {\\n        ret = gpio_pin_configure_dt(&spec, GPIO_OUTPUT_INACTIVE);\\n        if (ret < 0) return ret;\\n\\n        if (byte & (1 << i)) {\\n            gpio_pin_set_dt(&spec, 0);\\n            k_busy_wait(1);\\n            gpio_pin_set_dt(&spec, 1);\\n            k_busy_wait(60);\\n        } else {\\n            gpio_pin_set_dt(&spec, 0);\\n            k_busy_wait(60);\\n            gpio_pin_set_dt(&spec, 1);\\n            k_busy_wait(1);\\n        }\\n    }\\n\\n    ret = gpio_pin_configure_dt(&spec, GPIO_INPUT);\\n    if (ret < 0) return ret;\\n\\n    return 0;\\n}\\n\\nstatic int ds18b20_read_byte(struct ds18b20_dev *dev, uint8_t *byte)\\n{\\n    struct gpio_dt_spec spec = { .port = dev->port, .pin = dev->pin, .dt_flags = GPIO_OUTPUT_INACTIVE };\\n    int ret;\\n    uint8_t val = 0;\\n\\n    for (int i = 0; i < 8; i++) {\\n        ret = gpio_pin_configure_dt(&spec, GPIO_OUTPUT_INACTIVE);\\n        if (ret < 0) return ret;\\n\\n        gpio_pin_set_dt(&spec, 0);\\n        k_busy_wait(1);\\n        gpio_pin_set_dt(&spec, 1);\\n        k_busy_wait(1);\\n\\n        ret = gpio_pin_configure_dt(&spec, GPIO_INPUT);\\n        if (ret < 0) return ret;\\n\\n        int bit = gpio_pin_get_dt(&spec);\\n        if (bit < 0) return bit;\\n        if (bit) val |= (1 << i);\\n\\n        k_busy_wait(60);\\n    }\\n\\n    *byte = val;\\n    return 0;\\n}\\n\\nint ds18b20_init(struct ds18b20_dev *dev, const struct device *port, gpio_pin_t pin)\\n{\\n    dev->port = port;\\n    dev->pin = pin;\\n\\n    int ret = ds18b20_reset_pulse(dev);\\n    if (ret < 0) return ret;\\n\\n    ret = ds18b20_write_byte(dev, DS18B20_SKIP_ROM);\\n    if (ret < 0) return ret;\\n\\n    return 0;\\n}\\n\\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw)\\n{\\n    int ret;\\n    uint8_t lsb, msb;\\n\\n    ret = ds18b20_reset_pulse(dev);\\n    if (ret < 0) return ret;\\n\\n    ret = ds18b20_write_byte(dev, DS18B20_SKIP_ROM);\\n    if (ret < 0) return ret;\\n\\n    ret = ds18b20_write_byte(dev, DS18B20_CONVERT_T);\\n    if (ret < 0) return ret;\\n\\n    k_msleep(CONVERSION_DELAY_MS);\\n\\n    ret = ds18b20_reset_pulse(dev);\\n    if (ret < 0) return ret;\\n\\n    ret = ds18b20_write_byte(dev, DS18B20_SKIP_ROM);\\n    if (ret < 0) return ret;\\n\\n    ret = ds18b20_write_byte(dev, DS18B20_READ_SCRATCHPAD);\\n    if (ret < 0) return ret;\\n\\n    ret = ds18b20_read_byte(dev, &lsb);\\n    if (ret < 0) return ret;\\n\\n    ret = ds18b20_read_byte(dev, &msb);\\n    if (ret < 0) return ret;\\n\\n    int16_t raw_temp = (int16_t)((msb << 8) | lsb);\\n    *raw = (int32_t)raw_temp * 625 / 10;\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "5f3ea1ad4ad28867"
+}

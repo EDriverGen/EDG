@@ -1,0 +1,922 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "lm75a",
+  "rtos": "xiuos",
+  "board": "stm32f103-nano",
+  "bus_type": "i2c",
+  "connection": {
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "/dev/i2c1",
+    "bus_symbol": "/dev/i2c1",
+    "address_mode": "7-bit",
+    "backend": "XiUOS transform layer I2C device path",
+    "helper_usage_patterns": [
+      {
+        "pattern_id": "xizi_i2c_fd_select_slave_address",
+        "applies_to": "i2c",
+        "purpose": "Bind the opened I2C device fd to the selected 7-bit device slave address before PrivWrite/PrivRead.",
+        "required_symbols": [
+          "PrivOpen",
+          "PrivIoctl",
+          "PrivWrite",
+          "PrivRead",
+          "PrivClose"
+        ],
+        "required_types": [
+          "struct PrivIoctlCfg"
+        ],
+        "required_constants": [
+          "OPE_INT",
+          "I2C_TYPE"
+        ],
+        "steps": [
+          "Open the concrete bus_instance with PrivOpen and keep the fd in device state while the driver is active.",
+          "Create a uint16_t variable holding the chosen Device IR 7-bit I2C address.",
+          "Fill struct PrivIoctlCfg with ioctl_driver_type = I2C_TYPE and args = &i2c_addr.",
+          "Call PrivIoctl(fd, OPE_INT, &ioctl_cfg) once after open and before any PrivWrite or PrivRead.",
+          "Use the same configured fd for subsequent PrivWrite and PrivRead calls; close it during deinit or init-error cleanup."
+        ],
+        "evidence": [
+          "DriverGen/data/references/bh1750/xiuos/bh1750_ref.c",
+          "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+        ]
+      }
+    ]
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "PrivTaskDelay"
+    ],
+    "error_symbols": [
+      "int_status_return"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "I2cBusInit"
+    ],
+    "bus_api_signatures": {
+      "I2cBusInit": "int I2cBusInit(struct I2cBus *i2c_bus, const char *bus_name)"
+    },
+    "bus_helper_types": [
+      "MsgQueueType",
+      "I2cBus"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "xizi_transform_layer",
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "bus_instance": "/dev/i2c1",
+    "bus_symbol": "/dev/i2c1",
+    "include_headers": [
+      "APP_Framework/Framework/transform_layer/xizi/transform.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_msg.h"
+    ],
+    "fixed_attachment": {},
+    "required_helpers": [
+      "PrivOpen",
+      "PrivRead",
+      "PrivWrite",
+      "PrivIoctl",
+      "PrivClose",
+      "PrivTaskDelay"
+    ],
+    "helper_usage_patterns": [
+      {
+        "pattern_id": "xizi_i2c_fd_select_slave_address",
+        "applies_to": "i2c",
+        "purpose": "Bind the opened I2C device fd to the selected 7-bit device slave address before PrivWrite/PrivRead.",
+        "required_symbols": [
+          "PrivOpen",
+          "PrivIoctl",
+          "PrivWrite",
+          "PrivRead",
+          "PrivClose"
+        ],
+        "required_types": [
+          "struct PrivIoctlCfg"
+        ],
+        "required_constants": [
+          "OPE_INT",
+          "I2C_TYPE"
+        ],
+        "steps": [
+          "Open the concrete bus_instance with PrivOpen and keep the fd in device state while the driver is active.",
+          "Create a uint16_t variable holding the chosen Device IR 7-bit I2C address.",
+          "Fill struct PrivIoctlCfg with ioctl_driver_type = I2C_TYPE and args = &i2c_addr.",
+          "Call PrivIoctl(fd, OPE_INT, &ioctl_cfg) once after open and before any PrivWrite or PrivRead.",
+          "Use the same configured fd for subsequent PrivWrite and PrivRead calls; close it during deinit or init-error cleanup."
+        ],
+        "evidence": [
+          "DriverGen/data/references/bh1750/xiuos/bh1750_ref.c",
+          "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+        ]
+      }
+    ],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "/dev/i2c1",
+        "fields": {
+          "bus_instance": "/dev/i2c1",
+          "bus_symbol": "/dev/i2c1",
+          "backend": "XiUOS transform layer I2C device path",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "lm75a",
+    "required_bus_type": "i2c",
+    "addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B",
+        "0x4C",
+        "0x4D",
+        "0x4E",
+        "0x4F"
+      ],
+      "selection_rule": "A2/A1/A0 define the lower address bits."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver only requires I2C power, ground, SDA, and SCL."
+      ]
+    },
+    "optional_attachment": {
+      "os_pin": "optional",
+      "address_select_pins": [
+        "A0",
+        "A1",
+        "A2"
+      ]
+    }
+  },
+  "api_bindings": {
+    "i2c.acquire_or_bind": {
+      "symbol": "I2cBusInit",
+      "kind": "function",
+      "signature": "int I2cBusInit(struct I2cBus *i2c_bus, const char *bus_name)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/i2c/bus_i2c.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.key_types": {
+      "symbol": "MsgQueueType",
+      "kind": "typedef",
+      "signature": "struct MsgQueue *",
+      "required_headers": [
+        "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_msg.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.38333333333333336,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_msg.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "PrivTaskDelay",
+      "kind": "function",
+      "signature": "int PrivTaskDelay(int32_t ms)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.PrivClose": {
+      "symbol": "PrivClose",
+      "kind": "function",
+      "signature": "int PrivClose(int fd)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.PrivIoctl": {
+      "symbol": "PrivIoctl",
+      "kind": "function",
+      "signature": "int PrivIoctl(int fd, int cmd, void *args)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.PrivOpen": {
+      "symbol": "PrivOpen",
+      "kind": "function",
+      "signature": "int PrivOpen(const char *path, int flags, ...)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.PrivRead": {
+      "symbol": "PrivRead",
+      "kind": "function",
+      "signature": "int PrivRead(int fd, void *buf, size_t len)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.PrivTaskDelay": {
+      "symbol": "PrivTaskDelay",
+      "kind": "function",
+      "signature": "int PrivTaskDelay(int32_t ms)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.PrivWrite": {
+      "symbol": "PrivWrite",
+      "kind": "function",
+      "signature": "int PrivWrite(int fd, const void *buf, size_t len)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x48",
+            "description": "A2=A1=A0=GND (default)",
+            "is_default": true
+          },
+          {
+            "address": "0x49",
+            "description": "A2=A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4A",
+            "description": "A2=GND, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4B",
+            "description": "A2=GND, A1=Vcc, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4C",
+            "description": "A2=Vcc, A1=GND, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4D",
+            "description": "A2=Vcc, A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4E",
+            "description": "A2=Vcc, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4F",
+            "description": "A2=A1=A0=Vcc",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x48",
+              "description": "A2=A1=A0=GND (default)",
+              "is_default": true
+            },
+            {
+              "address": "0x49",
+              "description": "A2=A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4A",
+              "description": "A2=GND, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4B",
+              "description": "A2=GND, A1=Vcc, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4C",
+              "description": "A2=Vcc, A1=GND, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4D",
+              "description": "A2=Vcc, A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4E",
+              "description": "A2=Vcc, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4F",
+              "description": "A2=A1=A0=Vcc",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x48",
+          "alternates": [
+            "0x49",
+            "0x4A",
+            "0x4B",
+            "0x4C",
+            "0x4D",
+            "0x4E",
+            "0x4F"
+          ],
+          "selection_rule": "A2/A1/A0 define the lower address bits."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "I2cBus",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/i2c/bus_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "I2cBusInit",
+          "signature": "int I2cBusInit(struct I2cBus *i2c_bus, const char *bus_name)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "PrivTaskDelay",
+          "signature": "int PrivTaskDelay(int32_t ms)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/i2c/bus_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "I2cBusInit",
+          "signature": "int I2cBusInit(struct I2cBus *i2c_bus, const char *bus_name)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "/dev/i2c1",
+      "fields": {
+        "bus_instance": "/dev/i2c1",
+        "bus_symbol": "/dev/i2c1",
+        "backend": "XiUOS transform layer I2C device path",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x48",
+            "description": "A2=A1=A0=GND (default)",
+            "is_default": true
+          },
+          {
+            "address": "0x49",
+            "description": "A2=A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4A",
+            "description": "A2=GND, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4B",
+            "description": "A2=GND, A1=Vcc, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4C",
+            "description": "A2=Vcc, A1=GND, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4D",
+            "description": "A2=Vcc, A1=GND, A0=Vcc",
+            "is_default": false
+          },
+          {
+            "address": "0x4E",
+            "description": "A2=Vcc, A1=Vcc, A0=GND",
+            "is_default": false
+          },
+          {
+            "address": "0x4F",
+            "description": "A2=A1=A0=Vcc",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x48",
+              "description": "A2=A1=A0=GND (default)",
+              "is_default": true
+            },
+            {
+              "address": "0x49",
+              "description": "A2=A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4A",
+              "description": "A2=GND, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4B",
+              "description": "A2=GND, A1=Vcc, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4C",
+              "description": "A2=Vcc, A1=GND, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4D",
+              "description": "A2=Vcc, A1=GND, A0=Vcc",
+              "is_default": false
+            },
+            {
+              "address": "0x4E",
+              "description": "A2=Vcc, A1=Vcc, A0=GND",
+              "is_default": false
+            },
+            {
+              "address": "0x4F",
+              "description": "A2=A1=A0=Vcc",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x48",
+          "alternates": [
+            "0x49",
+            "0x4A",
+            "0x4B",
+            "0x4C",
+            "0x4D",
+            "0x4E",
+            "0x4F"
+          ],
+          "selection_rule": "A2/A1/A0 define the lower address bits."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "/dev/i2c1",
+      "fields": {
+        "bus_instance": "/dev/i2c1",
+        "bus_symbol": "/dev/i2c1",
+        "backend": "XiUOS transform layer I2C device path",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "I2cBus",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/i2c/bus_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "I2cBusInit",
+          "signature": "int I2cBusInit(struct I2cBus *i2c_bus, const char *bus_name)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "PrivTaskDelay",
+          "signature": "int PrivTaskDelay(int32_t ms)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/i2c/bus_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "I2cBusInit",
+          "signature": "int I2cBusInit(struct I2cBus *i2c_bus, const char *bus_name)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "MsgQueueType",
+    "PrivTaskDelay",
+    "PrivClose",
+    "PrivIoctl",
+    "PrivOpen",
+    "PrivRead",
+    "PrivWrite",
+    "I2cBusInit"
+  ],
+  "allowed_symbol_provenance": {
+    "MsgQueueType": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_msg.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "PrivTaskDelay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "PrivClose": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "PrivIoctl": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "PrivOpen": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "PrivRead": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "PrivWrite": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "I2cBusInit": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/i2c/bus_i2c.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "lm75a_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "lm75a_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x00"
+            ],
+            "length": 2,
+            "pointer_target": "Temp",
+            "notes": null
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.4,
+      "requires_human": true,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 12/15 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_msg.h",
+      "kind": "declaration",
+      "for_symbol": "MsgQueueType",
+      "slot_id": "i2c.key_types"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivTaskDelay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivClose",
+      "slot_id": "task_helper.PrivClose"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivIoctl",
+      "slot_id": "task_helper.PrivIoctl"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivOpen",
+      "slot_id": "task_helper.PrivOpen"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivRead",
+      "slot_id": "task_helper.PrivRead"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivTaskDelay",
+      "slot_id": "task_helper.PrivTaskDelay"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivWrite",
+      "slot_id": "task_helper.PrivWrite"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_IIoT_Macro/resources/i2c/bus_i2c.c",
+      "kind": "declaration",
+      "for_symbol": "I2cBusInit",
+      "slot_id": "i2c.acquire_or_bind"
+    }
+  ],
+  "requires_human": []
+}

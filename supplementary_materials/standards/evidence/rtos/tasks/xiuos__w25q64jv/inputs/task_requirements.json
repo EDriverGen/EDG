@@ -1,0 +1,159 @@
+{
+  "task_package_id": "xiuos_generic_xizi__w25q64jv__spi0_polling",
+  "rtos": "xiuos",
+  "device": "w25q64jv",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/w25q64jv/xiuos",
+  "task_package": {
+    "package_id": "xiuos_generic_xizi__w25q64jv__spi0_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/xiuos_generic_xizi.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/xiuos_generic_xizi_spi0_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/w25q64jv.json",
+    "reference_driver_root": "DriverGen/data/references/w25q64jv/xiuos",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "xiuos_generic_xizi",
+        "rtos": "xiuos",
+        "board": "generic_xizi",
+        "integration": "xiuos_xizi",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "xiuos_generic_xizi_spi0_polling",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "i2c1",
+        "bus_symbol": "i2c1",
+        "backend": "XiUOS XIZI",
+        "address_mode": "spi_mode_0",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "w25q64jv",
+        "attachment_type": "spi_flash",
+        "required_bus_type": "spi"
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "w25q64jv + xiuos + spi0_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/*.pdf",
+      "DriverGen/data/references/w25q64jv/xiuos"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "xiuos_generic_xizi",
+    "board": "stm32f103-nano",
+    "board_alias": "xiuos_f103rb",
+    "rtos": "xiuos",
+    "rtos_bundle": "xiuos",
+    "integration": "xizi_transform_layer",
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rbt6",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "/dev/i2c1"
+        ],
+        "spi": [
+          "/dev/spi0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "/dev/uart1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform targets the XiUOS stm32f103-nano board while using the public XiZi transform-layer plus resource framework.",
+      "Board assumptions stay generic and follow the existing XiUOS reference drivers that use device paths for I2C, SPI, UART, and GPIO."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/xiuos/Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_i2c.h",
+      "DriverGen/data/rtos/xiuos/Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_pin.h",
+      "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "xiuos_generic_xizi_spi0_polling",
+    "platform_id": "xiuos_generic_xizi",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "/dev/spi0",
+    "bus_instance_kind": "device_path",
+    "bus_symbol": "/dev/spi0",
+    "backend": "XiUOS transform-layer SPI device path",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "device_path": "/dev/spi0"
+    },
+    "notes": [
+      "Default XiUOS SPI binding follows references that open /dev/spi0 and use SPI_IOC_TRANSFER."
+    ],
+    "evidence": [
+      "DriverGen/data/references/adxl345/xiuos/adxl345_sample_ref.c",
+      "DriverGen/data/references/max31855/xiuos/max31855_ref.h",
+      "DriverGen/data/references/mcp3008/xiuos/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "w25q64jv",
+    "attachment_type": "spi_flash",
+    "required_bus_type": "spi",
+    "spi_proto": "memory",
+    "spi_mode": 0,
+    "spi_max_hz": 80000000,
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "addressing": {
+      "default": "spi1",
+      "selection_rule": "SPI CS# selected by board wiring."
+    },
+    "required_attachment": {
+      "signals": [
+        "CS",
+        "CLK",
+        "MOSI",
+        "MISO"
+      ],
+      "notes": [
+        "Standard SPI quad-pin connection."
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": "spi1",
+      "irq": "absent",
+      "dma": "absent"
+    },
+    "notes": [
+      "64M-bit SPI NOR Flash. Read 0x03, Page Program 0x02, Sector Erase 0x20."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/W25Q64JV.pdf",
+      "DriverGen/data/references/w25q64jv/*/*_ref.h"
+    ]
+  }
+}

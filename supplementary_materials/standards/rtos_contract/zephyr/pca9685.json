@@ -1,0 +1,123 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "zephyr__pca9685",
+  "device_id": "pca9685",
+  "rtos_id": "zephyr",
+  "bus": "i2c",
+  "scope": "Independent standard for pca9685 on the fixed i2c task configuration, based on its copied reference driver, fixed task requirements, supplied Zephyr API pack and harness. Excludes sample_ref application cadence and device-register behavior.",
+  "api_contract": {
+    "bus": "i2c",
+    "fixed_task_context": "i2c1 DT device handle and 7-bit target address",
+    "handle_and_operations": {
+      "handle": "const struct device * plus 7-bit address",
+      "operations": [
+        "i2c_burst_read",
+        "i2c_burst_write",
+        "k_busy_wait"
+      ],
+      "signatures": {
+        "i2c_burst_read": "int i2c_burst_read(const struct device *dev, uint16_t addr, uint8_t start_addr, uint8_t *buf, uint32_t num_bytes)",
+        "i2c_burst_write": "int i2c_burst_write(const struct device *dev, uint16_t addr, uint8_t start_addr, const uint8_t *buf, uint32_t num_bytes)",
+        "k_busy_wait": "void k_busy_wait(uint32_t us)"
+      },
+      "configuration": "fixed i2c1 bus, device address"
+    },
+    "headers": [
+      "zephyr/device.h",
+      "zephyr/drivers/i2c.h",
+      "zephyr/kernel.h for timing calls where used"
+    ],
+    "return_semantics": "Use the integer status from fallible bus/configuration calls; GPIO read yields level or error. UART poll_in is nonblocking: 0 means byte received, nonzero means no byte; poll_out returns void.",
+    "timing_semantics": "The driver calls k_busy_wait(500) after oscillator wake; the device note specifies up to 500 us for oscillator startup, so software needs to ensure at least this settling duration. A longer delay (for example 1 ms) is semantically acceptable if the delay API is available in this Zephyr task."
+  },
+  "facts": [
+    {
+      "id": "binding",
+      "category": "binding",
+      "requirement": "Bind the required i2c handle/configuration on fixed task context: i2c1 DT device handle and 7-bit target address.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 1,
+          "line_end": 115
+        },
+        {
+          "file": "evidence/rtos/tasks/zephyr__pca9685/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 184
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 41,
+          "line_end": 91
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "category": "api_operations",
+      "requirement": "Provide the task-required operations with compatible signatures: int i2c_burst_read(const struct device *dev, uint16_t addr, uint8_t start_addr, uint8_t *buf, uint32_t num_bytes); int i2c_burst_write(const struct device *dev, uint16_t addr, uint8_t start_addr, const uint8_t *buf, uint32_t num_bytes); void k_busy_wait(uint32_t us). Keep handle/address/configuration, buffer and return levels compatible with the reference.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 13,
+          "line_end": 87
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 41,
+          "line_end": 91
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/zephyr/i2c/pack.md",
+          "line_start": 1,
+          "line_end": 80
+        }
+      ]
+    },
+    {
+      "id": "required_waits",
+      "category": "timing",
+      "requirement": "After waking the PCA9685 oscillator, ensure at least 500 microseconds of settling time as in the reference. This is a device minimum wait, not a software maximum; longer waits are acceptable. Equivalent RTOS timing APIs are allowed when their availability in the task can be established.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 37,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/zephyr/gpio_timing/pack.md",
+          "line_start": 1952,
+          "line_end": 1968
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 229,
+          "line_end": 231
+        }
+      ]
+    },
+    {
+      "id": "status_handling",
+      "category": "return_semantics",
+      "requirement": "Preserve the fallible API status needed to detect or propagate bus/GPIO configuration and transaction failures; do not convert an error return into success.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 1,
+          "line_end": 115
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 41,
+          "line_end": 91
+        }
+      ]
+    }
+  ]
+}

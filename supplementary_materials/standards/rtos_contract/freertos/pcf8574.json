@@ -1,0 +1,83 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "freertos__pcf8574",
+  "device_id": "pcf8574",
+  "rtos_id": "freertos",
+  "bus": "i2c",
+  "scope": "freertos fixed task for pcf8574, bus=i2c, board=stm32f103rb; contract describes only APIs needed by the copied reference driver and task fixed binding.",
+  "api_contract": {
+    "headers": [
+      "stm32f1xx_hal.h",
+      "FreeRTOS.h",
+      "task.h"
+    ],
+    "types": {
+      "bus_or_device": "I2C_HandleTypeDef",
+      "status": "HAL_StatusTypeDef"
+    },
+    "task_binding": {
+      "bus": "i2c",
+      "instance": "i2c1",
+      "symbol": "hi2c1",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL I2C"
+    },
+    "operations": [
+      {
+        "name": "HAL_I2C_Master_Receive",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "HAL_I2C_Master_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      }
+    ],
+    "preconditions": "Caller provides the task-configured and initialized peripheral handle; helper APIs have the RTOS/HAL context documented in the baseline pack."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Retain the fixed FreeRTOS task's i2c handle/device type and prebound context; the caller supplies the bus instance configured according to task_requirements.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__pcf8574/inputs/reference_drivers/pcf8574_ref.h",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__pcf8574/inputs/reference_drivers/pcf8574_ref.h",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__pcf8574/inputs/task_requirements.json",
+          "line_start": 23,
+          "line_end": 29
+        }
+      ]
+    },
+    {
+      "id": "bus_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain the polling operations actually used by the reference implementation: HAL_I2C_Master_Receive, HAL_I2C_Master_Transmit. Parameter and return semantics must support the i2c access required by pcf8574.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__pcf8574/inputs/reference_drivers/pcf8574_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__pcf8574/inputs/reference_drivers/pcf8574_ref.c",
+          "line_start": 31,
+          "line_end": 31
+        }
+      ]
+    }
+  ]
+}

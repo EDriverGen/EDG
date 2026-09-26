@@ -1,0 +1,62 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "write_cycle",
+      "addr_or_pin": "0x48",
+      "write_prefix_any_of": [
+        [
+          "0x01"
+        ]
+      ],
+      "note": "write_config: write"
+    },
+    {
+      "phase": "write_cycle",
+      "addr_or_pin": "0x48",
+      "write_prefix_any_of": [
+        [
+          "0x03"
+        ]
+      ],
+      "note": "write_tos_thyst: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x48",
+      "write_prefix_any_of": [
+        [
+          "0x00"
+        ]
+      ],
+      "read_any": true,
+      "note": "read_temp: write_then_read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "positive_temperature_25C",
+      "mock_preload": {
+        "0x00": [
+          "0x19",
+          "0x20"
+        ]
+      },
+      "expected_read_raw": 201,
+      "derivation": "single_channel raw-primary normalization: bytes [0x19 0x20], raw_count = ((((0x19 << 8) | 0x20) >> 5) & 0x7FF) = 201. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+      "raw_tolerance": 0
+    },
+    {
+      "name": "negative_temperature_minus_10C",
+      "mock_preload": {
+        "0x00": [
+          "0xE6",
+          "0x60"
+        ]
+      },
+      "expected_read_raw": -205,
+      "derivation": "single_channel raw-primary normalization: bytes [0xE6 0x60], raw_count = (((((0xE6 << 8) | 0x60) >> 5) & 0x7FF) - 2048) = -205. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+      "raw_tolerance": 0
+    }
+  ],
+  "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+}

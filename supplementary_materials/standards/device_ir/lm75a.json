@@ -1,0 +1,597 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "lm75a",
+  "scope": "Primary I2C temperature read, configuration/shutdown, and expressed extra threshold/bus-timing facts. OS interrupt GPIO behavior is outside the polling task.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "bus",
+        "address",
+        "pointer_selection",
+        "pointer_upper",
+        "temperature_read",
+        "read_ack"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "reg_Temp",
+        "reg_Conf",
+        "reg_Thyst",
+        "reg_Tos",
+        "cfg_reserved",
+        "cfg_faultqueue",
+        "cfg_polarity",
+        "cfg_osmode",
+        "cfg_shutdown"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "conversion_period",
+        "first_conversion",
+        "bus_clock_period",
+        "bus_clock_high",
+        "bus_clock_low",
+        "bus_start_hold",
+        "bus_data_setup",
+        "bus_data_hold",
+        "bus_stop_setup",
+        "bus_fall"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "temperature_encoding",
+        "temperature_scale",
+        "setpoint_encoding",
+        "tos_scale",
+        "thyst_scale"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "power_normal",
+        "power_pointer",
+        "threshold_defaults",
+        "limit_order",
+        "shutdown_behavior"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "LM75A.pdf",
+      "pages": 18,
+      "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "bus",
+      "component": "B",
+      "category": "interface",
+      "required": true,
+      "expected": "I2C slave, 7-bit address",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "address",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "7-bit address 0x48 | (A2<<2|A1<<1|A0)",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reg_Temp",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Temp: 0x00, 16 bits; Temp RO, others RW",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reg_Conf",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Conf: 0x01, 8 bits; Temp RO, others RW",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reg_Thyst",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Thyst: 0x02, 16 bits; Temp RO, others RW",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reg_Tos",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Tos: 0x03, 16 bits; Temp RO, others RW",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer_selection",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Pointer low 2 bits select one of four registers",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer_upper",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Pointer bits 7:2 must be zero",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cfg_reserved",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Conf B7:B5 reserved, power-up 000",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cfg_faultqueue",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "B4:B3 maps 0/1/2/3 to 1/2/4/6 faults",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cfg_polarity",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "B2 selects active high/low",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cfg_osmode",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "B1 selects interrupt/comparator",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cfg_shutdown",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "B0=1 shutdown, 0 normal",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_normal",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Normal conversion begins at power-up; Conf=0",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        },
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_pointer",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Power-up pointer=0, first read may omit pointer",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "threshold_defaults",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "Tos=80 C; Thyst=75 C",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        },
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_period",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Normal conversions every about 100 ms",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        },
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "first_conversion",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "First valid temperature about 100 ms after power-up",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_read",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Select pointer 0x00 then read two bytes MS first",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        },
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Signed two-complement 11-bit temperature occupies 16-bit word bits15:5",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Temperature mdegC = signed11 * 125",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "setpoint_encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": false,
+      "expected": "Tos and Thyst are signed9 in word bits15:7",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "tos_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Tos mdegC = signed9 * 500",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "thyst_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Thyst mdegC = signed9 * 500",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "limit_order",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "Tos must exceed Thyst",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "shutdown_behavior",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Shutdown stops conversion; last value retained and I2C active",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        },
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_clock_period",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "2.5 us",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_clock_high",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "0.6 us",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_clock_low",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "1.3 us",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_start_hold",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "100 ns",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_data_setup",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "100 ns",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_data_hold",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "0 ns",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_stop_setup",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "100 ns",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_fall",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "250 ns typical",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_ack",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Read ACK after first byte is master-driven; final master NACK terminates normally",
+      "evidence": [
+        {
+          "document": "LM75A.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/lm75a/LM75A.pages.json"
+        }
+      ]
+    }
+  ]
+}

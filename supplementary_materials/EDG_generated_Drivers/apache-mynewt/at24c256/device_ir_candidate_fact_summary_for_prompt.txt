@@ -1,0 +1,41 @@
+Summary: {"address_count": 1, "bitfield_count": 4, "bus_type": "I2C", "channel_count": 0, "device_id": "at24c256", "evidence_span_count": 21, "formula_count": 0, "operation_count": 7, "register_count": 4, "requires_human_count": 4, "timing_count": 14}
+Addresses:
+- 1010xxx form=7-bit device address (first 5 bits fixed 1010, next 2 bits A1,A0) default=None desc=Device address word consists of mandatory one, zero sequence for first five most significant bits (1010), then two de...
+Registers:
+- Device Address Word@None access=write bits=8 roles=control desc=8-bit device address word: first 5 bits 1010, then A1, A0, then R/W bit.
+- Data Word Address (High Byte)@None access=write bits=8 roles=control desc=High byte of the 15-bit data word address for AT24C256 (bits 14:8).
+- Data Word Address (Low Byte)@None access=write bits=8 roles=control desc=Low byte of the 15-bit data word address for AT24C256 (bits 7:0).
+- Data Word@None access=read-write bits=8 roles=data desc=8-bit data word read from or written to the memory.
+Bitfields:
+- Device Address Word.Fixed Pattern bits=7:3 roles=control desc=First five most significant bits: 1010.
+- Device Address Word.A1 bits=2 roles=control desc=Device address bit A1, must match hardwired A1 pin.
+- Device Address Word.A0 bits=1 roles=control desc=Device address bit A0, must match hardwired A0 pin.
+- Device Address Word.R/W bits=0 roles=control desc=Read/Write select bit: 1 for read, 0 for write.
+Operations:
+- byte_write kind=write channels= outputs= summary=Write a single byte to a given memory address. steps=[write:Device Address Word:Send start condition, then device address word with R/W=0.; write:Data Word Address (High Byte):Send high byte of data word address.; write:Data Word Address (Low Byte):Send low byte of data word address.; write:Data Word:Send 8-bit data word.; write:None:Send stop condition to initiate internal write cycle.; delay:None:Wait for write cycle completion (tWR max 5 ms or 10 ms depending on device va...]
+- page_write kind=write channels= outputs= summary=Write up to 64 bytes in a page write operation. steps=[write:Device Address Word:Send start condition, then device address word with R/W=0.; write:Data Word Address (High Byte):Send high byte of data word address.; write:Data Word Address (Low Byte):Send low byte of data word address.; write:Data Word:Send first data word, then up to 63 more data words without stop condition. E...; write:None:Send stop condition to initiate internal write cycle.; delay:None:Wait for write cycle completion (tWR).]
+- acknowledge_polling kind=other channels= outputs= summary=Poll device after write to check if internal write cycle has completed. steps=[write:Device Address Word:Send start condition followed by device address word (with R/W bit as desired).; read:None:Check for acknowledge (zero) from EEPROM. If acknowledged, write cycle comple...]
+- current_address_read kind=read channels= outputs=data_byte summary=Read a byte from the current internal address counter. steps=[write:Device Address Word:Send start condition, then device address word with R/W=1.; read:Data Word:Read 8-bit data word. Microcontroller does not acknowledge (NACK) and generat...]
+- random_read kind=read channels= outputs=data_byte summary=Read a byte from a specified memory address using a dummy write to load the address. steps=[write:Device Address Word:Send start condition, then device address word with R/W=0 (dummy write).; write:Data Word Address (High Byte):Send high byte of data word address.; write:Data Word Address (Low Byte):Send low byte of data word address.; write:None:Generate another start condition (repeated start).; write:Device Address Word:Send device address word with R/W=1 (current address read).; read:Data Word:Read 8-bit data word. Microcontroller does not acknowledge and generates stop...]
+- sequential_read kind=read channels= outputs=data_bytes summary=Read multiple bytes sequentially starting from current or random address. steps=[other:None:Initiate either a current address read or random address read to get first byte.; read:Data Word:After receiving each data word, microcontroller responds with acknowledge (AC...; read:Data Word:To terminate, microcontroller does not acknowledge (NACK) and generates stop...]
+- memory_reset kind=other channels= outputs= summary=Reset the device after protocol interruption, power loss, or system reset. steps=[other:None:Clock up to 9 cycles on SCL while monitoring SDA. Look for SDA high in each c...; write:None:Create a start condition as SDA is high.]
+Timing:
+- tWR=5 or 10 or 20 ms when=Write cycle time: 5 ms for 'B' process devices, 10 ms for 2.5V/5.0V, 20 ms for 1.8V (non-B).
+- fSCL=100 or 400 or 1000 kHz when=Clock frequency: 100 kHz at 1.8V, 400 kHz at 2.5V/2.7V, 1 MHz at 5.0V.
+- tLOW=4.7 or 1.3 or 0.4 µs when=Clock pulse width low: 4.7 µs at 1.8V, 1.3 µs at 2.5V, 0.4 µs at 5.0V.
+- tHIGH=4.0 or 0.6 or 0.4 µs when=Clock pulse width high: 4.0 µs at 1.8V, 0.6 µs at 2.5V, 0.4 µs at 5.0V.
+- tAA=4.5 or 0.9 or 0.55 µs when=Clock low to data out valid: 4.5 µs max at 1.8V, 0.9 µs max at 2.5V, 0.55 µs max at 5.0V.
+- tBUF=4.7 or 1.3 or 0.5 µs when=Bus free time before new transmission: 4.7 µs at 1.8V, 1.3 µs at 2.5V, 0.5 µs at 5.0V.
+- tHD.STA=4.0 or 0.6 or 0.25 µs when=Start hold time: 4.0 µs at 1.8V, 0.6 µs at 2.5V, 0.25 µs at 5.0V.
+- tSU.STA=4.7 or 0.6 or 0.25 µs when=Start set-up time: 4.7 µs at 1.8V, 0.6 µs at 2.5V, 0.25 µs at 5.0V.
+- tHD.DAT=0 µs when=Data in hold time: 0 µs min for all voltages.
+- tSU.DAT=200 or 100 ns when=Data in set-up time: 200 ns at 1.8V, 100 ns at 2.5V and 5.0V.
+- tR=1.0 or 0.3 µs when=Input rise time: 1.0 µs max at 1.8V, 0.3 µs max at 2.5V and 5.0V.
+- tF=300 or 100 ns when=Input fall time: 300 ns max at 1.8V and 2.5V, 100 ns max at 5.0V.
+- tSU.STO=4.7 or 0.6 or 0.25 µs when=Stop set-up time: 4.7 µs at 1.8V, 0.6 µs at 2.5V, 0.25 µs at 5.0V.
+- tDH=100 or 50 ns when=Data out hold time: 100 ns min at 1.8V, 50 ns min at 2.5V and 5.0V.
+RequiresHuman:
+- Determine the correct device address bits A1 and A0 based on hardware connections.
+- Select appropriate timing parameters based on supply voltage (1.8V, 2.5V, or 5.0V) and device variant (standard or 'B' process).
+- Decide whether to use delay or acknowledge polling after write operations.
+- Handle write protection via WP pin if needed.

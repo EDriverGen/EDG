@@ -1,0 +1,451 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "max31855",
+  "scope": "SPI thermocouple and cold-junction temperature readout plus fault reporting. Electrical timing assertions checked as additional facts; reserved output bits retained in required frame layout.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "readonly_spi",
+        "cs_selection",
+        "edge"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": []
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "powerup_wait",
+        "conversion_wait",
+        "clock_limit",
+        "spi_timing_2",
+        "spi_timing_3",
+        "spi_timing_4",
+        "spi_timing_5",
+        "spi_timing_6",
+        "spi_timing_7"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "frame_order",
+        "thermo_bits",
+        "internal_bits",
+        "thermo_formula",
+        "internal_formula",
+        "reserved",
+        "nonlinearity"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "update_cs",
+        "fault_summary",
+        "fault_scv",
+        "fault_scg",
+        "fault_oc",
+        "thermocouple_variant"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "MAX31855.pdf",
+      "pages": 13,
+      "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "readonly_spi",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Read-only SPI stream; no register address or write commands",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        },
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "frame_order",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "32 bits D31..D0, MSB first",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cs_selection",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "CS LOW enables serial output; raise CS after transfer",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "edge",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "D31 valid after CS falling, remaining bits after SCK falling",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "update_cs",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Output registers update while CS HIGH; continuous background conversion",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        },
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "thermo_bits",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Thermocouple signed14 bits D31:18",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "internal_bits",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Cold junction signed12 bits D15:4",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "thermo_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Sign-extend14 and multiply by250 for milli-degrees C",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        },
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "internal_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Sign-extend12 and multiply by62.5 for milli-degrees C",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        },
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reserved",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "D17 and D3 reserved and always0",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fault_summary",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "D16 is OR of SCV/SCG/OC fault bits",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fault_scv",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "D2=short to VCC",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fault_scg",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "D1=short to ground",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fault_oc",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "D0=open circuit",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "powerup_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Wait at least200ms after power-up for valid reading",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Conversion maximum100ms",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clock_limit",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "SCK maximum5MHz",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_timing_2",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "CS falling to SCK rising at least100ns",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_timing_3",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SCK to CS hold at least100ns",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_timing_4",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "CS falling to output enable maximum100ns",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_timing_5",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "CS rising to output disable maximum40ns",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_timing_6",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SCK falling to output valid maximum40ns",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_timing_7",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "CS inactive minimum200ns",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "thermocouple_variant",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "Sensor variant fixes thermocouple type and useful range",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        },
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "nonlinearity",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Additional nonlinearity correction can be performed by application",
+      "evidence": [
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        },
+        {
+          "document": "MAX31855.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/max31855/MAX31855.pages.json"
+        }
+      ]
+    }
+  ]
+}

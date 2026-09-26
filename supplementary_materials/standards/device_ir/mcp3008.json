@@ -1,0 +1,346 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "mcp3008",
+  "scope": "Eight single-ended raw ADC channels; no voltage output or differential-mode API is required. Board voltage selects clock limit. Analog supply/current values are outside the software-fact scope.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "bus_mode",
+        "command_bits",
+        "transfer",
+        "clock_count",
+        "cs_low",
+        "clock_edge"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": []
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "sck_5v",
+        "sck_2v7",
+        "conversion_clock",
+        "sample_period",
+        "min_clock"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "channels",
+        "extract",
+        "raw_format",
+        "dummy_unknown"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "powerup_cs",
+        "standby"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "MCP3008.pdf",
+      "pages": 40,
+      "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "bus_mode",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "SPI mode0 is supported",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "channels",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Eight single-ended channels0..7",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "command_bits",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Byte1=0x80|(channel<<4) for single-ended channel",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "transfer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "24-clock full-duplex transfer under one CS assertion",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clock_count",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Byte-aligned read is a3-byte full-duplex transaction (24clocks)",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cs_low",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Keep CS LOW throughout transaction; HIGH aborts/end conversion",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "powerup_cs",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "If CS LOW at power-up, raise it then lower before communication",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clock_edge",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Output changes on falling edge, sampled on rising edge",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extract",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "ADC=((rx1&3)<<8)|rx2",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw_format",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Unsigned10-bit straight binary, range0..1023, MSB first",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "dummy_unknown",
+      "component": "V",
+      "category": "encoding",
+      "required": false,
+      "expected": "Initial unselected output bits are unknown/high impedance, not guaranteed0",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sck_5v",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Maximum clock3.6MHz at5V",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sck_2v7",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Maximum clock1.35MHz at2.7V",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_clock",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Conversion takes10 clock cycles",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sample_period",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Acquisition lasts1.5 clock cycles",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "min_clock",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Effective clock at least10kHz for specified performance",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "standby",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "CS HIGH places converter in standby",
+      "evidence": [
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        },
+        {
+          "document": "MCP3008.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp3008/MCP3008.pages.json"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "task_package_id": "cmsis_rtx_stm32f103rb__w25q64jv__spi1_dma",
+  "rtos": "cmsis-rtx",
+  "rtos_bundle": "cmsis-rtx-stm32f103-project",
+  "board": "stm32f103rb",
+  "board_alias": "f103rb",
+  "integration": "stm32cubef1_hal",
+  "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+  "mcu_family": "stm32f1",
+  "mcu": "stm32f103rb",
+  "bus_type": "spi",
+  "bus_instance": "spi1",
+  "bus_instance_kind": "named_hal_handle",
+  "bus_symbol": "hspi1",
+  "bus_backend": "STM32CubeF1 HAL SPI DMA with cmsis-rtx completion handling",
+  "address_mode": "chip-select",
+  "mode": "dma",
+  "irq": "dma_completion",
+  "dma": "required",
+  "reset_gpio": null,
+  "power_gpio": null,
+  "fixed_attachment": {
+    "chip_select": "board_configured_gpio",
+    "cs_handling": "driver_or_board_specific"
+  },
+  "device_attachment_context_id": "w25q64jv",
+  "device_addressing": {
+    "default": "spi1",
+    "selection_rule": "SPI CS# selected by board wiring."
+  },
+  "device_irq": "absent",
+  "dma_requirements": {
+    "task_package_id": "cmsis_rtx_stm32f103rb__w25q64jv__spi1_dma",
+    "mode": "dma",
+    "physical_bus": "spi",
+    "backend": "STM32CubeF1 HAL SPI DMA with cmsis-rtx completion handling",
+    "access_pattern": "explicit_hal_dma",
+    "candidate_transfer_apis": [
+      "HAL_SPI_TransmitReceive_DMA",
+      "HAL_SPI_Transmit_DMA",
+      "HAL_SPI_Receive_DMA"
+    ],
+    "dma_channels": {
+      "controller": "DMA1",
+      "tx": 3,
+      "rx": 2
+    },
+    "minimum_core_payload_bytes": 1,
+    "configuration_requirements": [
+      "Enable the existing STM32F1 HAL DMA and selected bus modules.",
+      "Configure the original controller's DMA1 TX/RX channels, link handles, and install DMA/peripheral IRQ handlers.",
+      "Use HAL completion/error callbacks and an RTOS-compatible completion wait."
+    ],
+    "generation_requirements": [
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use DMA for memory read/program payloads. Preserve opcode/address framing, chip-select boundaries, write enable, page boundaries, and device busy waits."
+    ],
+    "device_scenarios": [
+      "Read contiguous 64-byte and 256-byte payloads.",
+      "Program within a 256-byte page and check readback.",
+      "Keep chip select asserted across command/address and payload phases."
+    ],
+    "validation_requirements": [
+      {
+        "id": "dma_payload",
+        "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+      },
+      {
+        "id": "completion_order",
+        "requirement": "Consume receive data and reuse buffers only after the required completion event."
+      },
+      {
+        "id": "error_and_timeout",
+        "requirement": "Return the specified error and release transfer state after failure or timeout."
+      },
+      {
+        "id": "repeat_operation",
+        "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+      }
+    ],
+    "source_evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+    ]
+  },
+  "source_evidence": [
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+  ]
+}

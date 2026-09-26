@@ -1,0 +1,167 @@
+{
+  "device_id": "ds3231",
+  "rtos_id": "tobudos",
+  "eval_class": "rtc",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "rtc",
+    "init_call": "ds3231_init(&g_eval_dev, bus_handle)",
+    "get_time_call": "ds3231_get_time(&g_eval_dev, &t)",
+    "set_time_call": "ds3231_set_time(&g_eval_dev, &drv)",
+    "time_struct_decl": "struct ds3231_time drv;",
+    "time_struct_from_in": "struct ds3231_time drv; drv.year = in->year - 2000; drv.month = in->month; drv.day = in->day; drv.hour = in->hour; drv.minute = in->minute; drv.second = in->second; drv.weekday = in->weekday;",
+    "time_fields": {
+      "year": "drv.year + 2000",
+      "month": "drv.month",
+      "day": "drv.day",
+      "hour": "drv.hour",
+      "minute": "drv.minute",
+      "second": "drv.second",
+      "weekday": "drv.weekday"
+    },
+    "dev_struct_type": "struct ds3231_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include \"stm32f1xx_hal.h\"\n#include \"stm32f1xx_hal_i2c.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_time",
+        "mock_preload": {
+          "0x00": [
+            "0x59"
+          ],
+          "0x01": [
+            "0x59"
+          ],
+          "0x02": [
+            "0x23"
+          ],
+          "0x03": [
+            "0x03"
+          ],
+          "0x04": [
+            "0x15"
+          ],
+          "0x05": [
+            "0x06"
+          ],
+          "0x06": [
+            "0x24"
+          ]
+        },
+        "expected_time": {
+          "year": 2024,
+          "month": 6,
+          "day": 15,
+          "hour": 23,
+          "minute": 59,
+          "second": 59,
+          "weekday": 3
+        },
+        "derivation": "BCD 0x59=59, 0x23=23, 0x15=15, 0x06=6, 0x24=24 -> year 2000+24=2024"
+      },
+      {
+        "name": "zero_time",
+        "mock_preload": {
+          "0x00": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x00"
+          ],
+          "0x02": [
+            "0x00"
+          ],
+          "0x03": [
+            "0x01"
+          ],
+          "0x04": [
+            "0x01"
+          ],
+          "0x05": [
+            "0x01"
+          ],
+          "0x06": [
+            "0x00"
+          ]
+        },
+        "expected_time": {
+          "year": 2000,
+          "month": 1,
+          "day": 1,
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "weekday": 1
+        },
+        "derivation": "BCD 0x00=0, 0x01=1, year 2000+0=2000"
+      },
+      {
+        "name": "set_time_stimulus",
+        "mock_preload": {
+          "0x00": [
+            "0x30"
+          ],
+          "0x01": [
+            "0x30"
+          ],
+          "0x02": [
+            "0x12"
+          ],
+          "0x03": [
+            "0x05"
+          ],
+          "0x04": [
+            "0x25"
+          ],
+          "0x05": [
+            "0x12"
+          ],
+          "0x06": [
+            "0x25"
+          ]
+        },
+        "expected_time": {
+          "year": 2025,
+          "month": 12,
+          "day": 25,
+          "hour": 12,
+          "minute": 30,
+          "second": 30,
+          "weekday": 5
+        },
+        "derivation": "BCD 0x30=30, 0x12=12, 0x25=25, 0x12=12, 0x25=25 -> year 2000+25=2025"
+      }
+    ]
+  },
+  "plan_hash": "d7b12b46a5139981",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.464,
+  "prompt_chars": 57682,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"rtc\", \"init_call\": \"ds3231_init(&g_eval_dev, bus_handle)\", \"get_time_call\": \"ds3231_get_time(&g_eval_dev, &t)\", \"set_time_call\": \"ds3231_set_time(&g_eval_dev, &drv)\", \"time_struct_decl\": \"struct ds3231_time drv;\", \"time_struct_from_in\": \"struct ds3231_time drv; drv.year = in->year - 2000; drv.month = in->month; drv.day = in->day; drv.hour = in->hour; drv.minute = in->minute; drv.second = in->second; drv.weekday = in->weekday;\", \"time_fields\": {\"year\": \"drv.year + 2000\", \"month\": \"drv.month\", \"day\": \"drv.day\", \"hour\": \"drv.hour\", \"minute\": \"drv.minute\", \"second\": \"drv.second\", \"weekday\": \"drv.weekday\"}, \"dev_struct_type\": \"struct ds3231_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"preamble_c\": \"#include \\\"tobudos.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"stm32f1xx_hal_i2c.h\\\"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x68\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_time: write_then_read\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"0x68\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"write_time: write\"}], \"test_stimuli\": [{\"name\": \"nominal_time\", \"mock_preload\": {\"0x00\": [\"0x59\"], \"0x01\": [\"0x59\"], \"0x02\": [\"0x23\"], \"0x03\": [\"0x03\"], \"0x04\": [\"0x15\"], \"0x05\": [\"0x06\"], \"0x06\": [\"0x24\"]}, \"expected_time\": {\"year\": 2024, \"month\": 6, \"day\": 15, \"hour\": 23, \"minute\": 59, \"second\": 59, \"weekday\": 3}, \"derivation\": \"BCD 0x59=59, 0x23=23, 0x15=15, 0x06=6, 0x24=24 -> year 2000+24=2024\"}, {\"name\": \"zero_time\", \"mock_preload\": {\"0x00\": [\"0x00\"], \"0x01\": [\"0x00\"], \"0x02\": [\"0x00\"], \"0x03\": [\"0x01\"], \"0x04\": [\"0x01\"], \"0x05\": [\"0x01\"], \"0x06\": [\"0x00\"]}, \"expected_time\": {\"year\": 2000, \"month\": 1, \"day\": 1, \"hour\": 0, \"minute\": 0, \"second\": 0, \"weekday\": 1}, \"derivation\": \"BCD 0x00=0, 0x01=1, year 2000+0=2000\"}, {\"name\": \"set_time_stimulus\", \"mock_preload\": {\"0x00\": [\"0x30\"], \"0x01\": [\"0x30\"], \"0x02\": [\"0x12\"], \"0x03\": [\"0x05\"], \"0x04\": [\"0x25\"], \"0x05\": [\"0x12\"], \"0x06\": [\"0x25\"]}, \"expected_time\": {\"year\": 2025, \"month\": 12, \"day\": 25, \"hour\": 12, \"minute\": 30, \"second\": 30, \"weekday\": 5}, \"derivation\": \"BCD 0x30=30, 0x12=12, 0x25=25, 0x12=12, 0x25=25 -> year 2000+25=2025\"}]}}"
+}

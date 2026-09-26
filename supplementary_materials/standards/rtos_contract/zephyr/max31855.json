@@ -1,0 +1,118 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "zephyr__max31855",
+  "device_id": "max31855",
+  "rtos_id": "zephyr",
+  "bus": "spi",
+  "scope": "Independent standard for max31855 on the fixed spi task configuration, based on its copied reference driver, fixed task requirements, supplied Zephyr API pack and harness. Excludes sample_ref application cadence and device-register behavior.",
+  "api_contract": {
+    "bus": "spi",
+    "fixed_task_context": "spi1 DT device handle, spi_config and required CS context",
+    "handle_and_operations": {
+      "handle": "const struct device * plus struct spi_config (or spi_dt_spec for dt helper)",
+      "operations": [
+        "spi_read"
+      ],
+      "signatures": {
+        "spi_read": "int spi_read(const struct device *dev, const struct spi_config *config, const struct spi_buf_set *rx_bufs)"
+      },
+      "configuration": "master mode; 8-bit/MSB; ADXL345 mode 3, others mode 0 as appropriate; reference frequency and CS"
+    },
+    "headers": [
+      "zephyr/device.h",
+      "zephyr/drivers/spi.h",
+      "zephyr/kernel.h for timing calls where used"
+    ],
+    "return_semantics": "Use the integer status from fallible bus/configuration calls; GPIO read yields level or error. UART poll_in is nonblocking: 0 means byte received, nonzero means no byte; poll_out returns void."
+  },
+  "facts": [
+    {
+      "id": "binding",
+      "category": "binding",
+      "requirement": "Bind the required spi handle/configuration on fixed task context: spi1 DT device handle, spi_config and required CS context.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 1,
+          "line_end": 70
+        },
+        {
+          "file": "evidence/rtos/tasks/zephyr__max31855/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 147
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 140,
+          "line_end": 192
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "category": "api_operations",
+      "requirement": "Provide the task-required operations with compatible signatures: int spi_read(const struct device *dev, const struct spi_config *config, const struct spi_buf_set *rx_bufs). Keep handle/address/configuration, buffer and return levels compatible with the reference.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 27,
+          "line_end": 27
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 140,
+          "line_end": 192
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/zephyr/spi/pack.md",
+          "line_start": 1,
+          "line_end": 80
+        }
+      ]
+    },
+    {
+      "id": "spi_configuration",
+      "category": "configuration",
+      "requirement": "Use master, 8-bit, MSB-first SPI; preserve the reference mode (ADXL345 mode 3; MAX31855/MCP3008 mode 0; W25Q64JV configured at 8 MHz) and chip-select control where required.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 1,
+          "line_end": 70
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 140,
+          "line_end": 192
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/zephyr/spi/pack.md",
+          "line_start": 55,
+          "line_end": 180
+        }
+      ]
+    },
+    {
+      "id": "status_handling",
+      "category": "return_semantics",
+      "requirement": "Preserve the fallible API status needed to detect or propagate bus/GPIO configuration and transaction failures; do not convert an error return into success.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 1,
+          "line_end": 70
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 140,
+          "line_end": 192
+        }
+      ]
+    }
+  ]
+}

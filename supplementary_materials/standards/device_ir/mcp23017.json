@@ -1,0 +1,535 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "mcp23017",
+  "scope": "Port reads/writes and direction configuration for MCP23017 at default 0x20/BANK=0; additional IR facts about interrupts and pull-ups are included in accuracy assessment.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "pointer",
+        "write",
+        "read_ports"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "bank0_map",
+        "register_extent",
+        "bank_mapping",
+        "direction",
+        "latch",
+        "polarity",
+        "interrupt_selection",
+        "iocon_controls",
+        "pullups",
+        "interrupt_registers",
+        "reserved_bit"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "gpio_write_latch",
+        "capture_order"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "reset_pulse",
+        "max_clock",
+        "clock_voltage",
+        "por_delay_claim",
+        "standard_bus_timing"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "port_data"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "reset_defaults",
+        "output_only_pins",
+        "reset_state",
+        "interrupt_clear"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "MCP23017.pdf",
+      "pages": 40,
+      "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "MCP23017 uses 7-bit I2C addressing; A2:A0=000 selects 0x20.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Write a one-byte register address before reading or writing data.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bank0_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "With BANK=0, IODIRA/B=00/01, GPIOA/B=12/13, and OLATA/B=14/15.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "register_extent",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "BANK=0 maps 22 addresses at 00..15; IOCON has two aliases.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bank_mapping",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "IOCON.BANK bit7 controls the mapping; BANK=0 pairs A/B registers.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "write",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "A write transaction sends the register address and data.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_ports",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Read one byte from GPIOA/B using the respective register pointer.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "direction",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Each IODIR bit selects input at 1 and output at 0; writing 00 during initialization configures outputs.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "port_data",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "GPIO reads return pin logic levels; bit n corresponds to pin n of that port.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "latch",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Each OLAT bit stores the corresponding output latch value.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "gpio_write_latch",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Writing GPIO changes the OLAT output latch; reading GPIO returns actual port levels.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_defaults",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "After POR, IODIR=FF, GPIO defaults to input, and IOCON/OLAT=00.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "output_only_pins",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "GPA7 and GPB7 of this MCP23017 revision support output only.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 1,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_pulse",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The RESET low pulse must last at least 1 us.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_state",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Outputs are high impedance while RESET is asserted; operation resumes after release.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "max_clock",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The maximum I2C clock is 1.7 MHz.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 1,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clock_voltage",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "1.7 MHz requires VDD>=4.5 V; 400 kHz requires >=2.7 V; 100 kHz operates down to 1.8 V.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "por_delay_claim",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "The specified wait from POR to communication readiness.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "The IR specifies 10 ms, but the inspected manual does not provide this value. It may be a conservative software delay and cannot be classified as a correct or incorrect device fact from this source."
+    },
+    {
+      "id": "standard_bus_timing",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "At 100 kHz, START setup and bus-free time are each at least 4.7 us.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "polarity",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "IPOL bits invert input polarity.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interrupt_selection",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "GPINTEN enables per-pin interrupts, DEFVAL provides comparison values, and INTCON selects the comparison source.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "iocon_controls",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "MIRROR/SEQOP/DISSLW/HAEN/ODR/INTPOL occupy bits6/5/4/3/2/1; HAEN applies only to SPI devices.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pullups",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Each GPPU bit controls the corresponding pin's weak pull-up.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interrupt_registers",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "INTF records pending interrupts; INTCAP captures the port value at the interrupt.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interrupt_clear",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "Reading the respective GPIO or INTCAP clears the interrupt; with mirroring, the other port may keep INT asserted.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        },
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "capture_order",
+      "component": "O",
+      "category": "procedure",
+      "required": false,
+      "expected": "Reading GPIO before INTCAP may lose captured event data.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reserved_bit",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "IOCON bit0 is unimplemented and reads as 0.",
+      "evidence": [
+        {
+          "document": "MCP23017.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/mcp23017/MCP23017.pages.json"
+        }
+      ]
+    }
+  ]
+}

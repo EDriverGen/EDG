@@ -1,0 +1,1086 @@
+{
+  "device_id": "emc1413",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x4C",
+        "description": "EMC1413-A with 10k pull-up on THERM pin (default)",
+        "is_default": true
+      },
+      {
+        "address": "0x4D",
+        "description": "EMC1413-A with 4.7k pull-up on THERM pin",
+        "is_default": false
+      },
+      {
+        "address": "0x5C",
+        "description": "EMC1413-A with 6.8k pull-up on THERM pin",
+        "is_default": false
+      },
+      {
+        "address": "0x6C",
+        "description": "EMC1413-A with 15k pull-up on THERM pin",
+        "is_default": false
+      },
+      {
+        "address": "0x1C",
+        "description": "EMC1413-A with 22k pull-up on THERM pin",
+        "is_default": false
+      },
+      {
+        "address": "0x3C",
+        "description": "EMC1413-A with 33k pull-up on THERM pin",
+        "is_default": false
+      },
+      {
+        "address": "0x4C",
+        "description": "EMC1413-1 hard coded address",
+        "is_default": false
+      },
+      {
+        "address": "0x18",
+        "description": "EMC1413-3 hard coded address",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 256,
+    "addressing": "1-byte",
+    "auto_increment": false,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Register addresses 0x00-0xFF, SMBus register pointer set via Send Byte or Write Byte."
+  },
+  "read_channels": [
+    {
+      "id": "internal_temperature",
+      "raw_type": "uint16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_internal_temperature",
+      "source_bytes": [
+        "Internal Diode High Byte",
+        "Internal Diode Low Byte"
+      ],
+      "formula_id": "temperature_from_raw_default",
+      "notes": "11-bit value: high byte integer, low byte fractional (bits 7-5)."
+    },
+    {
+      "id": "external_diode_1_temperature",
+      "raw_type": "uint16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_external_diode_1_temperature",
+      "source_bytes": [
+        "External Diode 1 High Byte",
+        "External Diode 1 Low Byte"
+      ],
+      "formula_id": "temperature_from_raw_default",
+      "notes": "11-bit value: high byte integer, low byte fractional (bits 7-5)."
+    },
+    {
+      "id": "external_diode_2_temperature",
+      "raw_type": "uint16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_external_diode_2_temperature",
+      "source_bytes": [
+        "External Diode 2 High Byte",
+        "External Diode 2 Low Byte"
+      ],
+      "formula_id": "temperature_from_raw_default",
+      "notes": "11-bit value: high byte integer, low byte fractional (bits 7-5)."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "SMBus register pointer set via Send Byte or Write Byte; Read Byte and Receive Byte used for data."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "probe",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [
+        "Device powered and SMBus active"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xFE"
+            ],
+            "length": 1,
+            "pointer_target": "Manufacturer ID"
+          },
+          "notes": "Read Manufacturer ID register (0xFE) to verify Microchip ID 0x5D."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xFD"
+            ],
+            "length": 1,
+            "pointer_target": "Product ID"
+          },
+          "notes": "Read Product ID register (0xFD) to verify EMC1413 ID 0x21."
+        }
+      ],
+      "outputs": [],
+      "notes": "Probe flow to confirm device identity."
+    },
+    {
+      "flow_id": "init",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Device powered and SMBus active"
+      ],
+      "steps": [
+        {
+          "op": "delay",
+          "delay_ms": 15,
+          "notes": "Wait 15ms after power-up before SMBus communication."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x03",
+              "0x00"
+            ],
+            "pointer_target": "Configuration"
+          },
+          "notes": "Write Configuration register (0x03) with default 0x00: active mode, ALERT interrupt mode, default range, dynamic averaging enabled."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x04",
+              "0x06"
+            ],
+            "pointer_target": "Conversion Rate"
+          },
+          "notes": "Write Conversion Rate register (0x04) with default 0x06: 4 conversions per second."
+        }
+      ],
+      "outputs": [],
+      "notes": "Initialization to default settings."
+    },
+    {
+      "flow_id": "read_internal_temperature",
+      "kind": "read",
+      "channels": [
+        "internal_temperature"
+      ],
+      "preconditions": [
+        "Device initialized and converting"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x00"
+            ],
+            "length": 1,
+            "pointer_target": "Internal Diode High Byte"
+          },
+          "notes": "Set pointer to Internal Diode High Byte (0x00) and read high byte."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x29"
+            ],
+            "length": 1,
+            "pointer_target": "Internal Diode Low Byte"
+          },
+          "notes": "Set pointer to Internal Diode Low Byte (0x29) and read low byte."
+        },
+        {
+          "op": "postprocess",
+          "notes": "Combine high byte and low byte into 16-bit raw value; low byte bits 7-5 are fractional, bits 4-0 are zero."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "internal_temperature",
+          "byte_source": "internal_high_byte:8 || internal_low_byte:8",
+          "formula_id": "temperature_from_raw_default",
+          "unit": "milli_degC"
+        }
+      ],
+      "notes": "Read internal temperature using two separate read transactions due to non-contiguous addresses."
+    },
+    {
+      "flow_id": "read_external_diode_1_temperature",
+      "kind": "read",
+      "channels": [
+        "external_diode_1_temperature"
+      ],
+      "preconditions": [
+        "Device initialized and converting"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x01"
+            ],
+            "length": 1,
+            "pointer_target": "External Diode 1 High Byte"
+          },
+          "notes": "Set pointer to External Diode 1 High Byte (0x01) and read high byte."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x10"
+            ],
+            "length": 1,
+            "pointer_target": "External Diode 1 Low Byte"
+          },
+          "notes": "Set pointer to External Diode 1 Low Byte (0x10) and read low byte."
+        },
+        {
+          "op": "postprocess",
+          "notes": "Combine high byte and low byte into 16-bit raw value; low byte bits 7-5 are fractional, bits 4-0 are zero."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "external_diode_1_temperature",
+          "byte_source": "ext1_high_byte:8 || ext1_low_byte:8",
+          "formula_id": "temperature_from_raw_default",
+          "unit": "milli_degC"
+        }
+      ],
+      "notes": "Read external diode 1 temperature using two separate read transactions."
+    },
+    {
+      "flow_id": "read_external_diode_2_temperature",
+      "kind": "read",
+      "channels": [
+        "external_diode_2_temperature"
+      ],
+      "preconditions": [
+        "Device initialized and converting"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x23"
+            ],
+            "length": 1,
+            "pointer_target": "External Diode 2 High Byte"
+          },
+          "notes": "Set pointer to External Diode 2 High Byte (0x23) and read high byte."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x24"
+            ],
+            "length": 1,
+            "pointer_target": "External Diode 2 Low Byte"
+          },
+          "notes": "Set pointer to External Diode 2 Low Byte (0x24) and read low byte."
+        },
+        {
+          "op": "postprocess",
+          "notes": "Combine high byte and low byte into 16-bit raw value; low byte bits 7-5 are fractional, bits 4-0 are zero."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "external_diode_2_temperature",
+          "byte_source": "ext2_high_byte:8 || ext2_low_byte:8",
+          "formula_id": "temperature_from_raw_default",
+          "unit": "milli_degC"
+        }
+      ],
+      "notes": "Read external diode 2 temperature using two separate read transactions."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 11,
+    "signed": false,
+    "right_shift": 5,
+    "sign_extend_from_bit": null,
+    "notes": "Temperature data: high byte integer, low byte bits 7-5 fractional (0.125°C/LSB), bits 4-0 zero. Default range 0°C to +127.875°C."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Internal Diode High Byte",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores the integer data for the Internal Diode"
+    },
+    {
+      "name": "External Diode 1 High Byte",
+      "value": "0x01",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores the integer data for External Diode 1"
+    },
+    {
+      "name": "Status",
+      "value": "0x02",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores the status bits for the Internal Diode and External Diodes"
+    },
+    {
+      "name": "Configuration",
+      "value": "0x03",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls the general operation of the device (mirrored at address 09h)"
+    },
+    {
+      "name": "Conversion Rate",
+      "value": "0x04",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls the conversion rate for updating temperature data (mirrored at address 0Ah)"
+    },
+    {
+      "name": "Internal Diode High Limit",
+      "value": "0x05",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit high limit for the Internal Diode (mirrored at address 0Bh)"
+    },
+    {
+      "name": "Internal Diode Low Limit",
+      "value": "0x06",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit low limit for the Internal Diode (mirrored at address 0Ch)"
+    },
+    {
+      "name": "External Diode 1 High Limit High Byte",
+      "value": "0x07",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the integer portion of the high limit for External Diode 1 (mirrored at register 0Dh)"
+    },
+    {
+      "name": "External Diode 1 Low Limit High Byte",
+      "value": "0x08",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the integer portion of the low limit for External Diode 1 (mirrored at register 0Eh)"
+    },
+    {
+      "name": "Configuration",
+      "value": "0x09",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls the general operation of the device (mirrored at address 03h)"
+    },
+    {
+      "name": "Conversion Rate",
+      "value": "0x0A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls the conversion rate for updating temperature data (mirrored at address 04h)"
+    },
+    {
+      "name": "Internal Diode High Limit",
+      "value": "0x0B",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit high limit for the Internal Diode (mirrored at address 05h)"
+    },
+    {
+      "name": "Internal Diode Low Limit",
+      "value": "0x0C",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit low limit for the Internal Diode (mirrored at address 06h)"
+    },
+    {
+      "name": "External Diode 1 High Limit High Byte",
+      "value": "0x0D",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the integer portion of the high limit for External Diode 1 (mirrored at register 07h)"
+    },
+    {
+      "name": "External Diode 1 Low Limit High Byte",
+      "value": "0x0E",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the integer portion of the low limit for External Diode 1 (mirrored at register 08h)"
+    },
+    {
+      "name": "One Shot",
+      "value": "0x0F",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "A write to this register initiates a one shot update."
+    },
+    {
+      "name": "External Diode 1 Low Byte",
+      "value": "0x10",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores the fractional data for External Diode 1"
+    },
+    {
+      "name": "Scratchpad",
+      "value": "0x11",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Scratchpad register for software compatibility"
+    },
+    {
+      "name": "Scratchpad",
+      "value": "0x12",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Scratchpad register for software compatibility"
+    },
+    {
+      "name": "External Diode 1 High Limit Low Byte",
+      "value": "0x13",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the fractional portion of the high limit for External Diode 1"
+    },
+    {
+      "name": "External Diode 1 Low Limit Low Byte",
+      "value": "0x14",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the fractional portion of the low limit for External Diode 1"
+    },
+    {
+      "name": "External Diode 2 High Limit High Byte",
+      "value": "0x15",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the integer portion of the high limit for External Diode 2"
+    },
+    {
+      "name": "External Diode 2 Low Limit High Byte",
+      "value": "0x16",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the integer portion of the low limit for External Diode 2"
+    },
+    {
+      "name": "External Diode 2 High Limit Low Byte",
+      "value": "0x17",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the fractional portion of the high limit External Diode 2"
+    },
+    {
+      "name": "External Diode 2 Low Limit Low Byte",
+      "value": "0x18",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the fractional portion of the low limit for External Diode 2"
+    },
+    {
+      "name": "External Diode 1 Therm Limit",
+      "value": "0x19",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit critical temperature limit for External Diode 1"
+    },
+    {
+      "name": "External Diode 2 Therm Limit",
+      "value": "0x1A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit critical temperature limit for External Diode 2"
+    },
+    {
+      "name": "External Diode Fault",
+      "value": "0x1B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores status bits indicating which external diode detected a diode fault (clear on read)"
+    },
+    {
+      "name": "Channel Mask",
+      "value": "0x1F",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls the masking of individual channels"
+    },
+    {
+      "name": "Internal Diode Therm Limit",
+      "value": "0x20",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit critical temperature limit for the Internal Diode"
+    },
+    {
+      "name": "Therm Hysteresis",
+      "value": "0x21",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the 8-bit hysteresis value that applies to all Therm limits"
+    },
+    {
+      "name": "Consecutive ALERT",
+      "value": "0x22",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls the number of out-of-limit conditions that must occur before an interrupt is asserted"
+    },
+    {
+      "name": "External Diode 2 High Byte",
+      "value": "0x23",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores the integer data for External Diode 2"
+    },
+    {
+      "name": "External Diode 2 Low Byte",
+      "value": "0x24",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores the fractional data for External Diode 2"
+    },
+    {
+      "name": "External Diode 1 Beta Configuration",
+      "value": "0x25",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the Beta Compensation circuitry settings for External Diode 1"
+    },
+    {
+      "name": "External Diode 2 Beta Configuration",
+      "value": "0x26",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the Beta Compensation circuitry settings for External Diode 2"
+    },
+    {
+      "name": "External Diode 1 Ideality Factor",
+      "value": "0x27",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the ideality factor for External Diode 1"
+    },
+    {
+      "name": "External Diode 2 Ideality Factor",
+      "value": "0x28",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Stores the ideality factor for External Diode 2"
+    },
+    {
+      "name": "Internal Diode Low Byte",
+      "value": "0x29",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores the fractional data for the Internal Diode"
+    },
+    {
+      "name": "High Limit Status",
+      "value": "0x35",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Status bits for the High Limits (clear on read)"
+    },
+    {
+      "name": "Low Limit Status",
+      "value": "0x36",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Status bits for the Low Limits (clear on read)"
+    },
+    {
+      "name": "Therm Limit Status",
+      "value": "0x37",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Status bits for the Therm Limits"
+    },
+    {
+      "name": "Filter Control",
+      "value": "0x40",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls the digital filter setting for the External Diode 1 channel"
+    },
+    {
+      "name": "Product ID",
+      "value": "0xFD",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores a fixed value that identifies the device (21h for EMC1413)"
+    },
+    {
+      "name": "Manufacturer ID",
+      "value": "0xFE",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores a fixed value that represents Microchip (5Dh)"
+    },
+    {
+      "name": "Revision",
+      "value": "0xFF",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Stores a fixed value that represents the revision number (04h)"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Status",
+      "name": "BUSY",
+      "bit_offset": 7,
+      "bit_width": 1,
+      "description": "ADC is currently converting"
+    },
+    {
+      "register": "Status",
+      "name": "HIGH",
+      "bit_offset": 4,
+      "bit_width": 1,
+      "description": "Any temperature channel exceeds high limit"
+    },
+    {
+      "register": "Status",
+      "name": "LOW",
+      "bit_offset": 3,
+      "bit_width": 1,
+      "description": "Any temperature channel drops below low limit"
+    },
+    {
+      "register": "Status",
+      "name": "FAULT",
+      "bit_offset": 2,
+      "bit_width": 1,
+      "description": "Diode fault detected on any external diode"
+    },
+    {
+      "register": "Status",
+      "name": "THERM",
+      "bit_offset": 1,
+      "bit_width": 1,
+      "description": "Any temperature channel exceeds Therm limit"
+    },
+    {
+      "register": "Configuration",
+      "name": "MASK_ALL",
+      "bit_offset": 7,
+      "bit_width": 1,
+      "description": "Masks the ALERT pin from asserting"
+    },
+    {
+      "register": "Configuration",
+      "name": "RUN/STOP",
+      "bit_offset": 6,
+      "bit_width": 1,
+      "description": "Controls Active/Standby modes"
+    },
+    {
+      "register": "Configuration",
+      "name": "ALERT/COMP",
+      "bit_offset": 5,
+      "bit_width": 1,
+      "description": "Controls ALERT pin mode (interrupt/comparator)"
+    },
+    {
+      "register": "Configuration",
+      "name": "RECD1",
+      "bit_offset": 4,
+      "bit_width": 1,
+      "description": "Resistance Error Correction for External Diode 1"
+    },
+    {
+      "register": "Configuration",
+      "name": "RECD2",
+      "bit_offset": 3,
+      "bit_width": 1,
+      "description": "Resistance Error Correction for External Diode 2"
+    },
+    {
+      "register": "Configuration",
+      "name": "RANGE",
+      "bit_offset": 2,
+      "bit_width": 1,
+      "description": "Selects temperature range (0=default 0-127°C, 1=extended -64-191°C)"
+    },
+    {
+      "register": "Configuration",
+      "name": "DAVG_DIS",
+      "bit_offset": 1,
+      "bit_width": 1,
+      "description": "Disables dynamic averaging"
+    },
+    {
+      "register": "Configuration",
+      "name": "APDD",
+      "bit_offset": 0,
+      "bit_width": 1,
+      "description": "Anti-parallel diode detection"
+    },
+    {
+      "register": "Conversion Rate",
+      "name": "CONV",
+      "bit_offset": 0,
+      "bit_width": 4,
+      "description": "Determines conversion rate"
+    },
+    {
+      "register": "External Diode Fault",
+      "name": "E2FLT",
+      "bit_offset": 2,
+      "bit_width": 1,
+      "description": "External Diode 2 diode fault"
+    },
+    {
+      "register": "External Diode Fault",
+      "name": "E1FLT",
+      "bit_offset": 1,
+      "bit_width": 1,
+      "description": "External Diode 1 diode fault"
+    },
+    {
+      "register": "Channel Mask",
+      "name": "E2MASK",
+      "bit_offset": 2,
+      "bit_width": 1,
+      "description": "Mask ALERT for External Diode 2"
+    },
+    {
+      "register": "Channel Mask",
+      "name": "E1MASK",
+      "bit_offset": 1,
+      "bit_width": 1,
+      "description": "Mask ALERT for External Diode 1"
+    },
+    {
+      "register": "Channel Mask",
+      "name": "INTMASK",
+      "bit_offset": 0,
+      "bit_width": 1,
+      "description": "Mask ALERT for Internal Diode"
+    },
+    {
+      "register": "Consecutive ALERT",
+      "name": "TIMEOUT",
+      "bit_offset": 7,
+      "bit_width": 1,
+      "description": "Enables SMBus Timeout"
+    },
+    {
+      "register": "Consecutive ALERT",
+      "name": "CTHRM",
+      "bit_offset": 4,
+      "bit_width": 3,
+      "description": "Number of consecutive Therm limit violations before THERM asserted"
+    },
+    {
+      "register": "Consecutive ALERT",
+      "name": "CALRT",
+      "bit_offset": 1,
+      "bit_width": 3,
+      "description": "Number of consecutive out-of-limit conditions before ALERT asserted"
+    },
+    {
+      "register": "External Diode 1 Beta Configuration",
+      "name": "ENABLE1",
+      "bit_offset": 3,
+      "bit_width": 1,
+      "description": "Enables Beta Compensation auto-detection for External Diode 1"
+    },
+    {
+      "register": "External Diode 1 Beta Configuration",
+      "name": "BETA1",
+      "bit_offset": 0,
+      "bit_width": 3,
+      "description": "Beta configuration setting for External Diode 1"
+    },
+    {
+      "register": "External Diode 2 Beta Configuration",
+      "name": "ENABLE2",
+      "bit_offset": 3,
+      "bit_width": 1,
+      "description": "Enables Beta Compensation auto-detection for External Diode 2"
+    },
+    {
+      "register": "External Diode 2 Beta Configuration",
+      "name": "BETA2",
+      "bit_offset": 0,
+      "bit_width": 3,
+      "description": "Beta configuration setting for External Diode 2"
+    },
+    {
+      "register": "External Diode 1 Ideality Factor",
+      "name": "IDEALITY1",
+      "bit_offset": 0,
+      "bit_width": 6,
+      "description": "Ideality factor setting for External Diode 1"
+    },
+    {
+      "register": "External Diode 2 Ideality Factor",
+      "name": "IDEALITY2",
+      "bit_offset": 0,
+      "bit_width": 6,
+      "description": "Ideality factor setting for External Diode 2"
+    },
+    {
+      "register": "High Limit Status",
+      "name": "E2HIGH",
+      "bit_offset": 2,
+      "bit_width": 1,
+      "description": "External Diode 2 high limit exceeded"
+    },
+    {
+      "register": "High Limit Status",
+      "name": "E1HIGH",
+      "bit_offset": 1,
+      "bit_width": 1,
+      "description": "External Diode 1 high limit exceeded"
+    },
+    {
+      "register": "High Limit Status",
+      "name": "IHIGH",
+      "bit_offset": 0,
+      "bit_width": 1,
+      "description": "Internal Diode high limit exceeded"
+    },
+    {
+      "register": "Low Limit Status",
+      "name": "E2LOW",
+      "bit_offset": 2,
+      "bit_width": 1,
+      "description": "External Diode 2 low limit exceeded"
+    },
+    {
+      "register": "Low Limit Status",
+      "name": "E1LOW",
+      "bit_offset": 1,
+      "bit_width": 1,
+      "description": "External Diode 1 low limit exceeded"
+    },
+    {
+      "register": "Low Limit Status",
+      "name": "ILOW",
+      "bit_offset": 0,
+      "bit_width": 1,
+      "description": "Internal Diode low limit exceeded"
+    },
+    {
+      "register": "Therm Limit Status",
+      "name": "E2THERM",
+      "bit_offset": 2,
+      "bit_width": 1,
+      "description": "External Diode 2 Therm limit exceeded"
+    },
+    {
+      "register": "Therm Limit Status",
+      "name": "E1THERM",
+      "bit_offset": 1,
+      "bit_width": 1,
+      "description": "External Diode 1 Therm limit exceeded"
+    },
+    {
+      "register": "Therm Limit Status",
+      "name": "ITHERM",
+      "bit_offset": 0,
+      "bit_width": 1,
+      "description": "Internal Diode Therm limit exceeded"
+    },
+    {
+      "register": "Filter Control",
+      "name": "FILTER",
+      "bit_offset": 0,
+      "bit_width": 2,
+      "description": "Controls digital filter level for External Diode 1"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Wait 15ms after power-up before SMBus communication."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x03",
+          "0x00"
+        ],
+        "pointer_target": "Configuration"
+      },
+      "notes": "Write Configuration register (0x03) with default 0x00: active mode, ALERT interrupt mode, default range, dynamic averaging enabled."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x04",
+          "0x06"
+        ],
+        "pointer_target": "Conversion Rate"
+      },
+      "notes": "Write Conversion Rate register (0x04) with default 0x06: 4 conversions per second."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "Read temperature channels: set pointer to high byte register, read high byte, then set pointer to low byte register, read low byte."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "power_up_smbus_ready",
+      "value": 15,
+      "unit": "ms",
+      "condition": "after power-up",
+      "notes": "For the first 15ms after power-up the device may not respond to SMBus communications."
+    },
+    {
+      "name": "conversion_period",
+      "value": 250,
+      "unit": "ms",
+      "condition": "default conversion rate 4/sec",
+      "notes": "Default conversion rate is 4 conversions per second."
+    },
+    {
+      "name": "smbus_timeout",
+      "value": 30,
+      "unit": "ms",
+      "condition": "TIMEOUT bit enabled",
+      "notes": "If the clock line is held low for longer than 30ms, the device will reset its SMBus protocol."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temperature_from_raw_default",
+      "formula": "Temperature (°C) = integer_high_byte + (fractional_low_byte >> 5) * 0.125, for default range 0°C to +127.875°C.",
+      "integer_approximation_expression": {
+        "expression": "(high_byte * 1000) + (((low_byte >> 5) & 0x07) * 125)",
+        "inputs": [
+          {
+            "name": "high_byte",
+            "byte_source": "high_byte:8",
+            "description": "Integer portion of temperature (8 bits)."
+          },
+          {
+            "name": "low_byte",
+            "byte_source": "low_byte:8",
+            "description": "Low byte: bits 7-5 fractional (0.125°C/LSB), bits 4-0 zero."
+          }
+        ],
+        "output": {
+          "name": "temp_milli_degC",
+          "unit": "milli_degC"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "diode_fault",
+      "description": "Diode fault detected on external diode channel (FAULT bit in Status register set).",
+      "detection": "Read Status register (0x02) and check FAULT bit (bit 2). Read External Diode Fault register (0x1B) to identify channel.",
+      "driver_action": "Report error and optionally retry or mask channel."
+    },
+    {
+      "name": "smbus_nack",
+      "description": "SMBus NACK received during communication.",
+      "detection": "SMBus controller detects NACK after sending byte.",
+      "driver_action": "Abort transaction and return -EIO."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "active",
+      "description": "ADC converting on all channels at programmed conversion rate.",
+      "condition": "RUN/STOP bit = 0 (default)"
+    },
+    {
+      "name": "standby",
+      "description": "Most circuitry powered down, SMBus active, no conversions.",
+      "condition": "RUN/STOP bit = 1"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "emc1413",
+      "page": 13,
+      "snippet": "The EMC1413-A and EMC1414-A SMBus slave address is determined by the pull-up resistor on the THERM pin as shown in Table 5.1"
+    },
+    {
+      "source_id": "emc1413",
+      "page": 13,
+      "snippet": "For the first 15ms after power-up the device may not respond to SMBus communications."
+    },
+    {
+      "source_id": "emc1413",
+      "page": 29,
+      "snippet": "all temperatures are stored as an 11-bit value with the high byte representing the integer value and the low byte representing the fractional value left justified to occupy the MSBits."
+    },
+    {
+      "source_id": "emc1413",
+      "page": 24,
+      "snippet": "The default range is from 0°C to +127°C and the temperature is represented as binary number able to report a temperature from 0°C to +127.875°C in 0.125°C steps."
+    },
+    {
+      "source_id": "emc1413",
+      "page": 30,
+      "snippet": "The Configuration Register controls the basic operation of the device."
+    },
+    {
+      "source_id": "emc1413",
+      "page": 31,
+      "snippet": "The Conversion Rate Register controls how often the temperature measurement channels are updated and compared against the limits."
+    },
+    {
+      "source_id": "emc1413",
+      "page": 42,
+      "snippet": "The Product ID Register holds a unique value that identifies the device."
+    },
+    {
+      "source_id": "emc1413",
+      "page": 42,
+      "snippet": "The Manufacturer ID register contains an 8-bit word that identifies Microchip as the manufacturer."
+    }
+  ],
+  "requires_human": [
+    "The SMBus address decode table lists binary addresses with (r/w) suffix; these are 8-bit wire form addresses. The 7-bit addresses were derived by right-shifting by 1. The default address for EMC1413-A with 10k pull-up is 0x4C (1001_100b >> 1 = 0x4C). Confirm that the default pull-up resistor is 10k as per typical application.",
+    "The EMC1413-1 and EMC1413-3 hard-coded addresses are given as 1001_100(r/w) and 0011_000(r/w) respectively; these are 8-bit forms. Derived 7-bit addresses: 0x4C and 0x18. Confirm.",
+    "The datasheet mentions EMC1413-1 and EMC1413-3 variants but does not specify which variant is the target. Assuming EMC1413-A (address set by resistor) is the primary target. If a specific variant is intended, adjust address_rule accordingly."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

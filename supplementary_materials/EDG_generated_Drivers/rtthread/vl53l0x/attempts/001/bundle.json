@@ -1,0 +1,61 @@
+{
+  "device_id": "vl53l0x",
+  "rtos_id": "rtthread",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef VL53L0X_H\n#define VL53L0X_H\n\n#include <stdint.h>\n#include <rtdevice.h>\n\nstruct vl53l0x_device {\n    struct rt_i2c_bus_device *bus;\n    uint8_t i2c_addr;\n};\n\nint vl53l0x_init(struct vl53l0x_device *dev, struct rt_i2c_bus_device *bus);\nint vl53l0x_read_distance(struct vl53l0x_device *dev, uint16_t *raw);\n\n#endif /* VL53L0X_H */",
+  "driver_source": "#include \"vl53l0x.h\"\n#include <stdint.h>\n#include <string.h>\n\n#define VL53L0X_I2C_ADDR 0x29\n\nint vl53l0x_init(struct vl53l0x_device *dev, struct rt_i2c_bus_device *bus)\n{\n    if (dev == NULL || bus == NULL) {\n        return -1;\n    }\n    dev->bus = bus;\n    dev->i2c_addr = VL53L0X_I2C_ADDR;\n    return 0;\n}\n\nint vl53l0x_read_distance(struct vl53l0x_device *dev, uint16_t *raw)\n{\n    struct rt_i2c_msg msgs[1];\n    uint8_t buf[2];\n    int ret;\n\n    if (dev == NULL || dev->bus == NULL || raw == NULL) {\n        return -1;\n    }\n\n    msgs[0].addr = dev->i2c_addr;\n    msgs[0].flags = RT_I2C_RD;\n    msgs[0].len = 2;\n    msgs[0].buf = buf;\n\n    ret = rt_i2c_transfer(dev->bus, msgs, 1);\n    if (ret != 1) {\n        return -1;\n    }\n\n    *raw = ((uint16_t)buf[0] << 8) | buf[1];\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "vl53l0x_init(&g_eval_dev, bus)",
+    "read_call": "vl53l0x_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "uint16_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct vl53l0x_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x29",
+        "read_any": true,
+        "note": "ranging_single: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "distance_100mm",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00",
+            "0x64"
+          ]
+        },
+        "expected_read_raw": 100,
+        "derivation": "mock_preload.read_bytes = [0x00, 0x64]; big-endian uint16 = 0x0064 = 100 mm"
+      },
+      {
+        "name": "distance_1000mm",
+        "mock_preload": {
+          "read_bytes": [
+            "0x03",
+            "0xE8"
+          ]
+        },
+        "expected_read_raw": 1000,
+        "derivation": "mock_preload.read_bytes = [0x03, 0xE8]; big-endian uint16 = 0x03E8 = 1000 mm"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.15,
+  "prompt_chars": 25982,
+  "raw_response": "{\"driver_header\": \"#ifndef VL53L0X_H\\n#define VL53L0X_H\\n\\n#include <stdint.h>\\n#include <rtdevice.h>\\n\\nstruct vl53l0x_device {\\n    struct rt_i2c_bus_device *bus;\\n    uint8_t i2c_addr;\\n};\\n\\nint vl53l0x_init(struct vl53l0x_device *dev, struct rt_i2c_bus_device *bus);\\nint vl53l0x_read_distance(struct vl53l0x_device *dev, uint16_t *raw);\\n\\n#endif /* VL53L0X_H */\", \"driver_source\": \"#include \\\"vl53l0x.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define VL53L0X_I2C_ADDR 0x29\\n\\nint vl53l0x_init(struct vl53l0x_device *dev, struct rt_i2c_bus_device *bus)\\n{\\n    if (dev == NULL || bus == NULL) {\\n        return -1;\\n    }\\n    dev->bus = bus;\\n    dev->i2c_addr = VL53L0X_I2C_ADDR;\\n    return 0;\\n}\\n\\nint vl53l0x_read_distance(struct vl53l0x_device *dev, uint16_t *raw)\\n{\\n    struct rt_i2c_msg msgs[1];\\n    uint8_t buf[2];\\n    int ret;\\n\\n    if (dev == NULL || dev->bus == NULL || raw == NULL) {\\n        return -1;\\n    }\\n\\n    msgs[0].addr = dev->i2c_addr;\\n    msgs[0].flags = RT_I2C_RD;\\n    msgs[0].len = 2;\\n    msgs[0].buf = buf;\\n\\n    ret = rt_i2c_transfer(dev->bus, msgs, 1);\\n    if (ret != 1) {\\n        return -1;\\n    }\\n\\n    *raw = ((uint16_t)buf[0] << 8) | buf[1];\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "14a600eb2e81857e"
+}

@@ -1,0 +1,54 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x71",
+      "write_prefix_any_of": [
+        [
+          "0x08"
+        ]
+      ],
+      "note": "read_pwm_channel: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x71",
+      "read_any": true,
+      "note": "read_pwm_channel: direct read read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "pwm_channel_0_duty_50_percent",
+      "mock_preload": {
+        "0x08": [
+          "0x00",
+          "0x08",
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "pwm_channel_0": 2048,
+        "pwm_channel_1": 0
+      },
+      "derivation": "For channel 0: off_l=0x00, off_h=0x08 => ((0x08 & 0x0F) * 256) + 0x00 = 2048. For channel 1: off_l=0x00, off_h=0x00 => 0."
+    },
+    {
+      "name": "pwm_channel_0_duty_25_percent",
+      "mock_preload": {
+        "0x08": [
+          "0x00",
+          "0x04",
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "pwm_channel_0": 1024,
+        "pwm_channel_1": 0
+      },
+      "derivation": "For channel 0: off_l=0x00, off_h=0x04 => ((0x04 & 0x0F) * 256) + 0x00 = 1024. For channel 1: off_l=0x00, off_h=0x00 => 0."
+    }
+  ]
+}

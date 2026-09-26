@@ -1,0 +1,133 @@
+{
+  "task_package_id": "apache_mynewt_generic_hal__ssd1306__i2c0_polling",
+  "rtos": "apache-mynewt",
+  "device": "ssd1306",
+  "bus": "i2c",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/ssd1306/apache-mynewt",
+  "task_package": {
+    "package_id": "apache_mynewt_generic_hal__ssd1306__i2c0_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/apache_mynewt_generic_hal.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/apache_mynewt_generic_hal_i2c0_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/ssd1306.json",
+    "reference_driver_root": "DriverGen/data/references/ssd1306/apache-mynewt",
+    "fixed_task_context": {},
+    "notes": [
+      "Apache Mynewt provides the native HAL I2C surface for this SSD1306 polling task.",
+      "The resolver rebuilds fixed_task_context from the referenced platform, connection, and device layers."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_i2c.h",
+      "DriverGen/data/raw/ssd1306",
+      "DriverGen/data/references/ssd1306/apache-mynewt"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "apache_mynewt_generic_hal",
+    "board": "generic_hal",
+    "board_alias": "mynewt_hal",
+    "rtos": "apache-mynewt",
+    "rtos_bundle": "apache-mynewt",
+    "integration": "mynewt_native_hal",
+    "integration_style": "integrated_rtos_hal_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "0"
+        ],
+        "spi": [
+          "0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "0"
+        ]
+      },
+      "timing": [
+        "os_time_delay",
+        "os_time_ms_to_ticks32"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Apache Mynewt includes kernel/os, hw/hal, hw/mcu, hw/bsp, hw/drivers, hw/sensor and hw/util in one repository.",
+      "Device drivers should prefer public HAL headers such as hal/hal_i2c.h, hal/hal_spi.h, hal/hal_gpio.h and OS helpers from os/os_time.h."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/kernel/os/include/os/os_time.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_i2c.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_spi.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_uart.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/util/i2cn/include/i2cn/i2cn.h",
+      "DriverGen/data/references/*/apache-mynewt/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "apache_mynewt_generic_hal_i2c0_polling",
+    "platform_id": "apache_mynewt_generic_hal",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "0",
+    "bus_instance_kind": "hal_i2c_num",
+    "bus_symbol": "0",
+    "backend": "Apache Mynewt HAL I2C",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Mynewt HAL I2C uses a uint8_t i2c_num and struct hal_i2c_master_data.",
+      "The HAL API accepts a 7-bit address in hal_i2c_master_data.address; do not left-shift it."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_i2c.h",
+      "DriverGen/data/rtos/apache-mynewt/kernel/os/include/os/os_time.h",
+      "DriverGen/data/references/*/apache-mynewt/*_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "ssd1306",
+    "attachment_type": "i2c_display",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x3C",
+      "alternates": [
+        "0x3D"
+      ],
+      "selection_rule": "SA0 / D-C# wiring on common modules changes the I2C address."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver assumes an I2C-connected 128x64 panel and stores the frame buffer in software."
+      ]
+    },
+    "optional_attachment": {
+      "reset_pin": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers use the standard SSD1306 command set and a software frame buffer update path."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/ssd1306",
+      "DriverGen/data/references/ssd1306/*/*_ref.h"
+    ]
+  }
+}

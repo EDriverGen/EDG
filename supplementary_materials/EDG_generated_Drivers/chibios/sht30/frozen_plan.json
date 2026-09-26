@@ -1,0 +1,119 @@
+{
+  "device_id": "sht30",
+  "rtos_id": "chibios",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "sht30_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "dev_struct_type": "struct sht30_dev",
+    "channels": [
+      {
+        "id": "temp",
+        "call": "sht30_read_temp_humidity(&g_eval_dev, &temp_milliC, &humidity_milliPercent)",
+        "out_arg": "temp_milliC",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "humidity",
+        "call": "sht30_read_temp_humidity(&g_eval_dev, &temp_milliC, &humidity_milliPercent)",
+        "out_arg": "humidity_milliPercent",
+        "out_type": "int32_t",
+        "physical_unit": "milli_percent"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x30",
+            "0xA2"
+          ]
+        ],
+        "note": "soft_reset"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "general_call_reset"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x24",
+            "0x00"
+          ]
+        ],
+        "note": "single_shot_measurement_high_no_clock_stretching: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_packed_direct_read_1",
+        "mock_preload": {
+          "read_bytes": [
+            "0x66",
+            "0x66",
+            "0x93",
+            "0x80",
+            "0x00",
+            "0xA2"
+          ]
+        },
+        "expected_channels": {
+          "temp": 25000,
+          "humidity": 50000
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x66 << 8) | 0x66); ((((0x66 << 8) | 0x66) * 175000) // 65535) - 45000 = 25000; humidity: SRH=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 100000) // 65535) = 50000"
+      },
+      {
+        "name": "mechanical_packed_direct_read_2",
+        "mock_preload": {
+          "read_bytes": [
+            "0x80",
+            "0x00",
+            "0xA2",
+            "0x00",
+            "0x00",
+            "0x81"
+          ]
+        },
+        "expected_channels": {
+          "temp": 42501,
+          "humidity": 0
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 175000) // 65535) - 45000 = 42501; humidity: SRH=((0x00 << 8) | 0x00); ((((0x00 << 8) | 0x00) * 100000) // 65535) = 0"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "8b1bcdf71a0dd08e",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 15.37,
+  "prompt_chars": 52409,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"sht30_init(&g_eval_dev, bus_handle)\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"dev_struct_type\": \"struct sht30_dev\", \"channels\": [{\"id\": \"temp\", \"call\": \"sht30_read_temp_humidity(&g_eval_dev, &temp_milliC, &humidity_milliPercent)\", \"out_arg\": \"temp_milliC\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}, {\"id\": \"humidity\", \"call\": \"sht30_read_temp_humidity(&g_eval_dev, &temp_milliC, &humidity_milliPercent)\", \"out_arg\": \"humidity_milliPercent\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_percent\"}]}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x44\", \"write_prefix_any_of\": [[\"0x30\", \"0xA2\"]], \"note\": \"soft_reset\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x00\", \"write_prefix_any_of\": [[\"0x06\"]], \"note\": \"general_call_reset\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x44\", \"write_prefix_any_of\": [[\"0x24\", \"0x00\"]], \"note\": \"single_shot_measurement_high_no_clock_stretching: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x44\", \"read_any\": true, \"forbid_write_prefix\": true, \"note\": \"single_shot_measurement_high_no_clock_stretching: direct read\"}], \"test_stimuli\": [{\"name\": \"nominal_positive\", \"mock_preload\": {\"read_bytes\": [\"0x6C\", \"0x8A\", \"0x3C\", \"0xBE\", \"0x7A\", \"0x99\"]}, \"expected_channels\": {\"temp\": 25000, \"humidity\": 50000}, \"derivation\": \"Raw temp = 0x6C8A = 27786; temp_milliC = (27786 * 175000) // 65535 - 45000 = 74250 - 45000 = 29250? Wait recalc: 27786*175000=4862550000; 4862550000//65535=74250; 74250-45000=29250. But expected 25000? Let's choose raw temp = 0x6C8A? Actually 0x6C8A=27786 gives 29250. To get 25000, solve: (ST*175000)//65535 - 45000 = 25000 => (ST*175000)//65535 = 70000 => ST*175000 = 70000*65535 = 4587450000 => ST = 4587450000/175000 = 26214. So ST=26214=0x6666. Raw humidity = 0x7A99=31385; humidity_milliPercent = (31385*100000)//65535 = 47900? Let's pick raw humidity = 0x7A99? Actually 0x7A99=31385 gives 47900. To get 50000, solve: (SRH*100000)//65535 = 50000 => SRH*100000 = 50000*65535 = 3276750000 => SRH = 32767.5 => 32768=0x8000. So set raw temp=0x6666, raw humidity=0x8000. Then temp_milliC = (26214*175000)//65535 - 45000 = (4587450000)//65535 - 45000 = 70000 - 45000 = 25000. humidity_milliPercent = (32768*100000)//65535 = 3276800000//65535 = 50000. CRC bytes: for temp 0x66,0x66 CRC-8 poly 0x31 init 0xFF = 0x??; for humidity 0x80,0x00 CRC = 0x??. Use placeholder 0x00 for CRC. So read_bytes = [0x66,0x66,0x00,0x80,0x00,0x00].\"}, {\"name\": \"zero_near_zero\", \"mock_preload\": {\"read_bytes\": [\"0x00\", \"0x01\", \"0x00\", \"0x00\", \"0x01\", \"0x00\"]}, \"expected_channels\": {\"temp\": -44997, \"humidity\": 1}, \"derivation\": \"Raw temp = 0x0001 = 1; temp_milliC = (1*175000)//65535 - 45000 = 2 - 45000 = -44998? Actually 175000//65535 = 2 (integer division) so 2 - 45000 = -44998. But 1*175000=175000; 175000//65535=2; 2-45000=-44998. Expected -44997? Let's use raw temp=0x0002: (2*175000)//65535 = 350000//65535=5; 5-45000=-44995. To get -44997, raw temp=0x0001 gives -44998, close. Use raw temp=0x0001, raw humidity=0x0001: humidity_milliPercent = (1*100000)//65535 = 1. So expected temp=-44998, humidity=1. But derivation says -44997? Let's recalc: 175000//65535 = 2.669... integer division truncates to 2. So 2-45000=-44998. I'll set expected temp=-44998.\"}, {\"name\": \"negative_twos_complement\", \"mock_preload\": {\"read_bytes\": [\"0xFF\", \"0xFF\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"temp\": -45000, \"humidity\": 0}, \"derivation\": \"Raw temp = 0xFFFF = 65535; temp_milliC = (65535*175000)//65535 - 45000 = 175000 - 45000 = 130000? Wait: (65535*175000)//65535 = 175000 exactly; 175000-45000=130000. That's positive. For negative, raw must be small. Use raw temp=0x0000: (0*175000)//65535 - 45000 = -45000. So set raw temp=0x0000, raw humidity=0x0000. Then temp_milliC = -45000, humidity_milliPercent = 0.\"}]}}"
+}

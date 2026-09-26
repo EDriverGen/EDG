@@ -1,0 +1,457 @@
+{
+  "device_id": "hcsr04",
+  "bus_type": "GPIO",
+  "candidate_addresses": [
+    {
+      "value": "0XAE",
+      "addressing_form": "IIC write address",
+      "is_default": null,
+      "description": "IIC write address for IIC mode",
+      "evidence": {
+        "page": 6,
+        "snippet": "Write address 0XAE"
+      }
+    },
+    {
+      "value": "0XAF",
+      "addressing_form": "IIC read address",
+      "is_default": null,
+      "description": "IIC read address for IIC mode",
+      "evidence": {
+        "page": 6,
+        "snippet": "Read address 0XAF"
+      }
+    },
+    {
+      "value": "0X57",
+      "addressing_form": "IIC device address",
+      "is_default": null,
+      "description": "IIC address for IIC mode",
+      "evidence": {
+        "page": 6,
+        "snippet": "IIC address: 0X57"
+      }
+    }
+  ],
+  "candidate_registers": [
+    {
+      "name": "UART_CMD_0XA0",
+      "value": "0XA0",
+      "access": "write",
+      "size_bits": 8,
+      "description": "UART command to trigger measurement and get distance in mm",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "Command 0XA0"
+      }
+    },
+    {
+      "name": "UART_RESP_BYTE_H",
+      "value": null,
+      "access": "read",
+      "size_bits": 8,
+      "description": "High byte of distance in UART mode",
+      "semantic_roles": [
+        "result"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "BYTE_H BYTE_M BYTE_L"
+      }
+    },
+    {
+      "name": "UART_RESP_BYTE_M",
+      "value": null,
+      "access": "read",
+      "size_bits": 8,
+      "description": "Middle byte of distance in UART mode",
+      "semantic_roles": [
+        "result"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "BYTE_H BYTE_M BYTE_L"
+      }
+    },
+    {
+      "name": "UART_RESP_BYTE_L",
+      "value": null,
+      "access": "read",
+      "size_bits": 8,
+      "description": "Low byte of distance in UART mode",
+      "semantic_roles": [
+        "result"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "BYTE_H BYTE_M BYTE_L"
+      }
+    },
+    {
+      "name": "IIC_CMD_0X01",
+      "value": "0X01",
+      "access": "write",
+      "size_bits": 8,
+      "description": "IIC command to start measurement",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "Command 0X01"
+      }
+    },
+    {
+      "name": "IIC_RESP_BYTE_H",
+      "value": null,
+      "access": "read",
+      "size_bits": 8,
+      "description": "High byte of distance in IIC mode",
+      "semantic_roles": [
+        "result"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "BYTE_H BYTE_M BYTE_L"
+      }
+    },
+    {
+      "name": "IIC_RESP_BYTE_M",
+      "value": null,
+      "access": "read",
+      "size_bits": 8,
+      "description": "Middle byte of distance in IIC mode",
+      "semantic_roles": [
+        "result"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "BYTE_H BYTE_M BYTE_L"
+      }
+    },
+    {
+      "name": "IIC_RESP_BYTE_L",
+      "value": null,
+      "access": "read",
+      "size_bits": 8,
+      "description": "Low byte of distance in IIC mode",
+      "semantic_roles": [
+        "result"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "BYTE_H BYTE_M BYTE_L"
+      }
+    }
+  ],
+  "candidate_bitfields": [],
+  "candidate_operations": [
+    {
+      "flow_id": "gpio_measurement",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "summary": "GPIO mode: send trigger pulse, measure echo pulse width, compute distance",
+      "steps": [
+        {
+          "op": "set_signal",
+          "target": "Trig",
+          "details": "Set Trig pin high for at least 10 microseconds",
+          "evidence": {
+            "page": 4,
+            "snippet": "The external MCU applies a high-level pulse longer than 10 uS to Trig."
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait for at least 10 microseconds",
+          "evidence": {
+            "page": 4,
+            "snippet": "High-level pulse longer than 10 uS"
+          }
+        },
+        {
+          "op": "set_signal",
+          "target": "Trig",
+          "details": "Set Trig pin low",
+          "evidence": {
+            "page": 4,
+            "snippet": "Pulse"
+          }
+        },
+        {
+          "op": "measure_pulse",
+          "target": "Echo",
+          "details": "Measure the duration of high pulse on Echo pin (time T)",
+          "evidence": {
+            "page": 4,
+            "snippet": "The module returns a high-level pulse proportional to distance; calculate distance from pulse width 'T'."
+          }
+        },
+        {
+          "op": "postprocess",
+          "target": null,
+          "details": "Compute distance using formula distance = T * C / 2",
+          "evidence": {
+            "page": 4,
+            "snippet": "Distance=T*C/2  (C is the speed of sound)"
+          }
+        }
+      ],
+      "outputs": [
+        "distance"
+      ],
+      "evidence": {
+        "page": 4,
+        "snippet": "Ultrasonic timing diagram. Operation matches the earlier HC-SR04. The external MCU applies a high-level pulse longer than 10 uS to Trig; the module returns a high-level pulse proportional to distance, calculated from pulse width 'T'."
+      }
+    },
+    {
+      "flow_id": "uart_measurement",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "summary": "UART mode: send command 0xA0, read three bytes, compute distance",
+      "steps": [
+        {
+          "op": "write",
+          "target": "UART",
+          "details": "Send command byte 0xA0",
+          "evidence": {
+            "page": 5,
+            "snippet": "The external MCU or PC sends command 0XA0."
+          }
+        },
+        {
+          "op": "read",
+          "target": "UART",
+          "details": "Read three bytes: BYTE_H, BYTE_M, BYTE_L",
+          "evidence": {
+            "page": 5,
+            "snippet": "After measuring, the module returns three distance bytes: BYTE_H, BYTE_M, and BYTE_L."
+          }
+        },
+        {
+          "op": "postprocess",
+          "target": null,
+          "details": "Compute distance = ((BYTE_H<<16) + (BYTE_M<<8) + BYTE_L) / 1000 (mm)",
+          "evidence": {
+            "page": 5,
+            "snippet": "Distance=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000"
+          }
+        }
+      ],
+      "outputs": [
+        "distance"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "Connect the serial port. The external MCU or PC sends 0XA0. After measuring, the module returns three distance bytes: BYTE_H, BYTE_M, and BYTE_L. Distance (mm)=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000."
+      }
+    },
+    {
+      "flow_id": "iic_measurement",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "summary": "IIC mode: write 0x01 to start measurement, wait 200ms, read three bytes, compute distance",
+      "steps": [
+        {
+          "op": "write",
+          "target": "IIC",
+          "details": "Write command 0x01 to start measurement",
+          "evidence": {
+            "page": 6,
+            "snippet": "Write 0X01 to the module to start ranging."
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait 200ms (maximum measurement time)",
+          "evidence": {
+            "page": 6,
+            "snippet": "Wait 200 mS (the module's maximum ranging time)."
+          }
+        },
+        {
+          "op": "read",
+          "target": "IIC",
+          "details": "Read three bytes: BYTE_H, BYTE_M, BYTE_L",
+          "evidence": {
+            "page": 6,
+            "snippet": "Read three distance bytes directly: BYTE_H, BYTE_M, and BYTE_L."
+          }
+        },
+        {
+          "op": "postprocess",
+          "target": null,
+          "details": "Compute distance = ((BYTE_H<<16) + (BYTE_M<<8) + BYTE_L) / 1000 (mm)",
+          "evidence": {
+            "page": 6,
+            "snippet": "Distance=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000"
+          }
+        }
+      ],
+      "outputs": [
+        "distance"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "Write 0X01 to start ranging; wait at least 200 mS (the module's maximum ranging time). Read three distance bytes directly: BYTE_H, BYTE_M, and BYTE_L. Distance (mm)=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000."
+      }
+    }
+  ],
+  "candidate_channels": [
+    {
+      "id": "distance",
+      "description": "Measured distance in mm",
+      "source": "echo pulse width (GPIO) or serial bytes (UART/IIC)",
+      "formula_id": "distance_formula",
+      "evidence": {
+        "page": 4,
+        "snippet": "Distance=T*C/2"
+      }
+    }
+  ],
+  "candidate_formulae": [
+    {
+      "name": "distance_formula_gpio",
+      "formula": "distance = T * C / 2",
+      "inputs": [
+        "T",
+        "C"
+      ],
+      "output": "distance",
+      "evidence": {
+        "page": 4,
+        "snippet": "Distance=T*C/2  (C is the speed of sound)"
+      }
+    },
+    {
+      "name": "distance_formula_uart_iic",
+      "formula": "distance = ((BYTE_H << 16) + (BYTE_M << 8) + BYTE_L) / 1000",
+      "inputs": [
+        "BYTE_H",
+        "BYTE_M",
+        "BYTE_L"
+      ],
+      "output": "distance",
+      "evidence": {
+        "page": 5,
+        "snippet": "Distance=((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000"
+      }
+    },
+    {
+      "name": "speed_of_sound_temperature",
+      "formula": "c = 331.45 + 0.61 * t",
+      "inputs": [
+        "t"
+      ],
+      "output": "c",
+      "evidence": {
+        "page": 4,
+        "snippet": "Speed of sound versus temperature: c=(331.45+0.61t/C)m*s-1"
+      }
+    }
+  ],
+  "candidate_timing_constraints": [
+    {
+      "name": "trigger_pulse_width",
+      "value": 10,
+      "unit": "us",
+      "condition": "GPIO mode",
+      "evidence": {
+        "page": 4,
+        "snippet": "High-level pulse longer than 10 uS"
+      }
+    },
+    {
+      "name": "measurement_cycle",
+      "value": 200,
+      "unit": "ms",
+      "condition": "minimum interval between measurements",
+      "evidence": {
+        "page": 7,
+        "snippet": "The interval between measurements must be at least 200 mS."
+      }
+    },
+    {
+      "name": "iic_wait_time",
+      "value": 200,
+      "unit": "ms",
+      "condition": "IIC mode: wait after start command",
+      "evidence": {
+        "page": 6,
+        "snippet": "Wait 200 mS (the module's maximum ranging time)."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "datasheet",
+      "page": 4,
+      "snippet": "The external MCU applies a high-level pulse longer than 10 uS to Trig; the module returns a high-level pulse proportional to distance, calculated from pulse width 'T'."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 4,
+      "snippet": "Distance=T*C/2  (C is the speed of sound)"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 4,
+      "snippet": "Speed of sound versus temperature: c=(331.45+0.61t/C)m*s-1"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "Command 0XA0  Return value BYTE_H BYTE_M BYTE_L  Output distance: ((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000 mm"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "Write address 0XAE  Command 0X01  Start ranging command  Read address 0XAF  Return value BYTE_H BYTE_M BYTE_L  Output distance: ((BYTE_H<<16)+(BYTE_M<<8)+ BYTE_L)/1000 mm"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "Wait 200 mS (the module's maximum ranging time)."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "The interval between measurements must be at least 200 mS."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 3,
+      "snippet": "Output interface mode  GPIO/UART/IIC"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 3,
+      "snippet": "R4=NC R5=NC: GPIO mode by default"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "IIC address: 0X57"
+    }
+  ],
+  "requires_human": [
+    "Temperature compensation: if precise distance is needed, temperature must be considered. Formula provided but no automatic compensation.",
+    "Blind zone: 2-4 cm, values in blind zone are random.",
+    "Measurement cycle: at least 200ms between measurements.",
+    "Mode selection via resistors: GPIO (default), UART (R5=10K), IIC (R4=10K).",
+    "UART baud rate: 9600 N 1.",
+    "IIC write address 0xAE, read address 0xAF, device address 0x57."
+  ]
+}

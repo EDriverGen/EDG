@@ -1,0 +1,137 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "freertos",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef W25Q64JV_H\n#define W25Q64JV_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct w25q64jv_dev {\n    void *bus_handle;\n    uint8_t cs_pin;\n};\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\n\n#endif /* W25Q64JV_H */",
+  "driver_source": "#include \"w25q64jv.h\"\n#include \"stm32f1xx_hal.h\"\n#include <string.h>\n\n#include \"freertos.h\"\n#define W25Q64JV_CMD_READ_DATA      0x03\n#define W25Q64JV_CMD_PAGE_PROGRAM   0x02\n#define W25Q64JV_CMD_WRITE_ENABLE   0x06\n#define W25Q64JV_CMD_JEDEC_ID       0x9F\n\n#define W25Q64JV_PAGE_SIZE          256\n#define W25Q64JV_TIMEOUT            1000\n\nstatic int w25q64jv_transfer(struct w25q64jv_dev *dev, const uint8_t *tx, uint8_t *rx, uint16_t size)\n{\n    SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)dev->bus_handle;\n    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(hspi, (uint8_t *)tx, rx, size, W25Q64JV_TIMEOUT);\n    return (ret == HAL_OK) ? 0 : -1;\n}\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    dev->cs_pin = GPIO_PIN_4;\n\n    uint8_t tx[1] = {W25Q64JV_CMD_JEDEC_ID};\n    uint8_t rx[4] = {0};\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\n    if (ret != 0) return -1;\n    return 0;\n}\n\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\n{\n    if (len == 0) return 0;\n    uint8_t tx[4];\n    tx[0] = W25Q64JV_CMD_READ_DATA;\n    tx[1] = (uint8_t)(addr >> 16);\n    tx[2] = (uint8_t)(addr >> 8);\n    tx[3] = (uint8_t)(addr);\n\n    uint8_t rx[4];\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\n    if (ret != 0) return -1;\n\n    uint8_t *data_tx = (uint8_t *)calloc(len, 1);\n    if (!data_tx) return -1;\n    uint8_t *data_rx = (uint8_t *)malloc(len);\n    if (!data_rx) { free(data_tx); return -1; }\n\n    ret = w25q64jv_transfer(dev, data_tx, data_rx, len);\n    if (ret == 0) {\n        memcpy(buf, data_rx, len);\n    }\n    free(data_tx);\n    free(data_rx);\n    return ret;\n}\n\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\n{\n    if (len == 0 || len > W25Q64JV_PAGE_SIZE) return -1;\n\n    uint8_t tx_enable[1] = {W25Q64JV_CMD_WRITE_ENABLE};\n    uint8_t rx_enable[1];\n    int ret = w25q64jv_transfer(dev, tx_enable, rx_enable, 1);\n    if (ret != 0) return -1;\n\n    size_t total_len = 4 + len;\n    uint8_t *tx = (uint8_t *)malloc(total_len);\n    if (!tx) return -1;\n    uint8_t *rx = (uint8_t *)calloc(total_len, 1);\n    if (!rx) { free(tx); return -1; }\n\n    tx[0] = W25Q64JV_CMD_PAGE_PROGRAM;\n    tx[1] = (uint8_t)(addr >> 16);\n    tx[2] = (uint8_t)(addr >> 8);\n    tx[3] = (uint8_t)(addr);\n    memcpy(tx + 4, buf, len);\n\n    ret = w25q64jv_transfer(dev, tx, rx, total_len);\n    free(tx);\n    free(rx);\n    return ret;\n}\n",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write_page(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "struct w25q64jv_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write JEDEC ID command"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: direct read JEDEC ID response"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write read command + address"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: direct read data"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write enable"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: page program command + address + data"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.611,
+  "prompt_chars": 38920,
+  "raw_response": "{\"driver_header\": \"#ifndef W25Q64JV_H\\n#define W25Q64JV_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct w25q64jv_dev {\\n    void *bus_handle;\\n    uint8_t cs_pin;\\n};\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\\n\\n#endif /* W25Q64JV_H */\", \"driver_source\": \"#include \\\"w25q64jv.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include <string.h>\\n\\n#define W25Q64JV_CMD_READ_DATA      0x03\\n#define W25Q64JV_CMD_PAGE_PROGRAM   0x02\\n#define W25Q64JV_CMD_WRITE_ENABLE   0x06\\n#define W25Q64JV_CMD_JEDEC_ID       0x9F\\n\\n#define W25Q64JV_PAGE_SIZE          256\\n#define W25Q64JV_TIMEOUT            1000\\n\\nstatic int w25q64jv_transfer(struct w25q64jv_dev *dev, const uint8_t *tx, uint8_t *rx, uint16_t size)\\n{\\n    SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)dev->bus_handle;\\n    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(hspi, (uint8_t *)tx, rx, size, W25Q64JV_TIMEOUT);\\n    return (ret == HAL_OK) ? 0 : -1;\\n}\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    dev->cs_pin = GPIO_PIN_4;\\n\\n    uint8_t tx[1] = {W25Q64JV_CMD_JEDEC_ID};\\n    uint8_t rx[4] = {0};\\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\\n    if (ret != 0) return -1;\\n    return 0;\\n}\\n\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\\n{\\n    if (len == 0) return 0;\\n    uint8_t tx[4];\\n    tx[0] = W25Q64JV_CMD_READ_DATA;\\n    tx[1] = (uint8_t)(addr >> 16);\\n    tx[2] = (uint8_t)(addr >> 8);\\n    tx[3] = (uint8_t)(addr);\\n\\n    uint8_t rx[4];\\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\\n    if (ret != 0) return -1;\\n\\n    uint8_t *data_tx = (uint8_t *)calloc(len, 1);\\n    if (!data_tx) return -1;\\n    uint8_t *data_rx = (uint8_t *)malloc(len);\\n    if (!data_rx) { free(data_tx); return -1; }\\n\\n    ret = w25q64jv_transfer(dev, data_tx, data_rx, len);\\n    if (ret == 0) {\\n        memcpy(buf, data_rx, len);\\n    }\\n    free(data_tx);\\n    free(data_rx);\\n    return ret;\\n}\\n\\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\\n{\\n    if (len == 0 || len > W25Q64JV_PAGE_SIZE) return -1;\\n\\n    uint8_t tx_enable[1] = {W25Q64JV_CMD_WRITE_ENABLE};\\n    uint8_t rx_enable[1];\\n    int ret = w25q64jv_transfer(dev, tx_enable, rx_enable, 1);\\n    if (ret != 0) return -1;\\n\\n    size_t total_len = 4 + len;\\n    uint8_t *tx = (uint8_t *)malloc(total_len);\\n    if (!tx) return -1;\\n    uint8_t *rx = (uint8_t *)calloc(total_len, 1);\\n    if (!rx) { free(tx); return -1; }\\n\\n    tx[0] = W25Q64JV_CMD_PAGE_PROGRAM;\\n    tx[1] = (uint8_t)(addr >> 16);\\n    tx[2] = (uint8_t)(addr >> 8);\\n    tx[3] = (uint8_t)(addr);\\n    memcpy(tx + 4, buf, len);\\n\\n    ret = w25q64jv_transfer(dev, tx, rx, total_len);\\n    free(tx);\\n    free(rx);\\n    return ret;\\n}\\n\"}",
+  "plan_hash": "fbdd05b700659dcf"
+}

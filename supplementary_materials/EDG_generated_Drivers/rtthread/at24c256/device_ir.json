@@ -1,0 +1,480 @@
+{
+  "device_id": "at24c256",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x50",
+        "description": "A1=A0=GND (default when pins floating or tied low)",
+        "is_default": true
+      },
+      {
+        "address": "0x51",
+        "description": "A1=GND, A0=VCC",
+        "is_default": false
+      },
+      {
+        "address": "0x52",
+        "description": "A1=VCC, A0=GND",
+        "is_default": false
+      },
+      {
+        "address": "0x53",
+        "description": "A1=VCC, A0=VCC",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 32768,
+    "addressing": "2-byte",
+    "auto_increment": true,
+    "page_size_bytes": 64,
+    "write_busy_ms": 5,
+    "notes": "Memory organized as 512 pages of 64 bytes each. Address rolls over within page during page write."
+  },
+  "read_channels": [
+    {
+      "id": "memory",
+      "raw_type": "bytes",
+      "physical_unit": "byte",
+      "read_call_hint": "sequential_read",
+      "flow_id": "sequential_read",
+      "source_bytes": null,
+      "source_signal": null,
+      "formula_id": null,
+      "notes": "EEPROM memory array accessible via I2C read operations."
+    }
+  ],
+  "access_model": {
+    "kind": "memory",
+    "address_bytes": 2,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "Random read uses dummy write to set address, then repeated start and read."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "byte_write",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [
+        "WP pin must be low (GND) to enable writes."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "role": "send device address + word address + data",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              "DATA"
+            ],
+            "notes": "Start condition, device address (R/W=0), two address bytes (MSB first), data byte, stop condition."
+          },
+          "notes": "Device address byte: 1010 A1 A0 0. Address bytes: high byte then low byte. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 5,
+          "notes": "Wait for internal write cycle tWR (5 ms for 'B' version, 10 ms otherwise)."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Writes a single byte to a specified memory address."
+    },
+    {
+      "flow_id": "page_write",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [
+        "WP pin must be low (GND) to enable writes."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "role": "send device address + word address + up to 64 data bytes",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              "DATA"
+            ],
+            "notes": "Start condition, device address (R/W=0), two address bytes, then up to 64 data bytes, stop condition."
+          },
+          "notes": "Address lower 6 bits auto-increment within page; rollover overwrites beginning of page. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 5,
+          "notes": "Wait for internal write cycle tWR."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Writes up to 64 bytes to a page starting at given address."
+    },
+    {
+      "flow_id": "current_address_read",
+      "kind": "read",
+      "channels": [
+        "memory"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "postprocess",
+          "role": "send device address with R/W=1",
+          "transaction": null,
+          "notes": "Device address byte: 1010 A1 A0 1. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+        },
+        {
+          "op": "read",
+          "role": "read one byte",
+          "transaction": {
+            "kind": "read",
+            "length": 1,
+            "notes": "Read one byte, then NACK and stop."
+          },
+          "notes": "Data from current address counter."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "memory",
+          "byte_source": "read_data",
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "byte",
+          "notes": "Single byte from current address."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Reads a byte from the current internal address counter."
+    },
+    {
+      "flow_id": "random_read",
+      "kind": "read",
+      "channels": [
+        "memory"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "role": "dummy write to set address",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              null
+            ],
+            "notes": "Start condition, device address (R/W=0), two address bytes, stop condition."
+          },
+          "notes": "Device address byte: 1010 A1 A0 0. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+        },
+        {
+          "op": "postprocess",
+          "role": "repeated start with read",
+          "transaction": null,
+          "notes": "Device address byte: 1010 A1 A0 1. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+        },
+        {
+          "op": "read",
+          "role": "read one byte",
+          "transaction": {
+            "kind": "read",
+            "length": 1,
+            "notes": "Read one byte, then NACK and stop."
+          },
+          "notes": "Data from specified address."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "memory",
+          "byte_source": "read_data",
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "byte",
+          "notes": "Single byte from specified address."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Reads a byte from a specified memory address using dummy write to load address."
+    },
+    {
+      "flow_id": "sequential_read",
+      "kind": "read",
+      "channels": [
+        "memory"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "postprocess",
+          "role": "initiate read (current or random)",
+          "transaction": null,
+          "notes": "See current_address_read or random_read for full initiation. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+        },
+        {
+          "op": "read",
+          "role": "read multiple bytes with ACK",
+          "transaction": {
+            "kind": "read",
+            "length": "DATA",
+            "notes": "Read data bytes; after each byte send ACK to continue, NACK to stop."
+          },
+          "notes": "Address auto-increments; rollover from last byte to first byte."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "memory",
+          "byte_source": "read_data",
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "byte",
+          "notes": "Multiple bytes read sequentially."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Reads multiple bytes sequentially starting from current or specified address."
+    },
+    {
+      "flow_id": "acknowledge_polling",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "After a write cycle has started."
+      ],
+      "steps": [
+        {
+          "op": "postprocess",
+          "role": "send device address",
+          "transaction": null,
+          "notes": "If device ACKs (zero), write cycle complete; if NACK, cycle still in progress. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Poll device to check if internal write cycle has completed."
+    },
+    {
+      "flow_id": "memory_reset",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "After protocol interruption, power loss, or system reset."
+      ],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "SCL",
+          "notes": "Clock up to 9 cycles on SCL."
+        },
+        {
+          "op": "set_signal",
+          "signal": "SDA",
+          "notes": "Create a start condition while SDA is high."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Reset the device after protocol interruption."
+    }
+  ],
+  "raw_encoding": null,
+  "registers_or_commands": [
+    {
+      "name": "Memory Array",
+      "value": null,
+      "access": "rw",
+      "size_bits": 262144,
+      "description": "32,768 words of 8 bits each, organized as 512 pages of 64 bytes each."
+    }
+  ],
+  "bitfields": [
+    {
+      "name": "Device Address Byte.Device Type Identifier",
+      "bits": "7:3",
+      "description": "First five bits: 10100 for AT24C256."
+    },
+    {
+      "name": "Device Address Byte.A1",
+      "bits": "2",
+      "description": "Device address bit A1, compared to hardwired pin."
+    },
+    {
+      "name": "Device Address Byte.A0",
+      "bits": "1",
+      "description": "Device address bit A0, compared to hardwired pin."
+    },
+    {
+      "name": "Device Address Byte.R/W",
+      "bits": "0",
+      "description": "Read/Write select bit: 1 for read, 0 for write."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up default: device enters standby mode. No explicit initialization required."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "Use one of the read flows: current_address_read, random_read, or sequential_read."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "tWR",
+      "value": 5,
+      "unit": "ms",
+      "condition": "Devices with process letter 'B'",
+      "notes": "Write cycle time: 5 ms for 'B' version, 10 ms otherwise (20 ms at 1.8V)."
+    },
+    {
+      "name": "fSCL",
+      "value": 100,
+      "unit": "kHz",
+      "condition": "Vcc = 1.8V",
+      "notes": "Clock frequency at 1.8V."
+    },
+    {
+      "name": "fSCL",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Vcc = 2.5V/2.7V",
+      "notes": "Clock frequency at 2.5V/2.7V."
+    },
+    {
+      "name": "fSCL",
+      "value": 1000,
+      "unit": "kHz",
+      "condition": "Vcc = 5.0V",
+      "notes": "Clock frequency at 5.0V."
+    },
+    {
+      "name": "tBUF",
+      "value": 4.7,
+      "unit": "us",
+      "condition": "Vcc = 1.8V",
+      "notes": "Bus free time before new transmission."
+    },
+    {
+      "name": "tHD.STA",
+      "value": 4.0,
+      "unit": "us",
+      "condition": "Vcc = 1.8V",
+      "notes": "Start hold time."
+    },
+    {
+      "name": "tSU.STA",
+      "value": 4.7,
+      "unit": "us",
+      "condition": "Vcc = 1.8V",
+      "notes": "Start set-up time."
+    },
+    {
+      "name": "tSU.DAT",
+      "value": 200,
+      "unit": "ns",
+      "condition": "Vcc = 1.8V",
+      "notes": "Data in set-up time."
+    }
+  ],
+  "conversion_formulae": [],
+  "error_conditions": [
+    {
+      "name": "write_cycle_nack",
+      "description": "Device NACKs during acknowledge polling, indicating write cycle still in progress.",
+      "detection": "After write, send device address; if NACK received, write not complete.",
+      "driver_action": "Retry acknowledge polling after tWR delay, or return -EAGAIN."
+    },
+    {
+      "name": "write_protect_active",
+      "description": "WP pin high inhibits write operations.",
+      "detection": "Device NACKs data byte during write sequence.",
+      "driver_action": "Abort write and report write-protect error."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "standby",
+      "description": "Low power mode after power-up and after STOP condition and internal operations complete.",
+      "current_consumption_ua": 0.2,
+      "condition": "Vcc = 1.8V, standby current 0.2 µA max."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "at24c256",
+      "page": 3,
+      "snippet": "The A1 and A0 pins are device address inputs that are hardwired or left not connected for hardware compatibility with other AT24CXX devices."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The eighth bit of the device address is the read/write operation select bit."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The 128K/256K EEPROM is capable of 64-byte page writes."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 11,
+      "snippet": "Once the device address with the read/write select bit set to one is clocked in and acknowledged by the EEPROM, the current address data word is serially clocked out."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 11,
+      "snippet": "A random read requires a 'dummy' byte write sequence to load in the data word address."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 12,
+      "snippet": "Sequential reads are initiated by either a current address read or a random address read."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 5,
+      "snippet": "The Write Cycle Time of 5 ms only applies to the AT24C128/256 devices bearing the process letter 'B' on the package."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 7,
+      "snippet": "After an interruption in protocol, power loss or system reset, any two-wire part can be reset by following these steps: (a) Clock up to 9 cycles, (b) look for SDA high in each cycle while SCL is high and then (c) create a start condition as SDA is high."
+    }
+  ],
+  "requires_human": [
+    "Device address bits A1 and A0 are determined by hardware pin strapping; the driver must know the specific address configuration.",
+    "Write protect (WP) pin usage: if WP is high, write operations are inhibited; driver may need to handle this.",
+    "The write cycle time tWR depends on device version (process letter 'B' or not); driver may need to handle both 5 ms and 10 ms (or 20 ms) cases.",
+    "Memory organization: 512 pages of 64 bytes each; page write boundary handling is internal but driver should be aware of rollover behavior."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

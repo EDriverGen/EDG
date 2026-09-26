@@ -1,0 +1,123 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "chibios",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MCP3008_H\n#define MCP3008_H\n\n#include <stdint.h>\n\nstruct mcp3008_device {\n    void *spi_handle;\n};\n\nvoid mcp3008_init(struct mcp3008_device *dev, void *spi_handle);\nuint16_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out);\n\n#endif /* MCP3008_H */",
+  "driver_source": "#include \"mcp3008.h\"\n#include \"ch.h\"\n#include \"hal.h\"\n#include <stddef.h>\n\n#include \"chibios.h\"\nvoid mcp3008_init(struct mcp3008_device *dev, void *spi_handle) {\n    dev->spi_handle = spi_handle;\n}\n\nuint16_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out) {\n    uint8_t txbuf[3];\n    uint8_t rxbuf[3];\n    \n    txbuf[0] = 0x01;\n    txbuf[1] = 0x80 | (channel << 4);\n    txbuf[2] = 0x00;\n    \n    spiExchange(dev->spi_handle, 3, txbuf, rxbuf);\n    \n    uint16_t raw = ((rxbuf[1] & 0x03) << 8) | rxbuf[2];\n    *out = raw;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, &SPID1);",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t"
+      }
+    ],
+    "dev_struct_type": "struct mcp3008_device",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include \"ch.h\"\n#include \"hal.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x90",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH1"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read for CH1"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x7F",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 1023
+        },
+        "derivation": "Response bytes: [0x00, 0x7F, 0xFF]. high_byte = 0x7F, low_byte = 0xFF. raw = ((0x7F & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023."
+      },
+      {
+        "name": "ch1_zero",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch1": 0
+        },
+        "derivation": "Response bytes: [0x00, 0x00, 0x00]. high_byte = 0x00, low_byte = 0x00. raw = ((0x00 & 0x03) << 8) | 0x00 = 0."
+      },
+      {
+        "name": "ch0_full_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x03",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 1023
+        },
+        "derivation": "Response bytes: [0x00, 0x03, 0xFF]. high_byte = 0x03, low_byte = 0xFF. raw = ((0x03 & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023."
+      }
+    ]
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "command",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 2.8,
+  "prompt_chars": 30628,
+  "raw_response": "{\"driver_header\": \"#ifndef MCP3008_H\\n#define MCP3008_H\\n\\n#include <stdint.h>\\n\\nstruct mcp3008_device {\\n    void *spi_handle;\\n};\\n\\nvoid mcp3008_init(struct mcp3008_device *dev, void *spi_handle);\\nuint16_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out);\\n\\n#endif /* MCP3008_H */\", \"driver_source\": \"#include \\\"mcp3008.h\\\"\\n#include \\\"ch.h\\\"\\n#include \\\"hal.h\\\"\\n#include <stddef.h>\\n\\nvoid mcp3008_init(struct mcp3008_device *dev, void *spi_handle) {\\n    dev->spi_handle = spi_handle;\\n}\\n\\nuint16_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out) {\\n    uint8_t txbuf[3];\\n    uint8_t rxbuf[3];\\n    \\n    txbuf[0] = 0x01;\\n    txbuf[1] = 0x80 | (channel << 4);\\n    txbuf[2] = 0x00;\\n    \\n    spiExchange(dev->spi_handle, 3, txbuf, rxbuf);\\n    \\n    uint16_t raw = ((rxbuf[1] & 0x03) << 8) | rxbuf[2];\\n    *out = raw;\\n    return 0;\\n}\"}",
+  "plan_hash": "404d4b0e7c21d918"
+}

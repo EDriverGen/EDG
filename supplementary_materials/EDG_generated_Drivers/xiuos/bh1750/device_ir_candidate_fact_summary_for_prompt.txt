@@ -1,0 +1,33 @@
+Summary: {"address_count": 2, "bitfield_count": 4, "bus_type": "I2C", "channel_count": 1, "device_id": "bh1750", "evidence_span_count": 6, "formula_count": 2, "operation_count": 6, "register_count": 2, "requires_human_count": 3, "timing_count": 4}
+Addresses:
+- 0100011 form=7-bit default=None desc=Slave address when ADDR = 'L' (ADDR ≤ 0.3VCC)
+- 1011100 form=7-bit default=None desc=Slave address when ADDR = 'H' (ADDR ≥ 0.7VCC)
+Registers:
+- Data Register@None access=read-only bits=16 roles=result,data desc=Illuminance data register, initial value 0x0000
+- Measurement Time Register (MTreg)@0100_0101 access=write-only bits=8 roles=config,coefficient desc=Measurement time register, default 69 decimal, range 31-254
+Bitfields:
+- Data Register.High Byte bits=15:8 roles=data desc=High byte of illuminance data
+- Data Register.Low Byte bits=7:0 roles=data desc=Low byte of illuminance data
+- Measurement Time Register (MTreg).MT[7:5] bits=7:5 roles=config desc=High bits of MTreg, sent as opcode 01000_MT[7,6,5]
+- Measurement Time Register (MTreg).MT[4:0] bits=4:0 roles=config desc=Low bits of MTreg, sent as opcode 011_MT[4,3,2,1,0]
+Operations:
+- power_on kind=init channels= outputs= summary=Power on command steps=[write:opcode:Send Power On command (0x01)]
+- reset kind=init channels= outputs= summary=Reset data register steps=[write:opcode:Send Reset command (0x07) after Power On]
+- measure_continuous_hres kind=read channels=illuminance outputs=raw_illuminance_count summary=Continuously H-Resolution Mode measurement steps=[write:opcode:Send Continuously H-Resolution Mode command (0x10); delay:None:Wait max 180ms for first measurement completion; read:Data Register:Read 2 bytes (High Byte then Low Byte) with I2C read]
+- measure_one_time_hres2 kind=read channels=illuminance outputs=raw_illuminance_count summary=One Time H-Resolution Mode2 measurement steps=[write:opcode:Send One Time H-Resolution Mode2 command (0x21); delay:None:Wait max 180ms for measurement completion; read:Data Register:Read 2 bytes (High Byte then Low Byte)]
+- set_mtreg kind=calibration channels= outputs= summary=Change measurement time (sensitivity adjustment) steps=[write:opcode:Send High bit change: 01000_MT[7,6,5]; write:opcode:Send Low bit change: 011_MT[4,3,2,1,0]]
+- power_down kind=power channels= outputs= summary=Power Down command steps=[write:opcode:Send Power Down command (0x00)]
+Channels:
+- illuminance source=Data Register formula=illuminance_hres desc=Ambient light illuminance in lux
+Formulae:
+- illuminance_hres inputs=raw_count,MTreg_value output=lux formula=raw_count / (1.2 * (69 / X))
+- illuminance_hres2 inputs=raw_count,MTreg_value output=lux formula=raw_count / (1.2 * (69 / X) * 2)
+Timing:
+- H-Resolution Mode Measurement Time=180 ms when=Maximum time for H-Resolution mode measurement
+- L-Resolution Mode Measurement Time=24 ms when=Maximum time for L-Resolution mode measurement
+- DVI reset low time=1 µs when=DVI must be held low for at least 1µs after VCC supply for reset
+- I2C SCL frequency=400 kHz when=Maximum SCL clock frequency
+RequiresHuman:
+- DVI is likely a typo for VCC in some contexts; confirm power supply sequence.
+- ADDR terminal has 3-state buffer; ensure proper pull-up/pull-down during power-up.
+- Measurement time may be doubled in some modes; verify actual timing.

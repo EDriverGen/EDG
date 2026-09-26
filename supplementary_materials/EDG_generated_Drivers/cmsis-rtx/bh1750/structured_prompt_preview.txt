@@ -1,0 +1,568 @@
+
+## 3)    Input Measurement Command [pages 11-12]
+
+| ST   | Slave Address   | R/W 0   | Ack   | 0001_0000   | Ack   | SP   |
+|------|-----------------|---------|-------|-------------|-------|------|
+
+* This example is High Resolution mode, but it accepts the other measurement.
+
+After about 240ms, measurement result is registered to Data Register.
+
+( High Resolution mode is typically 120ms, but measurement time is set twice. )
+
+The below table is seeing the changable range of MTreg.
+
+|                    |         | Min.                                       | Typ.              | Max.                                       |
+|--------------------|---------|--------------------------------------------|-------------------|--------------------------------------------|
+| changable range of | binary  | 0001_1111 ( sensitivity : default * 0.45 ) | 0100_0101 default | 1111_1110 ( sensitivity : default * 3.68 ) |
+| MTreg              | decimal | 31 ( sensitivity : default * 0.45 )        | 69 default        | 254 ( sensitivity : default * 3.68 )       |
+
+It is possilbe to detect 0.23lx by using this function at H-resolution mode. And it is possilbe to detect 0.11lx by using this function at H-resolution mode2.
+
+The below formula is to calculate illuminance per 1 count.
+
+H-reslution mode : Illuminance per 1 count ( lx / count )    = 1 / 1.2 *( 69 / X )
+
+H-reslution mode2 : Illuminance per 1 count ( lx / count )    = 1 / 1.2 *( 69 / X ) / 2
+
+1.2 : Measurement accuracy
+
+69 : Default value of MTreg ( dec )
+
+X : MTreg value
+
+The below table is seeing the detail of resolution.
+
+|   MTreg value |   lx / count at H-resolutin mode |   lx / count at H-resolution mode2 |
+|--------------|----------------------------------|------------------------------------|
+|    0001_1111 |                             1.85 |                               0.93 |
+|    0100_0101 |                             0.83 |                               0.42 |
+|    1111_1110 |                             0.23 |                               0.11 |
+
+H-Resolution Mode2
+
+H-resolution mode2 is 0.5lx ( typ. ) resolution mode. It is suitable if under less than 10 lx measure ment data is necessary. This measurement mode supports " Adjust measurement result for influence of optical window ". Please refer it. It is possible to detect    min. 0.11 lx by using H-resolution mode2.
+
+Instruction set architecture for H-resolution mode2
+
+Measurement sequence example from "Write instruction" to "Read measurement result"
+
+ex) Continuously H-resolution mode2 ( ADDR = 'L' )
+
+| Instruction                     |   Opecode | Comments                                                                                                                                  |
+|---------------------------------|-----------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| Continuously H-Resolution Mode2 | 0001_0001 | Start measurement at 0.5lx resolution. Measurement Time is typically 120ms.                                                               |
+| One Time H-Resolution Mode2     | 0010_0001 | Start measurement at 0.5lx resolution. Measurement Time is typically 120ms. It is automatically set to Power Down mode after measurement. |
+
+from Master to Slave
+
+① Send "Continuously H-resolution mode2 " instruction
+
+ST
+
+0100011
+
+0
+
+Ack
+
+from Slave to Master
+
+00010001
+
+② Wait to complete 1st    H-resolution mode2 measurement.( max. 180ms. )
+
+③ Read measurement result.
+
+ST
+
+0100011
+
+1
+
+Ack High Byte [15:8] 2 14 2 13 2 12 2 11 2 10 2 9 2 8 2 7
+
+Low Byte [7:0] 2 6 2 5 2 4 2 3 2 2 2 1 2 0 2 -1
+
+Ack SP
+
+How to calculate when the data High Byte is "00000000" and Low Byte is "00010010"
+
+$$
+
+$$
+
+Ack SP
+
+Ack
+
+
+## 4 ) Read Format [pages 10-11]
+
+| ST   | Slave Address   | R/W 1   | Ack   | High Byte [15:8] 2 15 2 14 2 13 2 12 2 11 2 10 2 9 2 8   | Ack   |
+|------|-----------------|---------|-------|----------------------------------------------------------|-------|
+
+ex ) High Byte = "1000_0011" Low Byte    = "1001_0000" ( 2 15 + 2 9 + 2 8 + 2 7 + 2 4 ) / 1.2 ≒ 28067 [ lx ]
+
+I 2 C BUS is trademark of Phillips Semiconductors. Please refer formality specification.
+
+Adjust measurement result for influence of optical window. ( sensor sensitivity adjusting )
+
+BH1750FVI is possible to change sensor sensitivity. And it is possible to cancel the optical window influence ( difference with /  without  optical  window  )  by  using  this  function.  Adjust  is  done  by  changing  measurement  time.  For  example,  when transmission rate of optical window is 50% ( measurement result becomes 0.5 times if optical window is set ), influence of optical window is ignored by changing sensor sensitivity from default to 2 times
+
+Sensor sensitivity is shift by changing the value of MTreg ( measurement time regisiter ). MTreg value has to set 2 times if target of sensor sensitivity is 2 times. Measurement time is also set 2 times when MTreg value is changed from default to 2 times.
+
+ex) Procedure for changing target sensor sensitivity to 2 times.
+
+Please change Mtreg from '0100_0101' ( default )    to '1000_1010' ( default * 2 ).
+
+Changing High bit of MTreg
+
+Changing Low bit of MTreg
+
+| ST   | Slave Address   | R/W 0   | Ack   | 01000_100   | Ack   | SP   |
+|------|-----------------|---------|-------|-------------|-------|------|
+
+| ST   | Slave Address   | R/W 0   | Ack   | 011_01010   | Ack   | SP   |
+|------|-----------------|---------|-------|-------------|-------|------|
+
+
+## ● Electrical Characteristics ( VCC = 3.0V, DVI = 3.0V, Ta = 25 ℃ , unless otherwise noted ) [pages 2-2]
+
+| Parameter                                        | Symbol   | Min.      | Typ.   | Max.       | Units   | Conditions                                   |
+|--------------------------------------------------|----------|-----------|--------|------------|---------|----------------------------------------------|
+| Supply Current                                   | Icc1     | －        | 120    | 190        | µA      | Ev = 100 lx ※ 1                              |
+| Powerdown Current                                | Icc2     | －        | 0.01   | 1.0        | µA      | No input Light                               |
+| Peak Wave Length                                 | λ p      | －        | 560    | －         | nm      |                                              |
+| Measurement Accuracy                             | S/A      | 0.96      | 1.2    | 1.44       | times   | Sensor out / Actual lx EV = 1000 lx ※ 1, ※ 2 |
+| Dark ( 0 lx ) Sensor out                         | S0       | 0         | 0      | 3          | count   | H-Resolution Mode ※ 3                        |
+| H-Resolution Mode Resolution                     | r HR     | －        | 1      | －         | lx      |                                              |
+| L-Resolution Mode Resolution                     | r LR     | －        | 4      | －         | lx      |                                              |
+| H-Resolution Mode Measurement Time               | t HR     | －        | 120    | 180        | ms      |                                              |
+| L-Resolution Mode Measurement Time               | t LR     | －        | 16     | 24         | ms      |                                              |
+| Incandescent / Fluorescent Sensor out ratio      | rI F     | －        | 1      | －         | times   | EV = 1000 lx                                 |
+| ADDR Input 'H' Voltage                           | VAH      | 0.7 * VCC | －     | －         | V       |                                              |
+| ADDR Input 'L' Voltage                           | VAL      | －        | －     | 0.3 * VCC  | V       |                                              |
+| DVI Input 'L' Voltage                            | VDVL     | －        | －     | 0.4        | V       |                                              |
+| SCL, SDA Input 'H' Voltage 1                     | VIH 1    | 0.7 * DVI | －     | －         | V       | DVI ≧ 1.8V                                   |
+| SCL, SDA Input 'H' Voltage 2                     | VIH 2    | 1.26      | －     | －         | V       | 1.65V ≦ DVI ＜ 1.8V                          |
+| SCL, SDA Input 'L' Voltage 1                     | VIL 1    | －        | －     | 0.3 * DVI  | V       | DVI ≧ 1.8V                                   |
+| SCL, SDA Input 'L' Voltage 2                     | VIL 2    | －        | －     | DVI - 1.26 | V       | 1.65V ≦ DVI ＜ 1.8V                          |
+| SCL, SDA,ADDR Input 'H' Current                  | I IH     | －        | －     | 10         | µA      |                                              |
+| SCL, SDA,ADDR Input 'L' Current                  | I IL     | －        | －     | 10         | µA      |                                              |
+| I 2 C SCL Clock Frequency                        | f SCL    | －        | －     | 400        | kHz     |                                              |
+| I 2 C Bus Free Time                              | t BUF    | 1.3       | －     | －         | µs      |                                              |
+| I 2 C Hold Time ( repeated ) START Condition     | t HDSTA  | 0.6       | －     | －         | µs      |                                              |
+| I 2 C Set up time for a Repeated START Condition | t SUSTA  | 0.6       | －     | －         | µs      |                                              |
+| I 2 C Set up time for a Repeated STOP Condition  | t SUSTD  | 0.6       | －     | －         | µs      |                                              |
+| I 2 C Data Hold Time                             | t HDDAT  | 0         | －     | 0.9        | µs      |                                              |
+| I 2 C Data Setup Time                            | t SUDAT  | 100       | －     | －         | ns      |                                              |
+| I 2 C 'L' Period of the SCL Clock                | t LOW    | 1.3       | －     | －         | µs      |                                              |
+| I 2 C 'H' Period of the SCL Clock                | t HIGH   | 0.6       | －     | －         | µs      |                                              |
+| I 2 C SDA Output 'L' Voltage                     | VOL      | 0         | －     | 0.4        | V       | I OL = 3 mA                                  |
+
+※ 1 White LED is used as optical source.
+
+※ 2 Measurement Accuracy typical value is possible to change '1' by "Measurement result adjustment function".
+
+※ 3 Use H-resolution mode or H-resolution mode2 if dark data ( less than 10 lx ) is need.
+
+
+## ● Instruction Set    Architecture [pages 5-5]
+
+| Instruction                          | Opecode           | Comments                                                                                                                                  |
+|--------------------------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| Power Down                           | 0000_0000         | No active state.                                                                                                                          |
+| Power On                             | 0000_0001         | Waiting for measurement command.                                                                                                          |
+| Reset                                | 0000_0111         | Reset Data register value. Reset command is not acceptable in Power Down mode.                                                            |
+| Continuously H-Resolution Mode       | 0001_0000         | Start measurement at 1lx resolution. Measurement Time is typically 120ms.                                                                 |
+| Continuously H-Resolution Mode2      | 0001_0001         | Start measurement at 0.5lx resolution. Measurement Time is typically 120ms.                                                               |
+| Continuously L-Resolution Mode       | 0001_0011         | Start measurement at 4lx resolution. Measurement Time is typically 16ms.                                                                  |
+| One Time H-Resolution Mode           | 0010_0000         | Start measurement at 1lx resolution. Measurement Time is typically 120ms. It is automatically set to Power Down mode after measurement.   |
+| One Time H-Resolution Mode2          | 0010_0001         | Start measurement at 0.5lx resolution. Measurement Time is typically 120ms. It is automatically set to Power Down mode after measurement. |
+| One Time L-Resolution Mode           | 0010_0011         | Start measurement at 4lx resolution. Measurement Time is typically 16ms. It is automatically set to Power Down mode after measurement.    |
+| Change Measurement time ( High bit ) | 01000_MT[7,6,5]   | Change measurement time. ※ Please refer "adjust measurement result for influence of optical window."                                      |
+| Change Masurement time ( Low bit )   | 011_MT[4,3,2,1,0] | Change measurement time. ※ Please refer "adjust measurement result for influence of optical window."                                      |
+
+※ Don't input the other opecode.
+
+
+## ● Measurement mode explanation [pages 5-5]
+
+| Measurement Mode   | Measurement Time.   | Resolurtion   |
+|--------------------|---------------------|---------------|
+| H-resolution Mode2 | Typ. 120ms.         | 0.5 lx        |
+| H-Resolution Mode  | Typ. 120ms.         | 1 lx.         |
+| L-Resolution Mode  | Typ. 16ms.          | 4 lx.         |
+
+
+## 3 ) Write Format [pages 10-10]
+
+BH1750FVI is not able to accept plural command without stop condition. Please insert SP every 1 Opecode.
+
+| ST   | Slave Address   | R/W 0   | Ack   | Opecode   | Ack   | SP   |
+|------|-----------------|---------|-------|-----------|-------|------|
+
+
+## ● Explanation of Asynchronous reset and Reset command "0000_0111" [pages 5-5]
+
+Asynchronous reset
+
+All registers are reset. It is necessary on power supply sequence. Please refer "Timing chart for VCC and DVI power supply sequence" in this page. It is power down mode during DVI = 'L'.
+
+
+## 2)  Reset command [pages 5-5]
+
+Reset command is for only reset Illuminance data register. ( reset value is '0' ) It is not necessary even power supply sequence.It is used for removing previous measurement result. This command is not working in power down mode, so that please set the power on mode before input this command.
+
+
+## Don't care state [pages 6-7]
+
+ADDR, SDA, SCL is not stable if DVI 'L' term ( 1us ) is not given by systems.
+
+In this case, please connect the resisters ( approximately 100kOhm ) to ADDR without directly connecting to VCC or GND,
+
+because it is 3 state buffer for Internal testing.
+
+Measurement sequence example from "Write instruction" to "Read measurement result"
+
+ex1)    Continuously H-resolution mode ( ADDR = 'L' )
+
+① Send "Continuously H-resolution mode " instruction
+
+ST
+
+0100011
+
+0
+
+Ack
+
+00010000
+
+Ack
+
+SP
+
+② Wait to complete 1st    H-resolution mode measurement.( max. 180ms. )
+
+③ Read measurement result.
+
+ST
+
+0100011
+
+1
+
+Ack
+
+High Byte [ 15:8 ]
+
+Ack
+
+Low Byte [ 7:0 ]
+
+Ack
+
+SP
+
+How to calculate when the data High Byte is "10000011" and Low Byte is "10010000" ( 2 15 + 2 9 + 2 8 + 2 7 + 2 4 ) / 1.2 ≒ 28067 [ lx ]
+
+The result of continuously measurement mode is updated.( 120ms.typ at H-resolution mode, 16ms.typ at L-resolution mode )
+
+ex2 )    One time L-resolution mode ( ADDR = 'H' )
+
+① Send "One time L-resolution mode " instruction
+
+ST
+
+1011100
+
+0
+
+Ack
+
+00100011
+
+Ack
+
+SP
+
+② Wait to complete L-resolution mode measurement.( max. 24ms. )
+
+③ Read measurement result
+
+ST
+
+1011100
+
+1
+
+Ack
+
+High Byte [ 15:8 ]
+
+Ack
+
+Low Byte [ 7:0 ]
+
+Ack
+
+SP
+
+from Master to Slave
+
+from Slave to Master
+
+How to calculate when the data High Byte is "00000001" and Low Byte is "00010000"
+
+( 2
+
+8
+
++ 2
+
+4
+
+) / 1.2
+
+≒
+
+227 [ lx ]
+
+In one time measurement, Statement moves to power down mode after measurement completion.If updated result is need then please resend measurement instruction.
+
+
+## ● I 2 C Bus Access [pages 10-10]
+
+Write measurement command and Read measurement result are done by I 2 C Bus interface. Please refer the formally specification of I 2 C Bus interface, and follow the formally timing chart.
+
+
+## 2) Slave Address [pages 10-10]
+
+Slave Address is 2 types, it is determined by ADDR Terminal
+
+ADDR = 'H'    ( ADDR
+
+≧
+
+0.7VCC )
+
+→
+
+'1011100'
+
+ADDR = 'L'    ( ADDR ≦ 0.3VCC ) → '0100011'
+
+
+## ● Absolute Maximum Ratings [pages 1-1]
+
+| Parameter             | Symbol   | Limits     | Units   |
+|-----------------------|----------|------------|---------|
+| Supply Voltage        | Vmax     | 4.5        | V       |
+| Operating Temperature | Topr     | -40 ～ 85  | ℃       |
+| Storage Temperature   | Tstg     | -40 ～ 100 | ℃       |
+| SDA Sink Current      | Imax     | 7          | mA      |
+| Power Dissipation     | Pd       | 260 ※      | mW      |
+
+※ 70mm × 70mm × 1.6mm glass epoxy board. Derating in done at 3.47mW/ ℃ for operating above Ta=25 ℃ .
+
+
+## ● Operating Conditions [pages 1-1]
+
+| Parameter               | Symbol   |   Min. | Typ.   | Max.   | Units   |
+|-------------------------|----------|--------|--------|--------|---------|
+| VCC Voltage             | Vcc      |    2.4 | 3.0    | 3.6    | V       |
+| I 2 C Reference Voltage | VDVI     |   1.65 | -      | VCC    | V       |
+
+
+## ● Terminal Description [pages 13-13]
+
+|   PIN No. | Terminal Name   | Function                                                                                                                                                                                                                                          |
+|-----------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|         1 | VCC             | Power Supply Terminal                                                                                                                                                                                                                             |
+|         2 | ADDR            | I 2 C Slave-address Terminal ADDR = 'H' (ADDR ≧ 0.7V CC ) '1011100' ADDR = 'L' (ADDR ≦ 0.3V CC ) '0100011' ADDR Terminal is designed as 3 state buffer for internal test. So that please take care of VCC and DVI supply procedure.Please see P6. |
+|         3 | GND             | GND Terminal                                                                                                                                                                                                                                      |
+|         4 | SDA             | I 2 C bus Interface SDATerminal                                                                                                                                                                                                                   |
+|         5 | DVI             | SDA, SCL Reference Voltage Terminal And DVI Terminal is also asynchronous Reset for internal registers.So that please set to 'L' ( at least 1µs, DVI <= 0.4V ) after VCC is supplied. BH1750FVI is pulled down by 150kOhm while DVI = 'L'.        |
+|         6 | SCL             | I 2 C bus Interface SCL Terminal                                                                                                                                                                                                                  |
+
+※ These values are design-value, not guaranteed.
+
+
+## ● Descriptions [pages 1-1]
+
+Technical Note
+
+No.10046ECT01
+
+BH1750FVI is an digital Ambient Light Sensor IC for I 2 C bus interface. This IC is the most suitable to obtain the ambient light data for adjusting LCD and Keypad backlight power of Mobile phone. It is possible to detect wide range at High resolution. ( 1 - 65535 lx ).
+
+
+## ● Features [pages 1-1]
+
+I 2 C bus Interface ( f / s Mode Support )
+
+Spectral responsibility is approximately human eye response
+
+Illuminance to Digital Converter
+
+Wide range and High resolution. ( 1 - 65535 lx )
+
+Low Current by power down function
+
+50Hz / 60Hz Light noise reject-function
+
+1.8V Logic input interface
+
+No need any external parts
+
+Light source dependency is little. ( ex. Incandescent Lamp. Fluorescent Lamp. Halogen Lamp. White LED. Sun Light )
+
+It is possible to select 2 type of I 2 C slave-address.
+
+Adjustable measurement result for influence of optical window
+
+( It is possible to detect min. 0.11 lx, max. 100000 lx by using this function. )
+
+Small measurement variation (+/- 20%)
+
+The influence of infrared is very small.
+
+
+## ● Reference Data [pages 3-3]
+
+Fig.1 Spectral Response
+
+Fig.4 Directional Characteristics 1
+
+Fig.7 Measurement Accuracy Temperature Dependency
+
+Fig.10 VCC - ICC@0 Lx ( POWER DOWN )
+
+Fig.2 Illuminance Measurement Result 1
+
+Fig.5 Directional Characteristics 2
+
+Fig.8 Light Source Dependency ( Fluorescent Light is set to '1' )
+
+Fig.11 Measurement Result VCC Dependency
+
+Fig.3 Illuminance Measuremnet Result 2
+
+Fig.6 Dark Response
+
+Fig.12 Measurement Result DVI Dependency
+
+
+## ● Block Diagram Descriptions [pages 4-4]
+
+- PD Photo diode with approximately human eye response.
+
+- AMP
+
+Integration-OPAMP for converting from PD current to Voltage.
+
+- ADC
+
+AD converter for obtainment Digital 16bit data.
+
+- Logic + I 2 C Interface
+
+Ambient Light Calculation and I 2 C BUS Interface. It is including below register.
+
+Data Register → This is for registration of Ambient Light Data. Initial Value is "0000_0000_0000_0000".
+
+Measurement Time Register → This is for registration of measurement time. Initial Value is "0100_0101".
+
+- OSC Internal Oscillator ( typ. 320kHz ). It is CLK for internal logic.
+
+
+## We recommend to use H-Resolution Mode. [pages 5-5]
+
+Measurement time ( integration time ) of H-Resolution Mode is so long that some kind of noise( including in 50Hz / 60Hz noise ) is rejected. And H-Resolution Mode is 1 l x resolution so that it is suitable for darkness ( less than 10 lx ) H-resolution mode2 is also suitable to detect for darkness.
+
+
+## ● Timing chart for VCC and DVI power supply sequence [pages 6-6]
+
+DVI is I 2 C bus reference voltage terminal. And it is also asynchronous reset terminal. It is necessary to set to 'L'    after VCC is supplied. In DVI 'L' term, internal state is set to Power Down mode.
+
+
+## ● Application circuit example of DVI terminal [pages 8-8]
+
+The DVI terminal is an asynchronous reset terminal. Please note that there is a possibility that IC doesn't operate normally if the reset section is not installed after the start-up of VCC.
+
+(Please refer to the paragraph of "Timing chart for VCC and DVI power supply sequence" )
+
+The  description  concerning  SDA  and  the  terminal  SCL  is  omitted  in  this  application  circuit  example.  Please  design  the application the standard of the I2C bus as it finishes being satisfactory. Moreover, the description concerning the terminal ADDR is omitted. Please refer to the paragraph of "Timing chart for VCC and DVI power supply sequence" about the terminal ADDR design.
+
+
+## ex 3) A different power supply is used. [pages 8-9]
+
+※ Power supply of DVI must stand up later than power supply of VCC stand up, because it is necessary to secure reset section ( 1µs or more ).
+
+ex 4) LPF using CR is inserted between VCC and DVI.
+
+This method has the possibility that the Reset section of turning on the power supply can not satisfied. cannot be satisfied. Please design the set considering the characteristic of the power supply enough.
+
+◆ Notes when CR is inserted between VCC and DVI
+
+※ Please note that there is a possibility that reset section ( 1µs ) can not be satisfied because the power supply is turned on when the rise time of VCC is slow
+
+※ When VCC is turned off, the DVI voltage becomes higher than VCC voltage but IC destruction is not occred if recommended constant ( R1 = 1kOhm, C1 = 1µF ) is used.
+
+※ Please note that there is a possibility that Reset section (1µsec) cannot be satisfied if wait time is not enough long after turning off VCC. (It is necessary to consider DVI voltage level after turning off VCC.)
+
+Please do the application design to secure Reset section 1us or more after the reclosing of the power supply.
+
+◆ Example of designing set when CR ( C = 1µF, R = 1k Ω ) is inserted between VCC and DVI with VCC=2.8V
+
+① The rise time to 0 → 2.4V of VCC must use the power supply of 100µs or less.
+
+② Please wait 25ms or more after VCC turn off ( VCC <= 0.05V ), because it is necessary to secure reset section ( 1µs or more ).
+
+VCC
+
+Please do the application design to secure Reset section 1us or more after the reclosing of the power supply.
+
+
+## 2) GND voltage [pages 16-16]
+
+Make setting of the potential of the GND terminal so that it will be maintained at the minimum in any operating state. Furthermore, check to be sure no terminals are at a potential lower than the GND voltage including an actual electric transient.
+
+
+## 6) Input terminals [pages 16-16]
+
+In terms of the construction of IC, parasitic elements are inevitably formed in relation to potential. The operation of the parasitic element can cause interference with circuit operation, thus resulting in a malfunction and then breakdown of the input terminal. Therefore, pay thorough attention not to handle the input terminals; such as to apply to the input terminals a voltage lower than the GND respectively, so that any parasitic element will operate. Furthermore, do not apply a voltage to the input terminals when no power supply voltage is applied to the IC. In addition, even if the power supply voltage is applied,  apply  to  the  input  terminals  a  voltage  lower  than  the  power  supply  voltage  or  within  the  guaranteed  value  of electrical characteristics.
+
+
+## 9) Rush current [pages 16-16]
+
+When power is first supplied to the CMOS IC, it is possible that the internal logic may be unstable and rush current may flow instantaneously. Therefore, give special consideration to power coupling capacitance, power wiring, width of GND wiring, and routing of connections.
+
+
+## 10) The exposed central pad on the back side of the package [pages 16-16]
+
+There is an exposed central pad on the back side of the package. But please do it non connection. ( Don't    solder, and don't do electrical connection ) Please mount by Footprint dimensions described in the Jisso Information for WSOF6I. This pad is GND level, therefore there is a possibility that LSI malfunctions and heavy-current is generated.
+
+
+## ● Block Diagram [pages 4-4]
+
+
+## ● Measurement Procedure [pages 4-4]
+
+"Power On" Command is possible to omit.
+
+
+## 1) Recommended Timing chart1 for VCC and DVI supply. [pages 6-6]
+
+Timing chart2 for VCC and DVI supply. ( If DVI rises within 1µs after VCC supply )
+
+
+## ex 2) Reset IC is used. [pages 8-8]
+
+1, For Reset IC of the Push-Pull type
+
+
+## 1 ) I 2 C Bus Interface Timing chart [pages 10-10]
+

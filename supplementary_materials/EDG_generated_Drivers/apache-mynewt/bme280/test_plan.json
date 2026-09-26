@@ -1,0 +1,199 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x76",
+      "write_prefix_any_of": [
+        [
+          "0xD0"
+        ]
+      ],
+      "note": "init: id"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x76",
+      "write_prefix_any_of": [
+        [
+          "0xE0"
+        ]
+      ],
+      "note": "init: reset"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x76",
+      "write_prefix_any_of": [
+        [
+          "0xF5"
+        ]
+      ],
+      "note": "init: config"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x76",
+      "write_prefix_any_of": [
+        [
+          "0xF2"
+        ],
+        [
+          "0xF3"
+        ],
+        [
+          "0xF4"
+        ],
+        [
+          "0xF7"
+        ],
+        [
+          "0xF8"
+        ],
+        [
+          "0xF9"
+        ],
+        [
+          "0xFA"
+        ],
+        [
+          "0xFB"
+        ],
+        [
+          "0xFC"
+        ],
+        [
+          "0xFD"
+        ],
+        [
+          "0xFE"
+        ]
+      ],
+      "read_any": true,
+      "note": "read_cycle: one of ctrl_hum, ctrl_meas, hum_lsb, hum_msb, press_lsb, press_msb, press_xlsb, status, temp_lsb, temp_msb, temp_xlsb"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "nominal_values",
+      "mock_preload": {
+        "0xD0": [
+          "0x60"
+        ],
+        "0x88": [
+          "0x6C",
+          "0x6B",
+          "0x73",
+          "0x67",
+          "0x3E",
+          "0x8C",
+          "0x3D",
+          "0x9A",
+          "0x9C",
+          "0x0C",
+          "0x7A",
+          "0x04",
+          "0x1E",
+          "0x00",
+          "0x6C",
+          "0x70",
+          "0x8D",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00"
+        ],
+        "0xE1": [
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00"
+        ],
+        "0xF7": [
+          "0x01",
+          "0x90",
+          "0x00",
+          "0x01",
+          "0x90",
+          "0x00",
+          "0x80",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "temp": 102400,
+        "pressure": 102400,
+        "humidity": 32768
+      },
+      "derivation": "temp: raw = (0x01<<12)|(0x90<<4)|(0x00>>4) = 6400; pressure: raw = (0x01<<12)|(0x90<<4)|(0x00>>4) = 6400; humidity: raw = (0x80<<8)|0x00 = 32768; all raw_count per B3."
+    },
+    {
+      "name": "zero_values",
+      "mock_preload": {
+        "0xD0": [
+          "0x60"
+        ],
+        "0x88": [
+          "0x6C",
+          "0x6B",
+          "0x73",
+          "0x67",
+          "0x3E",
+          "0x8C",
+          "0x3D",
+          "0x9A",
+          "0x9C",
+          "0x0C",
+          "0x7A",
+          "0x04",
+          "0x1E",
+          "0x00",
+          "0x6C",
+          "0x70",
+          "0x8D",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00"
+        ],
+        "0xE1": [
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00"
+        ],
+        "0xF7": [
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "temp": 0,
+        "pressure": 0,
+        "humidity": 0
+      },
+      "derivation": "All raw bytes zero => raw values 0."
+    }
+  ]
+}

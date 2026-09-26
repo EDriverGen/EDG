@@ -1,0 +1,426 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "mhz19b",
+  "scope": "UART CO2 readout plus the calibration/configuration flows actually represented. PWM/analog and HD facts are additional assertions; UART electrical characteristics are excluded.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "uart_settings",
+        "read_command",
+        "response_header",
+        "checksum",
+        "checksum_verify",
+        "zero_command",
+        "span_command",
+        "abc_command",
+        "range_command"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": []
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "preheat",
+        "response_t90",
+        "span_stabilize",
+        "abc_period",
+        "hd_calibration"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "frame_length",
+        "co2_bytes",
+        "co2_formula",
+        "pwm_formula",
+        "analog_formula"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "zero_environment",
+        "span_after_zero",
+        "span_concentration",
+        "abc_default",
+        "abc_usage",
+        "range_options"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "MH-Z19B.pdf",
+      "pages": 10,
+      "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "uart_settings",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "UART9600 baud,8data bits,1stop bit,no parity",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Read request FF 01 86 00 00 00 00 00 79",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "frame_length",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Response frame9bytes=72bits",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "response_header",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Response starts FF86",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "co2_bytes",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Unsigned16-bit ppm in response bytes2..3, high byte first",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "co2_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "CO2ppm=byte2*256+byte3",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "checksum",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Checksum=two-complement of byte1..7 sum, low8bits",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "checksum_verify",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Verify last received checksum byte",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "preheat",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Preheat3minutes",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "response_t90",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Concentration response T90<120s",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "zero_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Zero calibration opcode87, no response",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "zero_environment",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Zero calibration400ppm stable at least20minutes",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "span_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Span opcode88, high/low ppm in bytes3/4, no response",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "span_stabilize",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Span gas must stabilize at least20minutes",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "span_after_zero",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Zero calibration must precede span calibration",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "span_concentration",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Span preferably2000ppm and always above1000ppm",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "abc_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Opcode79 byte3 A0 enables,00 disables; no response",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "abc_default",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "ABC is on by default",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "abc_period",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "ABC interval24h after power-on",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "abc_usage",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Disable ABC for greenhouses/farms/refrigerators",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "range_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Opcode99, range32-bit big-endian bytes4..7, no reply",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "range_options",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Measuring ranges2000,5000,10000ppm",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "hd_calibration",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "HD low for7s or longer triggers zero calibration",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 5,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        },
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pwm_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "For2000ppm range C=2000*(TH-2)/(TH+TL-4), times inms",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "analog_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Defaultanalog Vo=.4+1.6*C/range",
+      "evidence": [
+        {
+          "document": "MH-Z19B.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/mhz19b/MH-Z19B.pages.json"
+        }
+      ]
+    }
+  ]
+}

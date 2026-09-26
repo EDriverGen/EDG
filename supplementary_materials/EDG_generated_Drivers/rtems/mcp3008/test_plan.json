@@ -1,0 +1,78 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "write_prefix_any_of": [
+        [
+          "0x01",
+          "0x80",
+          "0x00"
+        ]
+      ],
+      "note": "read_channel: write for CH0"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "read_any": true,
+      "note": "read_channel: direct read read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "write_prefix_any_of": [
+        [
+          "0x01",
+          "0x90",
+          "0x00"
+        ]
+      ],
+      "note": "read_channel: write for CH1"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "ch0_mid_scale",
+      "mock_preload": {
+        "stream": [
+          "0x00",
+          "0x7F",
+          "0xFF"
+        ]
+      },
+      "expected_channels": {
+        "ch0": 1023
+      },
+      "derivation": "Response bytes: [0x00, 0x7F, 0xFF]. high_byte=0x7F, low_byte=0xFF. raw = ((0x7F & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023."
+    },
+    {
+      "name": "ch1_zero",
+      "mock_preload": {
+        "stream": [
+          "0x00",
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "ch1": 0
+      },
+      "derivation": "Response bytes: [0x00, 0x00, 0x00]. high_byte=0x00, low_byte=0x00. raw = ((0x00 & 0x03) << 8) | 0x00 = 0."
+    },
+    {
+      "name": "ch0_full_scale",
+      "mock_preload": {
+        "stream": [
+          "0x00",
+          "0x03",
+          "0xFF"
+        ]
+      },
+      "expected_channels": {
+        "ch0": 1023
+      },
+      "derivation": "Response bytes: [0x00, 0x03, 0xFF]. high_byte=0x03, low_byte=0xFF. raw = ((0x03 & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023."
+    }
+  ]
+}

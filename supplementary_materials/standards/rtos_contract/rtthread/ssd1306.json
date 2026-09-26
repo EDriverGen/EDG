@@ -1,0 +1,198 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtthread__ssd1306",
+  "device_id": "ssd1306",
+  "rtos_id": "rtthread",
+  "bus": "i2c",
+  "scope": "ssd1306/rtthread: fixed task bus is i2c. Contract is limited to RTOS/BSP headers, handles, called setup/transfer APIs, fixed controller binding and driver-level waits.",
+  "api_contract": {
+    "bus": "i2c",
+    "required_headers": [
+      "rtthread.h",
+      "rtdevice.h",
+      "stdint.h"
+    ],
+    "api_functions": {
+      "rt_i2c_transfer": {
+        "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg         msgs[], rt_uint32_t               num);",
+        "header": "data/rtos/rt-thread/components/drivers/include/drivers/dev_i2c.h",
+        "pack_line": 375,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 41
+          },
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 61
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 375,
+          "line_end": 375
+        }
+      },
+      "rt_device_find": {
+        "signature": "rt_device_t dev = rt_device_find(bus_name);",
+        "header": "data/rtos/rt-thread/components/drivers/i2c/dev_i2c_core.c",
+        "pack_line": 814,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 72
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 814,
+          "line_end": 814
+        }
+      }
+    },
+    "unresolved_reference_symbols": [
+      {
+        "symbol": "ratio",
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 14
+          }
+        ]
+      },
+      {
+        "symbol": "remap",
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 19
+          }
+        ]
+      },
+      {
+        "symbol": "memcpy",
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 54
+          }
+        ]
+      },
+      {
+        "symbol": "memset",
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 77
+          },
+          {
+            "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+            "line": 111
+          }
+        ]
+      }
+    ],
+    "fixed_task_binding": {
+      "binding_id": "rtthread_stm32f103rb_i2c1_polling",
+      "platform_id": "rtthread_stm32f103rb",
+      "connection_type": "i2c",
+      "mode": "polling",
+      "bus_instance": "i2c1",
+      "bus_instance_kind": "named_bus",
+      "bus_symbol": "i2c1",
+      "backend": "rt-thread i2c bus device / local bsp implementation",
+      "address_mode": "7-bit",
+      "fixed_attachment": {},
+      "notes": [
+        "Default I2C polling binding used by current RT-Thread STM32F103RB experiments."
+      ],
+      "evidence": [
+        "DriverGen/data/board_context/rtthread_stm32f103rb_i2c1_polling.json"
+      ]
+    },
+    "setup_symbols": [
+      "rt_device_find"
+    ],
+    "transfer_symbols": [
+      "rt_i2c_transfer"
+    ],
+    "timing_symbols": [],
+    "transaction_symbols": [
+      "rt_i2c_transfer"
+    ],
+    "strict_v2_semantic_check": {
+      "fixed_bus": "i2c1",
+      "api_declarations_checked": {
+        "rt_i2c_transfer": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg         msgs[], rt_uint32_t               num);",
+        "rt_device_find": "rt_device_t dev = rt_device_find(bus_name);"
+      },
+      "operation_sets": {
+        "setup": [
+          "rt_device_find"
+        ],
+        "transfer": [
+          "rt_i2c_transfer"
+        ],
+        "timing": []
+      },
+      "rule": "C requires usable parameter/return/unit semantics for the complete task operation on the fixed bus; all generated bindings/context/notes were inspected."
+    }
+  },
+  "facts": [
+    {
+      "id": "header_types",
+      "category": "headers/types/handle",
+      "requirement": "Expose usable reference-driver RTOS/BSP include headers and the required bus handle/type context. Header set: rtdevice.h. Bus type references in declared API signatures: struct rt_i2c_bus_device, struct rt_i2c_msg",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 375,
+          "line_end": 375
+        }
+      ]
+    },
+    {
+      "id": "fixed_bus_binding",
+      "category": "task binding",
+      "requirement": "Preserve the task-fixed i2c controller/instance and mode from connection_binding_context; a device alternate bus is irrelevant. Binding: {\"address_mode\": \"7-bit\", \"backend\": \"rt-thread i2c bus device / local bsp implementation\", \"binding_id\": \"rtthread_stm32f103rb_i2c1_polling\", \"bus_instance\": \"i2c1\", \"bus_instance_kind\": \"named_bus\", \"bus_symbol\": \"i2c1\", \"connection_type\": \"i2c\", \"evidence\": [\"DriverGen/data/board_context/rtthread_stm32f103rb_i2c1_polling.json\"], \"fixed_attachment\": {}, \"mode\": \"polling\", \"notes\": [\"Default I2C polling binding used by current RT-Thread STM32F103RB experiments.\"], \"platform_id\": \"rtthread_stm32f103rb\"}",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/task_requirements.json",
+          "line_start": 10,
+          "line_end": 40
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_api",
+      "category": "setup/configuration/acquisition",
+      "requirement": "Expose required reference setup/acquire APIs with source signature, types and documented return/sequence: rt_device_find. Supplied declarations are in api_contract.api_functions; caller-supplied fixed bus may provide controller initialization. Required reference operations/signatures: rt_device_find: rt_device_t dev = rt_device_find(bus_name);.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 72,
+          "line_end": 72
+        }
+      ]
+    },
+    {
+      "id": "bus_transfer_api",
+      "category": "transfer/return",
+      "requirement": "Expose the fixed-task i2c transfer/GPIO calls and signatures used by this reference, including direction, buffer/count, timeout and return semantics when supplied: rt_i2c_transfer. Required reference operations/signatures: rt_i2c_transfer: rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg         msgs[], rt_uint32_t               num);.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__ssd1306/inputs/reference_drivers/ssd1306_ref.c",
+          "line_start": 41,
+          "line_end": 41
+        }
+      ]
+    }
+  ]
+}

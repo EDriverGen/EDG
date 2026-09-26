@@ -1,0 +1,349 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "nuttx__mhz19b",
+  "device_id": "mhz19b",
+  "rtos_id": "nuttx",
+  "bus": "uart_polling",
+  "scope": "nuttx uart_polling RTOS/BSP API minimum contract for nuttx__mhz19b; based on copied reference implementation and configuration, existing uart_polling API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "nuttx",
+    "bus": "uart_polling",
+    "task_binding": {
+      "connection_type": "uart_polling",
+      "mode": "polling",
+      "bus_instance": "/dev/ttyS1",
+      "bus_symbol": "/dev/ttyS1",
+      "backend": "NuttX POSIX serial device",
+      "address_mode": null
+    },
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "mhz19b_ref.h",
+      "nuttx.h",
+      "fcntl.h",
+      "unistd.h",
+      "termios.h",
+      "errno.h",
+      "string.h",
+      "nuttx/config.h",
+      "stdint.h",
+      "stdio.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "close",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 34,
+            "text": "{ if (dev && dev->uart_fd >= 0) { close(dev->uart_fd); dev->uart_fd = -1; } }"
+          }
+        ],
+        "available_declaration": "int close(int fd);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 20,
+          "line_end": 23
+        }
+      },
+      {
+        "symbol": "open",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 22,
+            "text": "dev->uart_fd = open(uart_path, O_RDWR | O_NOCTTY);"
+          }
+        ],
+        "available_declaration": "int open(FAR const char *path, int oflag, ...);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/nuttx/uart_polling/pack.md",
+          "line_start": 503,
+          "line_end": 504
+        }
+      },
+      {
+        "symbol": "read",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 47,
+            "text": "if (read(dev->uart_fd, resp, 9) != 9) return -EIO;"
+          }
+        ],
+        "available_declaration": "int read(int fd, void *buf, size_t nbytes);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 23,
+          "line_end": 25
+        }
+      },
+      {
+        "symbol": "write",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 45,
+            "text": "if (write(dev->uart_fd, cmd, 9) != 9) return -EIO;"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 66,
+            "text": "return (write(dev->uart_fd, cmd, 9) == 9) ? 0 : -EIO;"
+          }
+        ],
+        "available_declaration": "int write(int fd, const void *buf, size_t nbytes);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 25,
+          "line_end": 31
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/nuttx/uart_polling/pack.md",
+    "reference_api_calls": [
+      {
+        "symbol": "open",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 22,
+            "text": "dev->uart_fd = open(uart_path, O_RDWR | O_NOCTTY);"
+          }
+        ],
+        "declaration_resolution": "call observed in reference; no exact prototype found in inspected harness headers"
+      },
+      {
+        "symbol": "tcgetattr",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 24,
+            "text": "tcgetattr(dev->uart_fd, &tty);"
+          }
+        ],
+        "declaration_resolution": "call observed in reference; no exact prototype found in inspected harness headers"
+      },
+      {
+        "symbol": "cfsetispeed",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 25,
+            "text": "cfsetispeed(&tty, B9600); cfsetospeed(&tty, B9600);"
+          }
+        ],
+        "declaration_resolution": "call observed in reference; no exact prototype found in inspected harness headers"
+      },
+      {
+        "symbol": "cfsetospeed",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 25,
+            "text": "cfsetispeed(&tty, B9600); cfsetospeed(&tty, B9600);"
+          }
+        ],
+        "declaration_resolution": "call observed in reference; no exact prototype found in inspected harness headers"
+      },
+      {
+        "symbol": "tcsetattr",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 29,
+            "text": "tcsetattr(dev->uart_fd, TCSANOW, &tty);"
+          }
+        ],
+        "declaration_resolution": "call observed in reference; no exact prototype found in inspected harness headers"
+      },
+      {
+        "symbol": "close",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 34,
+            "text": "{ if (dev && dev->uart_fd >= 0) { close(dev->uart_fd); dev->uart_fd = -1; } }"
+          }
+        ],
+        "available_declaration": "int close(int fd);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 20,
+          "line_end": 23
+        }
+      },
+      {
+        "symbol": "write",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 45,
+            "text": "if (write(dev->uart_fd, cmd, 9) != 9) return -EIO;"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 66,
+            "text": "return (write(dev->uart_fd, cmd, 9) == 9) ? 0 : -EIO;"
+          }
+        ],
+        "available_declaration": "int write(int fd, const void *buf, size_t nbytes);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 25,
+          "line_end": 31
+        }
+      },
+      {
+        "symbol": "usleep",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 46,
+            "text": "usleep(100000);"
+          }
+        ],
+        "available_declaration": "int usleep(unsigned int usec);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 50,
+          "line_end": 52
+        }
+      },
+      {
+        "symbol": "read",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 47,
+            "text": "if (read(dev->uart_fd, resp, 9) != 9) return -EIO;"
+          }
+        ],
+        "available_declaration": "int read(int fd, void *buf, size_t nbytes);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 23,
+          "line_end": 25
+        }
+      }
+    ],
+    "driver_to_board_boundary": "NuttX reference driver receives a struct i2c_master_s / spi_dev_s handle or a path/fd as shown in its copied source; board initialization, lower-half binding and POSIX wrappers are distinct from the device-driver call interface."
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's uart_polling connection context (/dev/ttyS1; NuttX POSIX serial device) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: open.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Required reference operations: write, read. Preserve buffer/length/address or register-message semantics and returned integer/status convention; NuttX message-vector transfer APIs are acceptable when transaction directions and address are represented.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 45,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 66,
+          "line_end": 66
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 47,
+          "line_end": 47
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 45,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 66,
+          "line_end": 66
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 47,
+          "line_end": 47
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the serial path/fd handle, termios declaration and caller/device parameters; configure 9600 baud, 8 data bits, no parity, one stop bit and blocking 9-byte RX framing as in the reference.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.h",
+          "line_start": 7,
+          "line_end": 30
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "The reference calls usleep(unsigned int usec), so preserve a blocking wait at microsecond input granularity; a millisecond scheduler wait is equivalent where the requested delay is an integral millisecond and the conversion is explicit.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/nuttx/unistd.h",
+          "line_start": 4,
+          "line_end": 4
+        }
+      ]
+    }
+  ]
+}

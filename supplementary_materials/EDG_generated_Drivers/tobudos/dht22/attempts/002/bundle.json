@@ -1,0 +1,114 @@
+{
+  "device_id": "dht22",
+  "rtos_id": "tobudos",
+  "eval_class": "multi_channel",
+  "bus_kind": "gpio",
+  "driver_header": "#ifndef DHT22_H\n#define DHT22_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct dht22_device {\n    void *bus_handle;\n    uint16_t trig_pin;\n    uint16_t echo_pin;\n};\n\nint dht22_init(struct dht22_device *dev, void *bus_name);\nint dht22_read_sensor(struct dht22_device *dev, int32_t *humidity_val, int32_t *temp_val);\n\n#endif /* DHT22_H */",
+  "driver_source": "#include \"dht22.h\"\n#include \"stm32f1xx_hal.h\"\n#include \"stm32f1xx_hal_gpio.h\"\n#include <stddef.h>\n#include <stdint.h>\n\n#define DHT22_TRIG_PIN GPIO_PIN_0\n#define DHT22_ECHO_PIN GPIO_PIN_1\n#define DHT22_GPIO_PORT GPIOA\n\n#define DHT22_TIMEOUT_US 1000\n\nstatic void delay_us(uint32_t us) {\n    uint32_t ticks = us * (SystemCoreClock / 1000000) / 2;\n    for (uint32_t i = 0; i < ticks; i++) {\n        __NOP();\n    }\n}\n\nstatic int wait_for_pin_state(GPIO_TypeDef *port, uint16_t pin, GPIO_PinState state, uint32_t timeout_us) {\n    while (timeout_us--) {\n        if (HAL_GPIO_ReadPin(port, pin) == state) {\n            return 0;\n        }\n        delay_us(1);\n    }\n    return -1;\n}\n\nint dht22_init(struct dht22_device *dev, void *bus_name) {\n    (void)bus_name;\n    dev->bus_handle = (void *)DHT22_GPIO_PORT;\n    dev->trig_pin = DHT22_TRIG_PIN;\n    dev->echo_pin = DHT22_ECHO_PIN;\n\n    GPIO_InitTypeDef gpio_init = {0};\n    gpio_init.Pin = DHT22_TRIG_PIN;\n    gpio_init.Mode = GPIO_MODE_OUTPUT_PP;\n    gpio_init.Pull = GPIO_NOPULL;\n    gpio_init.Speed = GPIO_SPEED_FREQ_HIGH;\n    HAL_GPIO_Init(DHT22_GPIO_PORT, &gpio_init);\n\n    gpio_init.Pin = DHT22_ECHO_PIN;\n    gpio_init.Mode = GPIO_MODE_INPUT;\n    gpio_init.Pull = GPIO_PULLUP;\n    HAL_GPIO_Init(DHT22_GPIO_PORT, &gpio_init);\n\n    HAL_GPIO_WritePin(DHT22_GPIO_PORT, DHT22_TRIG_PIN, GPIO_PIN_SET);\n    HAL_Delay(1000);\n\n    return 0;\n}\n\nint dht22_read_sensor(struct dht22_device *dev, int32_t *humidity_val, int32_t *temp_val) {\n    if (!dev || !humidity_val || !temp_val) return -1;\n\n    GPIO_TypeDef *port = (GPIO_TypeDef *)dev->bus_handle;\n    uint16_t trig = dev->trig_pin;\n    uint16_t echo = dev->echo_pin;\n\n    // Send start signal: pull low for at least 18ms\n    HAL_GPIO_WritePin(port, trig, GPIO_PIN_RESET);\n    HAL_Delay(20);\n    HAL_GPIO_WritePin(port, trig, GPIO_PIN_SET);\n    delay_us(30);\n\n    // Wait for sensor response: low 80us then high 80us\n    if (wait_for_pin_state(port, echo, GPIO_PIN_RESET, DHT22_TIMEOUT_US) != 0) return -1;\n    if (wait_for_pin_state(port, echo, GPIO_PIN_SET, DHT22_TIMEOUT_US) != 0) return -1;\n    if (wait_for_pin_state(port, echo, GPIO_PIN_RESET, DHT22_TIMEOUT_US) != 0) return -1;\n\n    // Read 40 bits\n    uint8_t data[5] = {0};\n    for (int i = 0; i < 40; i++) {\n        // Wait for low (50us)\n        if (wait_for_pin_state(port, echo, GPIO_PIN_SET, DHT22_TIMEOUT_US) != 0) return -1;\n        // Measure high pulse width\n        uint32_t high_ticks = 0;\n        while (HAL_GPIO_ReadPin(port, echo) == GPIO_PIN_SET) {\n            high_ticks++;\n            delay_us(1);\n            if (high_ticks > 100) break;\n        }\n        // Classify bit: if high pulse > 40us (approx) then bit=1 else 0\n        if (high_ticks > 40) {\n            data[i / 8] |= (1 << (7 - (i % 8)));\n        }\n    }\n\n    // Verify checksum\n    uint8_t sum = data[0] + data[1] + data[2] + data[3];\n    if (sum != data[4]) return -1;\n\n    // Convert to milli units\n    uint16_t integral_rh = data[0];\n    uint16_t decimal_rh = data[1];\n    uint16_t integral_t = data[2];\n    uint16_t decimal_t = data[3];\n\n    *humidity_val = (int32_t)(integral_rh * 100 + decimal_rh);\n    *temp_val = (int32_t)(integral_t * 100 + decimal_t);\n\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "dht22_init(&g_eval_dev, (void *)bus_name)",
+    "channels": [
+      {
+        "id": "humidity",
+        "call": "dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)",
+        "out_arg": "humidity_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_percent_rh"
+      },
+      {
+        "id": "temp",
+        "call": "dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)",
+        "out_arg": "temp_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct dht22_device",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "gpio1",
+        "note": "init: configure pin mode (output then input)"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "read_cycle: pulse / 1-wire handshake then sample bits"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_gpio_byte_frame_1",
+        "mock_preload": {
+          "payload": [
+            "0x02",
+            "0x58",
+            "0x02",
+            "0x7D",
+            "0xD9"
+          ]
+        },
+        "channel_preload_bytes": {
+          "humidity": [
+            "0x02",
+            "0x58"
+          ],
+          "temp": [
+            "0x02",
+            "0x7D"
+          ]
+        },
+        "expected_channels": {
+          "humidity": 60600,
+          "temp": 64337
+        },
+        "raw_tolerance": 0,
+        "derivation": "humidity: ((0x02 << 8) | 0x58) = 600; ((0x02 << 8) | 0x58) * 100 + ((0x02 << 8) | 0x58) = 60600; temp: ((0x02 << 8) | 0x7D) = 637; ((0x02 << 8) | 0x7D) * 100 + ((0x02 << 8) | 0x7D) = 64337; checksum: sum payload data bytes modulo 256 = 0xD9"
+      },
+      {
+        "name": "mechanical_gpio_byte_frame_2",
+        "mock_preload": {
+          "payload": [
+            "0x01",
+            "0xC7",
+            "0x01",
+            "0xEC",
+            "0xB5"
+          ]
+        },
+        "channel_preload_bytes": {
+          "humidity": [
+            "0x01",
+            "0xC7"
+          ],
+          "temp": [
+            "0x01",
+            "0xEC"
+          ]
+        },
+        "expected_channels": {
+          "humidity": 45955,
+          "temp": 49692
+        },
+        "raw_tolerance": 0,
+        "derivation": "humidity: ((0x01 << 8) | 0xC7) = 455; ((0x01 << 8) | 0xC7) * 100 + ((0x01 << 8) | 0xC7) = 45955; temp: ((0x01 << 8) | 0xEC) = 492; ((0x01 << 8) | 0xEC) * 100 + ((0x01 << 8) | 0xEC) = 49692; checksum: sum payload data bytes modulo 256 = 0xB5"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.gpio_byte_frame+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_gpio_pulse",
+  "slave_kind": "gpio_pulse_injector",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.7,
+  "prompt_chars": 38354,
+  "raw_response": "{\"driver_header\": \"#ifndef DHT22_H\\n#define DHT22_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct dht22_device {\\n    void *bus_handle;\\n    uint16_t trig_pin;\\n    uint16_t echo_pin;\\n};\\n\\nint dht22_init(struct dht22_device *dev, void *bus_name);\\nint dht22_read_sensor(struct dht22_device *dev, int32_t *humidity_val, int32_t *temp_val);\\n\\n#endif /* DHT22_H */\", \"driver_source\": \"#include \\\"dht22.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"stm32f1xx_hal_gpio.h\\\"\\n#include <stddef.h>\\n#include <stdint.h>\\n\\n#define DHT22_TRIG_PIN GPIO_PIN_0\\n#define DHT22_ECHO_PIN GPIO_PIN_1\\n#define DHT22_GPIO_PORT GPIOA\\n\\n#define DHT22_TIMEOUT_US 1000\\n\\nstatic void delay_us(uint32_t us) {\\n    uint32_t ticks = us * (SystemCoreClock / 1000000) / 2;\\n    for (uint32_t i = 0; i < ticks; i++) {\\n        __NOP();\\n    }\\n}\\n\\nstatic int wait_for_pin_state(GPIO_TypeDef *port, uint16_t pin, GPIO_PinState state, uint32_t timeout_us) {\\n    while (timeout_us--) {\\n        if (HAL_GPIO_ReadPin(port, pin) == state) {\\n            return 0;\\n        }\\n        delay_us(1);\\n    }\\n    return -1;\\n}\\n\\nint dht22_init(struct dht22_device *dev, void *bus_name) {\\n    (void)bus_name;\\n    dev->bus_handle = (void *)DHT22_GPIO_PORT;\\n    dev->trig_pin = DHT22_TRIG_PIN;\\n    dev->echo_pin = DHT22_ECHO_PIN;\\n\\n    GPIO_InitTypeDef gpio_init = {0};\\n    gpio_init.Pin = DHT22_TRIG_PIN;\\n    gpio_init.Mode = GPIO_MODE_OUTPUT_PP;\\n    gpio_init.Pull = GPIO_NOPULL;\\n    gpio_init.Speed = GPIO_SPEED_FREQ_HIGH;\\n    HAL_GPIO_Init(DHT22_GPIO_PORT, &gpio_init);\\n\\n    gpio_init.Pin = DHT22_ECHO_PIN;\\n    gpio_init.Mode = GPIO_MODE_INPUT;\\n    gpio_init.Pull = GPIO_PULLUP;\\n    HAL_GPIO_Init(DHT22_GPIO_PORT, &gpio_init);\\n\\n    HAL_GPIO_WritePin(DHT22_GPIO_PORT, DHT22_TRIG_PIN, GPIO_PIN_SET);\\n    HAL_Delay(1000);\\n\\n    return 0;\\n}\\n\\nint dht22_read_sensor(struct dht22_device *dev, int32_t *humidity_val, int32_t *temp_val) {\\n    if (!dev || !humidity_val || !temp_val) return -1;\\n\\n    GPIO_TypeDef *port = (GPIO_TypeDef *)dev->bus_handle;\\n    uint16_t trig = dev->trig_pin;\\n    uint16_t echo = dev->echo_pin;\\n\\n    // Send start signal: pull low for at least 18ms\\n    HAL_GPIO_WritePin(port, trig, GPIO_PIN_RESET);\\n    HAL_Delay(20);\\n    HAL_GPIO_WritePin(port, trig, GPIO_PIN_SET);\\n    delay_us(30);\\n\\n    // Wait for sensor response: low 80us then high 80us\\n    if (wait_for_pin_state(port, echo, GPIO_PIN_RESET, DHT22_TIMEOUT_US) != 0) return -1;\\n    if (wait_for_pin_state(port, echo, GPIO_PIN_SET, DHT22_TIMEOUT_US) != 0) return -1;\\n    if (wait_for_pin_state(port, echo, GPIO_PIN_RESET, DHT22_TIMEOUT_US) != 0) return -1;\\n\\n    // Read 40 bits\\n    uint8_t data[5] = {0};\\n    for (int i = 0; i < 40; i++) {\\n        // Wait for low (50us)\\n        if (wait_for_pin_state(port, echo, GPIO_PIN_SET, DHT22_TIMEOUT_US) != 0) return -1;\\n        // Measure high pulse width\\n        uint32_t high_ticks = 0;\\n        while (HAL_GPIO_ReadPin(port, echo) == GPIO_PIN_SET) {\\n            high_ticks++;\\n            delay_us(1);\\n            if (high_ticks > 100) break;\\n        }\\n        // Classify bit: if high pulse > 40us (approx) then bit=1 else 0\\n        if (high_ticks > 40) {\\n            data[i / 8] |= (1 << (7 - (i % 8)));\\n        }\\n    }\\n\\n    // Verify checksum\\n    uint8_t sum = data[0] + data[1] + data[2] + data[3];\\n    if (sum != data[4]) return -1;\\n\\n    // Convert to milli units\\n    uint16_t integral_rh = data[0];\\n    uint16_t decimal_rh = data[1];\\n    uint16_t integral_t = data[2];\\n    uint16_t decimal_t = data[3];\\n\\n    *humidity_val = (int32_t)(integral_rh * 100 + decimal_rh);\\n    *temp_val = (int32_t)(integral_t * 100 + decimal_t);\\n\\n    return 0;\\n}\"}",
+  "plan_hash": "7987fcf45b14aa18"
+}

@@ -1,0 +1,224 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/rtthread_stm32f103rb__max31855__spi1_polling/task_package.json",
+  "task_package": {
+    "package_id": "rtthread_stm32f103rb__max31855__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/rtthread_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/rtthread_stm32f103rb_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/max31855.json",
+    "reference_driver_root": "DriverGen/data/references/max31855/rtthread",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "rtthread_stm32f103rb",
+        "rtos": "rtthread",
+        "board": "stm32f103rb",
+        "integration": "rt_device_spi",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "rtthread_stm32f103rb_spi1_polling",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "spi10",
+        "bus_symbol": "\"spi10\"",
+        "backend": "RT-Thread SPI device framework",
+        "address_mode": "chip-select",
+        "fixed_attachment": {
+          "device_name": "spi10",
+          "chip_select": "configured_by_bsp_spi_device"
+        }
+      },
+      "device": {
+        "device_id": "max31855",
+        "attachment_type": "spi_thermocouple_converter",
+        "required_bus_type": "spi",
+        "required_attachment": {
+          "signals": [
+            "SCK",
+            "MISO",
+            "CS"
+          ],
+          "notes": [
+            "Read-only 32-bit SPI stream; no command bytes are sent."
+          ]
+        },
+        "protocol_hints": {
+          "spi_proto": "stream",
+          "read_only_stream_no_trigger": true,
+          "frame_bits": 32,
+          "primary_channel": "temp_thermocouple"
+        }
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "This package freezes a concrete RT-Thread SPI task setup for MAX31855.",
+      "The driver should configure mode 0, 8-bit MSB-first transfers, and read four bytes from the named rt_spi_device."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread/components/drivers/include/drivers/dev_spi.h",
+      "DriverGen/data/raw/max31855/MAX31855.pdf",
+      "DriverGen/data/references/max31855/rtthread/max31855_ref.c"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "rtthread_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "rt-thread",
+    "rtos_bundle": "rt-thread",
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi10"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform corresponds to the existing local RT-Thread STM32F103RB experiments.",
+      "I2C, SPI, and GPIO timing drivers all rely on the repository BSP layer rather than a separate vendor SDK.",
+      "SPI experiments model a named rt_spi_device such as spi10; chip-select attachment is handled by the RT-Thread SPI device registration."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread",
+      "DriverGen/data/board_context/rtthread_stm32f103rb_i2c1_polling.json",
+      "DriverGen/data/rtos/rt-thread/components/drivers/include/drivers/dev_spi.h",
+      "DriverGen/data/references/*/rtthread/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "rtthread_stm32f103rb_spi1_polling",
+    "platform_id": "rtthread_stm32f103rb",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "spi10",
+    "bus_instance_kind": "named_spi_device",
+    "bus_symbol": "spi10",
+    "backend": "RT-Thread SPI device framework",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "device_name": "spi10",
+      "chip_select": "configured_by_bsp_spi_device"
+    },
+    "required_helpers": [
+      "rt_thread_mdelay"
+    ],
+    "notes": [
+      "Default RT-Thread SPI polling binding used for generated SPI device experiments.",
+      "RT-Thread exposes each chip-selected SPI peripheral as a named rt_spi_device; generated drivers should find it by name and configure mode/data_width/max_hz per device."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread/components/drivers/include/drivers/dev_spi.h",
+      "DriverGen/data/rtos/rt-thread/components/drivers/spi/dev_spi_core.c",
+      "DriverGen/data/references/max31855/rtthread/max31855_ref.c",
+      "DriverGen/data/references/adxl345/rtthread/adxl345_ref.c",
+      "DriverGen/data/references/mcp3008/rtthread/mcp3008_ref.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "max31855",
+    "attachment_type": "spi_thermocouple_converter",
+    "required_bus_type": "spi",
+    "address_mode": "chip-select",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCK",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 5000000
+      },
+      "notes": [
+        "Read-only 32-bit SPI stream; MOSI command bytes are not required."
+      ]
+    },
+    "optional_attachment": {
+      "mosi": "not_required",
+      "thermocouple_type": "device_variant_dependent"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "protocol_hints": {
+      "spi_proto": "stream",
+      "read_only_stream_no_trigger": true,
+      "frame_bits": 32,
+      "primary_channel": "temp_thermocouple",
+      "optional_channels": [
+        "temp_internal"
+      ]
+    },
+    "notes": [
+      "SPI read clocks out the latest continuously converted 32-bit result; the driver does not issue a conversion command.",
+      "The primary observable for current oracle/reference evaluation is thermocouple temperature; internal temperature may be kept as an optional helper API."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/max31855/MAX31855.pdf",
+      "DriverGen/evaluation/oracle/data/max31855/meta.json",
+      "DriverGen/data/references/max31855/*/*_ref.c"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "rtthread_stm32f103rb__max31855__spi1_polling",
+    "rtos": "rt-thread",
+    "rtos_bundle": "rt-thread",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "spi",
+    "bus_instance": "spi10",
+    "bus_instance_kind": "named_spi_device",
+    "bus_symbol": "spi10",
+    "bus_backend": "RT-Thread SPI device framework",
+    "address_mode": "chip-select",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {
+      "device_name": "spi10",
+      "chip_select": "configured_by_bsp_spi_device"
+    },
+    "device_attachment_context_id": "max31855",
+    "device_addressing": null
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "openharmony-liteosm",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef W25Q64JV_H\n#define W25Q64JV_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct w25q64jv_dev {\n    void *bus_handle;\n};\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\n\n#endif",
+  "driver_source": "#include \"w25q64jv.h\"\n#include \"spi_if.h\"\n#include \"hdf_base.h\"\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n\n#define W25Q64JV_CMD_READ_DATA 0x03\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\n#define W25Q64JV_CMD_JEDEC_ID 0x9F\n#define W25Q64JV_DUMMY 0x00\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    uint8_t cmd = W25Q64JV_CMD_JEDEC_ID;\n    uint8_t rx[3];\n    struct SpiMsg msg[2];\n    msg[0].wbuf = &cmd;\n    msg[0].rbuf = NULL;\n    msg[0].len = 1;\n    msg[0].speed = 1000000;\n    msg[0].delayUs = 0;\n    msg[0].csChange = 0;\n    msg[0].keepCs = 1;\n    msg[1].wbuf = NULL;\n    msg[1].rbuf = rx;\n    msg[1].len = 3;\n    msg[1].speed = 1000000;\n    msg[1].delayUs = 0;\n    msg[1].csChange = 1;\n    msg[1].keepCs = 0;\n    int32_t ret = SpiTransfer(dev->bus_handle, msg, 2);\n    if (ret != 0) {\n        return -1;\n    }\n    return 0;\n}\n\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\n{\n    if (len == 0) return 0;\n    uint8_t cmd[4];\n    cmd[0] = W25Q64JV_CMD_READ_DATA;\n    cmd[1] = (addr >> 16) & 0xFF;\n    cmd[2] = (addr >> 8) & 0xFF;\n    cmd[3] = addr & 0xFF;\n    struct SpiMsg msg[2];\n    msg[0].wbuf = cmd;\n    msg[0].rbuf = NULL;\n    msg[0].len = 4;\n    msg[0].speed = 1000000;\n    msg[0].delayUs = 0;\n    msg[0].csChange = 0;\n    msg[0].keepCs = 1;\n    msg[1].wbuf = NULL;\n    msg[1].rbuf = buf;\n    msg[1].len = len;\n    msg[1].speed = 1000000;\n    msg[1].delayUs = 0;\n    msg[1].csChange = 1;\n    msg[1].keepCs = 0;\n    int32_t ret = SpiTransfer(dev->bus_handle, msg, 2);\n    if (ret != 0) {\n        return -1;\n    }\n    return 0;\n}\n\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\n{\n    if (len == 0) return 0;\n    if (len > 256) len = 256;\n    uint8_t wren_cmd = W25Q64JV_CMD_WRITE_ENABLE;\n    struct SpiMsg wren_msg;\n    wren_msg.wbuf = &wren_cmd;\n    wren_msg.rbuf = NULL;\n    wren_msg.len = 1;\n    wren_msg.speed = 1000000;\n    wren_msg.delayUs = 0;\n    wren_msg.csChange = 1;\n    wren_msg.keepCs = 0;\n    int32_t ret = SpiTransfer(dev->bus_handle, &wren_msg, 1);\n    if (ret != 0) {\n        return -1;\n    }\n    uint8_t pp_cmd[4 + 256];\n    pp_cmd[0] = W25Q64JV_CMD_PAGE_PROGRAM;\n    pp_cmd[1] = (addr >> 16) & 0xFF;\n    pp_cmd[2] = (addr >> 8) & 0xFF;\n    pp_cmd[3] = addr & 0xFF;\n    memcpy(pp_cmd + 4, buf, len);\n    struct SpiMsg pp_msg;\n    pp_msg.wbuf = pp_cmd;\n    pp_msg.rbuf = NULL;\n    pp_msg.len = 4 + len;\n    pp_msg.speed = 1000000;\n    pp_msg.delayUs = 0;\n    pp_msg.csChange = 1;\n    pp_msg.keepCs = 0;\n    ret = SpiTransfer(dev->bus_handle, &pp_msg, 1);\n    if (ret != 0) {\n        return -1;\n    }\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "struct w25q64jv_dev",
+    "init_extra_setup_c": "DevHandle bus_handle = SpiOpen((const struct SpiDevInfo *)bus_name);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"spi_if.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: direct read read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: direct read read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.823,
+  "prompt_chars": 42047,
+  "raw_response": "{\"driver_header\": \"#ifndef W25Q64JV_H\\n#define W25Q64JV_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct w25q64jv_dev {\\n    void *bus_handle;\\n};\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"w25q64jv.h\\\"\\n#include \\\"spi_if.h\\\"\\n#include \\\"hdf_base.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <string.h>\\n\\n#define W25Q64JV_CMD_READ_DATA 0x03\\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\\n#define W25Q64JV_CMD_JEDEC_ID 0x9F\\n#define W25Q64JV_DUMMY 0x00\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    uint8_t cmd = W25Q64JV_CMD_JEDEC_ID;\\n    uint8_t rx[3];\\n    struct SpiMsg msg[2];\\n    msg[0].wbuf = &cmd;\\n    msg[0].rbuf = NULL;\\n    msg[0].len = 1;\\n    msg[0].speed = 1000000;\\n    msg[0].delayUs = 0;\\n    msg[0].csChange = 0;\\n    msg[0].keepCs = 1;\\n    msg[1].wbuf = NULL;\\n    msg[1].rbuf = rx;\\n    msg[1].len = 3;\\n    msg[1].speed = 1000000;\\n    msg[1].delayUs = 0;\\n    msg[1].csChange = 1;\\n    msg[1].keepCs = 0;\\n    int32_t ret = SpiTransfer(dev->bus_handle, msg, 2);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\\n{\\n    if (len == 0) return 0;\\n    uint8_t cmd[4];\\n    cmd[0] = W25Q64JV_CMD_READ_DATA;\\n    cmd[1] = (addr >> 16) & 0xFF;\\n    cmd[2] = (addr >> 8) & 0xFF;\\n    cmd[3] = addr & 0xFF;\\n    struct SpiMsg msg[2];\\n    msg[0].wbuf = cmd;\\n    msg[0].rbuf = NULL;\\n    msg[0].len = 4;\\n    msg[0].speed = 1000000;\\n    msg[0].delayUs = 0;\\n    msg[0].csChange = 0;\\n    msg[0].keepCs = 1;\\n    msg[1].wbuf = NULL;\\n    msg[1].rbuf = buf;\\n    msg[1].len = len;\\n    msg[1].speed = 1000000;\\n    msg[1].delayUs = 0;\\n    msg[1].csChange = 1;\\n    msg[1].keepCs = 0;\\n    int32_t ret = SpiTransfer(dev->bus_handle, msg, 2);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\\n{\\n    if (len == 0) return 0;\\n    if (len > 256) len = 256;\\n    uint8_t wren_cmd = W25Q64JV_CMD_WRITE_ENABLE;\\n    struct SpiMsg wren_msg;\\n    wren_msg.wbuf = &wren_cmd;\\n    wren_msg.rbuf = NULL;\\n    wren_msg.len = 1;\\n    wren_msg.speed = 1000000;\\n    wren_msg.delayUs = 0;\\n    wren_msg.csChange = 1;\\n    wren_msg.keepCs = 0;\\n    int32_t ret = SpiTransfer(dev->bus_handle, &wren_msg, 1);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    uint8_t pp_cmd[4 + 256];\\n    pp_cmd[0] = W25Q64JV_CMD_PAGE_PROGRAM;\\n    pp_cmd[1] = (addr >> 16) & 0xFF;\\n    pp_cmd[2] = (addr >> 8) & 0xFF;\\n    pp_cmd[3] = addr & 0xFF;\\n    memcpy(pp_cmd + 4, buf, len);\\n    struct SpiMsg pp_msg;\\n    pp_msg.wbuf = pp_cmd;\\n    pp_msg.rbuf = NULL;\\n    pp_msg.len = 4 + len;\\n    pp_msg.speed = 1000000;\\n    pp_msg.delayUs = 0;\\n    pp_msg.csChange = 1;\\n    pp_msg.keepCs = 0;\\n    ret = SpiTransfer(dev->bus_handle, &pp_msg, 1);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "dd5e34f737174755"
+}

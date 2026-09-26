@@ -1,0 +1,679 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "vl53l0x",
+  "scope": "Audit the I2C access, default single ranging, power-up/calibration, status, and timing disclosed in DS11555 Rev6; API implementation and result-register details absent from this PDF are not required. Continuous/timed stop rules and reference registers are checked as additional facts represented in the IR.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "control_bus",
+        "address"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "register_index",
+        "auto_increment",
+        "access_widths",
+        "reference_c0",
+        "reference_c1",
+        "reference_c2",
+        "reference_51",
+        "reference_61",
+        "reference_access"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "power_sequence",
+        "xshut_supply",
+        "initial_calibration",
+        "calibration_storage",
+        "temperature_recalibration",
+        "io_voltage_mode",
+        "single_ranging",
+        "data_ready",
+        "stop_during_ranging",
+        "stop_between_ranges",
+        "result_register_sequence"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "max_bus_clock",
+        "boot_wait",
+        "default_budget",
+        "ranging_phase_time",
+        "minimum_ranging_period",
+        "scl_low",
+        "scl_high",
+        "spike_filter",
+        "bus_free_time"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "multibyte_order",
+        "distance_computation",
+        "distance_word_layout"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "measurement_error",
+        "hardware_standby",
+        "software_standby_boot",
+        "active_ranging",
+        "read_ack_roles"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "VL53L0X.pdf",
+      "pages": 38,
+      "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "control_bus",
+      "component": "B",
+      "category": "interface",
+      "required": true,
+      "expected": "The device is controlled over I2C.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "address",
+      "component": "B",
+      "category": "interface",
+      "required": true,
+      "expected": "The default 7-bit address is 29h, corresponding to write byte 52h and read byte 53h.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "register_index",
+      "component": "G",
+      "category": "registers",
+      "required": true,
+      "expected": "Write an 8-bit register index, then read from the current index.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "auto_increment",
+      "component": "G",
+      "category": "registers",
+      "required": true,
+      "expected": "The register index increments after every transferred byte.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "multibyte_order",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Multibyte access increments addresses and transfers the MSB first.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "access_widths",
+      "component": "G",
+      "category": "registers",
+      "required": false,
+      "expected": "The interface supports 8-, 16-, and 32-bit reads/writes.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "max_bus_clock",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "I2C supports up to 400 kHz.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_sequence",
+      "component": "O",
+      "category": "initialization",
+      "required": true,
+      "expected": "Power-up has no supply-sequencing requirement.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "xshut_supply",
+      "component": "O",
+      "category": "initialization",
+      "required": true,
+      "expected": "Set XSHUT high only after AVDD is powered.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "boot_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Firmware boot takes at most 1.2 ms.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "initial_calibration",
+      "component": "O",
+      "category": "initialization",
+      "required": true,
+      "expected": "Perform initialization and calibration before the first range measurement and after reset.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "calibration_storage",
+      "component": "O",
+      "category": "initialization",
+      "required": true,
+      "expected": "Reference SPAD calibration is performed once at the factory; the host stores the calibration data and loads it during initialization.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_recalibration",
+      "component": "O",
+      "category": "initialization",
+      "required": true,
+      "expected": "Repeat VHV and phase calibration when temperature differs from the initial calibration temperature by more than 8 degrees Celsius.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "io_voltage_mode",
+      "component": "O",
+      "category": "initialization",
+      "required": true,
+      "expected": "The API defaults to 1V8 mode; 2V8 mode requires API configuration, with the IO high level equal to AVDD.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "single_ranging",
+      "component": "O",
+      "category": "operations",
+      "required": true,
+      "expected": "Single ranging automatically returns to software standby after completion.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "data_ready",
+      "component": "O",
+      "category": "operations",
+      "required": true,
+      "expected": "Poll status through the API, or retrieve data after a new-measurement interrupt on GPIO1.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "distance_computation",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "The device computes the final distance internally.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "measurement_error",
+      "component": "F",
+      "category": "errors",
+      "required": true,
+      "expected": "An error code is returned when weak signal or lack of a target prevents measurement.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "default_budget",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The default ranging time budget is 33 ms.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "ranging_phase_time",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "The actual measurement time in the default ranging phase is 23 ms.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "minimum_ranging_period",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "The manual specifies a minimum measurement period of 8 ms.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "stop_during_ranging",
+      "component": "O",
+      "category": "operations",
+      "required": false,
+      "expected": "A stop request during a measurement completes the current measurement first.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "stop_between_ranges",
+      "component": "O",
+      "category": "operations",
+      "required": false,
+      "expected": "In timed mode, a stop request during the interval between measurements stops immediately.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "hardware_standby",
+      "component": "F",
+      "category": "states",
+      "required": true,
+      "expected": "With AVDD powered and XSHUT low, the device is in hardware standby; raising XSHUT exits it.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "software_standby_boot",
+      "component": "F",
+      "category": "states",
+      "required": false,
+      "expected": "When XSHUT is not host-controlled, firmware boot finishes in software standby.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "active_ranging",
+      "component": "F",
+      "category": "states",
+      "required": false,
+      "expected": "Use the API to start and stop ranging.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reference_c0",
+      "component": "G",
+      "category": "registers",
+      "required": false,
+      "expected": "After a fresh reset and before API loading, reference register C0h contains EEh.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reference_c1",
+      "component": "G",
+      "category": "registers",
+      "required": false,
+      "expected": "After a fresh reset and before API loading, reference register C1h contains AAh.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reference_c2",
+      "component": "G",
+      "category": "registers",
+      "required": false,
+      "expected": "After a fresh reset and before API loading, reference register C2h contains 10h.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reference_51",
+      "component": "G",
+      "category": "registers",
+      "required": false,
+      "expected": "After a fresh reset and before API loading, reference register 51h contains 0099h.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reference_61",
+      "component": "G",
+      "category": "registers",
+      "required": false,
+      "expected": "After a fresh reset and before API loading, reference register 61h contains 0000h.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scl_low",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SCL low time is at least 1.6 us.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scl_high",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SCL high time is at least 0.6 us.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spike_filter",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Glitches up to 50 ns can be suppressed.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_free_time",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Table 4 of this manual revision gives tBUF as 1.3 ms.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_ack_roles",
+      "component": "F",
+      "category": "errors",
+      "required": true,
+      "expected": "The host sends ACK/NACK when reading; a host NACK after the last byte is normal termination.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "distance_word_layout",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "The actual width, signedness, and layout of the distance-result registers.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "This PDF gives only generic register-access examples and does not disclose the distance-result layout. The source is insufficient, so this is excluded from the main metrics."
+    },
+    {
+      "id": "reference_access",
+      "component": "G",
+      "category": "registers",
+      "required": false,
+      "expected": "Whether all reference registers are read-only.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "The reference table lists addresses and values but no access permissions. This is excluded for insufficient source information and is not classified as an IR error or omission."
+    },
+    {
+      "id": "result_register_sequence",
+      "component": "O",
+      "category": "operations",
+      "required": true,
+      "expected": "Specific result/status addresses and the complete register-level ranging sequence.",
+      "evidence": [
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        },
+        {
+          "document": "VL53L0X.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/vl53l0x/VL53L0X.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "This PDF delegates detailed control procedures to a separate API manual and gives no specific addresses; they are not counted as missing within the scope of the supplied source."
+    }
+  ]
+}

@@ -1,0 +1,1073 @@
+{
+  "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+  "source": "device_ir_projection_v1",
+  "device_id": "tmp105",
+  "bus_type": "i2c",
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "addresses": [
+    {
+      "index": 0,
+      "address": "0x48",
+      "addressing_form": "7-bit",
+      "is_default": true,
+      "description": "Slave address when A0 pin is LOW",
+      "raw_record": {
+        "address": "0x48",
+        "description": "Slave address when A0 pin is LOW",
+        "is_default": true
+      }
+    },
+    {
+      "index": 1,
+      "address": "0x49",
+      "addressing_form": "7-bit",
+      "is_default": false,
+      "description": "Slave address when A0 pin is HIGH",
+      "raw_record": {
+        "address": "0x49",
+        "description": "Slave address when A0 pin is HIGH",
+        "is_default": false
+      }
+    }
+  ],
+  "registers": [
+    {
+      "index": 0,
+      "name": "Pointer Register",
+      "address": "0x00",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "8-bit register used to address data registers; two LSBs (P1,P0) select register. Power-up reset value P1/P0=00.",
+      "semantic_roles": [
+        "data"
+      ],
+      "byte_part": null,
+      "raw_record": {
+        "name": "Pointer Register",
+        "value": "0x00",
+        "access": "wo",
+        "size_bits": 8,
+        "description": "8-bit register used to address data registers; two LSBs (P1,P0) select register. Power-up reset value P1/P0=00."
+      }
+    },
+    {
+      "index": 1,
+      "name": "Temperature Register",
+      "address": "0x00",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "12-bit read-only register storing most recent conversion output. Two bytes: MSB first, LSB second. Unused LSBs zero.",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "byte_part": "high",
+      "raw_record": {
+        "name": "Temperature Register",
+        "value": "0x00",
+        "access": "ro",
+        "size_bits": 16,
+        "description": "12-bit read-only register storing most recent conversion output. Two bytes: MSB first, LSB second. Unused LSBs zero."
+      }
+    },
+    {
+      "index": 2,
+      "name": "Configuration Register",
+      "address": "0x01",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "8-bit read/write register controlling operational modes. Power-up/reset value all bits 0.",
+      "semantic_roles": [
+        "config",
+        "control"
+      ],
+      "byte_part": null,
+      "raw_record": {
+        "name": "Configuration Register",
+        "value": "0x01",
+        "access": "rw",
+        "size_bits": 8,
+        "description": "8-bit read/write register controlling operational modes. Power-up/reset value all bits 0."
+      }
+    },
+    {
+      "index": 3,
+      "name": "T LOW Register",
+      "address": "0x02",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "12-bit low temperature limit register. Two bytes: MSB first, LSB second. LSB bits D3-D0 zero. All 12 bits used in ALERT comparisons.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "threshold"
+      ],
+      "byte_part": "high",
+      "raw_record": {
+        "name": "T LOW Register",
+        "value": "0x02",
+        "access": "rw",
+        "size_bits": 16,
+        "description": "12-bit low temperature limit register. Two bytes: MSB first, LSB second. LSB bits D3-D0 zero. All 12 bits used in ALERT comparisons."
+      }
+    },
+    {
+      "index": 4,
+      "name": "T HIGH Register",
+      "address": "0x03",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "12-bit high temperature limit register. Two bytes: MSB first, LSB second. LSB bits D3-D0 zero. All 12 bits used in ALERT comparisons.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "threshold"
+      ],
+      "byte_part": "high",
+      "raw_record": {
+        "name": "T HIGH Register",
+        "value": "0x03",
+        "access": "rw",
+        "size_bits": 16,
+        "description": "12-bit high temperature limit register. Two bytes: MSB first, LSB second. LSB bits D3-D0 zero. All 12 bits used in ALERT comparisons."
+      }
+    }
+  ],
+  "bitfields": [
+    {
+      "index": 0,
+      "name": "P1-P0",
+      "register": "Pointer Register",
+      "bit_range": "1:0",
+      "reset_value": null,
+      "description": "Selects register: 00=Temperature, 01=Configuration, 10=T LOW, 11=T HIGH",
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "register": "Pointer Register",
+        "name": "P1-P0",
+        "bits": "1:0",
+        "access": "wo",
+        "description": "Selects register: 00=Temperature, 01=Configuration, 10=T LOW, 11=T HIGH"
+      }
+    },
+    {
+      "index": 1,
+      "name": "OS",
+      "register": "Configuration Register",
+      "bit_range": "7",
+      "reset_value": null,
+      "description": "One-Shot: write 1 to start single conversion in shutdown mode; reads as 0",
+      "semantic_roles": [
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "register": "Configuration Register",
+        "name": "OS",
+        "bits": "7",
+        "access": "rw",
+        "description": "One-Shot: write 1 to start single conversion in shutdown mode; reads as 0"
+      }
+    },
+    {
+      "index": 2,
+      "name": "R1-R0",
+      "register": "Configuration Register",
+      "bit_range": "6:5",
+      "reset_value": null,
+      "description": "Converter resolution: 00=9-bit, 01=10-bit, 10=11-bit, 11=12-bit",
+      "semantic_roles": [
+        "config"
+      ],
+      "raw_record": {
+        "register": "Configuration Register",
+        "name": "R1-R0",
+        "bits": "6:5",
+        "access": "rw",
+        "description": "Converter resolution: 00=9-bit, 01=10-bit, 10=11-bit, 11=12-bit"
+      }
+    },
+    {
+      "index": 3,
+      "name": "F1-F0",
+      "register": "Configuration Register",
+      "bit_range": "4:3",
+      "reset_value": null,
+      "description": "Fault queue: number of consecutive faults to trigger alert: 00=1, 01=2, 10=4, 11=6",
+      "semantic_roles": [
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "register": "Configuration Register",
+        "name": "F1-F0",
+        "bits": "4:3",
+        "access": "rw",
+        "description": "Fault queue: number of consecutive faults to trigger alert: 00=1, 01=2, 10=4, 11=6"
+      }
+    },
+    {
+      "index": 4,
+      "name": "POL",
+      "register": "Configuration Register",
+      "bit_range": "2",
+      "reset_value": null,
+      "description": "ALERT polarity: 0=active low, 1=active high",
+      "semantic_roles": [
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "register": "Configuration Register",
+        "name": "POL",
+        "bits": "2",
+        "access": "rw",
+        "description": "ALERT polarity: 0=active low, 1=active high"
+      }
+    },
+    {
+      "index": 5,
+      "name": "TM",
+      "register": "Configuration Register",
+      "bit_range": "1",
+      "reset_value": null,
+      "description": "Thermostat mode: 0=Comparator mode, 1=Interrupt mode",
+      "semantic_roles": [
+        "config"
+      ],
+      "raw_record": {
+        "register": "Configuration Register",
+        "name": "TM",
+        "bits": "1",
+        "access": "rw",
+        "description": "Thermostat mode: 0=Comparator mode, 1=Interrupt mode"
+      }
+    },
+    {
+      "index": 6,
+      "name": "SD",
+      "register": "Configuration Register",
+      "bit_range": "0",
+      "reset_value": null,
+      "description": "Shutdown mode: 1=shutdown after current conversion, 0=continuous conversion",
+      "semantic_roles": [
+        "config"
+      ],
+      "raw_record": {
+        "register": "Configuration Register",
+        "name": "SD",
+        "bits": "0",
+        "access": "rw",
+        "description": "Shutdown mode: 1=shutdown after current conversion, 0=continuous conversion"
+      }
+    },
+    {
+      "index": 7,
+      "name": "T11-T0",
+      "register": "Temperature Register",
+      "bit_range": "15:4",
+      "reset_value": null,
+      "description": "12-bit temperature data in two's complement format. Byte1 bits D7-D0 = T11-T4, Byte2 bits D7-D4 = T3-T0, Byte2 bits D3-D0 = 0.",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "raw_record": {
+        "register": "Temperature Register",
+        "name": "T11-T0",
+        "bits": "15:4",
+        "access": "ro",
+        "description": "12-bit temperature data in two's complement format. Byte1 bits D7-D0 = T11-T4, Byte2 bits D7-D4 = T3-T0, Byte2 bits D3-D0 = 0."
+      }
+    },
+    {
+      "index": 8,
+      "name": "L11-L0",
+      "register": "T LOW Register",
+      "bit_range": "15:4",
+      "reset_value": null,
+      "description": "12-bit low limit data. Byte1 bits D7-D0 = L11-L4, Byte2 bits D7-D4 = L3-L0, Byte2 bits D3-D0 = 0.",
+      "semantic_roles": [
+        "data",
+        "threshold"
+      ],
+      "raw_record": {
+        "register": "T LOW Register",
+        "name": "L11-L0",
+        "bits": "15:4",
+        "access": "rw",
+        "description": "12-bit low limit data. Byte1 bits D7-D0 = L11-L4, Byte2 bits D7-D4 = L3-L0, Byte2 bits D3-D0 = 0."
+      }
+    },
+    {
+      "index": 9,
+      "name": "H11-H0",
+      "register": "T HIGH Register",
+      "bit_range": "15:4",
+      "reset_value": null,
+      "description": "12-bit high limit data. Byte1 bits D7-D0 = H11-H4, Byte2 bits D7-D4 = H3-H0, Byte2 bits D3-D0 = 0.",
+      "semantic_roles": [
+        "data",
+        "threshold"
+      ],
+      "raw_record": {
+        "register": "T HIGH Register",
+        "name": "H11-H0",
+        "bits": "15:4",
+        "access": "rw",
+        "description": "12-bit high limit data. Byte1 bits D7-D0 = H11-H4, Byte2 bits D7-D4 = H3-H0, Byte2 bits D3-D0 = 0."
+      }
+    }
+  ],
+  "operation_steps": [
+    {
+      "source": "operation_flows",
+      "flow_id": "read_temperature",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait for conversion time (220ms for 12-bit resolution).",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "role": null,
+        "transaction": null,
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": 220,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": "Wait for conversion time (220ms for 12-bit resolution).",
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_temperature",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "write_then_read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write_then_read",
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 2,
+        "pointer_target": "Temperature Register",
+        "notes": "Write pointer to Temperature Register, then read 2 bytes MSB first."
+      },
+      "length": 2,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "raw_record": {
+        "op": "write_then_read",
+        "role": null,
+        "transaction": {
+          "kind": "write_then_read",
+          "bytes": [
+            "0x00"
+          ],
+          "length": 2,
+          "pointer_target": "Temperature Register",
+          "notes": "Write pointer to Temperature Register, then read 2 bytes MSB first."
+        },
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": null,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": null,
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_shot_conversion",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x01",
+          "0x01"
+        ],
+        "length": null,
+        "pointer_target": "Configuration Register",
+        "notes": "Write Configuration Register with SD=1 to enter shutdown mode."
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": null,
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x01",
+            "0x01"
+          ],
+          "length": null,
+          "pointer_target": "Configuration Register",
+          "notes": "Write Configuration Register with SD=1 to enter shutdown mode."
+        },
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": null,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": null,
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_shot_conversion",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x01",
+          "0x81"
+        ],
+        "length": null,
+        "pointer_target": "Configuration Register",
+        "notes": "Write Configuration Register with OS=1 to start single conversion."
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": null,
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x01",
+            "0x81"
+          ],
+          "length": null,
+          "pointer_target": "Configuration Register",
+          "notes": "Write Configuration Register with OS=1 to start single conversion."
+        },
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": null,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": null,
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_shot_conversion",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait for conversion time (220ms for 12-bit resolution).",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "role": null,
+        "transaction": null,
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": 220,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": "Wait for conversion time (220ms for 12-bit resolution).",
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_shot_conversion",
+      "flow_kind": "read",
+      "step_index": 3,
+      "op": "write_then_read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write_then_read",
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 2,
+        "pointer_target": "Temperature Register",
+        "notes": "Read temperature result."
+      },
+      "length": 2,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write_then_read",
+        "role": null,
+        "transaction": {
+          "kind": "write_then_read",
+          "bytes": [
+            "0x00"
+          ],
+          "length": 2,
+          "pointer_target": "Temperature Register",
+          "notes": "Read temperature result."
+        },
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": null,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": null,
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_config",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x01",
+          null
+        ],
+        "length": null,
+        "pointer_target": "Configuration Register",
+        "notes": "Write pointer to Configuration Register, then data byte."
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": null,
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x01",
+            null
+          ],
+          "length": null,
+          "pointer_target": "Configuration Register",
+          "notes": "Write pointer to Configuration Register, then data byte."
+        },
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": null,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": null,
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_thigh",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x03",
+          null,
+          null
+        ],
+        "length": null,
+        "pointer_target": "T HIGH Register",
+        "notes": "Write pointer to T HIGH, then 2 data bytes MSB first."
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": null,
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x03",
+            null,
+            null
+          ],
+          "length": null,
+          "pointer_target": "T HIGH Register",
+          "notes": "Write pointer to T HIGH, then 2 data bytes MSB first."
+        },
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": null,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": null,
+        "output_ref": null
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "write_tlow",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x02",
+          null,
+          null
+        ],
+        "length": null,
+        "pointer_target": "T LOW Register",
+        "notes": "Write pointer to T LOW, then 2 data bytes MSB first."
+      },
+      "length": null,
+      "notes": null,
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": null,
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x02",
+            null,
+            null
+          ],
+          "length": null,
+          "pointer_target": "T LOW Register",
+          "notes": "Write pointer to T LOW, then 2 data bytes MSB first."
+        },
+        "register": null,
+        "mask": null,
+        "value": null,
+        "condition": null,
+        "timeout_ms": null,
+        "interval_ms": null,
+        "delay_ms": null,
+        "length": null,
+        "signal": null,
+        "source_signal": null,
+        "edge": null,
+        "duration_us": null,
+        "notes": null,
+        "output_ref": null
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power-up defaults: continuous conversion mode, 12-bit resolution, comparator mode, active low ALERT, fault queue=1. No initialization writes required.",
+      "semantic_roles": [
+        "data",
+        "config",
+        "control"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Power-up defaults: continuous conversion mode, 12-bit resolution, comparator mode, active low ALERT, fault queue=1. No initialization writes required."
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": "write_then_read",
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 2,
+        "pointer_target": "Temperature Register"
+      },
+      "length": 2,
+      "notes": "Write pointer to Temperature Register, then read 2 bytes MSB first.",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "raw_record": {
+        "transaction": {
+          "kind": "write_then_read",
+          "bytes": [
+            "0x00"
+          ],
+          "length": 2,
+          "pointer_target": "Temperature Register"
+        },
+        "notes": "Write pointer to Temperature Register, then read 2 bytes MSB first."
+      }
+    }
+  ],
+  "channels": [
+    {
+      "index": 0,
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_temperature",
+      "source_bytes": [
+        "temp_msb",
+        "temp_lsb"
+      ],
+      "source_signal": null,
+      "formula_id": "temp_conversion",
+      "notes": "12-bit two's complement temperature data.",
+      "raw_record": {
+        "id": "temperature",
+        "raw_type": "int16",
+        "physical_unit": "milli_degC",
+        "read_call_hint": null,
+        "flow_id": "read_temperature",
+        "source_bytes": [
+          "temp_msb",
+          "temp_lsb"
+        ],
+        "source_signal": null,
+        "formula_id": "temp_conversion",
+        "notes": "12-bit two's complement temperature data."
+      }
+    }
+  ],
+  "formula_inputs": [
+    {
+      "formula_index": 0,
+      "formula_id": "temp_conversion",
+      "input_index": 0,
+      "name": "raw",
+      "byte_source": "temp_msb:8 || temp_lsb:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "16-bit Temperature Register; lower 4 bits are zero.",
+      "expression": "(((raw >> 4) & 0xFFF) * 625) // 10",
+      "output": {
+        "name": "temp_milli_degC",
+        "unit": "milli_degC"
+      },
+      "raw_record": {
+        "name": "raw",
+        "byte_source": "temp_msb:8 || temp_lsb:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "16-bit Temperature Register; lower 4 bits are zero."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "tmp105",
+      "page": 5,
+      "snippet": "The Pointer Register uses the two LSBs to identify which of the data registers should respond to a read or write command."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "Table 2. Pointer Addresses of the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register that stores the output of the most recent conversion."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "Table 3. Byte 1 of Temperature Register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "Table 4. Byte 2 of Temperature Register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "Table 5. Temperature Data Format"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "The Configuration Register is an 8-bit read/write register used to store bits that control the operational modes of the temperature sensor."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "Table 6. Configuration Register Format"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "Shutdown Mode is enabled when the SD bit is 1; the device will shut down once the current conversion is completed."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 8,
+      "snippet": "Table 8. Resolution of the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 8,
+      "snippet": "The TMP105 features a One-Shot Temperature Measurement Mode."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 9,
+      "snippet": "Table 9. Bytes 1 and 2 of THIGH Register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 9,
+      "snippet": "Table 10. Bytes 1 and 2 of TLOW Register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 9,
+      "snippet": "Table 11. Address Pin and Slave Addresses for the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 10,
+      "snippet": "Accessing a particular register on the TMP105 is accomplished by writing the appropriate value to the Pointer Register."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 10,
+      "snippet": "When reading from the TMP105, the last value stored in the Pointer Register by a write operation is used to determine which register is read by a read operation."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 3,
+      "snippet": "Conversion Time: 9-Bit: 27.5 ms typ, 10-Bit: 55 ms typ, 11-Bit: 110 ms typ, 12-Bit: 220 ms typ"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 3,
+      "snippet": "Timeout Time: 25 54 74 ms"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 1,
+      "snippet": "Resolution: 9- to 12-Bits, User-Selectable"
+    }
+  ],
+  "coverage_hints": {
+    "identity_registers": [],
+    "identity_registers_not_referenced_by_flows": [],
+    "config_registers": [
+      {
+        "name": "Configuration Register",
+        "address": "0x01",
+        "access": "rw",
+        "semantic_roles": [
+          "config",
+          "control"
+        ]
+      }
+    ],
+    "config_registers_not_referenced_by_flows": [],
+    "result_registers": [
+      {
+        "name": "Pointer Register",
+        "address": "0x00",
+        "access": "wo",
+        "semantic_roles": [
+          "data"
+        ]
+      },
+      {
+        "name": "Temperature Register",
+        "address": "0x00",
+        "access": "ro",
+        "semantic_roles": [
+          "result",
+          "data"
+        ]
+      },
+      {
+        "name": "T LOW Register",
+        "address": "0x02",
+        "access": "rw",
+        "semantic_roles": [
+          "result",
+          "data",
+          "threshold"
+        ]
+      },
+      {
+        "name": "T HIGH Register",
+        "address": "0x03",
+        "access": "rw",
+        "semantic_roles": [
+          "result",
+          "data",
+          "threshold"
+        ]
+      }
+    ],
+    "result_registers_not_referenced_by_flows": [],
+    "coefficient_registers": [],
+    "channels_without_source_bytes": [],
+    "formula_inputs_without_byte_source": [],
+    "non_contiguous_result_hints": [],
+    "default_only_init": [
+      {
+        "source": "init_sequence",
+        "flow_id": "init_sequence",
+        "reason": "default_or_no_bus_init_note"
+      }
+    ]
+  },
+  "coverage_issues": [],
+  "summary": {
+    "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+    "address_count": 2,
+    "register_count": 5,
+    "bitfield_count": 10,
+    "operation_step_count": 11,
+    "channel_count": 1,
+    "formula_input_count": 1,
+    "evidence_span_count": 19,
+    "coverage_issue_count": 0,
+    "coverage_warning_count": 0,
+    "coverage_error_count": 0
+  }
+}

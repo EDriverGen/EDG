@@ -1,0 +1,101 @@
+{
+  "package_id": "threadx_stm32f103rb__max31855__spi_board_ops_dma",
+  "platform_base_context": "EDG_DMA_Tasks/threadx/max31855/platform_base_context.json",
+  "connection_binding_context": "EDG_DMA_Tasks/threadx/max31855/connection_binding_context.json",
+  "device_attachment_context": "EDG_DMA_Tasks/threadx/max31855/device_attachment_context.json",
+  "reference_driver_root": "DriverGen/data/references/max31855/threadx",
+  "device_ir": "EDG_DMA_Tasks/threadx/max31855/device_ir.json",
+  "dma_requirements": "EDG_DMA_Tasks/threadx/max31855/dma_requirements.json",
+  "evaluation_config": "EDG_DMA_Tasks/threadx/max31855/evaluation_config.json",
+  "mode": "dma",
+  "notes": [
+    "MAX31855 on threadx: DMA payload transfers on the original hardware connection.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Receive the full four-byte thermocouple frame using SPI DMA with the required clocking."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+  ],
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "threadx_stm32f103rb",
+      "rtos": "threadx",
+      "rtos_bundle": "threadx-stm32f103-project",
+      "board": "stm32f103rb",
+      "board_alias": "f103rb",
+      "integration": "stm32_mw_threadx_plus_board_bsp",
+      "integration_style": "rtos_core_plus_board_supplied_ops",
+      "mcu_family": "stm32f1",
+      "mcu": "stm32f103rb"
+    },
+    "connection": {
+      "binding_id": "threadx_stm32f103rb_spi_board_ops_dma",
+      "platform_id": "threadx_stm32f103rb",
+      "connection_type": "spi",
+      "mode": "dma",
+      "bus_instance": "platform_spi_ops",
+      "bus_instance_kind": "board_ops_table",
+      "bus_symbol": "platform_spi_ops",
+      "backend": "STM32CubeF1 HAL SPI DMA with threadx completion handling",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "chip_select": "board_ops_context"
+      },
+      "helper_usage_patterns": []
+    },
+    "device": {
+      "device_id": "max31855",
+      "attachment_type": "spi_thermocouple_converter",
+      "required_bus_type": "spi",
+      "address_mode": "chip-select",
+      "addressing": null,
+      "required_attachment": {
+        "signals": [
+          "SCK",
+          "MISO",
+          "CS"
+        ],
+        "spi": {
+          "mode": "mode0",
+          "data_width_bits": 8,
+          "bit_order": "msb_first",
+          "max_hz": 5000000
+        },
+        "notes": [
+          "Read-only 32-bit SPI stream; MOSI command bytes are not required."
+        ]
+      },
+      "optional_attachment": {
+        "mosi": "not_required",
+        "thermocouple_type": "device_variant_dependent"
+      },
+      "default_overrides": {
+        "bus_instance": "platform_spi_ops",
+        "irq": "dma_completion",
+        "dma": "required",
+        "reset_gpio": null,
+        "power_gpio": null,
+        "mode": "dma",
+        "device_irq": "absent"
+      },
+      "protocol_hints": {
+        "spi_proto": "stream",
+        "read_only_stream_no_trigger": true,
+        "frame_bits": 32,
+        "primary_channel": "temp_thermocouple",
+        "optional_channels": [
+          "temp_internal"
+        ],
+        "transfer_mode": "dma"
+      }
+    }
+  }
+}

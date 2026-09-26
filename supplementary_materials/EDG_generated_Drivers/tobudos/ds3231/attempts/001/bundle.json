@@ -1,0 +1,135 @@
+{
+  "device_id": "ds3231",
+  "rtos_id": "tobudos",
+  "eval_class": "rtc",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef DS3231_H\n#define DS3231_H\n\n#include <stdint.h>\n\nstruct ds3231_dev {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nstruct ds3231_time {\n    uint8_t seconds;\n    uint8_t minutes;\n    uint8_t hours;\n    uint8_t day;\n    uint8_t date;\n    uint8_t month;\n    uint8_t year;\n};\n\nint ds3231_init(struct ds3231_dev *dev, void *bus_handle);\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t);\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t);\n\n#endif /* DS3231_H */",
+  "driver_source": "#include \"ds3231.h\"\n#include \"stm32f1xx_hal.h\"\n#include \"stm32f1xx_hal_i2c.h\"\n#include <stddef.h>\n\n#include \"tobudos.h\"\n#define DS3231_I2C_ADDR 0x68\n#define DS3231_ADDR_8BIT (DS3231_I2C_ADDR << 1)\n\n#define REG_SECONDS 0x00\n#define REG_MINUTES 0x01\n#define REG_HOURS 0x02\n#define REG_DAY 0x03\n#define REG_DATE 0x04\n#define REG_MONTH 0x05\n#define REG_YEAR 0x06\n\nstatic uint8_t bcd_to_dec(uint8_t bcd) {\n    return ((bcd >> 4) * 10) + (bcd & 0x0F);\n}\n\nstatic uint8_t dec_to_bcd(uint8_t dec) {\n    return ((dec / 10) << 4) | (dec % 10);\n}\n\nint ds3231_init(struct ds3231_dev *dev, void *bus_handle) {\n    if (!dev || !bus_handle) return -1;\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = DS3231_I2C_ADDR;\n    return 0;\n}\n\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t) {\n    if (!dev || !t) return -1;\n    uint8_t buf[7];\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\n    uint16_t addr = DS3231_ADDR_8BIT;\n    HAL_StatusTypeDef ret;\n\n    ret = HAL_I2C_Mem_Read(hi2c, addr, REG_SECONDS, I2C_MEMADD_SIZE_8BIT, buf, 7, 100);\n    if (ret != HAL_OK) return -1;\n\n    t->seconds = bcd_to_dec(buf[0]);\n    t->minutes = bcd_to_dec(buf[1]);\n    t->hours = bcd_to_dec(buf[2] & 0x3F); // mask 12/24 bit\n    t->day = buf[3];\n    t->date = bcd_to_dec(buf[4]);\n    t->month = bcd_to_dec(buf[5] & 0x1F); // mask century bit\n    t->year = bcd_to_dec(buf[6]);\n    return 0;\n}\n\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t) {\n    if (!dev || !t) return -1;\n    uint8_t buf[8];\n    buf[0] = REG_SECONDS;\n    buf[1] = dec_to_bcd(t->seconds);\n    buf[2] = dec_to_bcd(t->minutes);\n    buf[3] = dec_to_bcd(t->hours);\n    buf[4] = t->day;\n    buf[5] = dec_to_bcd(t->date);\n    buf[6] = dec_to_bcd(t->month);\n    buf[7] = dec_to_bcd(t->year);\n\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\n    uint16_t addr = DS3231_ADDR_8BIT;\n    HAL_StatusTypeDef ret;\n\n    ret = HAL_I2C_Master_Transmit(hi2c, addr, buf, 8, 100);\n    if (ret != HAL_OK) return -1;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "rtc",
+    "init_call": "ds3231_init(&g_eval_dev, bus_handle)",
+    "get_time_call": "ds3231_get_time(&g_eval_dev, &drv)",
+    "set_time_call": "ds3231_set_time(&g_eval_dev, &drv)",
+    "time_struct_decl": "struct ds3231_time drv;",
+    "time_struct_from_in": "struct ds3231_time drv; drv.seconds = in->second; drv.minutes = in->minute; drv.hours = in->hour; drv.day = in->weekday; drv.date = in->day; drv.month = in->month; drv.year = in->year - 2000;",
+    "time_fields": {
+      "year": "drv.year + 2000",
+      "month": "drv.month",
+      "day": "drv.date",
+      "hour": "drv.hours",
+      "minute": "drv.minutes",
+      "second": "drv.seconds",
+      "weekday": "drv.day"
+    },
+    "dev_struct_type": "struct ds3231_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_time",
+        "mock_preload": {
+          "0x00": [
+            "0x15"
+          ],
+          "0x01": [
+            "0x30"
+          ],
+          "0x02": [
+            "0x09"
+          ],
+          "0x03": [
+            "0x03"
+          ],
+          "0x04": [
+            "0x15"
+          ],
+          "0x05": [
+            "0x06"
+          ],
+          "0x06": [
+            "0x23"
+          ]
+        },
+        "expected_time": {
+          "second": 15,
+          "minute": 30,
+          "hour": 9,
+          "weekday": 3,
+          "day": 15,
+          "month": 6,
+          "year": 2023
+        },
+        "derivation": "BCD: 0x15=15, 0x30=30, 0x09=9, 0x03=3, 0x15=15, 0x06=6, 0x23=23 -> year 2000+23=2023"
+      },
+      {
+        "name": "zero_time",
+        "mock_preload": {
+          "0x00": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x00"
+          ],
+          "0x02": [
+            "0x00"
+          ],
+          "0x03": [
+            "0x01"
+          ],
+          "0x04": [
+            "0x01"
+          ],
+          "0x05": [
+            "0x01"
+          ],
+          "0x06": [
+            "0x00"
+          ]
+        },
+        "expected_time": {
+          "second": 0,
+          "minute": 0,
+          "hour": 0,
+          "weekday": 1,
+          "day": 1,
+          "month": 1,
+          "year": 2000
+        },
+        "derivation": "BCD: all zeros except day/date/month=1, year=0 -> 2000"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.583,
+  "prompt_chars": 39893,
+  "raw_response": "{\"driver_header\": \"#ifndef DS3231_H\\n#define DS3231_H\\n\\n#include <stdint.h>\\n\\nstruct ds3231_dev {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nstruct ds3231_time {\\n    uint8_t seconds;\\n    uint8_t minutes;\\n    uint8_t hours;\\n    uint8_t day;\\n    uint8_t date;\\n    uint8_t month;\\n    uint8_t year;\\n};\\n\\nint ds3231_init(struct ds3231_dev *dev, void *bus_handle);\\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t);\\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t);\\n\\n#endif /* DS3231_H */\", \"driver_source\": \"#include \\\"ds3231.h\\\"\\n#include \\\"tobudos.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"stm32f1xx_hal_i2c.h\\\"\\n#include <stddef.h>\\n\\n#define DS3231_I2C_ADDR 0x68\\n#define DS3231_ADDR_8BIT (DS3231_I2C_ADDR << 1)\\n\\n#define REG_SECONDS 0x00\\n#define REG_MINUTES 0x01\\n#define REG_HOURS 0x02\\n#define REG_DAY 0x03\\n#define REG_DATE 0x04\\n#define REG_MONTH 0x05\\n#define REG_YEAR 0x06\\n\\nstatic uint8_t bcd_to_dec(uint8_t bcd) {\\n    return ((bcd >> 4) * 10) + (bcd & 0x0F);\\n}\\n\\nstatic uint8_t dec_to_bcd(uint8_t dec) {\\n    return ((dec / 10) << 4) | (dec % 10);\\n}\\n\\nint ds3231_init(struct ds3231_dev *dev, void *bus_handle) {\\n    if (!dev || !bus_handle) return -1;\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = DS3231_I2C_ADDR;\\n    return 0;\\n}\\n\\nint ds3231_get_time(struct ds3231_dev *dev, struct ds3231_time *t) {\\n    if (!dev || !t) return -1;\\n    uint8_t buf[7];\\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\\n    uint16_t addr = DS3231_ADDR_8BIT;\\n    HAL_StatusTypeDef ret;\\n\\n    ret = HAL_I2C_Mem_Read(hi2c, addr, REG_SECONDS, I2C_MEMADD_SIZE_8BIT, buf, 7, 100);\\n    if (ret != HAL_OK) return -1;\\n\\n    t->seconds = bcd_to_dec(buf[0]);\\n    t->minutes = bcd_to_dec(buf[1]);\\n    t->hours = bcd_to_dec(buf[2] & 0x3F); // mask 12/24 bit\\n    t->day = buf[3];\\n    t->date = bcd_to_dec(buf[4]);\\n    t->month = bcd_to_dec(buf[5] & 0x1F); // mask century bit\\n    t->year = bcd_to_dec(buf[6]);\\n    return 0;\\n}\\n\\nint ds3231_set_time(struct ds3231_dev *dev, const struct ds3231_time *t) {\\n    if (!dev || !t) return -1;\\n    uint8_t buf[8];\\n    buf[0] = REG_SECONDS;\\n    buf[1] = dec_to_bcd(t->seconds);\\n    buf[2] = dec_to_bcd(t->minutes);\\n    buf[3] = dec_to_bcd(t->hours);\\n    buf[4] = t->day;\\n    buf[5] = dec_to_bcd(t->date);\\n    buf[6] = dec_to_bcd(t->month);\\n    buf[7] = dec_to_bcd(t->year);\\n\\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\\n    uint16_t addr = DS3231_ADDR_8BIT;\\n    HAL_StatusTypeDef ret;\\n\\n    ret = HAL_I2C_Master_Transmit(hi2c, addr, buf, 8, 100);\\n    if (ret != HAL_OK) return -1;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "95e92d47b7bd7cd1"
+}

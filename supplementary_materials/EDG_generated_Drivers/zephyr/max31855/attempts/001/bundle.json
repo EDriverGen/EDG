@@ -1,0 +1,147 @@
+{
+  "device_id": "max31855",
+  "rtos_id": "zephyr",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MAX31855_H\n#define MAX31855_H\n\n#include <stdint.h>\n\n#include <zephyr/drivers/spi.h>\nstruct device;\n\nint max31855_init(const struct device *dev);\nint max31855_read_temperatures(const struct device *dev, int32_t *thermocouple_val, int32_t *temp_local_val);\n\n#endif /* MAX31855_H */\n",
+  "driver_source": "#include <zephyr/drivers/spi.h>\n#include <zephyr/kernel.h>\n#include <stdint.h>\n#include <errno.h>\n\n#include <zephyr/sys/byteorder.h>\n#define MAX31855_CS_INACTIVE_TIME_MS 1\n\nstatic int max31855_read_raw(const struct device *dev, uint32_t *raw)\n{\n    struct spi_dt_spec spec = {\n        .bus = dev,\n        .config = {\n            .frequency = 4000000,\n            .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),\n            .slave = 0,\n            .cs = {\n                .gpio = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(spi1), cs_gpios, 0),\n                .delay = 0\n            }\n        }\n    };\n    uint8_t tx_buf[4] = {0};\n    uint8_t rx_buf[4] = {0};\n    const struct spi_buf tx_bufs = { .buf = tx_buf, .len = 4 };\n    const struct spi_buf rx_bufs = { .buf = rx_buf, .len = 4 };\n    const struct spi_buf_set tx = { .buffers = &tx_bufs, .count = 1 };\n    const struct spi_buf_set rx = { .buffers = &rx_bufs, .count = 1 };\n    int ret = spi_transceive_dt(&spec, &tx, &rx);\n    if (ret < 0) {\n        return ret;\n    }\n    *raw = ((uint32_t)rx_buf[0] << 24) | ((uint32_t)rx_buf[1] << 16) |\n           ((uint32_t)rx_buf[2] << 8) | rx_buf[3];\n    return 0;\n}\n\nint max31855_init(const struct device *dev)\n{\n    (void)dev;\n    k_msleep(200);\n    return 0;\n}\n\nint max31855_read_temperatures(const struct device *dev, int32_t *thermocouple_val, int32_t *temp_local_val)\n{\n    uint32_t raw;\n    int ret = max31855_read_raw(dev, &raw);\n    if (ret < 0) {\n        return ret;\n    }\n    if (raw & (1 << 16)) {\n        return -EIO;\n    }\n    uint16_t raw_14 = (uint16_t)((raw >> 18) & 0x3FFF);\n    uint16_t raw_12 = (uint16_t)((raw >> 4) & 0xFFF);\n    int32_t thermocouple_temp = (((raw_14 >> 13) & 1) ? (-8192 + (int32_t)(raw_14 & 0x1FFF)) : (int32_t)(raw_14 & 0x1FFF)) * 250 / 1000;\n    int32_t internal_temp = (((raw_12 >> 11) & 1) ? (-2048 + (int32_t)(raw_12 & 0x7FF)) : (int32_t)(raw_12 & 0x7FF)) * 625 / 10000;\n    *thermocouple_val = thermocouple_temp;\n    *temp_local_val = internal_temp;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "max31855_init(g_eval_dev)",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "dev_struct_type": "const struct device *",
+    "channels": [
+      {
+        "id": "thermocouple",
+        "call": "max31855_read_temperatures(g_eval_dev, &thermocouple_val, &temp_local_val)",
+        "out_arg": "thermocouple_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_local",
+        "call": "max31855_read_temperatures(g_eval_dev, &thermocouple_val, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "preamble_c": "#include \"zephyr.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "note": "read_temperatures: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_spi_stream_bitfield_1",
+        "mock_preload": {
+          "stream": [
+            "0x0F",
+            "0xA0",
+            "0x43",
+            "0x10"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x03",
+            "0xE8"
+          ],
+          "temp_local": [
+            "0x04",
+            "0x31"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": 250,
+          "temp_local": 67
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0x0F 0xA0 0x43 0x10; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=1000; (((1000 >> 13) & 1) * (-8192) + ((1000 & 0x1FFF) ^ ((1000 >> 13) & 1) * 0x2000)) * 250 // 1000 = 250; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=1073; (((1073 >> 11) & 1) * (-2048) + ((1073 & 0x7FF) ^ ((1073 >> 11) & 1) * 0x800)) * 625 // 10000 = 67"
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_2",
+        "mock_preload": {
+          "stream": [
+            "0x13",
+            "0xA4",
+            "0x53",
+            "0x20"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x04",
+            "0xE9"
+          ],
+          "temp_local": [
+            "0x05",
+            "0x32"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": 314,
+          "temp_local": 83
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0x13 0xA4 0x53 0x20; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=1257; (((1257 >> 13) & 1) * (-8192) + ((1257 & 0x1FFF) ^ ((1257 >> 13) & 1) * 0x2000)) * 250 // 1000 = 314; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=1330; (((1330 >> 11) & 1) * (-2048) + ((1330 & 0x7FF) ^ ((1330 >> 11) & 1) * 0x800)) * 625 // 10000 = 83"
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_signed_negative",
+        "mock_preload": {
+          "stream": [
+            "0xFF",
+            "0x40",
+            "0xFD",
+            "0x00"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x3F",
+            "0xD0"
+          ],
+          "temp_local": [
+            "0x0F",
+            "0xD0"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": -12,
+          "temp_local": -3
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0xFF 0x40 0xFD 0x00; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=16336; (((16336 >> 13) & 1) * (-8192) + ((16336 & 0x1FFF) ^ ((16336 >> 13) & 1) * 0x2000)) * 250 // 1000 = 2036 (formula gives suspect 2036); signed two's-complement sanity: encoded 0x3FD0 represents -48, positive-path scale 1 // 4; (-48 * 1) // 4 = -12; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=4048; (((4048 >> 11) & 1) * (-2048) + ((4048 & 0x7FF) ^ ((4048 >> 11) & 1) * 0x800)) * 625 // 10000 = 125 (formula gives suspect 125); signed two's-complement sanity: encoded 0xFD0 represents -48, positive-path scale 1 // 16; (-48 * 1) // 16 = -3"
+      },
+      {
+        "name": "mechanical_spi_stream_fault_status",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x01",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_err": 1,
+        "derivation": "Device IR marks stream bit D16 (fault_bit_set) as a runtime-detectable fault/status condition; public driver read should return a nonzero error."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.spi_stream_bitfields+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "stream",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.136,
+  "prompt_chars": 42260,
+  "raw_response": "{\"driver_header\": \"#ifndef MAX31855_H\\n#define MAX31855_H\\n\\n#include <stdint.h>\\n\\nint max31855_init(const struct device *dev);\\nint max31855_read_temperatures(const struct device *dev, int32_t *thermocouple_val, int32_t *temp_local_val);\\n\\n#endif /* MAX31855_H */\", \"driver_source\": \"#include <zephyr/drivers/spi.h>\\n#include <zephyr/kernel.h>\\n#include <stdint.h>\\n#include <errno.h>\\n\\n#define MAX31855_CS_INACTIVE_TIME_MS 1\\n\\nstatic int max31855_read_raw(const struct device *dev, uint32_t *raw)\\n{\\n    struct spi_dt_spec spec = {\\n        .bus = dev,\\n        .config = {\\n            .frequency = 4000000,\\n            .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),\\n            .slave = 0,\\n            .cs = {\\n                .gpio = GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(spi1), cs_gpios, 0),\\n                .delay = 0\\n            }\\n        }\\n    };\\n    uint8_t tx_buf[4] = {0};\\n    uint8_t rx_buf[4] = {0};\\n    const struct spi_buf tx_bufs = { .buf = tx_buf, .len = 4 };\\n    const struct spi_buf rx_bufs = { .buf = rx_buf, .len = 4 };\\n    const struct spi_buf_set tx = { .buffers = &tx_bufs, .count = 1 };\\n    const struct spi_buf_set rx = { .buffers = &rx_bufs, .count = 1 };\\n    int ret = spi_transceive_dt(&spec, &tx, &rx);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    *raw = ((uint32_t)rx_buf[0] << 24) | ((uint32_t)rx_buf[1] << 16) |\\n           ((uint32_t)rx_buf[2] << 8) | rx_buf[3];\\n    return 0;\\n}\\n\\nint max31855_init(const struct device *dev)\\n{\\n    (void)dev;\\n    k_msleep(200);\\n    return 0;\\n}\\n\\nint max31855_read_temperatures(const struct device *dev, int32_t *thermocouple_val, int32_t *temp_local_val)\\n{\\n    uint32_t raw;\\n    int ret = max31855_read_raw(dev, &raw);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    if (raw & (1 << 16)) {\\n        return -EIO;\\n    }\\n    uint16_t raw_14 = (uint16_t)((raw >> 18) & 0x3FFF);\\n    uint16_t raw_12 = (uint16_t)((raw >> 4) & 0xFFF);\\n    int32_t thermocouple_temp = (((raw_14 >> 13) & 1) ? (-8192 + (int32_t)(raw_14 & 0x1FFF)) : (int32_t)(raw_14 & 0x1FFF)) * 250 / 1000;\\n    int32_t internal_temp = (((raw_12 >> 11) & 1) ? (-2048 + (int32_t)(raw_12 & 0x7FF)) : (int32_t)(raw_12 & 0x7FF)) * 625 / 10000;\\n    *thermocouple_val = thermocouple_temp;\\n    *temp_local_val = internal_temp;\\n    return 0;\\n}\"}",
+  "plan_hash": "7028b5fe59fc0d74"
+}

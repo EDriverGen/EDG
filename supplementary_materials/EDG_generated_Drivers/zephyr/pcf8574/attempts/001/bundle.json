@@ -1,0 +1,160 @@
+{
+  "device_id": "pcf8574",
+  "rtos_id": "zephyr",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef PCF8574_H\n#define PCF8574_H\n\n#include <stdint.h>\n#include <zephyr/device.h>\n\n#define PCF8574_I2C_ADDR 0x20\n\n#include <zephyr/drivers/i2c.h>\nstruct device;\n\nint pcf8574_init(const struct device *dev, const struct device *bus);\nint pcf8574_read_port(const struct device *dev, uint8_t *p0, uint8_t *p1, uint8_t *p2, uint8_t *p3, uint8_t *p4, uint8_t *p5, uint8_t *p6, uint8_t *p7);\n\n#endif /* PCF8574_H */\n",
+  "driver_source": "#include \"pcf8574.h\"\n#include <zephyr/drivers/i2c.h>\n#include <errno.h>\n\n#include <zephyr/sys/byteorder.h>\nint pcf8574_init(const struct device *dev, const struct device *bus)\n{\n    (void)dev;\n    (void)bus;\n    return 0;\n}\n\nint pcf8574_read_port(const struct device *dev, uint8_t *p0, uint8_t *p1, uint8_t *p2, uint8_t *p3, uint8_t *p4, uint8_t *p5, uint8_t *p6, uint8_t *p7)\n{\n    const struct i2c_dt_spec spec = { .bus = dev, .addr = PCF8574_I2C_ADDR };\n    uint8_t buf;\n    int ret;\n\n    ret = i2c_read_dt(&spec, &buf, 1);\n    if (ret < 0) {\n        return ret;\n    }\n\n    *p0 = (buf >> 0) & 1;\n    *p1 = (buf >> 1) & 1;\n    *p2 = (buf >> 2) & 1;\n    *p3 = (buf >> 3) & 1;\n    *p4 = (buf >> 4) & 1;\n    *p5 = (buf >> 5) & 1;\n    *p6 = (buf >> 6) & 1;\n    *p7 = (buf >> 7) & 1;\n\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "pcf8574_init(&g_eval_dev, g_eval_dev)",
+    "channels": [
+      {
+        "id": "p0",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p0",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p1",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p1",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p2",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p2",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p3",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p3",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p4",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p4",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p5",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p5",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p6",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p6",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p7",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p7",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "int",
+        "call": "pcf8574_read_port(&g_eval_dev, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &p7)",
+        "out_arg": "p0",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"zephyr.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x20",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "flow_read_write_1: direct read read_port"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "all_pins_high",
+        "mock_preload": {
+          "read_bytes": [
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "p0": 1,
+          "p1": 1,
+          "p2": 1,
+          "p3": 1,
+          "p4": 1,
+          "p5": 1,
+          "p6": 1,
+          "p7": 1
+        },
+        "derivation": "Port byte 0xFF: bit0=1 => p0=1, bit1=1 => p1=1, bit2=1 => p2=1, bit3=1 => p3=1, bit4=1 => p4=1, bit5=1 => p5=1, bit6=1 => p6=1, bit7=1 => p7=1."
+      },
+      {
+        "name": "all_pins_low",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "p0": 0,
+          "p1": 0,
+          "p2": 0,
+          "p3": 0,
+          "p4": 0,
+          "p5": 0,
+          "p6": 0,
+          "p7": 0
+        },
+        "derivation": "Port byte 0x00: all bits 0 => all channels 0."
+      },
+      {
+        "name": "mixed_pins",
+        "mock_preload": {
+          "read_bytes": [
+            "0xAA"
+          ]
+        },
+        "expected_channels": {
+          "p0": 0,
+          "p1": 1,
+          "p2": 0,
+          "p3": 1,
+          "p4": 0,
+          "p5": 1,
+          "p6": 0,
+          "p7": 1
+        },
+        "derivation": "Port byte 0xAA = 0b10101010: bit0=0 => p0=0, bit1=1 => p1=1, bit2=0 => p2=0, bit3=1 => p3=1, bit4=0 => p4=0, bit5=1 => p5=1, bit6=0 => p6=0, bit7=1 => p7=1."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.002,
+  "prompt_chars": 42560,
+  "raw_response": "{\"driver_header\": \"#ifndef PCF8574_H\\n#define PCF8574_H\\n\\n#include <stdint.h>\\n#include <zephyr/device.h>\\n\\n#define PCF8574_I2C_ADDR 0x20\\n\\nint pcf8574_init(const struct device *dev, const struct device *bus);\\nint pcf8574_read_port(const struct device *dev, uint8_t *p0, uint8_t *p1, uint8_t *p2, uint8_t *p3, uint8_t *p4, uint8_t *p5, uint8_t *p6, uint8_t *p7);\\n\\n#endif /* PCF8574_H */\", \"driver_source\": \"#include \\\"pcf8574.h\\\"\\n#include <zephyr/drivers/i2c.h>\\n#include <errno.h>\\n\\nint pcf8574_init(const struct device *dev, const struct device *bus)\\n{\\n    (void)dev;\\n    (void)bus;\\n    return 0;\\n}\\n\\nint pcf8574_read_port(const struct device *dev, uint8_t *p0, uint8_t *p1, uint8_t *p2, uint8_t *p3, uint8_t *p4, uint8_t *p5, uint8_t *p6, uint8_t *p7)\\n{\\n    const struct i2c_dt_spec spec = { .bus = dev, .addr = PCF8574_I2C_ADDR };\\n    uint8_t buf;\\n    int ret;\\n\\n    ret = i2c_read_dt(&spec, &buf, 1);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    *p0 = (buf >> 0) & 1;\\n    *p1 = (buf >> 1) & 1;\\n    *p2 = (buf >> 2) & 1;\\n    *p3 = (buf >> 3) & 1;\\n    *p4 = (buf >> 4) & 1;\\n    *p5 = (buf >> 5) & 1;\\n    *p6 = (buf >> 6) & 1;\\n    *p7 = (buf >> 7) & 1;\\n\\n    return 0;\\n}\"}",
+  "plan_hash": "12acd3abe7f9bf10"
+}

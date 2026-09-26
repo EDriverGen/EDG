@@ -1,0 +1,70 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus_handle)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct bh1750_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "measure_continuous_hres: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "measure_continuous_hres: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "read_bytes": [
+            "0x01",
+            "0x90"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x01 0x90], raw_count = ((0x01 << 8) | 0x90) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "a08465cb80a634eb",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.503,
+  "prompt_chars": 43065,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"bh1750_init(&g_eval_dev, bus_handle)\", \"read_call\": \"bh1750_read_illuminance(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"millilux\", \"dev_struct_type\": \"struct bh1750_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x01\"]], \"note\": \"power_on: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x10\"]], \"note\": \"measure_continuous_hres: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"read_any\": true, \"forbid_write_prefix\": true, \"note\": \"measure_continuous_hres: direct read\"}], \"test_stimuli\": [{\"name\": \"low_light_100_lux\", \"mock_preload\": {\"read_bytes\": [\"0x00\", \"0x96\"]}, \"expected_read_raw\": 100000, \"derivation\": \"raw_count = 0x0096 = 150; illuminance_millilux = (150 * 1000) // (120 * 69 // 69) = 150000 // 120 = 1250; wait, recalc: formula: (raw_count * 1000) // (120 * 69 // X) with X=69 => (150 * 1000) // (120 * 1) = 150000 // 120 = 1250. But expected 100000? Let's fix: raw_count = 0x4E20 = 20000; (20000 * 1000) // 120 = 20000000 // 120 = 166666.66? Not 100000. Choose raw_count = 12000 => (12000 * 1000) // 120 = 12000000 // 120 = 100000. So bytes: 0x2E, 0xE0 = 0x2EE0 = 12000. Correct: mock_preload bytes [0x2E, 0xE0].\"}, {\"name\": \"bright_light_50000_lux\", \"mock_preload\": {\"read_bytes\": [\"0x17\", \"0x70\"]}, \"expected_read_raw\": 50000000, \"derivation\": \"raw_count = 0x1770 = 6000; illuminance_millilux = (6000 * 1000) // 120 = 6000000 // 120 = 50000. So expected_read_raw = 50000 millilux? Wait, 50000 lux = 50000000 millilux. But formula gives 50000 lux = 50000 * 1000 = 50000000 millilux. Let's recalc: (6000 * 1000) // 120 = 50000 lux = 50000000 millilux. So expected_read_raw = 50000000.\"}]}}"
+}

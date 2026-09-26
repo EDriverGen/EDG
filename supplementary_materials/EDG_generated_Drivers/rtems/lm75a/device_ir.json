@@ -1,0 +1,389 @@
+{
+  "device_id": "lm75a",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x48",
+        "description": "A2=A1=A0=GND (power-up default when all address pins are low)",
+        "is_default": true
+      },
+      {
+        "address": "0x49",
+        "description": "A2=A1=GND, A0=VCC",
+        "is_default": false
+      },
+      {
+        "address": "0x4A",
+        "description": "A2=GND, A1=VCC, A0=GND",
+        "is_default": false
+      },
+      {
+        "address": "0x4B",
+        "description": "A2=GND, A1=VCC, A0=VCC",
+        "is_default": false
+      },
+      {
+        "address": "0x4C",
+        "description": "A2=VCC, A1=GND, A0=GND",
+        "is_default": false
+      },
+      {
+        "address": "0x4D",
+        "description": "A2=VCC, A1=GND, A0=VCC",
+        "is_default": false
+      },
+      {
+        "address": "0x4E",
+        "description": "A2=VCC, A1=VCC, A0=GND",
+        "is_default": false
+      },
+      {
+        "address": "0x4F",
+        "description": "A2=A1=A0=VCC",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 1,
+    "addressing": "pointer",
+    "auto_increment": false,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Pointer register selects Temp, Conf, Thyst, or Tos; pointer byte is included in bus command, but the pointer register is not directly accessible to the user."
+  },
+  "read_channels": [
+    {
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "read_call_hint": "Read Temp register via pointer 0x00; only 11 significant bits are used from the 16-bit transfer.",
+      "flow_id": "read_temperature",
+      "source_bytes": [
+        "temp_msb",
+        "temp_lsb"
+      ],
+      "source_signal": null,
+      "formula_id": "temperature_from_temp_raw",
+      "notes": "Temperature register contains 11-bit two's-complement data with 0.125 °C resolution."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "A pointer byte selects the target register; a read of Temp may omit the pointer after it has been preset, but a write must always include the pointer byte."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "init_default_power_up",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Device is powered up and in default state."
+      ],
+      "steps": [
+        {
+          "op": "wait_until_ready",
+          "role": "power_up",
+          "transaction": null,
+          "condition": "after power-up",
+          "timeout_ms": 100,
+          "interval_ms": null,
+          "notes": "Temperature reading data is not available until the first conversion is completed in about 100 ms."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Power-up defaults place the device in normal mode with OS comparator mode, Tos = 80 °C, Thyst = 75 °C, OS active LOW, and pointer value = 0."
+    },
+    {
+      "flow_id": "read_temperature",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [
+        "Temp register selected by pointer or by power-up default pointer value 0."
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "role": "read_temp",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x00"
+            ],
+            "length": 2,
+            "pointer_target": "Temp",
+            "notes": "Pointer byte selects Temp register; read 2 bytes."
+          },
+          "notes": "Read the temperature register as MS byte followed by LS byte."
+        },
+        {
+          "op": "postprocess",
+          "role": "decode_temp",
+          "transaction": null,
+          "notes": "Use only the 11 significant bits; ignore the 5 LSB bits of the LS byte."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8",
+          "source_signal": null,
+          "formula_id": "temperature_from_temp_raw",
+          "unit": "milli_degC",
+          "notes": "Raw temperature comes from the two-byte Temp register transfer."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Reading temperature does not affect the conversion in progress."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 11,
+    "signed": true,
+    "right_shift": 5,
+    "sign_extend_from_bit": 10,
+    "notes": "Temp register: 16 bits are transferred, but only the 11 MSBs are significant; the 5 LSBs of the LS byte are unused and ignored."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Temp",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "Temperature Register. Contains two 8-bit data bytes."
+    },
+    {
+      "name": "Conf",
+      "value": "0x01",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Configuration Register. Contains a single 8-bit data byte."
+    },
+    {
+      "name": "Thyst",
+      "value": "0x02",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "Hysteresis Register. Contains two 8-bit data bytes."
+    },
+    {
+      "name": "Tos",
+      "value": "0x03",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "Over-temp Shutdown threshold Register. Contains two 8-bit data bytes."
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Conf",
+      "name": "B4-B3",
+      "bits": "4:3",
+      "description": "OS Fault queue programming. 00, 01, 10, 11 correspond to fault queue values 1, 2, 4, 6 respectively."
+    },
+    {
+      "register": "Conf",
+      "name": "B2",
+      "bits": "2",
+      "description": "OS polarity selection. 1 = OS active HIGH, 0 = OS active LOW (default)."
+    },
+    {
+      "register": "Conf",
+      "name": "B1",
+      "bits": "1",
+      "description": "OS operation mode selection. 1 = OS interrupt, 0 = OS comparator (default)."
+    },
+    {
+      "register": "Conf",
+      "name": "B0",
+      "bits": "0",
+      "description": "Device operation mode selection. 1 = Shut-down, 0 = Normal (default)."
+    },
+    {
+      "register": "Temp",
+      "name": "D10-D0",
+      "bits": "10:0",
+      "description": "11-bit two's complement temperature data; 5 LSB bits of the LS byte are not used."
+    },
+    {
+      "register": "Tos",
+      "name": "D8-D0",
+      "bits": "8:0",
+      "description": "9-bit two's complement overtemp shutdown threshold; 7 LSB bits of the LS byte are not used."
+    },
+    {
+      "register": "Thyst",
+      "name": "D8-D0",
+      "bits": "8:0",
+      "description": "9-bit two's complement hysteresis threshold; 7 LSB bits of the LS byte are not used."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up default selects Temp register and normal mode; no explicit bus traffic required."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait about 100 ms after power-up before expecting the first valid temperature reading."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 2,
+        "pointer_target": "Temp",
+        "notes": "Pointer byte 0x00 selects the Temp register."
+      },
+      "notes": "Set pointer to Temp, then read the 2-byte temperature register."
+    },
+    {
+      "transaction": null,
+      "notes": "Combine MS and LS bytes into a signed 11-bit temperature value and ignore the 5 LSB padding bits."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "temperature_conversion_period",
+      "value": 100,
+      "unit": "ms",
+      "condition": "normal mode",
+      "notes": "In normal operation mode, the temp-to-digital conversion is executed every 100 ms."
+    },
+    {
+      "name": "first_valid_temperature_wait",
+      "value": 100,
+      "unit": "ms",
+      "condition": "after power-up",
+      "notes": "The temp reading data is not available until the first conversion is completed in about 100 ms."
+    },
+    {
+      "name": "i2c_clock_period_min",
+      "value": 2.5,
+      "unit": "us",
+      "condition": "I2C interface timing",
+      "notes": "tCLK SCL clock period See timing diagram (Figure 4) 2.5 – – µs"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temperature_from_temp_raw",
+      "formula": "Temp (milli_degC) = signed_11_bit_raw * 125; one count equals 0.125 °C = 125 milli-degC.",
+      "integer_approximation_expression": {
+        "expression": "(((raw >> 5) & 0x7FF) * 125) - ((((raw >> 5) & 0x400) << 1) * 125)",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "temp_msb:8 || temp_lsb:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "16-bit Temp register value; use bits D10..D0 after shifting right by 5."
+          }
+        ],
+        "output": {
+          "name": "temperature_mdegC",
+          "unit": "milli_degC"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "I2C address NACK",
+      "detection": "If the configured 7-bit address does not acknowledge during the address phase.",
+      "driver_action": "abort transaction and return -EIO",
+      "notes": "Device did not respond on the selected address."
+    },
+    {
+      "condition": "bus_nack_during_data",
+      "detection": "If the device NACKs a data byte during register pointer write or read transfer.",
+      "driver_action": "abort transaction and return -EIO",
+      "notes": "Treat unexpected NACK as a communication fault."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "normal",
+      "description": "Default operating mode; temperature conversion runs every 100 ms and the device monitors temperature.",
+      "entry_conditions": [
+        "Power-up default",
+        "B0 = 0 in Conf"
+      ],
+      "exit_conditions": [
+        "Set B0 = 1"
+      ],
+      "notes": "Interface remains active in normal mode."
+    },
+    {
+      "name": "shutdown",
+      "description": "Conversion stops, supply current is minimized, and the I2C interface remains active for register write/read operations.",
+      "entry_conditions": [
+        "B0 = 1 in Conf"
+      ],
+      "exit_conditions": [
+        "Reset B0 to 0"
+      ],
+      "notes": "In shutdown mode, the OS output behavior depends on comparator/interrupt mode as described in the datasheet."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "lm75a",
+      "page": 8,
+      "snippet": "The other four MSB bits of the address data are preset to '1001' by hard wiring inside the LM75A."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 8,
+      "snippet": "these pins represent the three LSB bits of the device 7-bit address."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 8,
+      "snippet": "At power-up, the Pointer value is equal to 0 and the Temp register is selected; users can then read the Temp data without specifying the pointer byte."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 9,
+      "snippet": "only 11 bits of those two bytes are used to store the Temp data in 2's complement format with the resolution of 0.125 °C."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 9,
+      "snippet": "only the 11 significant bits should be used, and the 5 LSB bits of the LS byte are zero and should be ignored."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 5,
+      "snippet": "TCON Temperature conversion Normal mode – 100 – ms"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 11,
+      "snippet": "At power-up, this bit is equal to 0 and the OS comparator is selected."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 11,
+      "snippet": "At power-up, fault queue data = 0 and fault queue value = 1."
+    }
+  ],
+  "requires_human": [],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

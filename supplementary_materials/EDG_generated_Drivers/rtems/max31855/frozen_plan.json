@@ -1,0 +1,142 @@
+{
+  "device_id": "max31855",
+  "rtos_id": "rtems",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "max31855_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "spi_bus bus_handle = spi_bus_alloc_and_init(0);\n(void)bus_name;",
+    "dev_struct_type": "struct max31855_device",
+    "channels": [
+      {
+        "id": "thermocouple",
+        "call": "max31855_read_temperatures(&g_eval_dev, &thermocouple_val, &temp_local_val)",
+        "out_arg": "thermocouple_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_local",
+        "call": "max31855_read_temperatures(&g_eval_dev, &thermocouple_val, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_temperatures: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_spi_stream_bitfield_1",
+        "mock_preload": {
+          "stream": [
+            "0x0F",
+            "0xA0",
+            "0x43",
+            "0x10"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x03",
+            "0xE8"
+          ],
+          "temp_local": [
+            "0x04",
+            "0x31"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": 250,
+          "temp_local": 67
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0x0F 0xA0 0x43 0x10; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=1000; (((1000 >> 13) & 1) * (-8192) + ((1000 & 0x1FFF) ^ ((1000 >> 13) & 1) * 0x2000)) * 250 // 1000 = 250; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=1073; (((1073 >> 11) & 1) * (-2048) + ((1073 & 0x7FF) ^ ((1073 >> 11) & 1) * 0x800)) * 625 // 10000 = 67"
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_2",
+        "mock_preload": {
+          "stream": [
+            "0x13",
+            "0xA4",
+            "0x53",
+            "0x20"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x04",
+            "0xE9"
+          ],
+          "temp_local": [
+            "0x05",
+            "0x32"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": 314,
+          "temp_local": 83
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0x13 0xA4 0x53 0x20; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=1257; (((1257 >> 13) & 1) * (-8192) + ((1257 & 0x1FFF) ^ ((1257 >> 13) & 1) * 0x2000)) * 250 // 1000 = 314; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=1330; (((1330 >> 11) & 1) * (-2048) + ((1330 & 0x7FF) ^ ((1330 >> 11) & 1) * 0x800)) * 625 // 10000 = 83"
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_signed_negative",
+        "mock_preload": {
+          "stream": [
+            "0xFF",
+            "0x40",
+            "0xFD",
+            "0x00"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x3F",
+            "0xD0"
+          ],
+          "temp_local": [
+            "0x0F",
+            "0xD0"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": -12,
+          "temp_local": -3
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0xFF 0x40 0xFD 0x00; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=16336; (((16336 >> 13) & 1) * (-8192) + ((16336 & 0x1FFF) ^ ((16336 >> 13) & 1) * 0x2000)) * 250 // 1000 = 2036 (formula gives suspect 2036); signed two's-complement sanity: encoded 0x3FD0 represents -48, positive-path scale 1 // 4; (-48 * 1) // 4 = -12; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=4048; (((4048 >> 11) & 1) * (-2048) + ((4048 & 0x7FF) ^ ((4048 >> 11) & 1) * 0x800)) * 625 // 10000 = 125 (formula gives suspect 125); signed two's-complement sanity: encoded 0xFD0 represents -48, positive-path scale 1 // 16; (-48 * 1) // 16 = -3"
+      },
+      {
+        "name": "mechanical_spi_stream_fault_status",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x01",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_err": 1,
+        "derivation": "Device IR marks stream bit D16 (fault_bit_set) as a runtime-detectable fault/status condition; public driver read should return a nonzero error."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.spi_stream_bitfields+read_channels+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "3ff5cfa6b9916c47",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 17.494,
+  "prompt_chars": 51596,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"max31855_init(&g_eval_dev, bus_handle)\", \"init_extra_setup_c\": \"spi_bus bus_handle = spi_bus_alloc_and_init(0);\\n(void)bus_name;\", \"dev_struct_type\": \"struct max31855_device\", \"channels\": [{\"id\": \"thermocouple\", \"call\": \"max31855_read_temperatures(&g_eval_dev, &thermocouple_val, &temp_local_val)\", \"out_arg\": \"thermocouple_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}, {\"id\": \"temp_local\", \"call\": \"max31855_read_temperatures(&g_eval_dev, &thermocouple_val, &temp_local_val)\", \"out_arg\": \"temp_local_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}]}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"read_any\": true, \"note\": \"read_temperatures: direct read read\"}], \"test_stimuli\": [{\"name\": \"positive_temperatures\", \"mock_preload\": {\"stream\": [\"0x1F\", \"0x40\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"thermocouple\": 25000, \"temp_local\": 10000}, \"derivation\": \"stream bytes: 0x1F 0x40 0x00 0x00 -> raw32 = 0x1F400000. raw_14 = (raw32 >> 18) & 0x3FFF = 0x7D = 125. signed_14bit = 125 (positive). thermocouple_temp_milliC = 125 * 250 / 1000 = 31250? Wait recalc: formula: (((raw_14 >> 13) & 1) * (-8192) + ((raw_14 & 0x1FFF) ^ ((raw_14 >> 13) & 1) * 0x2000)) * 250 // 1000. raw_14=125, sign=0, so term = 125. 125*250/1000 = 31.25? Actually 125*250=31250, /1000=31.25, but integer division gives 31. But expected milli_degC should be 125*250=31250? Wait formula: (signed_14bit_value) * 0.25 -> 125*0.25=31.25 degC = 31250 milli_degC. But integer expression: 125*250/1000 = 31250/1000 = 31 (integer truncation). That's wrong. Let's choose raw_14=400 -> 400*0.25=100 degC = 100000 milli_degC. raw_14=400 -> bits D[31:18] = 400 << 18 = 0x64000. So stream bytes: 0x19, 0x00, 0x00, 0x00? Actually 400 << 18 = 0x64000, but we need 32-bit: 0x00190000? 400=0x190, shift left 18 -> 0x190 << 18 = 0x6400000? Let's compute: 0x190 = 400 decimal. 400 << 18 = 400 * 262144 = 104857600 = 0x06400000. So bytes MSB first: 0x06, 0x40, 0x00, 0x00. But internal temp also needed. Let's choose internal raw_12 = 160 -> 160*0.0625=10 degC = 10000 milli_degC. raw_12=160 -> bits D[15:4] = 160 << 4 = 0xA00. So combine: D[31:18]=400 (0x190), D[15:4]=160 (0x0A0), D16=0, D3..D0=0. So raw32 = (400 << 18) | (0 << 16) | (160 << 4) = 0x06400000 | 0x00000A00 = 0x06400A00. Bytes: 0x06, 0x40, 0x0A, 0x00. Then thermocouple: raw_14=400, sign=0, term=400, 400*250/1000=100000. internal: raw_12=160, sign=0, term=160, 160*625/10000=10000. So expected_channels: thermocouple=100000, temp_local=10000.\"}, {\"name\": \"zero_temperatures\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"thermocouple\": 0, \"temp_local\": 0}, \"derivation\": \"All bits zero -> raw_14=0, raw_12=0 -> both outputs 0.\"}, {\"name\": \"negative_temperatures\", \"mock_preload\": {\"stream\": [\"0xFC\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"thermocouple\": -2000, \"temp_local\": 0}, \"derivation\": \"stream bytes: 0xFC 0x00 0x00 0x00 -> raw32 = 0xFC000000. raw_14 = (raw32 >> 18) & 0x3FFF = 0x3F0 = 1008. sign bit (bit 13) = 1 -> signed_14bit = -1*(8192-1008) = -7184? Actually formula: sign=1, term = -8192 + (1008 ^ 0x2000) = -8192 + (1008 ^ 0x2000). 1008 ^ 0x2000 = 1008 ^ 8192 = 9200? Wait 1008=0x3F0, XOR 0x2000 = 0x23F0 = 9200. So term = -8192 + 9200 = 1008. That's positive? That's wrong. Let's compute properly: signed_14bit = raw_14 - 16384 if sign=1. raw_14=1008, sign=1 -> value = 1008 - 16384 = -15376. Then milli_degC = -15376 * 250 / 1000 = -3844. But we want a simpler negative. Choose raw_14 = 0x2000 (8192) -> sign=1, value = 8192 - 16384 = -8192. milli_degC = -8192*250/1000 = -2048. So raw_14=8192 -> bits D[31:18] = 8192 << 18 = 0x80000000? Actually 8192=0x2000, shift left 18 -> 0x80000000. So stream bytes: 0x80, 0x00, 0x00, 0x00. Then thermocouple = -2048? Wait -8192*0.25 = -2048 degC = -2048000 milli_degC? No: -8192 * 250 / 1000 = -2048000? Actually -8192*250 = -2048000, /1000 = -2048. So milli_degC = -2048. That's too small magnitude. Let's choose raw_14=0x1C00 (7168) -> sign=1, value = 7168-16384 = -9216. milli_degC = -9216*250/1000 = -2304. So raw_14=0x1C00 -> bits D[31:18] = 0x1C00 << 18 = 0x70000000. Bytes: 0x70, 0x00, 0x00, 0x00. internal raw_12=0 -> 0. So expected_channels: thermocouple=-2304, temp_local=0.\"}]}}"
+}

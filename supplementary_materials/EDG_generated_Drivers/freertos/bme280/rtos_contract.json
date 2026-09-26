@@ -1,0 +1,943 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "bme280",
+  "rtos": "freertos",
+  "board": "stm32f103rb",
+  "bus_type": "i2c",
+  "connection": {
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_symbol": "hi2c1",
+    "address_mode": "7-bit",
+    "backend": "STM32CubeF1 HAL I2C",
+    "helper_usage_patterns": []
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "HAL_Delay"
+    ],
+    "error_symbols": [
+      "HAL_StatusTypeDef"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "HAL_I2C_Init",
+      "HAL_I2C_Master_Receive",
+      "HAL_I2C_Mem_Read",
+      "HAL_I2C_Master_Transmit",
+      "HAL_I2C_DeInit"
+    ],
+    "bus_api_signatures": {
+      "HAL_I2C_Init": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+      "HAL_I2C_Master_Receive": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_Mem_Read": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_Master_Transmit": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_DeInit": "HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)"
+    },
+    "bus_helper_types": [
+      "HAL_StatusTypeDef",
+      "I2C_HandleTypeDef"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "stm32cubef1_hal",
+    "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+    "bus_instance": "i2c1",
+    "bus_symbol": "hi2c1",
+    "include_headers": [
+      "../../../Source/portable/GCC/ColdFire_V2/portmacro.h",
+      "../../Source/portable/CodeWarrior/ColdFire_V2/portmacro.h",
+      "../../Source/portable/CodeWarrior/HCS12/portmacro.h",
+      "../../Source/portable/GCC/ARM7_AT91FR40008/portmacro.h",
+      "../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h",
+      "../../Source/portable/GCC/ARM7_LPC2000/portmacro.h",
+      "../../Source/portable/GCC/ARM7_LPC23xx/portmacro.h",
+      "../../Source/portable/GCC/ARM_CM3/portmacro.h",
+      "../../Source/portable/GCC/H8S2329/portmacro.h",
+      "../../Source/portable/GCC/HCS12/portmacro.h",
+      "../../Source/portable/GCC/MCF5235/portmacro.h",
+      "../../Source/portable/GCC/MSP430F449/portmacro.h",
+      "../../Source/portable/GCC/MicroBlaze/portmacro.h",
+      "../../Source/portable/GCC/PPC405_Xilinx/portmacro.h",
+      "../../Source/portable/GCC/PPC440_Xilinx/portmacro.h",
+      "../../Source/portable/GCC/STR75x/portmacro.h",
+      "../../Source/portable/IAR/78K0R/portmacro.h",
+      "../../Source/portable/IAR/ARM_CM3/portmacro.h",
+      "../../Source/portable/IAR/AtmelSAM7S64/portmacro.h",
+      "../../Source/portable/IAR/AtmelSAM9XE/portmacro.h",
+      "../../Source/portable/IAR/LPC2000/portmacro.h",
+      "../../Source/portable/IAR/MSP430/portmacro.h",
+      "../../Source/portable/IAR/STR71x/portmacro.h",
+      "../../Source/portable/IAR/STR75x/portmacro.h",
+      "../../Source/portable/IAR/STR91x/portmacro.h",
+      "../../Source/portable/IAR/V850ES/portmacro.h",
+      "../../Source/portable/MPLAB/PIC18F/portmacro.h",
+      "../../Source/portable/MPLAB/PIC24_dsPIC/portmacro.h",
+      "../../Source/portable/MPLAB/PIC32MX/portmacro.h",
+      "../../Source/portable/Paradigm/Tern_EE/small/portmacro.h",
+      "../../Source/portable/RVDS/ARM7_LPC21xx/portmacro.h",
+      "../../Source/portable/RVDS/ARM_CM3/portmacro.h",
+      "../../Source/portable/Rowley/MSP430F449/portmacro.h",
+      "../../Source/portable/SDCC/Cygnal/portmacro.h",
+      "../../Source/portable/Softune/MB96340/portmacro.h",
+      "../../Source/portable/owatcom/16bitdos/flsh186/portmacro.h",
+      "../../Source/portable/owatcom/16bitdos/pc/portmacro.h",
+      "../portable/BCC/16BitDOS/PC/prtmacro.h",
+      "../portable/BCC/16BitDOS/flsh186/prtmacro.h",
+      "../portable/GCC/ATMega323/portmacro.h",
+      "../portable/IAR/ATMega323/portmacro.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_legacy.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cec.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_conf_template.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dac.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_eth.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_hcd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2s.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_irda.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_mmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nand.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_smartcard.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sram.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_fsmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_i2c.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_rcc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_sdmmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h",
+      "FreeRTOS.h",
+      "FreeRTOS/Source/include/FreeRTOS.h",
+      "FreeRTOS/Source/include/StackMacros.h",
+      "FreeRTOS/Source/include/atomic.h",
+      "FreeRTOS/Source/include/croutine.h",
+      "FreeRTOS/Source/include/deprecated_definitions.h",
+      "FreeRTOS/Source/include/event_groups.h",
+      "FreeRTOS/Source/include/list.h",
+      "FreeRTOS/Source/include/mpu_prototypes.h",
+      "FreeRTOS/Source/include/mpu_syscall_numbers.h",
+      "FreeRTOS/Source/include/mpu_wrappers.h",
+      "FreeRTOS/Source/include/newlib-freertos.h",
+      "FreeRTOS/Source/include/picolibc-freertos.h",
+      "FreeRTOS/Source/include/portable.h",
+      "FreeRTOS/Source/include/projdefs.h",
+      "FreeRTOS/Source/include/queue.h",
+      "FreeRTOS/Source/include/stack_macros.h",
+      "FreeRTOS/Source/include/stream_buffer.h",
+      "FreeRTOS/Source/include/task.h",
+      "FreeRTOS/Source/include/timers.h",
+      "FreeRTOS/Source/portable/CCS/ARM_CM3/portmacro.h",
+      "FreeRTOS/Source/portable/ThirdParty/GCC/RP2040/include/freertos_sdk_config.h",
+      "FreeRTOS/Source/portable/ThirdParty/GCC/RP2040/include/rp2040_config.h",
+      "FreeRTOS/Source/portable/ThirdParty/GCC/Xtensa_ESP32/include/portbenchmark.h",
+      "FreeRTOS/Source/portable/ThirdParty/GCC/Xtensa_ESP32/include/portmacro.h",
+      "FreeRTOSConfig.h",
+      "Legacy/stm32_hal_legacy.h",
+      "Legacy/stm32f1xx_hal_can_legacy.h",
+      "application_defined_privileged_functions.h",
+      "deprecated_definitions.h",
+      "esp_attr.h",
+      "esp_heap_caps.h",
+      "esp_idf_version.h",
+      "esp_system.h",
+      "esp_timer.h",
+      "event_groups.h",
+      "frconfig.h",
+      "hal/cpu_hal.h",
+      "libFreeRTOS/Include/portmacro.h",
+      "limits.h",
+      "list.h",
+      "mpu_prototypes.h",
+      "mpu_syscall_numbers.h",
+      "mpu_wrappers.h",
+      "newlib-freertos.h",
+      "picolibc-freertos.h",
+      "picotls.h",
+      "portable.h",
+      "portbenchmark.h",
+      "portmacro.h",
+      "porttrace.h",
+      "projdefs.h",
+      "queue.h",
+      "reent.h",
+      "rp2040_config.h",
+      "sdkconfig.h",
+      "soc/compare_set.h",
+      "soc/cpu.h",
+      "soc/soc_memory_layout.h",
+      "soc/spinlock.h",
+      "stack_macros.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "stdlib.h",
+      "stm32_assert.h",
+      "stm32f1xx.h",
+      "stm32f1xx_hal.h",
+      "stm32f1xx_hal_adc.h",
+      "stm32f1xx_hal_adc_ex.h",
+      "stm32f1xx_hal_can.h",
+      "stm32f1xx_hal_can_ex_legacy.h",
+      "stm32f1xx_hal_cec.h",
+      "stm32f1xx_hal_conf.h",
+      "stm32f1xx_hal_cortex.h",
+      "stm32f1xx_hal_crc.h",
+      "stm32f1xx_hal_dac.h",
+      "stm32f1xx_hal_def.h",
+      "stm32f1xx_hal_dma.h",
+      "stm32f1xx_hal_dma_ex.h",
+      "stm32f1xx_hal_eth.h",
+      "stm32f1xx_hal_exti.h",
+      "stm32f1xx_hal_flash.h",
+      "stm32f1xx_hal_flash_ex.h",
+      "stm32f1xx_hal_gpio.h",
+      "stm32f1xx_hal_gpio_ex.h",
+      "stm32f1xx_hal_hcd.h",
+      "stm32f1xx_hal_i2c.h",
+      "stm32f1xx_hal_i2s.h",
+      "stm32f1xx_hal_irda.h",
+      "stm32f1xx_hal_iwdg.h",
+      "stm32f1xx_hal_mmc.h",
+      "stm32f1xx_hal_nand.h",
+      "stm32f1xx_hal_nor.h",
+      "stm32f1xx_hal_pccard.h",
+      "stm32f1xx_hal_pcd.h",
+      "stm32f1xx_hal_pwr.h",
+      "stm32f1xx_hal_rcc.h",
+      "stm32f1xx_hal_rcc_ex.h",
+      "stm32f1xx_hal_rtc.h",
+      "stm32f1xx_hal_sd.h",
+      "stm32f1xx_hal_smartcard.h",
+      "stm32f1xx_hal_spi.h",
+      "stm32f1xx_hal_sram.h",
+      "stm32f1xx_hal_tim.h",
+      "stm32f1xx_hal_uart.h",
+      "stm32f1xx_hal_usart.h",
+      "stm32f1xx_hal_wwdg.h",
+      "stm32f1xx_ll_bus.h",
+      "stm32f1xx_ll_i2c.h",
+      "stm32f1xx_ll_rcc.h",
+      "stream_buffer.h",
+      "string.h",
+      "task.h",
+      "timers.h",
+      "xtensa/config/core.h",
+      "xtensa/config/system.h",
+      "xtensa/hal.h",
+      "xtensa/xtensa_api.h",
+      "xtensa/xtruntime.h"
+    ],
+    "fixed_attachment": {},
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "i2c1",
+        "fields": {
+          "bus_instance": "i2c1",
+          "bus_symbol": "hi2c1",
+          "backend": "STM32CubeF1 HAL I2C",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "bme280",
+    "required_bus_type": "i2c",
+    "addressing": {
+      "default": "0x76",
+      "alternates": [
+        "0x77"
+      ],
+      "selection_rule": "SDO determines the I2C address in I2C mode."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "For I2C mode the CSB pin must stay inactive/high."
+      ]
+    },
+    "optional_attachment": {
+      "sdo_addr_select": "optional",
+      "csb_mode_pin": "required_for_i2c_mode"
+    }
+  },
+  "api_bindings": {
+    "i2c.acquire_or_bind": {
+      "symbol": "HAL_I2C_Init",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.read": {
+      "symbol": "HAL_I2C_Master_Receive",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.transfer": {
+      "symbol": "HAL_I2C_Mem_Read",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.write": {
+      "symbol": "HAL_I2C_Master_Transmit",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "signature": "void HAL_Delay(uint32_t Delay)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.error_status": {
+      "symbol": "HAL_StatusTypeDef",
+      "kind": "typedef",
+      "signature": "enum { HAL_OK = 0x00U, HAL_ERROR = 0x01U, HAL_BUSY = 0x02U, HAL_TIMEOUT = 0x03U }",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.release": {
+      "symbol": "HAL_I2C_DeInit",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x76",
+            "description": "SDO=GND (default address)",
+            "is_default": true
+          },
+          {
+            "address": "0x77",
+            "description": "SDO=VDDIO",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO=GND (default address)",
+              "is_default": true
+            },
+            {
+              "address": "0x77",
+              "description": "SDO=VDDIO",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x76",
+          "alternates": [
+            "0x77"
+          ],
+          "selection_rule": "SDO determines the I2C address in I2C mode."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "I2C_HandleTypeDef",
+          "kind": "type_ref",
+          "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "hi2c1",
+        "backend": "STM32CubeF1 HAL I2C",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x76",
+            "description": "SDO=GND (default address)",
+            "is_default": true
+          },
+          {
+            "address": "0x77",
+            "description": "SDO=VDDIO",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO=GND (default address)",
+              "is_default": true
+            },
+            {
+              "address": "0x77",
+              "description": "SDO=VDDIO",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x76",
+          "alternates": [
+            "0x77"
+          ],
+          "selection_rule": "SDO determines the I2C address in I2C mode."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "hi2c1",
+        "backend": "STM32CubeF1 HAL I2C",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "I2C_HandleTypeDef",
+          "kind": "type_ref",
+          "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "HAL_I2C_Init",
+    "HAL_I2C_Master_Receive",
+    "HAL_I2C_Mem_Read",
+    "HAL_I2C_Master_Transmit",
+    "HAL_Delay",
+    "HAL_StatusTypeDef",
+    "HAL_I2C_DeInit"
+  ],
+  "allowed_symbol_provenance": {
+    "HAL_I2C_Init": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Master_Receive": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Mem_Read": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Master_Transmit": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_Delay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_StatusTypeDef": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_DeInit": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "freertos-stm32f103-project:freertos-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "bme280_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (4 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "bme280_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xD0"
+            ],
+            "length": 1,
+            "pointer_target": "id",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x88"
+            ],
+            "length": 26,
+            "pointer_target": "calibration",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xE1"
+            ],
+            "length": 7,
+            "pointer_target": "calibration_humidity",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xF7"
+            ],
+            "length": 8,
+            "pointer_target": "press_msb",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.633,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (6 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 9/9 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "freertos-stm32f103-project:freertos-stm32cubef1:1",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Init",
+      "slot_id": "i2c.acquire_or_bind"
+    },
+    {
+      "root_id": "freertos-stm32f103-project:freertos-stm32cubef1:1",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Master_Receive",
+      "slot_id": "i2c.read"
+    },
+    {
+      "root_id": "freertos-stm32f103-project:freertos-stm32cubef1:1",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Mem_Read",
+      "slot_id": "i2c.transfer"
+    },
+    {
+      "root_id": "freertos-stm32f103-project:freertos-stm32cubef1:1",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Master_Transmit",
+      "slot_id": "i2c.write"
+    },
+    {
+      "root_id": "freertos-stm32f103-project:freertos-stm32cubef1:1",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_Delay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "freertos-stm32f103-project:freertos-stm32cubef1:1",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_StatusTypeDef",
+      "slot_id": "runtime.error_status"
+    },
+    {
+      "root_id": "freertos-stm32f103-project:freertos-stm32cubef1:1",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_DeInit",
+      "slot_id": "i2c.release"
+    }
+  ],
+  "requires_human": [
+    "i2c.addressing",
+    "i2c.key_types",
+    "integration.bus_instance_binding"
+  ]
+}

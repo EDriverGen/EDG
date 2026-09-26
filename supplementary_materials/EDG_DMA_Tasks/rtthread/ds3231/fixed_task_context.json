@@ -1,0 +1,348 @@
+{
+  "task_package_path": "EDG_DMA_Tasks/rtthread/ds3231/task_package.json",
+  "task_package": {
+    "package_id": "rtthread_stm32f103rb__ds3231__i2c1_dma",
+    "platform_base_context": "EDG_DMA_Tasks/rtthread/ds3231/platform_base_context.json",
+    "connection_binding_context": "EDG_DMA_Tasks/rtthread/ds3231/connection_binding_context.json",
+    "device_attachment_context": "EDG_DMA_Tasks/rtthread/ds3231/device_attachment_context.json",
+    "reference_driver_root": "DriverGen/data/references/ds3231/rtthread",
+    "device_ir": "EDG_DMA_Tasks/rtthread/ds3231/device_ir.json",
+    "dma_requirements": "EDG_DMA_Tasks/rtthread/ds3231/dma_requirements.json",
+    "evaluation_config": "EDG_DMA_Tasks/rtthread/ds3231/evaluation_config.json",
+    "mode": "dma",
+    "notes": [
+      "DS3231 on rtthread: DMA payload transfers on the original hardware connection.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use hardware-I2C DMA for grouped RTC registers while preserving BCD and calendar semantics."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+    ],
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "rtthread_stm32f103rb",
+        "rtos": "rt-thread",
+        "rtos_bundle": "rt-thread",
+        "board": "stm32f103rb",
+        "board_alias": "f103rb",
+        "integration": "repository_local_bsp",
+        "integration_style": "rtos_core_plus_repository_bsp",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "rtthread_stm32f103rb_i2c1_dma",
+        "platform_id": "rtthread_stm32f103rb",
+        "connection_type": "i2c",
+        "mode": "dma",
+        "bus_instance": "i2c1",
+        "bus_instance_kind": "named_bus",
+        "bus_symbol": "i2c1",
+        "backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+        "address_mode": "7-bit",
+        "fixed_attachment": {},
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "ds3231",
+        "attachment_type": "i2c_rtc",
+        "required_bus_type": "i2c",
+        "address_mode": "7-bit",
+        "addressing": {
+          "default": "0x68",
+          "alternates": [],
+          "selection_rule": "Fixed device address for the RTC function."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "Only the shared I2C bus is required for time and temperature reads."
+          ]
+        },
+        "optional_attachment": {
+          "sqw_int_pin": "optional",
+          "32khz_pin": "optional"
+        },
+        "default_overrides": {
+          "bus_instance": "i2c1",
+          "irq": "dma_completion",
+          "dma": "required",
+          "reset_gpio": null,
+          "power_gpio": null,
+          "mode": "dma",
+          "device_irq": "absent"
+        },
+        "protocol_hints": {
+          "transfer_mode": "dma"
+        }
+      }
+    }
+  },
+  "platform_base_context": {
+    "platform_id": "rtthread_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "rt-thread",
+    "rtos_bundle": "rt-thread",
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "available_for_dma_completion",
+      "dma": "available_for_selected_connection"
+    },
+    "notes": [
+      "DMA task on the original stm32f103rb target and stm32f103rb MCU.",
+      "Use the selected existing RTOS/BSP/HAL backend and preserve the original bus connection."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "rtthread_stm32f103rb_i2c1_dma",
+    "platform_id": "rtthread_stm32f103rb",
+    "connection_type": "i2c",
+    "mode": "dma",
+    "bus_instance": "i2c1",
+    "bus_instance_kind": "named_bus",
+    "bus_symbol": "i2c1",
+    "backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "required_helpers": [
+      "rt_thread_mdelay"
+    ],
+    "notes": [
+      "Enable BSP_USING_HARD_I2C1, BSP_I2C1_RX_USING_DMA, and BSP_I2C1_TX_USING_DMA; retain i2c1 and its pins.",
+      "Use the existing hardware-I2C registration, with payload messages of at least 2 bytes.",
+      "Preserve combined-message/repeated-start semantics; one-byte register-selection phases may use the backend's control-transfer path.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use hardware-I2C DMA for grouped RTC registers while preserving BCD and calendar semantics."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+    ],
+    "dma": "required",
+    "completion_irq": "required",
+    "helper_usage_patterns": [],
+    "dma_requirements": {
+      "task_package_id": "rtthread_stm32f103rb__ds3231__i2c1_dma",
+      "mode": "dma",
+      "physical_bus": "i2c",
+      "backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+      "access_pattern": "rtos_bus_dma",
+      "candidate_transfer_apis": [
+        "rt_i2c_transfer"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 6,
+        "rx": 7
+      },
+      "minimum_core_payload_bytes": 2,
+      "configuration_requirements": [
+        "Enable BSP_USING_HARD_I2C1, BSP_I2C1_RX_USING_DMA, and BSP_I2C1_TX_USING_DMA; retain i2c1 and its pins.",
+        "Use the existing hardware-I2C registration, with payload messages of at least 2 bytes.",
+        "Preserve combined-message/repeated-start semantics; one-byte register-selection phases may use the backend's control-transfer path."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use hardware-I2C DMA for grouped RTC registers while preserving BCD and calendar semantics."
+      ],
+      "device_scenarios": [
+        "Receive the complete time register group.",
+        "Decode the original year/month/time conventions."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+        "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+      ]
+    }
+  },
+  "device_attachment_context": {
+    "device_id": "ds3231",
+    "attachment_type": "i2c_rtc",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x68",
+      "alternates": [],
+      "selection_rule": "Fixed device address for the RTC function."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Only the shared I2C bus is required for time and temperature reads."
+      ]
+    },
+    "optional_attachment": {
+      "sqw_int_pin": "optional",
+      "32khz_pin": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": "i2c1",
+      "irq": "dma_completion",
+      "dma": "required",
+      "reset_gpio": null,
+      "power_gpio": null,
+      "mode": "dma",
+      "device_irq": "absent"
+    },
+    "notes": [
+      "Use hardware-I2C DMA for grouped RTC registers while preserving BCD and calendar semantics.",
+      "Preserve the original device protocol, addressing, units, and hardware attachment."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/ds3231",
+      "DriverGen/data/references/ds3231/*/*_ref.h"
+    ],
+    "protocol_hints": {
+      "transfer_mode": "dma"
+    }
+  },
+  "legacy_board_context": {
+    "task_package_id": "rtthread_stm32f103rb__ds3231__i2c1_dma",
+    "rtos": "rt-thread",
+    "rtos_bundle": "rt-thread",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "i2c",
+    "bus_instance": "i2c1",
+    "bus_instance_kind": "named_bus",
+    "bus_symbol": "i2c1",
+    "bus_backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+    "address_mode": "7-bit",
+    "mode": "dma",
+    "irq": "dma_completion",
+    "dma": "required",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {},
+    "device_attachment_context_id": "ds3231",
+    "device_addressing": {
+      "default": "0x68",
+      "alternates": [],
+      "selection_rule": "Fixed device address for the RTC function."
+    },
+    "device_irq": "absent",
+    "dma_requirements": {
+      "task_package_id": "rtthread_stm32f103rb__ds3231__i2c1_dma",
+      "mode": "dma",
+      "physical_bus": "i2c",
+      "backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+      "access_pattern": "rtos_bus_dma",
+      "candidate_transfer_apis": [
+        "rt_i2c_transfer"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 6,
+        "rx": 7
+      },
+      "minimum_core_payload_bytes": 2,
+      "configuration_requirements": [
+        "Enable BSP_USING_HARD_I2C1, BSP_I2C1_RX_USING_DMA, and BSP_I2C1_TX_USING_DMA; retain i2c1 and its pins.",
+        "Use the existing hardware-I2C registration, with payload messages of at least 2 bytes.",
+        "Preserve combined-message/repeated-start semantics; one-byte register-selection phases may use the backend's control-transfer path."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use hardware-I2C DMA for grouped RTC registers while preserving BCD and calendar semantics."
+      ],
+      "device_scenarios": [
+        "Receive the complete time register group.",
+        "Decode the original year/month/time conventions."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+        "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+      ]
+    },
+    "source_evidence": [
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+    ]
+  }
+}

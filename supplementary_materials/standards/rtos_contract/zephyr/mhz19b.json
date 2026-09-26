@@ -1,0 +1,115 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "zephyr__mhz19b",
+  "device_id": "mhz19b",
+  "rtos_id": "zephyr",
+  "bus": "uart_polling",
+  "scope": "Independent standard for mhz19b on the fixed uart_polling task configuration, based on its copied reference driver, fixed task requirements, supplied Zephyr API pack and harness. Excludes sample_ref application cadence and device-register behavior.",
+  "api_contract": {
+    "bus": "uart_polling",
+    "fixed_task_context": "uart1 DT device handle with 9600 baud, 8 data bits, no parity, 1 stop bit",
+    "handle_and_operations": {
+      "handle": "const struct device *",
+      "operations": [
+        "uart_poll_out",
+        "uart_poll_in"
+      ],
+      "signatures": {
+        "uart_poll_out": "void uart_poll_out(const struct device *dev, unsigned char out_char)",
+        "uart_poll_in": "int uart_poll_in(const struct device *dev, unsigned char *p_char)"
+      },
+      "configuration": "UART1, 9600 baud, 8 data bits, no parity, 1 stop bit (8N1)"
+    },
+    "headers": [
+      "zephyr/device.h",
+      "zephyr/drivers/uart.h",
+      "zephyr/kernel.h for timing calls where used"
+    ],
+    "return_semantics": "uart_poll_in is nonblocking: 0 means a byte was received and nonzero means no byte is available; poll_out returns void. Preserve fallible status from other operations."
+  },
+  "facts": [
+    {
+      "id": "binding",
+      "category": "binding",
+      "requirement": "Bind the uart1 device handle selected by DEVICE_DT_GET(DT_NODELABEL(uart1)); line format is handled as a separate fact.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 1,
+          "line_end": 75
+        },
+        {
+          "file": "evidence/rtos/tasks/zephyr__mhz19b/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 142
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 195,
+          "line_end": 216
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "category": "api_operations",
+      "requirement": "Provide uart_poll_out(const struct device *, unsigned char) for request transmission and uart_poll_in(const struct device *, unsigned char *) for response polling. uart_poll_in is nonblocking: 0 means a byte was received and nonzero means none; no blocking timeout is promised by that API.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 16,
+          "line_end": 31
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 195,
+          "line_end": 216
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/zephyr/uart_polling/pack.md",
+          "line_start": 1,
+          "line_end": 80
+        }
+      ]
+    },
+    {
+      "id": "status_handling",
+      "category": "return_semantics",
+      "requirement": "Preserve the fallible API status needed to detect or propagate bus/GPIO configuration and transaction failures; do not convert an error return into success.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 1,
+          "line_end": 75
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 195,
+          "line_end": 216
+        }
+      ]
+    },
+    {
+      "id": "uart_line_config",
+      "category": "configuration",
+      "requirement": "Use UART line configuration 9600 baud, 8 data bits, no parity, 1 stop bit (8N1).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__mhz19b/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 80
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 195,
+          "line_end": 214
+        }
+      ]
+    }
+  ]
+}

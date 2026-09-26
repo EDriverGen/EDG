@@ -1,0 +1,93 @@
+{
+  "task_package_id": "zephyr_generic_dt__w25q64jv__spi1_dma",
+  "rtos": "zephyr",
+  "rtos_bundle": "zephyr",
+  "board": "stm32f103_mini",
+  "board_alias": "zephyr_f103",
+  "integration": "public_driver_api_and_devicetree",
+  "integration_style": "zephyr_core_plus_public_driver_headers",
+  "mcu_family": "stm32f1",
+  "mcu": "stm32f103xb",
+  "bus_type": "spi",
+  "bus_instance": "spi1",
+  "bus_instance_kind": "devicetree_node_label",
+  "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(spi1))",
+  "bus_backend": "Zephyr STM32F1 SPI1 DMA",
+  "address_mode": "chip-select",
+  "mode": "dma",
+  "irq": "dma_completion",
+  "dma": "required",
+  "reset_gpio": null,
+  "power_gpio": null,
+  "fixed_attachment": {
+    "chip_select": "gpio_dt_spec from devicetree"
+  },
+  "device_attachment_context_id": "w25q64jv",
+  "device_addressing": {
+    "default": "spi1",
+    "selection_rule": "SPI CS# selected by board wiring."
+  },
+  "device_irq": "absent",
+  "dma_requirements": {
+    "task_package_id": "zephyr_generic_dt__w25q64jv__spi1_dma",
+    "mode": "dma",
+    "physical_bus": "spi",
+    "backend": "Zephyr STM32F1 SPI1 DMA",
+    "access_pattern": "rtos_bus_dma",
+    "candidate_transfer_apis": [
+      "spi_transceive"
+    ],
+    "dma_channels": {
+      "controller": "DMA1",
+      "tx": 3,
+      "rx": 2
+    },
+    "minimum_core_payload_bytes": 1,
+    "configuration_requirements": [
+      "Enable CONFIG_SPI_STM32_DMA and CONFIG_DMA.",
+      "Configure DMA1 RX channel 2 / TX channel 3 on spi1 in the existing board device tree.",
+      "Retain the original chip-select binding and SPI framing."
+    ],
+    "generation_requirements": [
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use DMA for memory read/program payloads. Preserve opcode/address framing, chip-select boundaries, write enable, page boundaries, and device busy waits."
+    ],
+    "device_scenarios": [
+      "Read contiguous 64-byte and 256-byte payloads.",
+      "Program within a 256-byte page and check readback.",
+      "Keep chip select asserted across command/address and payload phases."
+    ],
+    "validation_requirements": [
+      {
+        "id": "dma_payload",
+        "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+      },
+      {
+        "id": "completion_order",
+        "requirement": "Consume receive data and reuse buffers only after the required completion event."
+      },
+      {
+        "id": "error_and_timeout",
+        "requirement": "Return the specified error and release transfer state after failure or timeout."
+      },
+      {
+        "id": "repeat_operation",
+        "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+      }
+    ],
+    "source_evidence": [
+      "DriverGen/data/rtos/zephyr/drivers/spi/spi_stm32.c",
+      "DriverGen/data/rtos/zephyr/drivers/spi/Kconfig.stm32"
+    ]
+  },
+  "source_evidence": [
+    "DriverGen/data/rtos/zephyr/drivers/spi/spi_stm32.c",
+    "DriverGen/data/rtos/zephyr/drivers/spi/Kconfig.stm32"
+  ]
+}

@@ -1,0 +1,613 @@
+{
+  "device_id": "w25q64jv",
+  "bus_type": "spi",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "24-bit",
+    "addresses": [
+      {
+        "address": "0x000000",
+        "description": "Read Manufacturer/Device ID address must be all zeros.",
+        "is_default": true
+      },
+      {
+        "address": "0x000000",
+        "description": "Generic 24-bit memory, erase, program, security register, and read addressing.",
+        "is_default": false
+      },
+      {
+        "address": "0x001000",
+        "description": "Security register #1 address pattern in standard SPI.",
+        "is_default": false
+      },
+      {
+        "address": "0x002000",
+        "description": "Security register #2 address pattern in standard SPI.",
+        "is_default": false
+      },
+      {
+        "address": "0x003000",
+        "description": "Security register #3 address pattern in standard SPI.",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": [],
+  "read_channels": [],
+  "access_model": {
+    "kind": "spi_memory",
+    "address_bytes": 3,
+    "read_requires_pointer": false,
+    "direct_read_after_write": false,
+    "eval_class": "memory",
+    "notes": "SPI NOR Flash. Read: 0x03 + 3-byte addr. Write: 0x02 + 3-byte addr + data. Sector erase: 0x20 + 3-byte addr. Page program 256B max."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "read_memory",
+      "kind": "read",
+      "description": "SPI read: cmd 0x03 + 3-byte address + read data",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "spi1",
+            "bytes": [
+              "0x03",
+              "ADDR23_16",
+              "ADDR15_8",
+              "ADDR7_0"
+            ],
+            "length": 4,
+            "notes": "READ command + 3-byte address"
+          }
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "address": "spi1",
+            "length": 256,
+            "notes": "Read up to 256 data bytes"
+          }
+        }
+      ]
+    },
+    {
+      "flow_id": "write_page",
+      "kind": "write",
+      "description": "SPI page program: WREN -> cmd 0x02 + 3-byte addr + data -> wait BUSY",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "spi1",
+            "bytes": [
+              "0x06"
+            ],
+            "length": 1,
+            "notes": "Write enable"
+          }
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "spi1",
+            "bytes": [
+              "0x02",
+              "ADDR23_16",
+              "ADDR15_8",
+              "ADDR7_0",
+              "DATA..."
+            ],
+            "length": 260,
+            "notes": "Page program: cmd + 3-byte addr + up to 256 data bytes"
+          }
+        }
+      ]
+    },
+    {
+      "flow_id": "init",
+      "kind": "init",
+      "description": "Check JEDEC ID to verify chip presence",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "spi1",
+            "bytes": [
+              "0x9F"
+            ],
+            "length": 1,
+            "notes": "JEDEC ID command"
+          }
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "address": "spi1",
+            "length": 3,
+            "notes": "Expected: 0xEF 0x40 0x17 for W25Q64JV"
+          }
+        }
+      ]
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 8,
+    "signed": false,
+    "notes": "Raw byte stream from SPI flash. Addresses are 3-byte big-endian."
+  },
+  "registers_or_commands": [
+    {
+      "name": "READ_DATA",
+      "value": "0x03",
+      "access": "read",
+      "size": 1,
+      "description": "Read data bytes (up to 3-byte address, then data out)"
+    },
+    {
+      "name": "PAGE_PROGRAM",
+      "value": "0x02",
+      "access": "write",
+      "size": 1,
+      "description": "Page program (3-byte addr + up to 256 data bytes)"
+    },
+    {
+      "name": "SECTOR_ERASE_4K",
+      "value": "0x20",
+      "access": "write",
+      "size": 1,
+      "description": "4KB sector erase (3-byte addr)"
+    },
+    {
+      "name": "WRITE_ENABLE",
+      "value": "0x06",
+      "access": "write",
+      "size": 1,
+      "description": "Set WEL bit before program/erase"
+    },
+    {
+      "name": "READ_STATUS_1",
+      "value": "0x05",
+      "access": "read",
+      "size": 1,
+      "description": "Read status register 1 (BUSY, WEL, etc.)"
+    },
+    {
+      "name": "JEDEC_ID",
+      "value": "0x9F",
+      "access": "read",
+      "size": 1,
+      "description": "Read JEDEC manufacturer + device ID (3 bytes)"
+    }
+  ],
+  "bitfields": [
+    {
+      "name": "BUSY",
+      "register": "Status Register-1",
+      "bits": "S0",
+      "description": "Set during program/erase/write operations; clears when ready."
+    },
+    {
+      "name": "WEL",
+      "register": "Status Register-1",
+      "bits": "S1",
+      "description": "Write Enable Latch; set by Write Enable and cleared after write/erase operations."
+    },
+    {
+      "name": "BP0",
+      "register": "Status Register-1",
+      "bits": "S2",
+      "description": "Block protect bit."
+    },
+    {
+      "name": "BP1",
+      "register": "Status Register-1",
+      "bits": "S3",
+      "description": "Block protect bit."
+    },
+    {
+      "name": "BP2",
+      "register": "Status Register-1",
+      "bits": "S4",
+      "description": "Block protect bit."
+    },
+    {
+      "name": "SEC",
+      "register": "Status Register-1",
+      "bits": "S5",
+      "description": "Sector/block protect selector; 4KB sectors when set."
+    },
+    {
+      "name": "TB",
+      "register": "Status Register-1",
+      "bits": "S6",
+      "description": "Top/bottom block protect selector."
+    },
+    {
+      "name": "SRP",
+      "register": "Status Register-1",
+      "bits": "varies",
+      "description": "Status register protection bit; writable/lock behavior depends on SRL/SRP mode."
+    },
+    {
+      "name": "SRL",
+      "register": "Status Register-2",
+      "bits": "S8",
+      "description": "Status Register Protect Lock; can enforce power-supply lock-down or OTP mode."
+    },
+    {
+      "name": "QE",
+      "register": "Status Register-2",
+      "bits": "S9",
+      "description": "Quad Enable; enables Quad SPI and remaps /WP to IO2 and /HOLD to IO3 when set."
+    },
+    {
+      "name": "LB3-1",
+      "register": "Status Register-2",
+      "bits": "S13-S11",
+      "description": "Security register lock bits; OTP protect security registers."
+    },
+    {
+      "name": "CMP",
+      "register": "Status Register-2",
+      "bits": "S14",
+      "description": "Complement protect bit; reverses selected protection region."
+    },
+    {
+      "name": "SUS",
+      "register": "Status Register-1",
+      "bits": "S15",
+      "description": "Erase/program suspend status bit."
+    },
+    {
+      "name": "DRV0",
+      "register": "Status Register-3",
+      "bits": "S16",
+      "description": "Output driver strength control."
+    },
+    {
+      "name": "DRV1",
+      "register": "Status Register-3",
+      "bits": "S17",
+      "description": "Output driver strength control."
+    },
+    {
+      "name": "WPS",
+      "register": "Status Register-3",
+      "bits": "S18",
+      "description": "Selects status-register protection scheme versus individual block locks."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "After power-up, /CS must transition from high to low before a new instruction will be accepted."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait tPUW before issuing any write instruction after power-up."
+    },
+    {
+      "transaction": null,
+      "notes": "If using Quad SPI, ensure QE=1 before quad read/program commands; default QE depends on ordering option."
+    },
+    {
+      "transaction": null,
+      "notes": "For software reset, issue 66h then 99h in sequence; any other command between them cancels reset enable."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x03",
+          null,
+          null,
+          null
+        ],
+        "length": "DATA",
+        "pointer_target": null,
+        "notes": "Read Data opcode plus 24-bit address."
+      }
+    },
+    {
+      "transaction": null,
+      "notes": "For fast read variants, add the opcode-specific dummy clocks and use the appropriate data pins/IO width."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "vcc_to_cs_low",
+      "value": 20,
+      "unit": "us",
+      "condition": "power-up",
+      "notes": "VCC (min) to /CS Low"
+    },
+    {
+      "name": "write_instruction_delay_after_power_up",
+      "value": 5,
+      "unit": "ms",
+      "condition": "after power-up",
+      "notes": "Time Delay Before Write Instruction"
+    },
+    {
+      "name": "initialization_duration",
+      "value": 100,
+      "unit": "us",
+      "condition": "power cycle requirement",
+      "notes": "The minimum duration for ensuring initialization will occur"
+    },
+    {
+      "name": "power_down_entry_time",
+      "value": 3,
+      "unit": "us",
+      "condition": "after /CS high",
+      "notes": "/CS High to Power-down Mode"
+    },
+    {
+      "name": "standby_without_id_read",
+      "value": 3,
+      "unit": "us",
+      "condition": "after /CS high",
+      "notes": "/CS High to Standby Mode without ID Read"
+    },
+    {
+      "name": "standby_with_id_read",
+      "value": 1.8,
+      "unit": "us",
+      "condition": "after /CS high",
+      "notes": "/CS High to Standby Mode with ID Read"
+    },
+    {
+      "name": "suspend_latency",
+      "value": 20,
+      "unit": "us",
+      "condition": "after suspend",
+      "notes": "/CS High to next Instruction after Suspend"
+    },
+    {
+      "name": "reset_recovery_time",
+      "value": 30,
+      "unit": "us",
+      "condition": "after reset",
+      "notes": "/CS High to next Instruction after Reset"
+    },
+    {
+      "name": "reset_pin_low_period",
+      "value": 1,
+      "unit": "us",
+      "condition": "hardware reset",
+      "notes": "/RESET pin Low period to reset the device"
+    },
+    {
+      "name": "write_status_time",
+      "value": 15,
+      "unit": "ms",
+      "condition": "non-volatile status write",
+      "notes": "Write Status Register Time"
+    },
+    {
+      "name": "page_program_time",
+      "value": 3,
+      "unit": "ms",
+      "condition": "page program",
+      "notes": "Page Program Time"
+    },
+    {
+      "name": "sector_erase_time",
+      "value": 400,
+      "unit": "ms",
+      "condition": "4KB sector erase",
+      "notes": "Sector Erase Time (4KB)"
+    },
+    {
+      "name": "block_erase_32k_time",
+      "value": 1600,
+      "unit": "ms",
+      "condition": "32KB block erase",
+      "notes": "Block Erase Time (32KB)"
+    },
+    {
+      "name": "block_erase_64k_time",
+      "value": 2000,
+      "unit": "ms",
+      "condition": "64KB block erase",
+      "notes": "Block Erase Time (64KB)"
+    },
+    {
+      "name": "chip_erase_time",
+      "value": 100,
+      "unit": "s",
+      "condition": "chip erase",
+      "notes": "Chip Erase Time"
+    },
+    {
+      "name": "page_program_setup",
+      "value": 50,
+      "unit": "ns",
+      "condition": "erase/program/write deselect timing",
+      "notes": "/CS Deselect Time (for Erase or Program or Write)"
+    },
+    {
+      "name": "read_deselect_time",
+      "value": 10,
+      "unit": "ns",
+      "condition": "read deselect timing",
+      "notes": "/CS Deselect Time (for Read)"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "memory_bytes_passthrough",
+      "formula": "Raw payload bytes are returned unchanged; no numeric conversion is applied.",
+      "integer_approximation_expression": null
+    },
+    {
+      "name": "jedec_device_id_passthrough",
+      "formula": "JEDEC manufacturer/device ID bytes are returned as raw identity values.",
+      "integer_approximation_expression": null
+    },
+    {
+      "name": "status_register_bits_passthrough",
+      "formula": "Status-register bits are consumed as control/status flags, not converted to a physical unit.",
+      "integer_approximation_expression": null
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "Read Status Register or Read Data issued while BUSY=1 may return status only or be ignored depending on opcode; driver must poll BUSY before expecting array/data completion.",
+      "detection": "BUSY bit in SR1 remains set after program/erase/write command or read opcode returns no progress within the operation timeout.",
+      "driver_action": "poll until ready; if timeout expires, abort transaction and report -ETIMEDOUT"
+    },
+    {
+      "condition": "Protected region targeted by Page Program, Erase, or Security Register write is ignored by the device.",
+      "detection": "Write completes with BUSY behavior but target remains unchanged; protection bits/lock bits indicate coverage.",
+      "driver_action": "surface write-protect error and return -EACCES"
+    },
+    {
+      "condition": "WEL is not set before a write/erase/status/security operation.",
+      "detection": "SR1.WEL=0 before issuing protected write opcode.",
+      "driver_action": "do not issue command; return -EPERM"
+    },
+    {
+      "condition": "Quad opcode used while QE=0.",
+      "detection": "SR2.QE=0 before 32h/6Bh/BBh/EBh/92h/94h quad access.",
+      "driver_action": "fall back to standard SPI if supported, otherwise return -EOPNOTSUPP"
+    },
+    {
+      "condition": "Reset sequence interrupted by any command other than 99h after 66h.",
+      "detection": "Enable Reset state is canceled by intervening instruction.",
+      "driver_action": "restart reset sequence from 66h; if unexpected state persists, reinitialize"
+    },
+    {
+      "condition": "Release Power-down / Device ID while an erase/program/write cycle is active is ignored.",
+      "detection": "BUSY=1 when ABh is sent.",
+      "driver_action": "retry after BUSY clears or report busy state to caller"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "standby",
+      "description": "Normal operation after power-up; standby current applies when /CS is high and no internal cycle is running."
+    },
+    {
+      "name": "active",
+      "description": "Device selected with /CS low; instructions can be written and data read."
+    },
+    {
+      "name": "power_down",
+      "description": "Deep power-down entered by B9h; only ABh is recognized until released."
+    },
+    {
+      "name": "reset_state",
+      "description": "After software or hardware reset, device returns to power-on state and volatile settings are lost."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "w25q64jv",
+      "page": 49,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code '9Fh'."
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 49,
+      "snippet": "The JEDEC assigned Manufacturer ID byte for Winbond (EFh) and two Device ID bytes"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 50,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code '5Ah' followed by a 24-bit address (A23-A0)"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 50,
+      "snippet": "Eight 'dummy' clocks are also required before the SFDP register contents are shifted out"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 51,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code '44h' followed by a 24-bit address (A23-A0)"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 52,
+      "snippet": "The instruction is initiated by driving the /CS pin low and then shifting the instruction code '48h' followed by a 24-bit address (A23-A0) and eight 'dummy' clocks"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 25,
+      "snippet": "The instruction is entered by driving /CS low and shifting the instruction code '05h' for Status Register-1, '35h' for Status Register-2 or '15h' for Status Register-3"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 29,
+      "snippet": "The instruction is initiated by driving the /CS pin low and then shifting the instruction code '03h' followed by a 24-bit address (A23-A0)"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 34,
+      "snippet": "The instruction is initiated by driving the /CS pin low then shifting the instruction code '02h' followed by a 24-bit address (A23-A0) and at least one data byte"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 37,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code '20h' followed a 24-bit sector address (A23-A0)."
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 39,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code 'D8h' followed a 24-bit block address (A23-A0)."
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 41,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code 'C7h' or '60h'."
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 43,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code 'B9h' as shown in Figure 37."
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 44,
+      "snippet": "After /CS is driven high, the power-down state will entered within the time duration of tDP"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 46,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code '90h' followed by a 24-bit address (A23-A0) of 000000h."
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 48,
+      "snippet": "The instruction is initiated by driving the /CS pin low and shifting the instruction code '94h' followed by a four clock dummy cycles and then a 24-bit address (A23-A0) of 000000h"
+    },
+    {
+      "source_id": "w25q64jv",
+      "page": 57,
+      "snippet": "A Write Enable instruction must be executed before the device will accept the Global Block/Sector Lock Instruction (Status Register bit WEL= 1)."
+    }
+  ],
+  "requires_human": [
+    "Confirm whether board policy prefers 9Fh JEDEC ID or 90h manufacturer/device ID as the canonical probe path; both are documented.",
+    "Confirm package/ordering-option-dependent QE default and whether the target part number is IM/JM or IQ/JQ so quad-mode initialization can be fixed correctly.",
+    "Confirm whether the target package has a dedicated /RESET pin; the excerpt notes package-dependent availability, and the target device family includes both hardware-reset and software-reset variants.",
+    "Confirm exact mapping of status-register S-bits to byte layout for any driver that needs bitwise writes; the excerpt uses S0..S23 notation and also 01h/31h/11h legacy behavior.",
+    "Confirm whether the device policy should use individual block/sector locks (WPS=1) or CMP/TB/BP protection (WPS=0) as the default write-protection scheme.",
+    "The excerpt says three security registers, while one sentence mentions 'four security registers'; use the three-register interpretation unless the full datasheet or system requirement says otherwise."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "memory_size_bytes": 8388608,
+  "memory_page_bytes": 256
+}

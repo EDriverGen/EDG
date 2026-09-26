@@ -1,0 +1,1494 @@
+{
+  "device_id": "ds3231",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "fixed",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x68",
+        "description": "I2C slave address (1101000)",
+        "is_default": true
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 19,
+    "addressing": "1-byte",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Address pointer wraps from 12h to 00h on multibyte access."
+  },
+  "read_channels": [
+    {
+      "id": "seconds",
+      "raw_type": "uint8",
+      "physical_unit": "bcd",
+      "flow_id": "read_time",
+      "source_bytes": [
+        "seconds_reg"
+      ],
+      "formula_id": null,
+      "notes": "BCD format, range 00-59"
+    },
+    {
+      "id": "minutes",
+      "raw_type": "uint8",
+      "physical_unit": "bcd",
+      "flow_id": "read_time",
+      "source_bytes": [
+        "minutes_reg"
+      ],
+      "formula_id": null,
+      "notes": "BCD format, range 00-59"
+    },
+    {
+      "id": "hours",
+      "raw_type": "uint8",
+      "physical_unit": "bcd",
+      "flow_id": "read_time",
+      "source_bytes": [
+        "hours_reg"
+      ],
+      "formula_id": null,
+      "notes": "12/24 hour mode, BCD"
+    },
+    {
+      "id": "day",
+      "raw_type": "uint8",
+      "physical_unit": "day_of_week",
+      "flow_id": "read_time",
+      "source_bytes": [
+        "day_reg"
+      ],
+      "formula_id": null,
+      "notes": "Day of week, 1-7"
+    },
+    {
+      "id": "date",
+      "raw_type": "uint8",
+      "physical_unit": "bcd",
+      "flow_id": "read_time",
+      "source_bytes": [
+        "date_reg"
+      ],
+      "formula_id": null,
+      "notes": "BCD format, range 01-31"
+    },
+    {
+      "id": "month",
+      "raw_type": "uint8",
+      "physical_unit": "bcd",
+      "flow_id": "read_time",
+      "source_bytes": [
+        "month_reg"
+      ],
+      "formula_id": null,
+      "notes": "BCD format, range 01-12, includes century bit"
+    },
+    {
+      "id": "year",
+      "raw_type": "uint8",
+      "physical_unit": "bcd",
+      "flow_id": "read_time",
+      "source_bytes": [
+        "year_reg"
+      ],
+      "formula_id": null,
+      "notes": "BCD format, range 00-99"
+    },
+    {
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "quarter_degC",
+      "flow_id": "read_temperature",
+      "source_bytes": [
+        "temp_msb",
+        "temp_lsb"
+      ],
+      "formula_id": "temp_formula",
+      "notes": "10-bit two's complement, 0.25°C resolution"
+    },
+    {
+      "id": "alarm1",
+      "raw_type": "bytes",
+      "physical_unit": "alarm_settings",
+      "flow_id": "set_alarm1",
+      "source_bytes": null,
+      "formula_id": null,
+      "notes": "Alarm 1 registers 07h-0Ah"
+    },
+    {
+      "id": "alarm2",
+      "raw_type": "bytes",
+      "physical_unit": "alarm_settings",
+      "flow_id": "set_alarm2",
+      "source_bytes": null,
+      "formula_id": null,
+      "notes": "Alarm 2 registers 0Bh-0Dh"
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "Write pointer byte, then read/write data bytes; auto-increment after each byte."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "read_time",
+      "kind": "read",
+      "channels": [
+        "seconds",
+        "minutes",
+        "hours",
+        "day",
+        "date",
+        "month",
+        "year"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x00"
+            ],
+            "length": 7,
+            "pointer_target": "Seconds"
+          },
+          "notes": "Set pointer to 00h, then read 7 bytes for time registers."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "seconds",
+          "byte_source": "byte0",
+          "formula_id": null,
+          "unit": "bcd"
+        },
+        {
+          "channel": "minutes",
+          "byte_source": "byte1",
+          "formula_id": null,
+          "unit": "bcd"
+        },
+        {
+          "channel": "hours",
+          "byte_source": "byte2",
+          "formula_id": null,
+          "unit": "bcd"
+        },
+        {
+          "channel": "day",
+          "byte_source": "byte3",
+          "formula_id": null,
+          "unit": "day_of_week"
+        },
+        {
+          "channel": "date",
+          "byte_source": "byte4",
+          "formula_id": null,
+          "unit": "bcd"
+        },
+        {
+          "channel": "month",
+          "byte_source": "byte5",
+          "formula_id": null,
+          "unit": "bcd"
+        },
+        {
+          "channel": "year",
+          "byte_source": "byte6",
+          "formula_id": null,
+          "unit": "bcd"
+        }
+      ],
+      "notes": "Time registers are read from secondary buffers to avoid update during read."
+    },
+    {
+      "flow_id": "write_time",
+      "kind": "write",
+      "channels": [
+        "seconds",
+        "minutes",
+        "hours",
+        "day",
+        "date",
+        "month",
+        "year"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x00",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "pointer_target": "Seconds"
+          },
+          "notes": "Write pointer 00h then 7 bytes of time data. Null placeholders for runtime values."
+        }
+      ],
+      "outputs": [],
+      "notes": "Write seconds register first resets countdown chain; remaining registers must be written within 1 second."
+    },
+    {
+      "flow_id": "read_temperature",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x0E",
+              "0x20"
+            ],
+            "pointer_target": "Control"
+          },
+          "notes": "Set CONV bit (bit 5) to 1 to start temperature conversion."
+        },
+        {
+          "op": "poll_until",
+          "register": "Control",
+          "mask": "0x20",
+          "value": "0x00",
+          "timeout_ms": 200,
+          "interval_ms": 10,
+          "notes": "Poll CONV bit until it goes to 0, indicating conversion complete."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x11"
+            ],
+            "length": 2,
+            "pointer_target": "Temperature MSB"
+          },
+          "notes": "Set pointer to 11h, then read 2 bytes: MSB and LSB of temperature."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8",
+          "formula_id": "temp_formula",
+          "unit": "quarter_degC"
+        }
+      ],
+      "notes": "Temperature registers are read-only. Conversion triggered by setting CONV bit."
+    },
+    {
+      "flow_id": "set_alarm1",
+      "kind": "write",
+      "channels": [
+        "alarm1"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x07",
+              null,
+              null,
+              null,
+              null
+            ],
+            "pointer_target": "Alarm 1 Seconds"
+          },
+          "notes": "Write pointer 07h then 4 bytes for alarm 1 registers."
+        }
+      ],
+      "outputs": [],
+      "notes": "Alarm 1 registers: 07h (seconds), 08h (minutes), 09h (hours), 0Ah (day/date)."
+    },
+    {
+      "flow_id": "set_alarm2",
+      "kind": "write",
+      "channels": [
+        "alarm2"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x0B",
+              null,
+              null,
+              null
+            ],
+            "pointer_target": "Alarm 2 Minutes"
+          },
+          "notes": "Write pointer 0Bh then 3 bytes for alarm 2 registers."
+        }
+      ],
+      "outputs": [],
+      "notes": "Alarm 2 registers: 0Bh (minutes), 0Ch (hours), 0Dh (day/date)."
+    },
+    {
+      "flow_id": "clear_alarm_flags",
+      "kind": "other",
+      "channels": [
+        "alarm1",
+        "alarm2"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x0F",
+              "0x00"
+            ],
+            "pointer_target": "Status"
+          },
+          "notes": "Write 0 to status register to clear A1F and A2F bits. Only bits written to 0 are cleared."
+        }
+      ],
+      "outputs": [],
+      "notes": "Alarm flags are cleared by writing logic 0 to the respective bit."
+    },
+    {
+      "flow_id": "force_temperature_conversion",
+      "kind": "other",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x0E",
+              "0x20"
+            ],
+            "pointer_target": "Control"
+          },
+          "notes": "Set CONV bit (bit 5) to 1 to start temperature conversion."
+        },
+        {
+          "op": "poll_until",
+          "register": "Control",
+          "mask": "0x20",
+          "value": "0x00",
+          "timeout_ms": 200,
+          "interval_ms": 10,
+          "notes": "Poll CONV bit until it goes to 0, indicating conversion complete."
+        }
+      ],
+      "outputs": [],
+      "notes": "Conversion takes 125-200 ms. BSY bit goes high for ~2ms after CONV set."
+    },
+    {
+      "flow_id": "i2c_resync",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "SCL",
+          "notes": "Toggle SCL until SDA is observed high."
+        },
+        {
+          "op": "set_signal",
+          "signal": "SDA",
+          "notes": "Pull SDA low while SCL high to generate START condition."
+        }
+      ],
+      "outputs": [],
+      "notes": "Resynchronize I2C bus after microcontroller reset."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 10,
+    "signed": true,
+    "right_shift": 6,
+    "sign_extend_from_bit": 9,
+    "notes": "Temperature: MSB (11h) is integer part, LSB (12h) upper 2 bits are fractional (0.25°C resolution)."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Seconds",
+      "value": "0x00",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Seconds register, BCD format, range 00-59"
+    },
+    {
+      "name": "Minutes",
+      "value": "0x01",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Minutes register, BCD format, range 00-59"
+    },
+    {
+      "name": "Hours",
+      "value": "0x02",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Hours register, 12/24 hour mode, range 1-12+AM/PM or 00-23"
+    },
+    {
+      "name": "Day",
+      "value": "0x03",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Day of week register, range 1-7"
+    },
+    {
+      "name": "Date",
+      "value": "0x04",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Date register, BCD format, range 01-31"
+    },
+    {
+      "name": "Month/Century",
+      "value": "0x05",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Month register with century bit, range 01-12 + Century"
+    },
+    {
+      "name": "Year",
+      "value": "0x06",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Year register, BCD format, range 00-99"
+    },
+    {
+      "name": "Alarm 1 Seconds",
+      "value": "0x07",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Alarm 1 seconds register, BCD format, range 00-59"
+    },
+    {
+      "name": "Alarm 1 Minutes",
+      "value": "0x08",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Alarm 1 minutes register, BCD format, range 00-59"
+    },
+    {
+      "name": "Alarm 1 Hours",
+      "value": "0x09",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Alarm 1 hours register, 12/24 hour mode, range 1-12+AM/PM or 00-23"
+    },
+    {
+      "name": "Alarm 1 Day/Date",
+      "value": "0x0A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Alarm 1 day or date register, range 1-7 or 1-31"
+    },
+    {
+      "name": "Alarm 2 Minutes",
+      "value": "0x0B",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Alarm 2 minutes register, BCD format, range 00-59"
+    },
+    {
+      "name": "Alarm 2 Hours",
+      "value": "0x0C",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Alarm 2 hours register, 12/24 hour mode, range 1-12+AM/PM or 00-23"
+    },
+    {
+      "name": "Alarm 2 Day/Date",
+      "value": "0x0D",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Alarm 2 day or date register, range 1-7 or 1-31"
+    },
+    {
+      "name": "Control",
+      "value": "0x0E",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Control register: EOSC, BBSQW, CONV, RS2, RS1, INTCN, A2IE, A1IE"
+    },
+    {
+      "name": "Status",
+      "value": "0x0F",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Status register: OSF, EN32kHz, BSY, A2F, A1F"
+    },
+    {
+      "name": "Aging Offset",
+      "value": "0x10",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Aging offset register, two's complement, sign + 7 data bits"
+    },
+    {
+      "name": "Temperature MSB",
+      "value": "0x11",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Temperature register upper byte (integer part), two's complement"
+    },
+    {
+      "name": "Temperature LSB",
+      "value": "0x12",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Temperature register lower byte (fractional part), upper 2 bits valid"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Seconds",
+      "name": "10 Seconds",
+      "bits": "6:4",
+      "roles": [
+        "data"
+      ],
+      "description": "Tens of seconds in BCD"
+    },
+    {
+      "register": "Seconds",
+      "name": "Seconds",
+      "bits": "3:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Units of seconds in BCD"
+    },
+    {
+      "register": "Minutes",
+      "name": "10 Minutes",
+      "bits": "6:4",
+      "roles": [
+        "data"
+      ],
+      "description": "Tens of minutes in BCD"
+    },
+    {
+      "register": "Minutes",
+      "name": "Minutes",
+      "bits": "3:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Units of minutes in BCD"
+    },
+    {
+      "register": "Hours",
+      "name": "12/24",
+      "bits": "6",
+      "roles": [
+        "config"
+      ],
+      "description": "12-hour (1) or 24-hour (0) mode select"
+    },
+    {
+      "register": "Hours",
+      "name": "AM/PM or 20 Hour",
+      "bits": "5",
+      "roles": [
+        "data"
+      ],
+      "description": "In 12-hour mode: AM/PM (1=PM); in 24-hour mode: 20-hour bit"
+    },
+    {
+      "register": "Hours",
+      "name": "10 Hour",
+      "bits": "4",
+      "roles": [
+        "data"
+      ],
+      "description": "Tens of hours (0-2)"
+    },
+    {
+      "register": "Hours",
+      "name": "Hour",
+      "bits": "3:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Units of hours"
+    },
+    {
+      "register": "Day",
+      "name": "Day",
+      "bits": "2:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Day of week (1-7)"
+    },
+    {
+      "register": "Date",
+      "name": "10 Date",
+      "bits": "5:4",
+      "roles": [
+        "data"
+      ],
+      "description": "Tens of date in BCD"
+    },
+    {
+      "register": "Date",
+      "name": "Date",
+      "bits": "3:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Units of date in BCD"
+    },
+    {
+      "register": "Month/Century",
+      "name": "Century",
+      "bits": "7",
+      "roles": [
+        "data"
+      ],
+      "description": "Century bit, toggles when year overflows from 99 to 00"
+    },
+    {
+      "register": "Month/Century",
+      "name": "10 Month",
+      "bits": "4",
+      "roles": [
+        "data"
+      ],
+      "description": "Tens of month in BCD"
+    },
+    {
+      "register": "Month/Century",
+      "name": "Month",
+      "bits": "3:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Units of month in BCD"
+    },
+    {
+      "register": "Year",
+      "name": "10 Year",
+      "bits": "7:4",
+      "roles": [
+        "data"
+      ],
+      "description": "Tens of year in BCD"
+    },
+    {
+      "register": "Year",
+      "name": "Year",
+      "bits": "3:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Units of year in BCD"
+    },
+    {
+      "register": "Alarm 1 Seconds",
+      "name": "A1M1",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 1 mask bit for seconds"
+    },
+    {
+      "register": "Alarm 1 Seconds",
+      "name": "10 Seconds",
+      "bits": "6:4",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Tens of seconds for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Seconds",
+      "name": "Seconds",
+      "bits": "3:0",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Units of seconds for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Minutes",
+      "name": "A1M2",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 1 mask bit for minutes"
+    },
+    {
+      "register": "Alarm 1 Minutes",
+      "name": "10 Minutes",
+      "bits": "6:4",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Tens of minutes for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Minutes",
+      "name": "Minutes",
+      "bits": "3:0",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Units of minutes for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Hours",
+      "name": "A1M3",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 1 mask bit for hours"
+    },
+    {
+      "register": "Alarm 1 Hours",
+      "name": "12/24",
+      "bits": "6",
+      "roles": [
+        "config"
+      ],
+      "description": "12/24 hour mode for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Hours",
+      "name": "AM/PM or 20 Hour",
+      "bits": "5",
+      "roles": [
+        "threshold"
+      ],
+      "description": "AM/PM or 20-hour bit for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Hours",
+      "name": "10 Hour",
+      "bits": "4",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Tens of hours for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Hours",
+      "name": "Hour",
+      "bits": "3:0",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Units of hours for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Day/Date",
+      "name": "A1M4",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 1 mask bit for day/date"
+    },
+    {
+      "register": "Alarm 1 Day/Date",
+      "name": "DY/DT",
+      "bits": "6",
+      "roles": [
+        "config"
+      ],
+      "description": "Day (1) or Date (0) select for alarm 1"
+    },
+    {
+      "register": "Alarm 1 Day/Date",
+      "name": "10 Date",
+      "bits": "5:4",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Tens of date for alarm 1 (when DY/DT=0)"
+    },
+    {
+      "register": "Alarm 1 Day/Date",
+      "name": "Day/Date",
+      "bits": "3:0",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Day (1-7) or Date (1-31) for alarm 1"
+    },
+    {
+      "register": "Alarm 2 Minutes",
+      "name": "A2M2",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 2 mask bit for minutes"
+    },
+    {
+      "register": "Alarm 2 Minutes",
+      "name": "10 Minutes",
+      "bits": "6:4",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Tens of minutes for alarm 2"
+    },
+    {
+      "register": "Alarm 2 Minutes",
+      "name": "Minutes",
+      "bits": "3:0",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Units of minutes for alarm 2"
+    },
+    {
+      "register": "Alarm 2 Hours",
+      "name": "A2M3",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 2 mask bit for hours"
+    },
+    {
+      "register": "Alarm 2 Hours",
+      "name": "12/24",
+      "bits": "6",
+      "roles": [
+        "config"
+      ],
+      "description": "12/24 hour mode for alarm 2"
+    },
+    {
+      "register": "Alarm 2 Hours",
+      "name": "AM/PM or 20 Hour",
+      "bits": "5",
+      "roles": [
+        "threshold"
+      ],
+      "description": "AM/PM or 20-hour bit for alarm 2"
+    },
+    {
+      "register": "Alarm 2 Hours",
+      "name": "10 Hour",
+      "bits": "4",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Tens of hours for alarm 2"
+    },
+    {
+      "register": "Alarm 2 Hours",
+      "name": "Hour",
+      "bits": "3:0",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Units of hours for alarm 2"
+    },
+    {
+      "register": "Alarm 2 Day/Date",
+      "name": "A2M4",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 2 mask bit for day/date"
+    },
+    {
+      "register": "Alarm 2 Day/Date",
+      "name": "DY/DT",
+      "bits": "6",
+      "roles": [
+        "config"
+      ],
+      "description": "Day (1) or Date (0) select for alarm 2"
+    },
+    {
+      "register": "Alarm 2 Day/Date",
+      "name": "10 Date",
+      "bits": "5:4",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Tens of date for alarm 2 (when DY/DT=0)"
+    },
+    {
+      "register": "Alarm 2 Day/Date",
+      "name": "Day/Date",
+      "bits": "3:0",
+      "roles": [
+        "threshold"
+      ],
+      "description": "Day (1-7) or Date (1-31) for alarm 2"
+    },
+    {
+      "register": "Control",
+      "name": "EOSC",
+      "bits": "7",
+      "roles": [
+        "config"
+      ],
+      "description": "Enable Oscillator: 0=start, 1=stop when on VBAT"
+    },
+    {
+      "register": "Control",
+      "name": "BBSQW",
+      "bits": "6",
+      "roles": [
+        "config"
+      ],
+      "description": "Battery-Backed Square-Wave Enable"
+    },
+    {
+      "register": "Control",
+      "name": "CONV",
+      "bits": "5",
+      "roles": [
+        "trigger"
+      ],
+      "description": "Convert Temperature: 1 forces temperature conversion"
+    },
+    {
+      "register": "Control",
+      "name": "RS2",
+      "bits": "4",
+      "roles": [
+        "config"
+      ],
+      "description": "Rate Select bit 2 for square-wave frequency"
+    },
+    {
+      "register": "Control",
+      "name": "RS1",
+      "bits": "3",
+      "roles": [
+        "config"
+      ],
+      "description": "Rate Select bit 1 for square-wave frequency"
+    },
+    {
+      "register": "Control",
+      "name": "INTCN",
+      "bits": "2",
+      "roles": [
+        "config"
+      ],
+      "description": "Interrupt Control: 0=square wave, 1=alarm interrupt"
+    },
+    {
+      "register": "Control",
+      "name": "A2IE",
+      "bits": "1",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 2 Interrupt Enable"
+    },
+    {
+      "register": "Control",
+      "name": "A1IE",
+      "bits": "0",
+      "roles": [
+        "config"
+      ],
+      "description": "Alarm 1 Interrupt Enable"
+    },
+    {
+      "register": "Status",
+      "name": "OSF",
+      "bits": "7",
+      "roles": [
+        "status"
+      ],
+      "description": "Oscillator Stop Flag"
+    },
+    {
+      "register": "Status",
+      "name": "EN32kHz",
+      "bits": "3",
+      "roles": [
+        "config"
+      ],
+      "description": "Enable 32kHz Output"
+    },
+    {
+      "register": "Status",
+      "name": "BSY",
+      "bits": "2",
+      "roles": [
+        "status"
+      ],
+      "description": "Busy flag for TCXO conversion"
+    },
+    {
+      "register": "Status",
+      "name": "A2F",
+      "bits": "1",
+      "roles": [
+        "status",
+        "clear"
+      ],
+      "description": "Alarm 2 Flag"
+    },
+    {
+      "register": "Status",
+      "name": "A1F",
+      "bits": "0",
+      "roles": [
+        "status",
+        "clear"
+      ],
+      "description": "Alarm 1 Flag"
+    },
+    {
+      "register": "Aging Offset",
+      "name": "Sign",
+      "bits": "7",
+      "roles": [
+        "coefficient"
+      ],
+      "description": "Sign bit for aging offset"
+    },
+    {
+      "register": "Aging Offset",
+      "name": "Data",
+      "bits": "6:0",
+      "roles": [
+        "coefficient"
+      ],
+      "description": "Aging offset data bits"
+    },
+    {
+      "register": "Temperature MSB",
+      "name": "Sign",
+      "bits": "7",
+      "roles": [
+        "result"
+      ],
+      "description": "Sign bit for temperature"
+    },
+    {
+      "register": "Temperature MSB",
+      "name": "Data",
+      "bits": "6:0",
+      "roles": [
+        "result"
+      ],
+      "description": "Integer part of temperature"
+    },
+    {
+      "register": "Temperature LSB",
+      "name": "Data",
+      "bits": "7:6",
+      "roles": [
+        "result"
+      ],
+      "description": "Fractional part of temperature (0.25°C resolution)"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up default: time registers reset to 01/01/00 01 00:00:00 (DD/MM/YY DOW HH:MM:SS). Control register POR: EOSC=0, BBSQW=0, CONV=0, RS2=1, RS1=1, INTCN=1, A2IE=0, A1IE=0. Status register POR: OSF=1, EN32kHz=1, BSY=X, A2F=X, A1F=X."
+    },
+    {
+      "transaction": null,
+      "notes": "Oscillator starts when VCC exceeds VPF or valid I2C address written. Typical startup <1s. First temperature conversion occurs ~2s after power-up or address write."
+    },
+    {
+      "transaction": null,
+      "notes": "If using battery backup, ensure EOSC=0 to keep oscillator running on VBAT."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 7,
+        "pointer_target": "Seconds"
+      },
+      "notes": "Set pointer to 00h, then read 7 bytes for time registers (seconds, minutes, hours, day, date, month, year)."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x11"
+        ],
+        "length": 2,
+        "pointer_target": "Temperature MSB"
+      },
+      "notes": "Set pointer to 11h, then read 2 bytes for temperature (MSB and LSB)."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "scl_clock_frequency_fast",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Fast mode",
+      "notes": "SCL Clock Frequency"
+    },
+    {
+      "name": "scl_clock_frequency_standard",
+      "value": 100,
+      "unit": "kHz",
+      "condition": "Standard mode",
+      "notes": "SCL Clock Frequency"
+    },
+    {
+      "name": "bus_free_time_fast",
+      "value": 1.3,
+      "unit": "us",
+      "condition": "Fast mode",
+      "notes": "Bus Free Time Between STOP and START Conditions"
+    },
+    {
+      "name": "bus_free_time_standard",
+      "value": 4.7,
+      "unit": "us",
+      "condition": "Standard mode",
+      "notes": "Bus Free Time Between STOP and START Conditions"
+    },
+    {
+      "name": "hold_time_start_fast",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "Fast mode",
+      "notes": "Hold Time (Repeated) START Condition"
+    },
+    {
+      "name": "hold_time_start_standard",
+      "value": 4.0,
+      "unit": "us",
+      "condition": "Standard mode",
+      "notes": "Hold Time (Repeated) START Condition"
+    },
+    {
+      "name": "low_period_scl_fast",
+      "value": 1.3,
+      "unit": "us",
+      "condition": "Fast mode",
+      "notes": "Low Period of SCL Clock"
+    },
+    {
+      "name": "low_period_scl_standard",
+      "value": 4.7,
+      "unit": "us",
+      "condition": "Standard mode",
+      "notes": "Low Period of SCL Clock"
+    },
+    {
+      "name": "high_period_scl_fast",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "Fast mode",
+      "notes": "High Period of SCL Clock"
+    },
+    {
+      "name": "high_period_scl_standard",
+      "value": 4.0,
+      "unit": "us",
+      "condition": "Standard mode",
+      "notes": "High Period of SCL Clock"
+    },
+    {
+      "name": "data_hold_time_fast_max",
+      "value": 0.9,
+      "unit": "us",
+      "condition": "Fast mode",
+      "notes": "Data Hold Time"
+    },
+    {
+      "name": "data_hold_time_standard_max",
+      "value": 0.9,
+      "unit": "us",
+      "condition": "Standard mode",
+      "notes": "Data Hold Time"
+    },
+    {
+      "name": "data_setup_time_fast",
+      "value": 100,
+      "unit": "ns",
+      "condition": "Fast mode",
+      "notes": "Data Setup Time"
+    },
+    {
+      "name": "data_setup_time_standard",
+      "value": 250,
+      "unit": "ns",
+      "condition": "Standard mode",
+      "notes": "Data Setup Time"
+    },
+    {
+      "name": "start_setup_time_fast",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "Fast mode",
+      "notes": "START Setup Time"
+    },
+    {
+      "name": "start_setup_time_standard",
+      "value": 4.7,
+      "unit": "us",
+      "condition": "Standard mode",
+      "notes": "START Setup Time"
+    },
+    {
+      "name": "rise_time_sda_scl_fast",
+      "value": 300,
+      "unit": "ns",
+      "condition": "Fast mode",
+      "notes": "Rise Time of Both SDA and SCL Signals"
+    },
+    {
+      "name": "rise_time_sda_scl_standard",
+      "value": 1000,
+      "unit": "ns",
+      "condition": "Standard mode",
+      "notes": "Rise Time of Both SDA and SCL Signals"
+    },
+    {
+      "name": "fall_time_sda_scl_fast",
+      "value": 300,
+      "unit": "ns",
+      "condition": "Fast mode",
+      "notes": "Fall Time of Both SDA and SCL Signals"
+    },
+    {
+      "name": "fall_time_sda_scl_standard",
+      "value": 300,
+      "unit": "ns",
+      "condition": "Standard mode",
+      "notes": "Fall Time of Both SDA and SCL Signals"
+    },
+    {
+      "name": "stop_setup_time_fast",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "Fast mode",
+      "notes": "Setup Time for STOP Condition"
+    },
+    {
+      "name": "stop_setup_time_standard",
+      "value": 4.7,
+      "unit": "us",
+      "condition": "Standard mode",
+      "notes": "Setup Time for STOP Condition"
+    },
+    {
+      "name": "capacitive_load_bus",
+      "value": 400,
+      "unit": "pF",
+      "condition": "",
+      "notes": "Capacitive Load for Each Bus Line"
+    },
+    {
+      "name": "pushbutton_debounce",
+      "value": 250,
+      "unit": "ms",
+      "condition": "",
+      "notes": "Pushbutton Debounce"
+    },
+    {
+      "name": "reset_active_time",
+      "value": 250,
+      "unit": "ms",
+      "condition": "",
+      "notes": "Reset Active Time"
+    },
+    {
+      "name": "temperature_conversion_time",
+      "value": 200,
+      "unit": "ms",
+      "condition": "",
+      "notes": "Temperature Conversion Time (max)"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temp_formula",
+      "formula": "Temperature (quarter degrees) = (MSB << 2) | (LSB >> 6); if sign bit set, subtract 512. Result in quarter degrees Celsius.",
+      "integer_approximation_expression": {
+        "expression": "(((temp_msb << 2) | (temp_lsb >> 6)) & 0x1FF) - (((temp_msb << 2) | (temp_lsb >> 6)) & 0x200)",
+        "inputs": [
+          {
+            "name": "temp_msb",
+            "byte_source": "temp_msb:8",
+            "description": "Temperature MSB register (11h), 8-bit two's complement integer part."
+          },
+          {
+            "name": "temp_lsb",
+            "byte_source": "temp_lsb:8",
+            "description": "Temperature LSB register (12h), upper 2 bits are fractional part."
+          }
+        ],
+        "output": {
+          "name": "temperature_quarter_deg",
+          "unit": "quarter_degC"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "i2c_nack",
+      "description": "I2C slave does not acknowledge address or data byte.",
+      "detection": "NACK received after slave address or data byte.",
+      "driver_action": "Abort transaction and return -EIO."
+    },
+    {
+      "name": "oscillator_stop_flag",
+      "description": "OSF bit set indicates oscillator stopped or was stopped.",
+      "detection": "Read status register, check OSF bit (bit 7).",
+      "driver_action": "Log warning; clear OSF by writing 0; time data may be invalid."
+    },
+    {
+      "name": "temperature_conversion_timeout",
+      "description": "Temperature conversion did not complete within expected time.",
+      "detection": "Poll CONV bit; if still set after 200ms, timeout.",
+      "driver_action": "Return -ETIMEDOUT."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "vcc_active",
+      "description": "Device powered by VCC (VCC > VPF). Oscillator always on.",
+      "supply": "VCC",
+      "current_typ": 200,
+      "current_max": 300,
+      "unit": "uA",
+      "notes": "Active supply current at 3.63V."
+    },
+    {
+      "name": "vbat_backup",
+      "description": "Device powered by VBAT (VCC < VPF and VCC < VBAT). Oscillator runs if EOSC=0.",
+      "supply": "VBAT",
+      "current_typ": 0.84,
+      "current_max": 3.0,
+      "unit": "uA",
+      "notes": "Timekeeping battery current at 3.63V, EN32kHz=1."
+    },
+    {
+      "name": "data_retention",
+      "description": "Oscillator stopped (EOSC=1), minimal current.",
+      "supply": "VBAT",
+      "current_typ": null,
+      "current_max": 100,
+      "unit": "nA",
+      "notes": "Data-retention current at +25°C."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "ds3231",
+      "page": 17,
+      "snippet": "The slave address byte contains the 7-bit DS3231 address, which is 1101000"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 11,
+      "snippet": "Figure 1. Timekeeping Registers"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 13,
+      "snippet": "Control Register (0Eh)"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 14,
+      "snippet": "Status Register (0Fh)"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 14,
+      "snippet": "Aging Offset (10h)"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 15,
+      "snippet": "Temperature Register (Upper Byte) (11h)"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 15,
+      "snippet": "Temperature Register (Lower Byte) (12h)"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 4,
+      "snippet": "SCL Clock Frequency                                               | f SCL    | Fast mode     | 100    |       |   400 | kHz"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 4,
+      "snippet": "Temperature Conversion Time                                       | t CONV   |               | 125    |       |   200 | ms"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 12,
+      "snippet": "Table 2. Alarm Mask Bits"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 13,
+      "snippet": "Bit 5: Convert Temperature (CONV). Setting this bit to 1 forces the temperature sensor to convert the temperature into digital code"
+    },
+    {
+      "source_id": "ds3231",
+      "page": 13,
+      "snippet": "The CONV bit remains at a 1 from the time it is written until the conversion is finished, at which time both CONV and BSY go to 0."
+    }
+  ],
+  "requires_human": [
+    "Day-of-week mapping is user-defined; driver must allow configuration.",
+    "Alarm mask bit configurations not listed in Table 2 may result in illogical operation; driver should restrict to valid combinations.",
+    "Aging offset register effect on frequency varies with temperature; typical 0.1ppm/LSB at +25°C."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

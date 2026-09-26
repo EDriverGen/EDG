@@ -1,0 +1,89 @@
+{
+  "device_id": "vl53l0x",
+  "rtos_id": "zephyr",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef VL53L0X_H\n#define VL53L0X_H\n\n#include <stdint.h>\n\n#include <zephyr/device.h>\n#include <zephyr/drivers/i2c.h>\nstruct device;\n\nint vl53l0x_init(const struct device *dev);\nint vl53l0x_read_distance(const struct device *dev, int32_t *raw);\n\n#endif /* VL53L0X_H */\n",
+  "driver_source": "#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>\n#include <stdint.h>\n#include <errno.h>\n\n#include <zephyr/sys/byteorder.h>\n#define VL53L0X_I2C_ADDR 0x52\n\nstatic int vl53l0x_write_reg(const struct device *dev, uint8_t reg)\n{\n\tuint8_t buf[1] = { reg };\n\tstruct i2c_msg msg;\n\tmsg.buf = buf;\n\tmsg.len = 1;\n\tmsg.flags = I2C_MSG_WRITE;\n\treturn i2c_transfer(dev, &msg, 1, VL53L0X_I2C_ADDR);\n}\n\nstatic int vl53l0x_read_reg16(const struct device *dev, uint8_t reg, uint16_t *val)\n{\n\tuint8_t buf[2];\n\tint ret;\n\tstruct i2c_msg msgs[2];\n\n\tmsgs[0].buf = &reg;\n\tmsgs[0].len = 1;\n\tmsgs[0].flags = I2C_MSG_WRITE;\n\n\tmsgs[1].buf = buf;\n\tmsgs[1].len = 2;\n\tmsgs[1].flags = I2C_MSG_READ | I2C_MSG_STOP;\n\n\tret = i2c_transfer(dev, msgs, 2, VL53L0X_I2C_ADDR);\n\tif (ret < 0)\n\t\treturn ret;\n\n\t*val = ((uint16_t)buf[0] << 8) | buf[1];\n\treturn 0;\n}\n\nint vl53l0x_init(const struct device *dev)\n{\n\t(void)dev;\n\treturn 0;\n}\n\nint vl53l0x_read_distance(const struct device *dev, int32_t *raw)\n{\n\tuint16_t distance;\n\tint ret;\n\n\tret = vl53l0x_write_reg(dev, 0x51);\n\tif (ret < 0)\n\t\treturn ret;\n\n\tret = vl53l0x_read_reg16(dev, 0x51, &distance);\n\tif (ret < 0)\n\t\treturn ret;\n\n\t*raw = (int32_t)distance;\n\treturn 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "vl53l0x_init(g_eval_dev);",
+    "read_call": "vl53l0x_read_distance(g_eval_dev, &raw);",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"zephyr.h\"\n#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x52",
+        "write_prefix_any_of": [
+          [
+            "0xC0"
+          ],
+          [
+            "0xC1"
+          ],
+          [
+            "0xC2"
+          ],
+          [
+            "0x51"
+          ],
+          [
+            "0x61"
+          ]
+        ],
+        "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "distance_100mm",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00",
+            "0x64"
+          ]
+        },
+        "expected_read_raw": 100,
+        "derivation": "mock_preload read_bytes [0x00, 0x64] big-endian = 0x0064 = 100 decimal; distance in mm directly."
+      },
+      {
+        "name": "distance_0mm",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "mock_preload read_bytes [0x00, 0x00] big-endian = 0x0000 = 0 mm."
+      },
+      {
+        "name": "distance_200mm",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00",
+            "0xC8"
+          ]
+        },
+        "expected_read_raw": 200,
+        "derivation": "mock_preload read_bytes [0x00, 0xC8] big-endian = 0x00C8 = 200 decimal; distance in mm directly."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.288,
+  "prompt_chars": 34976,
+  "raw_response": "{\"driver_header\": \"#ifndef VL53L0X_H\\n#define VL53L0X_H\\n\\n#include <stdint.h>\\n\\nint vl53l0x_init(const struct device *dev);\\nint vl53l0x_read_distance(const struct device *dev, int32_t *raw);\\n\\n#endif /* VL53L0X_H */\", \"driver_source\": \"#include <zephyr/kernel.h>\\n#include <zephyr/drivers/i2c.h>\\n#include <stdint.h>\\n#include <errno.h>\\n\\n#define VL53L0X_I2C_ADDR 0x52\\n\\nstatic int vl53l0x_write_reg(const struct device *dev, uint8_t reg)\\n{\\n\\tuint8_t buf[1] = { reg };\\n\\tstruct i2c_msg msg;\\n\\tmsg.buf = buf;\\n\\tmsg.len = 1;\\n\\tmsg.flags = I2C_MSG_WRITE;\\n\\treturn i2c_transfer(dev, &msg, 1, VL53L0X_I2C_ADDR);\\n}\\n\\nstatic int vl53l0x_read_reg16(const struct device *dev, uint8_t reg, uint16_t *val)\\n{\\n\\tuint8_t buf[2];\\n\\tint ret;\\n\\tstruct i2c_msg msgs[2];\\n\\n\\tmsgs[0].buf = &reg;\\n\\tmsgs[0].len = 1;\\n\\tmsgs[0].flags = I2C_MSG_WRITE;\\n\\n\\tmsgs[1].buf = buf;\\n\\tmsgs[1].len = 2;\\n\\tmsgs[1].flags = I2C_MSG_READ | I2C_MSG_STOP;\\n\\n\\tret = i2c_transfer(dev, msgs, 2, VL53L0X_I2C_ADDR);\\n\\tif (ret < 0)\\n\\t\\treturn ret;\\n\\n\\t*val = ((uint16_t)buf[0] << 8) | buf[1];\\n\\treturn 0;\\n}\\n\\nint vl53l0x_init(const struct device *dev)\\n{\\n\\t(void)dev;\\n\\treturn 0;\\n}\\n\\nint vl53l0x_read_distance(const struct device *dev, int32_t *raw)\\n{\\n\\tuint16_t distance;\\n\\tint ret;\\n\\n\\tret = vl53l0x_write_reg(dev, 0x51);\\n\\tif (ret < 0)\\n\\t\\treturn ret;\\n\\n\\tret = vl53l0x_read_reg16(dev, 0x51, &distance);\\n\\tif (ret < 0)\\n\\t\\treturn ret;\\n\\n\\t*raw = (int32_t)distance;\\n\\treturn 0;\\n}\\n\"}",
+  "plan_hash": "10b86362c5a7a795"
+}

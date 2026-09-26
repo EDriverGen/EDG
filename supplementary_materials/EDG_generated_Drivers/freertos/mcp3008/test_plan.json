@@ -1,0 +1,78 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "write_prefix_any_of": [
+        [
+          "0x01",
+          "0x80",
+          "0x00"
+        ]
+      ],
+      "note": "read_channel: write for CH0"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "read_any": true,
+      "note": "read_channel: direct read read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "write_prefix_any_of": [
+        [
+          "0x01",
+          "0x90",
+          "0x00"
+        ]
+      ],
+      "note": "read_channel: write for CH1"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "ch0_mid_scale",
+      "mock_preload": {
+        "stream": [
+          "0x00",
+          "0x7F",
+          "0xFF"
+        ]
+      },
+      "expected_channels": {
+        "ch0": 511
+      },
+      "derivation": "Response bytes: [0x00, 0x7F, 0xFF]. high_byte=0x7F, low_byte=0xFF. raw = ((0x7F & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023. But 0x7F & 0x03 = 0x03, so raw = 0x03FF = 1023. Wait, 0x7F & 0x03 = 0x03, so raw = (0x03 << 8) | 0xFF = 0x3FF = 1023. That's full scale. raw = ((0x20 & 0x03) << 8) | 0x00 = (0x00 << 8) | 0x00 = 0. Not mid. Choose [0x00, 0x7F, 0x00] -> high_byte=0x7F, low_byte=0x00. raw = ((0x7F & 0x03) << 8) | 0x00 = (0x03 << 8) | 0x00 = 0x300 = 768. That's 75% of 1023. For mid-scale 512, need raw=512. 512 = 0x200. So high_byte bits [1:0] = 0x02, low_byte = 0x00. So high_byte = 0x80? Actually high_byte = 0x80 gives 0x80 & 0x03 = 0x00, not 0x02. Need high_byte such that (high_byte & 0x03) = 0x02 and low_byte = 0x00. So high_byte = 0x82? 0x82 & 0x03 = 0x02. So response bytes: [0x00, 0x82, 0x00]. Then raw = ((0x82 & 0x03) << 8) | 0x00 = (0x02 << 8) | 0x00 = 0x200 = 512. So expected_channels ch0 = 512."
+    },
+    {
+      "name": "ch1_zero",
+      "mock_preload": {
+        "stream": [
+          "0x00",
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "ch1": 0
+      },
+      "derivation": "Response bytes: [0x00, 0x00, 0x00]. high_byte=0x00, low_byte=0x00. raw = ((0x00 & 0x03) << 8) | 0x00 = 0."
+    },
+    {
+      "name": "ch0_full_scale",
+      "mock_preload": {
+        "stream": [
+          "0x00",
+          "0xFF",
+          "0xFF"
+        ]
+      },
+      "expected_channels": {
+        "ch0": 1023
+      },
+      "derivation": "Response bytes: [0x00, 0xFF, 0xFF]. high_byte=0xFF, low_byte=0xFF. raw = ((0xFF & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023."
+    }
+  ]
+}

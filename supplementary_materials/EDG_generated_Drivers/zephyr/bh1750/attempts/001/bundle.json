@@ -1,0 +1,76 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "zephyr",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef BH1750_H\n#define BH1750_H\n\n#include <stdint.h>\n\nstruct device;\n\nint bh1750_init(const struct device *dev);\nint bh1750_sample_fetch(const struct device *dev, int32_t *raw);\n\n#endif /* BH1750_H */\n",
+  "driver_source": "#include \"bh1750.h\"\n#include \"zephyr.h\"\n#include <stdint.h>\n\n#define BH1750_ADDR 0x23\n#define BH1750_CMD_POWER_ON 0x01\n#define BH1750_CMD_CONT_HRES 0x10\n#define BH1750_MEAS_DELAY_MS 180\n\nint bh1750_init(const struct device *dev)\n{\n    uint8_t cmd = BH1750_CMD_POWER_ON;\n    int ret = i2c_write(dev, &cmd, 1, BH1750_ADDR);\n    if (ret != 0) {\n        return -1;\n    }\n    return 0;\n}\n\nint bh1750_sample_fetch(const struct device *dev, int32_t *raw)\n{\n    uint8_t cmd = BH1750_CMD_CONT_HRES;\n    int ret = i2c_write(dev, &cmd, 1, BH1750_ADDR);\n    if (ret != 0) {\n        return -1;\n    }\n    k_msleep(BH1750_MEAS_DELAY_MS);\n    uint8_t buf[2];\n    ret = i2c_read(dev, buf, 2, BH1750_ADDR);\n    if (ret != 0) {\n        return -1;\n    }\n    *raw = (int32_t)(((uint16_t)buf[0] << 8) | buf[1]);\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(g_eval_dev)",
+    "read_call": "bh1750_sample_fetch(g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only",
+    "preamble_c": "#include \"zephyr.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "measure_continuous_hres: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "measure_continuous_hres: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "read_bytes": [
+            "0x01",
+            "0x90"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x01 0x90], raw_count = ((0x01 << 8) | 0x90) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.64,
+  "prompt_chars": 32149,
+  "raw_response": "{\"driver_header\": \"#ifndef BH1750_H\\n#define BH1750_H\\n\\n#include <stdint.h>\\n\\nint bh1750_init(const struct device *dev);\\nint bh1750_sample_fetch(const struct device *dev, int32_t *raw);\\n\\n#endif /* BH1750_H */\", \"driver_source\": \"#include \\\"bh1750.h\\\"\\n#include \\\"zephyr.h\\\"\\n#include <stdint.h>\\n\\n#define BH1750_ADDR 0x23\\n#define BH1750_CMD_POWER_ON 0x01\\n#define BH1750_CMD_CONT_HRES 0x10\\n#define BH1750_MEAS_DELAY_MS 180\\n\\nint bh1750_init(const struct device *dev)\\n{\\n    uint8_t cmd = BH1750_CMD_POWER_ON;\\n    int ret = i2c_write(dev, &cmd, 1, BH1750_ADDR);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint bh1750_sample_fetch(const struct device *dev, int32_t *raw)\\n{\\n    uint8_t cmd = BH1750_CMD_CONT_HRES;\\n    int ret = i2c_write(dev, &cmd, 1, BH1750_ADDR);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    k_msleep(BH1750_MEAS_DELAY_MS);\\n    uint8_t buf[2];\\n    ret = i2c_read(dev, buf, 2, BH1750_ADDR);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    *raw = (int32_t)(((uint16_t)buf[0] << 8) | buf[1]);\\n    return 0;\\n}\"}",
+  "plan_hash": "224c93e691a9d769"
+}

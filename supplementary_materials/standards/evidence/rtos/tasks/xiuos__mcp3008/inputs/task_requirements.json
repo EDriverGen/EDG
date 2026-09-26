@@ -1,0 +1,156 @@
+{
+  "task_package_id": "xiuos_generic_xizi__mcp3008__spi0_polling",
+  "rtos": "xiuos",
+  "device": "mcp3008",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/mcp3008/xiuos",
+  "task_package": {
+    "package_id": "xiuos_generic_xizi__mcp3008__spi0_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/xiuos_generic_xizi.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/xiuos_generic_xizi_spi0_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mcp3008.json",
+    "reference_driver_root": "DriverGen/data/references/mcp3008/xiuos",
+    "fixed_task_context": {},
+    "notes": [
+      "Manual task package completing the fixed-context RTOS/device matrix; fixed_task_context is resolved from the referenced layers."
+    ],
+    "evidence": [
+      "DriverGen/data/references/mcp3008/xiuos",
+      "DriverGen/data/raw/mcp3008"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "xiuos_generic_xizi",
+    "board": "stm32f103-nano",
+    "board_alias": "xiuos_f103rb",
+    "rtos": "xiuos",
+    "rtos_bundle": "xiuos",
+    "integration": "xizi_transform_layer",
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rbt6",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "/dev/i2c1"
+        ],
+        "spi": [
+          "/dev/spi0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "/dev/uart1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform targets the XiUOS stm32f103-nano board while using the public XiZi transform-layer plus resource framework.",
+      "Board assumptions stay generic and follow the existing XiUOS reference drivers that use device paths for I2C, SPI, UART, and GPIO."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/xiuos/Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_i2c.h",
+      "DriverGen/data/rtos/xiuos/Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_pin.h",
+      "DriverGen/data/rtos/xiuos/APP_Framework/Framework/transform_layer/xizi/transform.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "xiuos_generic_xizi_spi0_polling",
+    "platform_id": "xiuos_generic_xizi",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "/dev/spi0",
+    "bus_instance_kind": "device_path",
+    "bus_symbol": "/dev/spi0",
+    "backend": "XiUOS transform-layer SPI device path",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "device_path": "/dev/spi0"
+    },
+    "notes": [
+      "Default XiUOS SPI binding follows references that open /dev/spi0 and use SPI_IOC_TRANSFER."
+    ],
+    "evidence": [
+      "DriverGen/data/references/adxl345/xiuos/adxl345_sample_ref.c",
+      "DriverGen/data/references/max31855/xiuos/max31855_ref.h",
+      "DriverGen/data/references/mcp3008/xiuos/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "mcp3008",
+    "attachment_type": "spi_adc",
+    "required_bus_type": "spi",
+    "address_mode": "chip-select",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCLK",
+        "MOSI",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 3600000
+      },
+      "vref_mv": 3300,
+      "notes": [
+        "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+      ]
+    },
+    "optional_attachment": {
+      "differential_mode": "optional",
+      "vref_mv": "board_dependent"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null,
+      "vref_mv": 3300
+    },
+    "protocol_hints": {
+      "spi_proto": "command",
+      "command_bytes": 3,
+      "single_ended_default": true,
+      "channels": [
+        "ch0",
+        "ch1",
+        "ch2",
+        "ch3",
+        "ch4",
+        "ch5",
+        "ch6",
+        "ch7"
+      ],
+      "result_bits": 10,
+      "result_formula": "((rx[1] & 0x03) << 8) | rx[2]"
+    },
+    "notes": [
+      "Reference drivers expose raw 10-bit ADC counts and optional millivolt conversion using vref_mv.",
+      "The main generated path should preserve all 8 single-ended channels; differential mode is optional."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mcp3008/MCP3008.pdf",
+      "DriverGen/evaluation/oracle/data/mcp3008/meta.json",
+      "DriverGen/data/references/mcp3008/*/*_ref.c"
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0xFE"
+        ]
+      ],
+      "note": "probe_identity: write_then_read"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0xFF"
+        ]
+      ],
+      "note": "probe_identity: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x00"
+        ]
+      ],
+      "note": "read_temperature_local: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x10"
+        ]
+      ],
+      "note": "read_temperature_local: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x01"
+        ]
+      ],
+      "note": "read_temperature_remote1: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x11"
+        ]
+      ],
+      "note": "read_temperature_remote1: write_then_read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "nominal_positive",
+      "mock_preload": {
+        "0x08": [
+          "0x00"
+        ],
+        "0x00": [
+          "0x19"
+        ],
+        "0x10": [
+          "0x80"
+        ],
+        "0x01": [
+          "0x1A"
+        ],
+        "0x11": [
+          "0x90"
+        ]
+      },
+      "expected_channels": {
+        "temp_local": 25625,
+        "temp_remote": 26875
+      },
+      "derivation": "local: high_byte=0x19=25, low_byte=0x80, low_nibble=0x80>>4=8, raw=((25<<4)+8)=408, milli=408*625/10=25500; remote: high_byte=0x1A=26, low_byte=0x90, low_nibble=0x90>>4=9, raw=((26<<4)+9)=425, milli=425*625/10=26562.5 -> 26562 (integer division)."
+    },
+    {
+      "name": "zero_near_zero",
+      "mock_preload": {
+        "0x08": [
+          "0x00"
+        ],
+        "0x00": [
+          "0x00"
+        ],
+        "0x10": [
+          "0x00"
+        ],
+        "0x01": [
+          "0x00"
+        ],
+        "0x11": [
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "temp_local": 0,
+        "temp_remote": 0
+      },
+      "derivation": "All bytes zero: high_byte=0, low_byte=0, raw=0, milli=0*625/10=0."
+    },
+    {
+      "name": "negative_twos_complement",
+      "mock_preload": {
+        "0x08": [
+          "0x00"
+        ],
+        "0x00": [
+          "0xF6"
+        ],
+        "0x10": [
+          "0x80"
+        ],
+        "0x01": [
+          "0xF6"
+        ],
+        "0x11": [
+          "0x80"
+        ]
+      },
+      "expected_channels": {
+        "temp_local": -10000,
+        "temp_remote": -10000
+      },
+      "derivation": "high_byte=0xF6=-10 (signed), low_byte=0x80, low_nibble=0x80>>4=8, raw=((-10<<4)+8)=-152, milli=-152*625/10=-9500."
+    }
+  ]
+}

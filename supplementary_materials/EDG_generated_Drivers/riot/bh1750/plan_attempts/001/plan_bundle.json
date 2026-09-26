@@ -1,0 +1,81 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "riot",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus_handle)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "uint16_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "bh1750_device_t",
+    "init_extra_setup_c": "i2c_t bus_handle = (i2c_t)(intptr_t)bus_name;",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "continuous_h_resolution_mode: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "continuous_h_resolution_mode: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "low_light_100_lux",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00",
+            "0x96"
+          ]
+        },
+        "expected_read_raw": 150,
+        "derivation": "single_channel raw-primary normalization: bytes [0x00 0x96], raw_count = ((0x00 << 8) | 0x96) = 150. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      },
+      {
+        "name": "medium_light_500_lux",
+        "mock_preload": {
+          "read_bytes": [
+            "0x02",
+            "0x58"
+          ]
+        },
+        "expected_read_raw": 600,
+        "derivation": "single_channel raw-primary normalization: bytes [0x02 0x58], raw_count = ((0x02 << 8) | 0x58) = 600. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      }
+    ],
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "3921cbc80b083ccb",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.226,
+  "prompt_chars": 41147,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"bh1750_init(&g_eval_dev, bus_handle)\", \"read_call\": \"bh1750_read_illuminance(&g_eval_dev, &raw)\", \"primary_raw_type\": \"uint16_t\", \"primary_raw_unit\": \"lux\", \"dev_struct_type\": \"bh1750_device_t\", \"init_extra_setup_c\": \"i2c_t bus_handle = (i2c_t)(intptr_t)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x01\"]], \"note\": \"power_on: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x10\"]], \"note\": \"continuous_h_resolution_mode: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"read_any\": true, \"forbid_write_prefix\": true, \"note\": \"continuous_h_resolution_mode: direct read\"}], \"test_stimuli\": [{\"name\": \"low_light_100_lux\", \"mock_preload\": {\"read_bytes\": [\"0x00\", \"0x96\"]}, \"expected_read_raw\": 100, \"derivation\": \"raw_counts = 0x0096 = 150; MTreg default 69; illuminance_h_resolution: (150 * 69 * 10) // (12 * 69) = 1500 // 12 = 125; wait, recalc: (150 * 69 * 10) = 103500; (12 * 69) = 828; 103500 // 828 = 125.0? Actually 103500/828 = 125 exactly. But expected 100? Let's choose raw_counts to get 100: (raw * 69 * 10) // (12 * 69) = (raw * 10) // 12 = 100 => raw = 120. So raw_counts = 120 = 0x0078. Set mock_preload to [0x00, 0x78]. Then expected_read_raw = 100.\"}, {\"name\": \"medium_light_500_lux\", \"mock_preload\": {\"read_bytes\": [\"0x02\", \"0x58\"]}, \"expected_read_raw\": 500, \"derivation\": \"raw_counts = 0x0258 = 600; (600 * 10) // 12 = 6000 // 12 = 500.\"}]}}"
+}

@@ -1,0 +1,170 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 6.012,
+  "plan_summary": {
+    "device_id": "mcp3008",
+    "rtos_id": "tobudos",
+    "eval_class": "multi_channel",
+    "bus_kind": "spi",
+    "plan_hash": "cf0f4b56f74e1258",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 3,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 5.955
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 3,
+    "summary": "3 stim; 3 L1/L2",
+    "stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=ch0:derivation `((0x7F & 0x03) << 8) | 0xFF` -> 1023 == expected 1023.0",
+        "warnings": []
+      },
+      {
+        "name": "ch1_zero",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=ch1:big_endian_u24=0",
+        "warnings": []
+      },
+      {
+        "name": "ch0_full_scale",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=ch0:big_endian_u24=1023",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 2,
+    "missing_count": 0,
+    "llm_extras_count": 2,
+    "merged_count": 3,
+    "summary": "2/2 mechanical covered; 2 LLM extras",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0x01",
+              "0x80",
+              "0x00"
+            ]
+          ],
+          "note": "read_channel: write",
+          "source": "operation_flows[0].steps[0]"
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0x01",
+              "0x80",
+              "0x00"
+            ]
+          ],
+          "note": "read_channel: write for CH0"
+        },
+        "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [],
+          "note": "read_channel: direct read read",
+          "source": "operation_flows[0].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [
+            [
+              "0x01",
+              "0x80",
+              "0x00"
+            ]
+          ],
+          "note": "read_channel: write for CH0"
+        },
+        "reason": "mechanical is read-any; LLM adds specific prefix",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x90",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH1"
+      }
+    ],
+    "merged": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x90",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH1"
+      }
+    ]
+  }
+}

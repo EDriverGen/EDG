@@ -1,0 +1,222 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "nuttx__dps310",
+  "device_id": "dps310",
+  "rtos_id": "nuttx",
+  "bus": "i2c",
+  "scope": "nuttx i2c RTOS/BSP API minimum contract for nuttx__dps310; based on copied reference implementation and configuration, existing i2c API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "nuttx",
+    "bus": "i2c",
+    "task_binding": {
+      "connection_type": "i2c",
+      "mode": "polling",
+      "bus_instance": "1",
+      "backend": "NuttX i2c_master lower-half",
+      "address_mode": "7-bit"
+    },
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "dps310_ref.h",
+      "nuttx.h",
+      "errno.h",
+      "string.h",
+      "unistd.h",
+      "nuttx/config.h",
+      "nuttx/i2c/i2c_master.h",
+      "stdint.h",
+      "stdbool.h",
+      "stdio.h",
+      "stdlib.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "board_i2cbus_initialize",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_eval_adapter.c",
+            "line": 54,
+            "text": "_i2c_bus = board_i2cbus_initialize(1);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_sample_ref.c",
+            "line": 12,
+            "text": "extern FAR struct i2c_master_s *board_i2cbus_initialize(int bus);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_sample_ref.c",
+            "line": 31,
+            "text": "i2c = board_i2cbus_initialize(1);"
+          }
+        ],
+        "available_declaration": "struct i2c_master_s *board_i2cbus_initialize(int bus);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 110,
+          "line_end": 113
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/nuttx/i2c/pack.md",
+    "reference_api_calls": [
+      {
+        "symbol": "i2c_writeread",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+            "line": 16,
+            "text": "return i2c_writeread(dev->i2c, &dev->config, &reg, 1, buf, len);"
+          }
+        ],
+        "available_declaration": "int i2c_writeread(FAR struct i2c_master_s *dev, FAR const struct i2c_config_s *config, FAR const uint8_t *wbuf, int wlen, FAR uint8_t *rbuf, int rlen);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 102,
+          "line_end": 110
+        }
+      },
+      {
+        "symbol": "i2c_write",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+            "line": 26,
+            "text": "return i2c_write(dev->i2c, &dev->config, frame, 2);"
+          }
+        ],
+        "available_declaration": "int i2c_write(FAR struct i2c_master_s *dev, FAR const struct i2c_config_s *config, FAR const uint8_t *buffer, int buflen);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 87,
+          "line_end": 94
+        }
+      },
+      {
+        "symbol": "usleep",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+            "line": 59,
+            "text": "usleep(10000);"
+          },
+          {
+            "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+            "line": 115,
+            "text": "usleep(40000); /* 40 ms for reset */"
+          }
+        ],
+        "available_declaration": "int usleep(unsigned int usec);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 50,
+          "line_end": 52
+        }
+      }
+    ],
+    "driver_to_board_boundary": "NuttX reference driver receives a struct i2c_master_s / spi_dev_s handle or a path/fd as shown in its copied source; board initialization, lower-half binding and POSIX wrappers are distinct from the device-driver call interface."
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's i2c connection context (1; NuttX i2c_master lower-half) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_eval_adapter.c",
+          "line_start": 54,
+          "line_end": 54
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: board_i2cbus_initialize.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_eval_adapter.c",
+          "line_start": 54,
+          "line_end": 54
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_sample_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_sample_ref.c",
+          "line_start": 31,
+          "line_end": 31
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.h",
+          "line_start": 9,
+          "line_end": 86
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Required reference operations: i2c_writeread, i2c_write. Preserve buffer/length/address or register-message semantics and returned integer/status convention; NuttX message-vector transfer APIs are acceptable when transaction directions and address are represented.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+          "line_start": 26,
+          "line_end": 26
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "The reference calls usleep(unsigned int usec), so preserve a blocking wait at microsecond input granularity; a millisecond scheduler wait is equivalent where the requested delay is an integral millisecond and the conversion is explicit.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+          "line_start": 59,
+          "line_end": 59
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__dps310/inputs/reference_drivers/dps310_ref.c",
+          "line_start": 115,
+          "line_end": 115
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/nuttx/unistd.h",
+          "line_start": 4,
+          "line_end": 4
+        }
+      ]
+    }
+  ]
+}

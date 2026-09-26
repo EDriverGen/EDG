@@ -1,0 +1,93 @@
+{
+  "ok": true,
+  "superset": true,
+  "covered_count": 2,
+  "missing_count": 0,
+  "llm_extras_count": 1,
+  "merged_count": 2,
+  "summary": "2/2 mechanical covered; 1 LLM extras",
+  "covered": [
+    {
+      "mechanical": {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write",
+        "source": "operation_flows[0].steps[0]"
+      },
+      "llm_match": {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH0"
+      },
+      "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+      "covered": true
+    },
+    {
+      "mechanical": {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [],
+        "note": "read_channel: direct read read",
+        "source": "operation_flows[0].steps[1]",
+        "read_any": true
+      },
+      "llm_match": {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH0"
+      },
+      "reason": "mechanical is read-any; LLM adds specific prefix",
+      "covered": true
+    }
+  ],
+  "missing": [],
+  "llm_extras": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "read_any": true,
+      "note": "read_channel: direct read read"
+    }
+  ],
+  "merged": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "write_prefix_any_of": [
+        [
+          "0x01",
+          "0x80",
+          "0x00"
+        ]
+      ],
+      "note": "read_channel: write for CH0"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "spi1",
+      "read_any": true,
+      "note": "read_channel: direct read read"
+    }
+  ]
+}

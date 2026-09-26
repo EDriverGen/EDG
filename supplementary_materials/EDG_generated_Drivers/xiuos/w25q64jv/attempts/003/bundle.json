@@ -1,0 +1,137 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "xiuos",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef W25Q64JV_H\n#define W25Q64JV_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct w25q64jv_dev {\n    void *bus_handle;\n};\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\n\n#endif",
+  "driver_source": "#include \"w25q64jv.h\"\n#include \"bus.h\"\n#include \"transform.h\"\n#include <errno.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <string.h>\n\n#define W25Q64JV_CMD_READ_DATA  0x03\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\n#define W25Q64JV_CMD_JEDEC_ID   0x9F\n\nstatic int spi_write_then_read(struct w25q64jv_dev *dev, const uint8_t *tx, size_t tx_len, uint8_t *rx, size_t rx_len)\n{\n    struct Bus *bus = (struct Bus *)dev->bus_handle;\n    struct spi_ioc_transfer tr[2];\n    int ret;\n\n    memset(tr, 0, sizeof(tr));\n    tr[0].tx_buf = (const void *)(uintptr_t)tx;\n    tr[0].rx_buf = NULL;\n    tr[0].len = tx_len;\n    tr[0].speed_hz = 0;\n    tr[0].delay_usecs = 0;\n    tr[0].bits_per_word = 8;\n    tr[0].cs_change = 0;\n\n    tr[1].tx_buf = NULL;\n    tr[1].rx_buf = (void *)(uintptr_t)rx;\n    tr[1].len = rx_len;\n    tr[1].speed_hz = 0;\n    tr[1].delay_usecs = 0;\n    tr[1].bits_per_word = 8;\n    tr[1].cs_change = 1;\n\n    ret = PrivTaskDelay(0);\n    if (ret < 0) return ret;\n\n    return 0;\n}\n\nstatic int spi_write(struct w25q64jv_dev *dev, const uint8_t *data, size_t len)\n{\n    return spi_write_then_read(dev, data, len, NULL, 0);\n}\n\nstatic int spi_read(struct w25q64jv_dev *dev, uint8_t *rx, size_t len)\n{\n    return spi_write_then_read(dev, NULL, 0, rx, len);\n}\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\n{\n    uint8_t cmd[1];\n    uint8_t id[3];\n    int ret;\n\n    dev->bus_handle = bus_handle;\n\n    cmd[0] = W25Q64JV_CMD_JEDEC_ID;\n    ret = spi_write(dev, cmd, 1);\n    if (ret < 0) return ret;\n\n    ret = spi_read(dev, id, 3);\n    if (ret < 0) return ret;\n\n    return 0;\n}\n\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\n{\n    uint8_t cmd[4];\n    int ret;\n\n    cmd[0] = W25Q64JV_CMD_READ_DATA;\n    cmd[1] = (addr >> 16) & 0xFF;\n    cmd[2] = (addr >> 8) & 0xFF;\n    cmd[3] = addr & 0xFF;\n\n    ret = spi_write(dev, cmd, 4);\n    if (ret < 0) return ret;\n\n    ret = spi_read(dev, buf, len);\n    if (ret < 0) return ret;\n\n    return 0;\n}\n\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\n{\n    uint8_t cmd[4];\n    uint8_t enable_cmd[1];\n    int ret;\n\n    enable_cmd[0] = W25Q64JV_CMD_WRITE_ENABLE;\n    ret = spi_write(dev, enable_cmd, 1);\n    if (ret < 0) return ret;\n\n    cmd[0] = W25Q64JV_CMD_PAGE_PROGRAM;\n    cmd[1] = (addr >> 16) & 0xFF;\n    cmd[2] = (addr >> 8) & 0xFF;\n    cmd[3] = addr & 0xFF;\n\n    ret = spi_write(dev, cmd, 4);\n    if (ret < 0) return ret;\n\n    ret = spi_write(dev, buf, len);\n    if (ret < 0) return ret;\n\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "struct w25q64jv_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: direct read read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: direct read read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.329,
+  "prompt_chars": 42723,
+  "raw_response": "{\"driver_header\": \"#ifndef W25Q64JV_H\\n#define W25Q64JV_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct w25q64jv_dev {\\n    void *bus_handle;\\n};\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"w25q64jv.h\\\"\\n#include \\\"bus.h\\\"\\n#include \\\"transform.h\\\"\\n#include <errno.h>\\n#include <stddef.h>\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define W25Q64JV_CMD_READ_DATA  0x03\\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\\n#define W25Q64JV_CMD_JEDEC_ID   0x9F\\n\\nstatic int spi_write_then_read(struct w25q64jv_dev *dev, const uint8_t *tx, size_t tx_len, uint8_t *rx, size_t rx_len)\\n{\\n    struct Bus *bus = (struct Bus *)dev->bus_handle;\\n    struct spi_ioc_transfer tr[2];\\n    int ret;\\n\\n    memset(tr, 0, sizeof(tr));\\n    tr[0].tx_buf = (const void *)(uintptr_t)tx;\\n    tr[0].rx_buf = NULL;\\n    tr[0].len = tx_len;\\n    tr[0].speed_hz = 0;\\n    tr[0].delay_usecs = 0;\\n    tr[0].bits_per_word = 8;\\n    tr[0].cs_change = 0;\\n\\n    tr[1].tx_buf = NULL;\\n    tr[1].rx_buf = (void *)(uintptr_t)rx;\\n    tr[1].len = rx_len;\\n    tr[1].speed_hz = 0;\\n    tr[1].delay_usecs = 0;\\n    tr[1].bits_per_word = 8;\\n    tr[1].cs_change = 1;\\n\\n    ret = PrivTaskDelay(0);\\n    if (ret < 0) return ret;\\n\\n    return 0;\\n}\\n\\nstatic int spi_write(struct w25q64jv_dev *dev, const uint8_t *data, size_t len)\\n{\\n    return spi_write_then_read(dev, data, len, NULL, 0);\\n}\\n\\nstatic int spi_read(struct w25q64jv_dev *dev, uint8_t *rx, size_t len)\\n{\\n    return spi_write_then_read(dev, NULL, 0, rx, len);\\n}\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\\n{\\n    uint8_t cmd[1];\\n    uint8_t id[3];\\n    int ret;\\n\\n    dev->bus_handle = bus_handle;\\n\\n    cmd[0] = W25Q64JV_CMD_JEDEC_ID;\\n    ret = spi_write(dev, cmd, 1);\\n    if (ret < 0) return ret;\\n\\n    ret = spi_read(dev, id, 3);\\n    if (ret < 0) return ret;\\n\\n    return 0;\\n}\\n\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\\n{\\n    uint8_t cmd[4];\\n    int ret;\\n\\n    cmd[0] = W25Q64JV_CMD_READ_DATA;\\n    cmd[1] = (addr >> 16) & 0xFF;\\n    cmd[2] = (addr >> 8) & 0xFF;\\n    cmd[3] = addr & 0xFF;\\n\\n    ret = spi_write(dev, cmd, 4);\\n    if (ret < 0) return ret;\\n\\n    ret = spi_read(dev, buf, len);\\n    if (ret < 0) return ret;\\n\\n    return 0;\\n}\\n\\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\\n{\\n    uint8_t cmd[4];\\n    uint8_t enable_cmd[1];\\n    int ret;\\n\\n    enable_cmd[0] = W25Q64JV_CMD_WRITE_ENABLE;\\n    ret = spi_write(dev, enable_cmd, 1);\\n    if (ret < 0) return ret;\\n\\n    cmd[0] = W25Q64JV_CMD_PAGE_PROGRAM;\\n    cmd[1] = (addr >> 16) & 0xFF;\\n    cmd[2] = (addr >> 8) & 0xFF;\\n    cmd[3] = addr & 0xFF;\\n\\n    ret = spi_write(dev, cmd, 4);\\n    if (ret < 0) return ret;\\n\\n    ret = spi_write(dev, buf, len);\\n    if (ret < 0) return ret;\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "4136e54c56200a1f"
+}

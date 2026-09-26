@@ -1,0 +1,243 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/chibios_generic_hal__pcf8574__i2c1_polling/task_package.json",
+  "task_package": {
+    "package_id": "chibios_generic_hal__pcf8574__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/chibios_generic_hal.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/chibios_generic_hal_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/pcf8574.json",
+    "reference_driver_root": "DriverGen/data/references/pcf8574/chibios",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "chibios_generic_hal",
+        "rtos": "chibios",
+        "rtos_bundle": "chibios",
+        "board": "STM32F103RB-NUCLEO64",
+        "board_alias": "chibios_f103rb",
+        "integration": "chibios_hal_driver_layer",
+        "integration_style": "chibios_hal_plus_rt_kernel",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "chibios_generic_hal_i2c1_polling",
+        "platform_id": "chibios_generic_hal",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "I2CD1",
+        "bus_instance_kind": "hal_driver_instance",
+        "bus_symbol": "I2CD1",
+        "backend": "ChibiOS HAL I2C driver",
+        "address_mode": "7-bit",
+        "fixed_attachment": {},
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "pcf8574",
+        "attachment_type": "i2c_gpio_expander",
+        "required_bus_type": "i2c",
+        "address_mode": "7-bit",
+        "addressing": {
+          "default": "0x20",
+          "alternates": [
+            "0x21",
+            "0x22",
+            "0x23",
+            "0x24",
+            "0x25",
+            "0x26",
+            "0x27"
+          ],
+          "selection_rule": "A0/A1/A2 pins set 3 LSBs of 7-bit address. POR default with all address pins LOW is 0x20."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "PCF8574 has no internal registers. I2C write sets all 8 I/O pin output levels; I2C read returns current input states.",
+            "POR default: all I/Os are HIGH (input mode with internal weak pull-up)."
+          ]
+        },
+        "optional_attachment": {
+          "int_pin": "optional",
+          "addr_pins": [
+            "A0",
+            "A1",
+            "A2"
+          ]
+        },
+        "default_overrides": {
+          "bus_instance": null,
+          "irq": "absent",
+          "dma": "absent",
+          "reset_gpio": null,
+          "power_gpio": null
+        },
+        "protocol_hints": {}
+      }
+    },
+    "notes": [
+      "PCF8574 + chibios + i2c1_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/pcf8574/pcf8574.pdf",
+      "DriverGen/data/references/pcf8574/chibios"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "chibios_generic_hal",
+    "board": "STM32F103RB-NUCLEO64",
+    "board_alias": "chibios_f103rb",
+    "rtos": "chibios",
+    "rtos_bundle": "chibios",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "I2CD1"
+        ],
+        "spi": [
+          "SPID1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "SD2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "optional"
+    },
+    "notes": [
+      "This platform targets the ChibiOS STM32F103RB-NUCLEO64 demo family while using the portable HAL I2C driver and PAL GPIO layer.",
+      "I2C uses I2CDriver instances (I2CD1, I2CD2) with i2cMasterTransmitTimeout/i2cMasterReceiveTimeout.",
+      "SPI uses SPIDriver instances such as SPID1 with spiStart/spiExchange, and UART polling uses SerialDriver SD2.",
+      "GPIO uses the PAL layer with port+pad or line-level access."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_i2c.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_spi.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_serial.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_pal.h",
+      "DriverGen/data/rtos/chibios/testhal/STM32/STM32F1xx/I2C/main.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "chibios_generic_hal_i2c1_polling",
+    "platform_id": "chibios_generic_hal",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "I2CD1",
+    "bus_instance_kind": "hal_driver_instance",
+    "bus_symbol": "I2CD1",
+    "backend": "ChibiOS HAL I2C driver",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Default ChibiOS I2C binding uses &I2CD1 driver instance."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_i2c.h",
+      "DriverGen/data/rtos/chibios/testhal/STM32/STM32F1xx/I2C/main.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "pcf8574",
+    "attachment_type": "i2c_gpio_expander",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x20",
+      "alternates": [
+        "0x21",
+        "0x22",
+        "0x23",
+        "0x24",
+        "0x25",
+        "0x26",
+        "0x27"
+      ],
+      "selection_rule": "A0/A1/A2 pins set 3 LSBs of 7-bit address. POR default with all address pins LOW is 0x20."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "PCF8574 has no internal registers. I2C write sets all 8 I/O pin output levels; I2C read returns current input states.",
+        "POR default: all I/Os are HIGH (input mode with internal weak pull-up)."
+      ]
+    },
+    "optional_attachment": {
+      "int_pin": "optional",
+      "addr_pins": [
+        "A0",
+        "A1",
+        "A2"
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Quasi-bidirectional I/O: writing 1 = input/high-impedance (default), writing 0 = output LOW with strong drive.",
+      "INT pin asserts LOW when any input changes state from the last read; cleared by reading the port."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/pcf8574/pcf8574.pdf",
+      "DriverGen/data/references/pcf8574/*/*_ref.h"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "chibios_generic_hal__pcf8574__i2c1_polling",
+    "rtos": "chibios",
+    "rtos_bundle": "chibios",
+    "board": "STM32F103RB-NUCLEO64",
+    "board_alias": "chibios_f103rb",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "i2c",
+    "bus_instance": "I2CD1",
+    "bus_instance_kind": "hal_driver_instance",
+    "bus_symbol": "I2CD1",
+    "bus_backend": "ChibiOS HAL I2C driver",
+    "address_mode": "7-bit",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {},
+    "device_attachment_context_id": "pcf8574",
+    "device_addressing": {
+      "default": "0x20",
+      "alternates": [
+        "0x21",
+        "0x22",
+        "0x23",
+        "0x24",
+        "0x25",
+        "0x26",
+        "0x27"
+      ],
+      "selection_rule": "A0/A1/A2 pins set 3 LSBs of 7-bit address. POR default with all address pins LOW is 0x20."
+    }
+  }
+}

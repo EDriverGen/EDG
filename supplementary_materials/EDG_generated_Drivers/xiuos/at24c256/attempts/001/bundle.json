@@ -1,0 +1,92 @@
+{
+  "device_id": "at24c256",
+  "rtos_id": "xiuos",
+  "eval_class": "memory",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef AT24C256_H\n#define AT24C256_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct at24c256_dev {\n    int fd;\n    uint16_t i2c_addr;\n};\n\nint at24c256_init(struct at24c256_dev *dev, void *bus_handle);\nint at24c256_read(struct at24c256_dev *dev, uint16_t addr, uint8_t *buf, size_t len);\nint at24c256_write(struct at24c256_dev *dev, uint16_t addr, const uint8_t *buf, size_t len);\n\n#endif /* AT24C256_H */",
+  "driver_source": "#include \"at24c256.h\"\n#include \"transform.h\"\n#include \"bus_i2c.h\"\n#include \"dev_i2c.h\"\n#include <stdint.h>\n#include <string.h>\n#include <errno.h>\n\n#include \"bus.h\"\n#include \"bus_pin.h\"\n#define AT24C256_I2C_ADDR 0x50\n#define AT24C256_PAGE_SIZE 64\n\nint at24c256_init(struct at24c256_dev *dev, void *bus_handle)\n{\n    if (!dev || !bus_handle) return -EINVAL;\n    const char *path = (const char *)bus_handle;\n    int fd = PrivOpen(path, 0);\n    if (fd < 0) return fd;\n    uint16_t i2c_addr = AT24C256_I2C_ADDR;\n    struct PrivIoctlCfg cfg;\n    cfg.ioctl_driver_type = I2C_TYPE;\n    cfg.args = &i2c_addr;\n    int ret = PrivIoctl(fd, OPE_INT, &cfg);\n    if (ret < 0) {\n        PrivClose(fd);\n        return ret;\n    }\n    dev->fd = fd;\n    dev->i2c_addr = i2c_addr;\n    return 0;\n}\n\nstatic int i2c_write_raw(int fd, const uint8_t *data, size_t len)\n{\n    return PrivWrite(fd, data, len);\n}\n\nstatic int i2c_read_raw(int fd, uint8_t *buf, size_t len)\n{\n    return PrivRead(fd, buf, len);\n}\n\nint at24c256_read(struct at24c256_dev *dev, uint16_t addr, uint8_t *buf, size_t len)\n{\n    if (!dev || !buf || len == 0) return -EINVAL;\n    int fd = dev->fd;\n    uint8_t addr_bytes[2];\n    addr_bytes[0] = (addr >> 8) & 0xFF;\n    addr_bytes[1] = addr & 0xFF;\n    int ret = i2c_write_raw(fd, addr_bytes, 2);\n    if (ret < 0) return ret;\n    return i2c_read_raw(fd, buf, len);\n}\n\nint at24c256_write(struct at24c256_dev *dev, uint16_t addr, const uint8_t *buf, size_t len)\n{\n    if (!dev || !buf || len == 0) return -EINVAL;\n    int fd = dev->fd;\n    size_t offset = 0;\n    while (offset < len) {\n        uint16_t current_addr = addr + offset;\n        size_t page_offset = current_addr % AT24C256_PAGE_SIZE;\n        size_t chunk = AT24C256_PAGE_SIZE - page_offset;\n        if (chunk > len - offset) chunk = len - offset;\n        uint8_t *out = malloc(2 + chunk);\n        if (!out) return -ENOMEM;\n        out[0] = (current_addr >> 8) & 0xFF;\n        out[1] = current_addr & 0xFF;\n        memcpy(out + 2, buf + offset, chunk);\n        int ret = i2c_write_raw(fd, out, 2 + chunk);\n        free(out);\n        if (ret < 0) return ret;\n        PrivTaskDelay(5);\n        offset += chunk;\n    }\n    return (int)len;\n}\n",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "at24c256_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "at24c256_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "at24c256_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 32768,
+    "memory_page_bytes": 64,
+    "dev_struct_type": "struct at24c256_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include \"transform.h\"\n#include \"bus_i2c.h\"\n#include \"dev_i2c.h\"\n#include <stdint.h>\n#include <string.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x50",
+        "read_any": true,
+        "note": "current_address_read: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_memory_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.203,
+  "prompt_chars": 36602,
+  "raw_response": "{\"driver_header\": \"#ifndef AT24C256_H\\n#define AT24C256_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct at24c256_dev {\\n    int fd;\\n    uint16_t i2c_addr;\\n};\\n\\nint at24c256_init(struct at24c256_dev *dev, void *bus_handle);\\nint at24c256_read(struct at24c256_dev *dev, uint16_t addr, uint8_t *buf, size_t len);\\nint at24c256_write(struct at24c256_dev *dev, uint16_t addr, const uint8_t *buf, size_t len);\\n\\n#endif /* AT24C256_H */\", \"driver_source\": \"#include \\\"at24c256.h\\\"\\n#include \\\"transform.h\\\"\\n#include \\\"bus_i2c.h\\\"\\n#include \\\"dev_i2c.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n#include <errno.h>\\n\\n#define AT24C256_I2C_ADDR 0x50\\n#define AT24C256_PAGE_SIZE 64\\n\\nint at24c256_init(struct at24c256_dev *dev, void *bus_handle)\\n{\\n    if (!dev || !bus_handle) return -EINVAL;\\n    const char *path = (const char *)bus_handle;\\n    int fd = PrivOpen(path, 0);\\n    if (fd < 0) return fd;\\n    uint16_t i2c_addr = AT24C256_I2C_ADDR;\\n    struct PrivIoctlCfg cfg;\\n    cfg.ioctl_driver_type = I2C_TYPE;\\n    cfg.args = &i2c_addr;\\n    int ret = PrivIoctl(fd, OPE_INT, &cfg);\\n    if (ret < 0) {\\n        PrivClose(fd);\\n        return ret;\\n    }\\n    dev->fd = fd;\\n    dev->i2c_addr = i2c_addr;\\n    return 0;\\n}\\n\\nstatic int i2c_write_raw(int fd, const uint8_t *data, size_t len)\\n{\\n    return PrivWrite(fd, data, len);\\n}\\n\\nstatic int i2c_read_raw(int fd, uint8_t *buf, size_t len)\\n{\\n    return PrivRead(fd, buf, len);\\n}\\n\\nint at24c256_read(struct at24c256_dev *dev, uint16_t addr, uint8_t *buf, size_t len)\\n{\\n    if (!dev || !buf || len == 0) return -EINVAL;\\n    int fd = dev->fd;\\n    uint8_t addr_bytes[2];\\n    addr_bytes[0] = (addr >> 8) & 0xFF;\\n    addr_bytes[1] = addr & 0xFF;\\n    int ret = i2c_write_raw(fd, addr_bytes, 2);\\n    if (ret < 0) return ret;\\n    return i2c_read_raw(fd, buf, len);\\n}\\n\\nint at24c256_write(struct at24c256_dev *dev, uint16_t addr, const uint8_t *buf, size_t len)\\n{\\n    if (!dev || !buf || len == 0) return -EINVAL;\\n    int fd = dev->fd;\\n    size_t offset = 0;\\n    while (offset < len) {\\n        uint16_t current_addr = addr + offset;\\n        size_t page_offset = current_addr % AT24C256_PAGE_SIZE;\\n        size_t chunk = AT24C256_PAGE_SIZE - page_offset;\\n        if (chunk > len - offset) chunk = len - offset;\\n        uint8_t *out = malloc(2 + chunk);\\n        if (!out) return -ENOMEM;\\n        out[0] = (current_addr >> 8) & 0xFF;\\n        out[1] = current_addr & 0xFF;\\n        memcpy(out + 2, buf + offset, chunk);\\n        int ret = i2c_write_raw(fd, out, 2 + chunk);\\n        free(out);\\n        if (ret < 0) return ret;\\n        PrivTaskDelay(5);\\n        offset += chunk;\\n    }\\n    return (int)len;\\n}\\n\"}",
+  "plan_hash": "30d9bac4d1a4391a"
+}

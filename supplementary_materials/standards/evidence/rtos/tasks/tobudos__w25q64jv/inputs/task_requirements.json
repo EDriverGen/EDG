@@ -1,0 +1,159 @@
+{
+  "task_package_id": "tobudos_alientek_ministm32f103rct6__w25q64jv__spi1_polling",
+  "rtos": "tobudos",
+  "device": "w25q64jv",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/w25q64jv/tobudos",
+  "task_package": {
+    "package_id": "tobudos_alientek_ministm32f103rct6__w25q64jv__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/tobudos_alientek_ministm32f103rct6.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/tobudos_alientek_ministm32f103rct6_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/w25q64jv.json",
+    "reference_driver_root": "DriverGen/data/references/w25q64jv/tobudos",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "tobudos_alientek_ministm32f103rct6",
+        "rtos": "tobudos",
+        "board": "alientek_ministm32f103rct6",
+        "integration": "tobudos_hal",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "tobudos_alientek_ministm32f103rct6_spi1_polling",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "i2c1",
+        "bus_symbol": "i2c1",
+        "backend": "TOBUDOS HAL",
+        "address_mode": "spi_mode_0",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "w25q64jv",
+        "attachment_type": "spi_flash",
+        "required_bus_type": "spi"
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "w25q64jv + tobudos + spi1_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/*.pdf",
+      "DriverGen/data/references/w25q64jv/tobudos"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "tobudos_alientek_ministm32f103rct6",
+    "board": "ALIENTEK-MiniSTM32F103RCT6",
+    "board_alias": "ministm32f103rct6",
+    "rtos": "tobudos",
+    "rtos_bundle": "tobudos-project",
+    "integration": "chipadaptation_stm32f1_hal",
+    "integration_style": "kernel_plus_chipadaptation_vendor_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rct6",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart2"
+        ]
+      },
+      "timing": [
+        "tos_sleep_ms",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "TobudOS reference drivers use the kernel for coarse delays and STM32F1 HAL from ChipAdaptation for peripheral access.",
+      "SPI devices use SPI_HandleTypeDef hspi1; fixed-frame UART sensors use UART_HandleTypeDef huart2.",
+      "GPIO timing devices rely on board helper hooks for microsecond timing."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/tobudos-project/README.md",
+      "DriverGen/data/references/*/tobudos/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "tobudos_alientek_ministm32f103rct6_spi1_polling",
+    "platform_id": "tobudos_alientek_ministm32f103rct6",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "spi1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hspi1",
+    "backend": "TencentOS Tiny STM32F1 HAL SPI",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "GPIOA:GPIO_PIN_4"
+    },
+    "notes": [
+      "Default TobudOS SPI polling binding follows the STM32 HAL-style references that pass SPI_HandleTypeDef hspi1 and a GPIO chip-select."
+    ],
+    "evidence": [
+      "DriverGen/data/references/adxl345/tobudos/adxl345_sample_ref.c",
+      "DriverGen/data/references/max31855/tobudos/max31855_ref.h",
+      "DriverGen/data/references/mcp3008/tobudos/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "w25q64jv",
+    "attachment_type": "spi_flash",
+    "required_bus_type": "spi",
+    "spi_proto": "memory",
+    "spi_mode": 0,
+    "spi_max_hz": 80000000,
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "addressing": {
+      "default": "spi1",
+      "selection_rule": "SPI CS# selected by board wiring."
+    },
+    "required_attachment": {
+      "signals": [
+        "CS",
+        "CLK",
+        "MOSI",
+        "MISO"
+      ],
+      "notes": [
+        "Standard SPI quad-pin connection."
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": "spi1",
+      "irq": "absent",
+      "dma": "absent"
+    },
+    "notes": [
+      "64M-bit SPI NOR Flash. Read 0x03, Page Program 0x02, Sector Erase 0x20."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/W25Q64JV.pdf",
+      "DriverGen/data/references/w25q64jv/*/*_ref.h"
+    ]
+  }
+}

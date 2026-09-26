@@ -1,0 +1,1182 @@
+{
+  "job_id": "riot_generic_periph__pcf8574__i2c1_polling__deepseek_deepseek-v4-flash",
+  "device_id": "pcf8574",
+  "rtos_id": "riot",
+  "provider": "deepseek",
+  "run_dir": "<RUN_DIR>",
+  "pipeline_version": "trace-rtos-v4",
+  "context_mode": "v2-mrse",
+  "reusable_inputs": null,
+  "checks": {
+    "rtos_evidence_validation": {
+      "passed_gates": [
+        "root_coverage",
+        "symbol_existence",
+        "root_role",
+        "example_consistency",
+        "no_stub_authority",
+        "cache_provenance"
+      ],
+      "failed_gates": [
+        "slot_coverage"
+      ],
+      "warnings": [
+        "mcu_affinity"
+      ],
+      "gate_results": [
+        {
+          "gate_id": "root_coverage",
+          "passed": true,
+          "severity": "info",
+          "message": "rtos 'riot' is integrated; n_roots=1 (no minimum)",
+          "evidence": {
+            "rtos_id": "riot",
+            "n_roots": 1
+          }
+        },
+        {
+          "gate_id": "slot_coverage",
+          "passed": false,
+          "severity": "error",
+          "message": "1 required slot(s) uncovered: ['i2c.acquire_or_bind']",
+          "evidence": {
+            "missing_required": [
+              "i2c.acquire_or_bind"
+            ],
+            "non_symbol_fulfillments": [
+              "i2c.addressing",
+              "i2c.key_types",
+              "integration.bus_instance_binding",
+              "runtime.error_status"
+            ]
+          }
+        },
+        {
+          "gate_id": "symbol_existence",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings traced to parsed source",
+          "evidence": {
+            "missing": []
+          }
+        },
+        {
+          "gate_id": "root_role",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings come from authoritative roles",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "mcu_affinity",
+          "passed": false,
+          "severity": "warning",
+          "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (6 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+          "evidence": {
+            "other_paths_sample": [
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::sys/include/xtimer.h",
+              "riot:single:0::cpu/rpx0xx/periph/i2c.c",
+              "riot:single:0::core/include/sched.h"
+            ]
+          }
+        },
+        {
+          "gate_id": "example_consistency",
+          "passed": true,
+          "severity": "info",
+          "message": "no exemplar files referenced; gate skipped",
+          "evidence": {}
+        },
+        {
+          "gate_id": "no_stub_authority",
+          "passed": true,
+          "severity": "info",
+          "message": "no stub source_kind in current bindings (or all marked link-only)",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "cache_provenance",
+          "passed": true,
+          "severity": "info",
+          "message": "all cache-provenance fields present",
+          "evidence": {
+            "missing": []
+          }
+        }
+      ]
+    },
+    "ir": {
+      "ok": false,
+      "issues": [
+        {
+          "level": "error",
+          "check_id": "device_ir.read_sequence[0].transaction.bytes",
+          "message": "transaction kind='write_then_read' requires a non-empty bytes list."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.operation_flows[1].steps[1].register",
+          "message": "step op='clear' requires either transaction or register."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.operation_flows[2].steps",
+          "message": "init flow must contain at least one bus/signal-producing step, explicitly state default/no-bus initialization, or set requires_human=true."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_3",
+          "message": "Evidence snippet not found: pcf8574 page 14 -> A2 A1 A0 64 (decimal), 40 (hexadecimal)"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_7",
+          "message": "Evidence snippet not found: pcf8574 page 12 -> At power on, the I/Os are high."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_9",
+          "message": "Evidence snippet not found: pcf8574 page 18 -> V POR is the voltage level at which the reset condition is released and all the registers and the I 2 C/SMBus state machine are initialized to their default states."
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    },
+    "ir_flow_risk": {
+      "ok": true,
+      "issues": [
+        {
+          "level": "warning",
+          "check_id": "device_ir.flow_risk.audit_missing",
+          "message": "No device_ir_flow_audit.json receipt found; flow readiness is not fully audited."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.flow_risk.requires_human[2]",
+          "message": "requires_human records unresolved generation-critical flow information: The datasheet says all I/Os are high at power on, but it does not provide a byte-level reset latch value beyond the pin-state description; confirm whether software should treat the default port byte as 0xFF."
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    }
+  },
+  "all_checks_passed": false,
+  "codegen": {
+    "version": "v2",
+    "success": false,
+    "total_time_s": 258.243,
+    "final_attempt": 3,
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "runtime_path": "renode_i2c",
+    "slave_kind": "i2c_register_slave",
+    "spi_sub_mode": "",
+    "layer_failed": "probe",
+    "final_elf_path": "<RUN_DIR>/attempts/001/stage/out/pcf8574_riot.elf",
+    "files_written": {
+      "pcf8574.h": 306,
+      "pcf8574.c": 417,
+      "pcf8574_eval_adapter.c": 2758
+    },
+    "probe": {
+      "total": 3,
+      "pass": 3,
+      "fail": 0,
+      "error": 0
+    },
+    "invariants_count": 7,
+    "attempts": [
+      {
+        "attempt": 1,
+        "layer_failed": "probe",
+        "success": false,
+        "total_time_s": 76.35,
+        "bundle_summary": {
+          "device_id": "pcf8574",
+          "rtos_id": "riot",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 306,
+          "source_chars": 417,
+          "plan_hash": "2ad9cab4490a276a",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c",
+            "preamble_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 3.107
+        },
+        "syntax": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0
+        },
+        "consistency": {
+          "overall": "mixed",
+          "ok": true,
+          "inconsistent_count": 0,
+          "llm_only_count": 2,
+          "consistent_count": 1,
+          "summary": "3 stim; 1 L1/L2; 2 llm_only",
+          "stimuli": [
+            {
+              "name": "all_pins_high",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0xFF] no interp = 1.0",
+                "ch=p1: bytes=[0xFF] no interp = 1.0",
+                "ch=p2: bytes=[0xFF] no interp = 1.0",
+                "ch=p3: bytes=[0xFF] no interp = 1.0",
+                "ch=p4: bytes=[0xFF] no interp = 1.0",
+                "ch=p5: bytes=[0xFF] no interp = 1.0",
+                "ch=p6: bytes=[0xFF] no interp = 1.0",
+                "ch=p7: bytes=[0xFF] no interp = 1.0",
+                "ch=int: bytes=[0xFF] no interp = 1.0"
+              ]
+            },
+            {
+              "name": "all_pins_low",
+              "verdict": "consistent_l1",
+              "layer": "L1",
+              "evidence": "ch=p0:single_u8=0; ch=p1:single_u8=0; ch=p2:single_u8=0; ch=p3:single_u8=0; ch=p4:single_u8=0; ch=p5:single_u8=0; ch=p6:single_u8=0; ch=p7:single_u8=0; ch=int:single_u8=0",
+              "warnings": []
+            },
+            {
+              "name": "mixed_pins",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0x55] no interp = 1.0",
+                "ch=p1: bytes=[0x55] no interp = 0.0",
+                "ch=p2: bytes=[0x55] no interp = 1.0",
+                "ch=p3: bytes=[0x55] no interp = 0.0",
+                "ch=p4: bytes=[0x55] no interp = 1.0",
+                "ch=p5: bytes=[0x55] no interp = 0.0",
+                "ch=p6: bytes=[0x55] no interp = 1.0",
+                "ch=p7: bytes=[0x55] no interp = 0.0",
+                "ch=int: bytes=[0x55] no interp = 0.0"
+              ]
+            }
+          ]
+        },
+        "coverage": {
+          "ok": true,
+          "superset": true,
+          "covered_count": 1,
+          "missing_count": 0,
+          "llm_extras_count": 0,
+          "merged_count": 1,
+          "summary": "1/1 mechanical covered",
+          "covered": [
+            {
+              "mechanical": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "write_prefix_any_of": [],
+                "note": "flow_read_write_1: direct read read_port",
+                "source": "operation_flows[0].steps[0]",
+                "read_any": true,
+                "forbid_write_prefix": true
+              },
+              "llm_match": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "read_any": true,
+                "forbid_write_prefix": true,
+                "note": "flow_read_write_1: direct read read_port"
+              },
+              "reason": "read-any match (no prefixes required)",
+              "covered": true
+            }
+          ],
+          "missing": [],
+          "llm_extras": [],
+          "merged": [
+            {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x20",
+              "read_any": true,
+              "forbid_write_prefix": true,
+              "note": "flow_read_write_1: direct read read_port"
+            }
+          ]
+        },
+        "adapter_summary": {
+          "device_id": "pcf8574",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "source_chars": 2758,
+          "warnings": []
+        },
+        "link": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0,
+          "elf_path": "<RUN_DIR>/attempts/001/stage/out/pcf8574_riot.elf",
+          "text_bytes": 8747,
+          "data_bytes": 92,
+          "bss_bytes": 88
+        },
+        "probe": {
+          "total": 3,
+          "passed": 1,
+          "expectation_failures": 2,
+          "outcomes": [
+            {
+              "stimulus_name": "all_pins_high",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 255.0,
+              "read_channels": {
+                "p0": 255.0,
+                "p1": 255.0,
+                "p2": 255.0,
+                "p3": 255.0,
+                "p4": 255.0,
+                "p5": 255.0,
+                "p6": 255.0,
+                "p7": 255.0,
+                "int": 255.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/001/stage/probe/trace_all_pins_high.jsonl",
+              "output_lines": [
+                "22:42:55.4666 [INFO] usart2: [host: 0.64s (+0.64s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:42:55.5299 [INFO] usart2: [host: 0.71s (+62.85ms)|virt: 0s (+0s)] read_ch_p0=255",
+                "22:42:55.5300 [INFO] usart2: [host:   0.71s (+0.1ms)|virt: 0s (+0s)] read_ch_p1=255",
+                "22:42:55.5300 [INFO] usart2: [host:    0.71s (+81?s)|virt: 0s (+0s)] read_ch_p2=255",
+                "22:42:55.5301 [INFO] usart2: [host:    0.71s (+69?s)|virt: 0s (+0s)] read_ch_p3=255",
+                "22:42:55.5301 [INFO] usart2: [host:    0.71s (+69?s)|virt: 0s (+0s)] read_ch_p4=255",
+                "22:42:55.5302 [INFO] usart2: [host:    0.71s (+71?s)|virt: 0s (+0s)] read_ch_p5=255",
+                "22:42:55.5303 [INFO] usart2: [host:    0.71s (+78?s)|virt: 0s (+0s)] read_ch_p6=255",
+                "22:42:55.5304 [INFO] usart2: [host:    0.71s (+72?s)|virt: 0s (+0s)] read_ch_p7=255",
+                "22:42:55.5305 [INFO] usart2: [host:  0.71s (+0.14ms)|virt: 0s (+0s)] read_ch_int=255",
+                "22:42:55.5330 [INFO] usart2: [host:  0.71s (+2.42ms)|virt: 0.1ms (+0.1ms)] read_raw=255",
+                "22:42:55.5331 [INFO] usart2: [host:    0.71s (+78?s)|virt:    0.1ms (+0s)] RESULT: PASS",
+                "22:42:55.5331 [INFO] usart2: [host:   0.71s (+0.1ms)|virt:    0.1ms (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.317912578582764,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "all_pins_low",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 0.0,
+              "read_channels": {
+                "p0": 0.0,
+                "p1": 0.0,
+                "p2": 0.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 0.0,
+                "p6": 0.0,
+                "p7": 0.0,
+                "int": 0.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/001/stage/probe/trace_all_pins_low.jsonl",
+              "output_lines": [
+                "22:43:19.6890 [INFO] usart2: [host: 0.66s (+0.66s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:43:19.7524 [INFO] usart2: [host: 0.72s (+62.97ms)|virt: 0s (+0s)] read_ch_p0=0",
+                "22:43:19.7525 [INFO] usart2: [host:   0.72s (+0.1ms)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:43:19.7525 [INFO] usart2: [host:    0.72s (+72?s)|virt: 0s (+0s)] read_ch_p2=0",
+                "22:43:19.7526 [INFO] usart2: [host:    0.72s (+62?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:43:19.7526 [INFO] usart2: [host:    0.72s (+64?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:43:19.7527 [INFO] usart2: [host:    0.72s (+65?s)|virt: 0s (+0s)] read_ch_p5=0",
+                "22:43:19.7527 [INFO] usart2: [host:    0.72s (+65?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:43:19.7528 [INFO] usart2: [host:    0.72s (+76?s)|virt: 0s (+0s)] read_ch_p7=0",
+                "22:43:19.7529 [INFO] usart2: [host:    0.72s (+68?s)|virt: 0s (+0s)] read_ch_int=0",
+                "22:43:19.7530 [INFO] usart2: [host:    0.72s (+73?s)|virt: 0s (+0s)] read_raw=0",
+                "22:43:19.7530 [INFO] usart2: [host:    0.72s (+68?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:43:19.7531 [INFO] usart2: [host:    0.72s (+90?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.17056107521057,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "mixed_pins",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 85.0,
+              "read_channels": {
+                "p0": 85.0,
+                "p1": 85.0,
+                "p2": 85.0,
+                "p3": 85.0,
+                "p4": 85.0,
+                "p5": 85.0,
+                "p6": 85.0,
+                "p7": 85.0,
+                "int": 85.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/001/stage/probe/trace_mixed_pins.jsonl",
+              "output_lines": [
+                "22:43:43.9149 [INFO] usart2: [host: 0.65s (+0.65s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:43:43.9795 [INFO] usart2: [host: 0.71s (+64.16ms)|virt: 0s (+0s)] read_ch_p0=85",
+                "22:43:43.9796 [INFO] usart2: [host:  0.71s (+0.11ms)|virt: 0s (+0s)] read_ch_p1=85",
+                "22:43:43.9796 [INFO] usart2: [host:    0.71s (+78?s)|virt: 0s (+0s)] read_ch_p2=85",
+                "22:43:43.9797 [INFO] usart2: [host:    0.71s (+69?s)|virt: 0s (+0s)] read_ch_p3=85",
+                "22:43:43.9797 [INFO] usart2: [host:    0.71s (+69?s)|virt: 0s (+0s)] read_ch_p4=85",
+                "22:43:43.9798 [INFO] usart2: [host:    0.71s (+67?s)|virt: 0s (+0s)] read_ch_p5=85",
+                "22:43:43.9798 [INFO] usart2: [host:    0.71s (+69?s)|virt: 0s (+0s)] read_ch_p6=85",
+                "22:43:43.9799 [INFO] usart2: [host:    0.71s (+76?s)|virt: 0s (+0s)] read_ch_p7=85",
+                "22:43:43.9800 [INFO] usart2: [host:    0.71s (+86?s)|virt: 0s (+0s)] read_ch_int=85",
+                "22:43:43.9801 [INFO] usart2: [host:    0.71s (+78?s)|virt: 0s (+0s)] read_raw=85",
+                "22:43:43.9826 [INFO] usart2: [host:  0.72s (+2.42ms)|virt: 0.1ms (+0.1ms)] RESULT: PASS",
+                "22:43:43.9827 [INFO] usart2: [host:  0.72s (+0.12ms)|virt:    0.1ms (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.251803636550903,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            }
+          ]
+        },
+        "feedback_chars": 4233
+      },
+      {
+        "attempt": 2,
+        "layer_failed": "probe",
+        "success": false,
+        "total_time_s": 75.927,
+        "bundle_summary": {
+          "device_id": "pcf8574",
+          "rtos_id": "riot",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 326,
+          "source_chars": 348,
+          "plan_hash": "2ad9cab4490a276a",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c",
+            "preamble_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 2.654
+        },
+        "syntax": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0
+        },
+        "consistency": {
+          "overall": "mixed",
+          "ok": true,
+          "inconsistent_count": 0,
+          "llm_only_count": 2,
+          "consistent_count": 1,
+          "summary": "3 stim; 1 L1/L2; 2 llm_only",
+          "stimuli": [
+            {
+              "name": "all_pins_high",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0xFF] no interp = 1.0",
+                "ch=p1: bytes=[0xFF] no interp = 1.0",
+                "ch=p2: bytes=[0xFF] no interp = 1.0",
+                "ch=p3: bytes=[0xFF] no interp = 1.0",
+                "ch=p4: bytes=[0xFF] no interp = 1.0",
+                "ch=p5: bytes=[0xFF] no interp = 1.0",
+                "ch=p6: bytes=[0xFF] no interp = 1.0",
+                "ch=p7: bytes=[0xFF] no interp = 1.0",
+                "ch=int: bytes=[0xFF] no interp = 1.0"
+              ]
+            },
+            {
+              "name": "all_pins_low",
+              "verdict": "consistent_l1",
+              "layer": "L1",
+              "evidence": "ch=p0:single_u8=0; ch=p1:single_u8=0; ch=p2:single_u8=0; ch=p3:single_u8=0; ch=p4:single_u8=0; ch=p5:single_u8=0; ch=p6:single_u8=0; ch=p7:single_u8=0; ch=int:single_u8=0",
+              "warnings": []
+            },
+            {
+              "name": "mixed_pins",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0x55] no interp = 1.0",
+                "ch=p1: bytes=[0x55] no interp = 0.0",
+                "ch=p2: bytes=[0x55] no interp = 1.0",
+                "ch=p3: bytes=[0x55] no interp = 0.0",
+                "ch=p4: bytes=[0x55] no interp = 1.0",
+                "ch=p5: bytes=[0x55] no interp = 0.0",
+                "ch=p6: bytes=[0x55] no interp = 1.0",
+                "ch=p7: bytes=[0x55] no interp = 0.0",
+                "ch=int: bytes=[0x55] no interp = 0.0"
+              ]
+            }
+          ]
+        },
+        "coverage": {
+          "ok": true,
+          "superset": true,
+          "covered_count": 1,
+          "missing_count": 0,
+          "llm_extras_count": 0,
+          "merged_count": 1,
+          "summary": "1/1 mechanical covered",
+          "covered": [
+            {
+              "mechanical": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "write_prefix_any_of": [],
+                "note": "flow_read_write_1: direct read read_port",
+                "source": "operation_flows[0].steps[0]",
+                "read_any": true,
+                "forbid_write_prefix": true
+              },
+              "llm_match": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "read_any": true,
+                "forbid_write_prefix": true,
+                "note": "flow_read_write_1: direct read read_port"
+              },
+              "reason": "read-any match (no prefixes required)",
+              "covered": true
+            }
+          ],
+          "missing": [],
+          "llm_extras": [],
+          "merged": [
+            {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x20",
+              "read_any": true,
+              "forbid_write_prefix": true,
+              "note": "flow_read_write_1: direct read read_port"
+            }
+          ]
+        },
+        "adapter_summary": {
+          "device_id": "pcf8574",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "source_chars": 2758,
+          "warnings": []
+        },
+        "link": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0,
+          "elf_path": "<RUN_DIR>/attempts/002/stage/out/pcf8574_riot.elf",
+          "text_bytes": 8743,
+          "data_bytes": 92,
+          "bss_bytes": 88
+        },
+        "probe": {
+          "total": 3,
+          "passed": 1,
+          "expectation_failures": 2,
+          "outcomes": [
+            {
+              "stimulus_name": "all_pins_high",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 255.0,
+              "read_channels": {
+                "p0": 255.0,
+                "p1": 255.0,
+                "p2": 255.0,
+                "p3": 255.0,
+                "p4": 255.0,
+                "p5": 255.0,
+                "p6": 255.0,
+                "p7": 255.0,
+                "int": 255.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_all_pins_high.jsonl",
+              "output_lines": [
+                "22:44:11.2864 [INFO] usart2: [host: 0.66s (+0.66s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:44:11.3514 [INFO] usart2: [host: 0.72s (+64.59ms)|virt: 0s (+0s)] read_ch_p0=255",
+                "22:44:11.3515 [INFO] usart2: [host:  0.72s (+0.11ms)|virt: 0s (+0s)] read_ch_p1=255",
+                "22:44:11.3516 [INFO] usart2: [host:    0.72s (+79?s)|virt: 0s (+0s)] read_ch_p2=255",
+                "22:44:11.3516 [INFO] usart2: [host:    0.72s (+67?s)|virt: 0s (+0s)] read_ch_p3=255",
+                "22:44:11.3516 [INFO] usart2: [host:    0.72s (+70?s)|virt: 0s (+0s)] read_ch_p4=255",
+                "22:44:11.3517 [INFO] usart2: [host:    0.72s (+72?s)|virt: 0s (+0s)] read_ch_p5=255",
+                "22:44:11.3518 [INFO] usart2: [host:    0.72s (+77?s)|virt: 0s (+0s)] read_ch_p6=255",
+                "22:44:11.3519 [INFO] usart2: [host:    0.72s (+81?s)|virt: 0s (+0s)] read_ch_p7=255",
+                "22:44:11.3520 [INFO] usart2: [host:    0.72s (+74?s)|virt: 0s (+0s)] read_ch_int=255",
+                "22:44:11.3545 [INFO] usart2: [host:  0.72s (+2.44ms)|virt: 0.1ms (+0.1ms)] read_raw=255",
+                "22:44:11.3546 [INFO] usart2: [host:    0.72s (+83?s)|virt:    0.1ms (+0s)] RESULT: PASS",
+                "22:44:11.3546 [INFO] usart2: [host:    0.72s (+95?s)|virt:    0.1ms (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.199692487716675,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "all_pins_low",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 0.0,
+              "read_channels": {
+                "p0": 0.0,
+                "p1": 0.0,
+                "p2": 0.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 0.0,
+                "p6": 0.0,
+                "p7": 0.0,
+                "int": 0.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_all_pins_low.jsonl",
+              "output_lines": [
+                "22:44:35.5705 [INFO] usart2: [host: 0.67s (+0.67s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:44:35.6384 [INFO] usart2: [host: 0.74s (+67.42ms)|virt: 0s (+0s)] read_ch_p0=0",
+                "22:44:35.6385 [INFO] usart2: [host:   0.74s (+0.1ms)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:44:35.6386 [INFO] usart2: [host:    0.74s (+70?s)|virt: 0s (+0s)] read_ch_p2=0",
+                "22:44:35.6386 [INFO] usart2: [host:    0.74s (+60?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:44:35.6387 [INFO] usart2: [host:    0.74s (+61?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:44:35.6387 [INFO] usart2: [host:    0.74s (+59?s)|virt: 0s (+0s)] read_ch_p5=0",
+                "22:44:35.6388 [INFO] usart2: [host:    0.74s (+59?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:44:35.6388 [INFO] usart2: [host:    0.74s (+62?s)|virt: 0s (+0s)] read_ch_p7=0",
+                "22:44:35.6389 [INFO] usart2: [host:    0.74s (+64?s)|virt: 0s (+0s)] read_ch_int=0",
+                "22:44:35.6390 [INFO] usart2: [host:    0.74s (+69?s)|virt: 0s (+0s)] read_raw=0",
+                "22:44:35.6390 [INFO] usart2: [host:    0.74s (+75?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:44:35.6391 [INFO] usart2: [host:    0.74s (+87?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.27889108657837,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "mixed_pins",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 85.0,
+              "read_channels": {
+                "p0": 85.0,
+                "p1": 85.0,
+                "p2": 85.0,
+                "p3": 85.0,
+                "p4": 85.0,
+                "p5": 85.0,
+                "p6": 85.0,
+                "p7": 85.0,
+                "int": 85.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_mixed_pins.jsonl",
+              "output_lines": [
+                "22:44:59.8202 [INFO] usart2: [host: 0.64s (+0.64s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:44:59.8859 [INFO] usart2: [host: 0.71s (+65.07ms)|virt: 0s (+0s)] read_ch_p0=85",
+                "22:44:59.8860 [INFO] usart2: [host:  0.71s (+0.11ms)|virt: 0s (+0s)] read_ch_p1=85",
+                "22:44:59.8860 [INFO] usart2: [host:    0.71s (+78?s)|virt: 0s (+0s)] read_ch_p2=85",
+                "22:44:59.8861 [INFO] usart2: [host:    0.71s (+68?s)|virt: 0s (+0s)] read_ch_p3=85",
+                "22:44:59.8862 [INFO] usart2: [host:    0.71s (+67?s)|virt: 0s (+0s)] read_ch_p4=85",
+                "22:44:59.8862 [INFO] usart2: [host:    0.71s (+71?s)|virt: 0s (+0s)] read_ch_p5=85",
+                "22:44:59.8863 [INFO] usart2: [host:    0.71s (+75?s)|virt: 0s (+0s)] read_ch_p6=85",
+                "22:44:59.8864 [INFO] usart2: [host:    0.71s (+68?s)|virt: 0s (+0s)] read_ch_p7=85",
+                "22:44:59.8864 [INFO] usart2: [host:    0.71s (+73?s)|virt: 0s (+0s)] read_ch_int=85",
+                "22:44:59.8865 [INFO] usart2: [host:    0.71s (+78?s)|virt: 0s (+0s)] read_raw=85",
+                "22:44:59.8866 [INFO] usart2: [host:    0.71s (+69?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:44:59.8893 [INFO] usart2: [host:  0.71s (+2.62ms)|virt: 0.1ms (+0.1ms)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.310903549194336,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            }
+          ]
+        },
+        "feedback_chars": 4233
+      },
+      {
+        "attempt": 3,
+        "layer_failed": "probe",
+        "success": false,
+        "total_time_s": 76.265,
+        "bundle_summary": {
+          "device_id": "pcf8574",
+          "rtos_id": "riot",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 306,
+          "source_chars": 368,
+          "plan_hash": "2ad9cab4490a276a",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c",
+            "preamble_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 2.557
+        },
+        "syntax": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0
+        },
+        "consistency": {
+          "overall": "mixed",
+          "ok": true,
+          "inconsistent_count": 0,
+          "llm_only_count": 2,
+          "consistent_count": 1,
+          "summary": "3 stim; 1 L1/L2; 2 llm_only",
+          "stimuli": [
+            {
+              "name": "all_pins_high",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0xFF] no interp = 1.0",
+                "ch=p1: bytes=[0xFF] no interp = 1.0",
+                "ch=p2: bytes=[0xFF] no interp = 1.0",
+                "ch=p3: bytes=[0xFF] no interp = 1.0",
+                "ch=p4: bytes=[0xFF] no interp = 1.0",
+                "ch=p5: bytes=[0xFF] no interp = 1.0",
+                "ch=p6: bytes=[0xFF] no interp = 1.0",
+                "ch=p7: bytes=[0xFF] no interp = 1.0",
+                "ch=int: bytes=[0xFF] no interp = 1.0"
+              ]
+            },
+            {
+              "name": "all_pins_low",
+              "verdict": "consistent_l1",
+              "layer": "L1",
+              "evidence": "ch=p0:single_u8=0; ch=p1:single_u8=0; ch=p2:single_u8=0; ch=p3:single_u8=0; ch=p4:single_u8=0; ch=p5:single_u8=0; ch=p6:single_u8=0; ch=p7:single_u8=0; ch=int:single_u8=0",
+              "warnings": []
+            },
+            {
+              "name": "mixed_pins",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0x55] no interp = 1.0",
+                "ch=p1: bytes=[0x55] no interp = 0.0",
+                "ch=p2: bytes=[0x55] no interp = 1.0",
+                "ch=p3: bytes=[0x55] no interp = 0.0",
+                "ch=p4: bytes=[0x55] no interp = 1.0",
+                "ch=p5: bytes=[0x55] no interp = 0.0",
+                "ch=p6: bytes=[0x55] no interp = 1.0",
+                "ch=p7: bytes=[0x55] no interp = 0.0",
+                "ch=int: bytes=[0x55] no interp = 0.0"
+              ]
+            }
+          ]
+        },
+        "coverage": {
+          "ok": true,
+          "superset": true,
+          "covered_count": 1,
+          "missing_count": 0,
+          "llm_extras_count": 0,
+          "merged_count": 1,
+          "summary": "1/1 mechanical covered",
+          "covered": [
+            {
+              "mechanical": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "write_prefix_any_of": [],
+                "note": "flow_read_write_1: direct read read_port",
+                "source": "operation_flows[0].steps[0]",
+                "read_any": true,
+                "forbid_write_prefix": true
+              },
+              "llm_match": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "read_any": true,
+                "forbid_write_prefix": true,
+                "note": "flow_read_write_1: direct read read_port"
+              },
+              "reason": "read-any match (no prefixes required)",
+              "covered": true
+            }
+          ],
+          "missing": [],
+          "llm_extras": [],
+          "merged": [
+            {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x20",
+              "read_any": true,
+              "forbid_write_prefix": true,
+              "note": "flow_read_write_1: direct read read_port"
+            }
+          ]
+        },
+        "adapter_summary": {
+          "device_id": "pcf8574",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "source_chars": 2758,
+          "warnings": []
+        },
+        "link": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0,
+          "elf_path": "<RUN_DIR>/attempts/003/stage/out/pcf8574_riot.elf",
+          "text_bytes": 8743,
+          "data_bytes": 92,
+          "bss_bytes": 88
+        },
+        "probe": {
+          "total": 3,
+          "passed": 1,
+          "expectation_failures": 2,
+          "outcomes": [
+            {
+              "stimulus_name": "all_pins_high",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 255.0,
+              "read_channels": {
+                "p0": 255.0,
+                "p1": 255.0,
+                "p2": 255.0,
+                "p3": 255.0,
+                "p4": 255.0,
+                "p5": 255.0,
+                "p6": 255.0,
+                "p7": 255.0,
+                "int": 255.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/003/stage/probe/trace_all_pins_high.jsonl",
+              "output_lines": [
+                "22:45:27.3150 [INFO] usart2: [host: 0.66s (+0.66s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:45:27.3786 [INFO] usart2: [host: 0.73s (+63.21ms)|virt: 0s (+0s)] read_ch_p0=255",
+                "22:45:27.3788 [INFO] usart2: [host:  0.73s (+0.12ms)|virt: 0s (+0s)] read_ch_p1=255",
+                "22:45:27.3788 [INFO] usart2: [host:    0.73s (+82?s)|virt: 0s (+0s)] read_ch_p2=255",
+                "22:45:27.3788 [INFO] usart2: [host:    0.73s (+70?s)|virt: 0s (+0s)] read_ch_p3=255",
+                "22:45:27.3789 [INFO] usart2: [host:    0.73s (+74?s)|virt: 0s (+0s)] read_ch_p4=255",
+                "22:45:27.3790 [INFO] usart2: [host:    0.73s (+74?s)|virt: 0s (+0s)] read_ch_p5=255",
+                "22:45:27.3790 [INFO] usart2: [host:    0.73s (+77?s)|virt: 0s (+0s)] read_ch_p6=255",
+                "22:45:27.3791 [INFO] usart2: [host:    0.73s (+82?s)|virt: 0s (+0s)] read_ch_p7=255",
+                "22:45:27.3792 [INFO] usart2: [host:    0.73s (+82?s)|virt: 0s (+0s)] read_ch_int=255",
+                "22:45:27.3817 [INFO] usart2: [host:  0.73s (+2.45ms)|virt: 0.1ms (+0.1ms)] read_raw=255",
+                "22:45:27.3818 [INFO] usart2: [host:    0.73s (+86?s)|virt:    0.1ms (+0s)] RESULT: PASS",
+                "22:45:27.3819 [INFO] usart2: [host:    0.73s (+98?s)|virt:    0.1ms (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.40845775604248,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "all_pins_low",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 0.0,
+              "read_channels": {
+                "p0": 0.0,
+                "p1": 0.0,
+                "p2": 0.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 0.0,
+                "p6": 0.0,
+                "p7": 0.0,
+                "int": 0.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/003/stage/probe/trace_all_pins_low.jsonl",
+              "output_lines": [
+                "22:45:51.7410 [INFO] usart2: [host: 0.71s (+0.71s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:45:51.8090 [INFO] usart2: [host: 0.78s (+67.28ms)|virt: 0s (+0s)] read_ch_p0=0",
+                "22:45:51.8091 [INFO] usart2: [host:  0.78s (+0.11ms)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:45:51.8092 [INFO] usart2: [host:    0.78s (+77?s)|virt: 0s (+0s)] read_ch_p2=0",
+                "22:45:51.8092 [INFO] usart2: [host:    0.78s (+64?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:45:51.8093 [INFO] usart2: [host:    0.78s (+67?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:45:51.8094 [INFO] usart2: [host:    0.78s (+66?s)|virt: 0s (+0s)] read_ch_p5=0",
+                "22:45:51.8094 [INFO] usart2: [host:    0.78s (+66?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:45:51.8095 [INFO] usart2: [host:    0.78s (+64?s)|virt: 0s (+0s)] read_ch_p7=0",
+                "22:45:51.8096 [INFO] usart2: [host:    0.78s (+69?s)|virt: 0s (+0s)] read_ch_int=0",
+                "22:45:51.8096 [INFO] usart2: [host:    0.78s (+72?s)|virt: 0s (+0s)] read_raw=0",
+                "22:45:51.8097 [INFO] usart2: [host:    0.78s (+68?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:45:51.8098 [INFO] usart2: [host:    0.78s (+93?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.410279512405396,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "mixed_pins",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 85.0,
+              "read_channels": {
+                "p0": 85.0,
+                "p1": 85.0,
+                "p2": 85.0,
+                "p3": 85.0,
+                "p4": 85.0,
+                "p5": 85.0,
+                "p6": 85.0,
+                "p7": 85.0,
+                "int": 85.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/003/stage/probe/trace_mixed_pins.jsonl",
+              "output_lines": [
+                "22:46:16.1350 [INFO] usart2: [host: 0.65s (+0.65s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:46:16.2056 [INFO] usart2: [host: 0.72s (+70.18ms)|virt: 0s (+0s)] read_ch_p0=85",
+                "22:46:16.2057 [INFO] usart2: [host:  0.72s (+0.13ms)|virt: 0s (+0s)] read_ch_p1=85",
+                "22:46:16.2058 [INFO] usart2: [host:    0.72s (+93?s)|virt: 0s (+0s)] read_ch_p2=85",
+                "22:46:16.2058 [INFO] usart2: [host:    0.72s (+81?s)|virt: 0s (+0s)] read_ch_p3=85",
+                "22:46:16.2059 [INFO] usart2: [host:    0.72s (+81?s)|virt: 0s (+0s)] read_ch_p4=85",
+                "22:46:16.2060 [INFO] usart2: [host:    0.72s (+83?s)|virt: 0s (+0s)] read_ch_p5=85",
+                "22:46:16.2061 [INFO] usart2: [host:    0.72s (+84?s)|virt: 0s (+0s)] read_ch_p6=85",
+                "22:46:16.2062 [INFO] usart2: [host:    0.72s (+85?s)|virt: 0s (+0s)] read_ch_p7=85",
+                "22:46:16.2062 [INFO] usart2: [host:    0.72s (+88?s)|virt: 0s (+0s)] read_ch_int=85",
+                "22:46:16.2063 [INFO] usart2: [host:    0.72s (+94?s)|virt: 0s (+0s)] read_raw=85",
+                "22:46:16.2064 [INFO] usart2: [host:    0.72s (+82?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:46:16.2091 [INFO] usart2: [host:  0.72s (+2.71ms)|virt: 0.1ms (+0.1ms)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.40976119041443,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            }
+          ]
+        },
+        "feedback_chars": 4233
+      }
+    ]
+  }
+}

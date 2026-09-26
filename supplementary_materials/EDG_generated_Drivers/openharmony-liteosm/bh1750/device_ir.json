@@ -1,0 +1,525 @@
+{
+  "device_id": "bh1750",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x23",
+        "description": "ADDR = 'L' (ADDR ≤ 0.3VCC)",
+        "is_default": true
+      },
+      {
+        "address": "0x5C",
+        "description": "ADDR = 'H' (ADDR ≥ 0.7VCC)",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": null,
+  "read_channels": [
+    {
+      "id": "illuminance",
+      "raw_type": "uint16",
+      "physical_unit": "millilux",
+      "flow_id": "measure_continuous_hres",
+      "source_bytes": [
+        "high_byte",
+        "low_byte"
+      ],
+      "source_signal": null,
+      "formula_id": "illuminance_hres",
+      "notes": "Ambient light illuminance in lux. Canonicalized physical_unit to formula output unit 'millilux'."
+    }
+  ],
+  "access_model": {
+    "kind": "command_then_direct_read",
+    "address_bytes": null,
+    "read_requires_pointer": false,
+    "direct_read_after_write": false,
+    "notes": "Commands are sent as I2C writes with opcode; data is read via I2C read without pointer."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "power_on",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x01"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "Power On command (0x01)"
+          },
+          "notes": "Send Power On command."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Power on the device."
+    },
+    {
+      "flow_id": "reset",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "power_on"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x07"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "Reset command (0x07)"
+          },
+          "notes": "Reset data register after power on."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Reset data register."
+    },
+    {
+      "flow_id": "measure_continuous_hres",
+      "kind": "read",
+      "channels": [
+        "illuminance"
+      ],
+      "preconditions": [
+        "power_on"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x10"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "Continuously H-Resolution Mode command (0x10)"
+          },
+          "notes": "Start continuous H-resolution measurement."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 180,
+          "notes": "Wait max 180ms for first measurement completion."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": [],
+            "length": 2,
+            "pointer_target": null,
+            "notes": "Read 2 bytes (High Byte then Low Byte)"
+          },
+          "notes": "Read illuminance data register."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "illuminance",
+          "byte_source": "high_byte:8 || low_byte:8",
+          "source_signal": null,
+          "formula_id": "illuminance_hres",
+          "unit": "millilux",
+          "notes": "Raw 16-bit count from data register."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Continuous H-Resolution Mode measurement."
+    },
+    {
+      "flow_id": "measure_one_time_hres2",
+      "kind": "read",
+      "channels": [
+        "illuminance"
+      ],
+      "preconditions": [
+        "power_on"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x21"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "One Time H-Resolution Mode2 command (0x21)"
+          },
+          "notes": "Start one-time H-resolution mode2 measurement."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 180,
+          "notes": "Wait max 180ms for measurement completion."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": [],
+            "length": 2,
+            "pointer_target": null,
+            "notes": "Read 2 bytes (High Byte then Low Byte)"
+          },
+          "notes": "Read illuminance data register."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "illuminance",
+          "byte_source": "high_byte:8 || low_byte:8",
+          "source_signal": null,
+          "formula_id": "illuminance_hres2",
+          "unit": "millilux",
+          "notes": "Raw 16-bit count from data register."
+        }
+      ],
+      "requires_human": false,
+      "notes": "One Time H-Resolution Mode2 measurement."
+    },
+    {
+      "flow_id": "set_mtreg",
+      "kind": "calibration",
+      "channels": [],
+      "preconditions": [
+        "power_on"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x40"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "High bit change: 01000_MT[7,6,5] (example MT=69 default)"
+          },
+          "notes": "Send high bits of MTreg."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x65"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "Low bit change: 011_MT[4,3,2,1,0] (example MT=69 default)"
+          },
+          "notes": "Send low bits of MTreg."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Change measurement time (sensitivity adjustment)."
+    },
+    {
+      "flow_id": "power_down",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x00"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "Power Down command (0x00)"
+          },
+          "notes": "Send Power Down command."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Power down the device."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 16,
+    "signed": false,
+    "right_shift": 0,
+    "sign_extend_from_bit": null,
+    "notes": "Data register is 16-bit unsigned, high byte first."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Data Register",
+      "value": null,
+      "access": "ro",
+      "size_bits": 16,
+      "description": "Illuminance data register, initial value 0x0000."
+    },
+    {
+      "name": "Measurement Time Register (MTreg)",
+      "value": "0x45",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Measurement time register, default 69 decimal, range 31-254."
+    }
+  ],
+  "bitfields": [
+    {
+      "name": "Data Register.High Byte",
+      "bits": "15:8",
+      "roles": [
+        "data"
+      ],
+      "description": "High byte of illuminance data."
+    },
+    {
+      "name": "Data Register.Low Byte",
+      "bits": "7:0",
+      "roles": [
+        "data"
+      ],
+      "description": "Low byte of illuminance data."
+    },
+    {
+      "name": "Measurement Time Register (MTreg).MT[7:5]",
+      "bits": "7:5",
+      "roles": [
+        "config"
+      ],
+      "description": "High bits of MTreg, sent as opcode 01000_MT[7,6,5]."
+    },
+    {
+      "name": "Measurement Time Register (MTreg).MT[4:0]",
+      "bits": "4:0",
+      "roles": [
+        "config"
+      ],
+      "description": "Low bits of MTreg, sent as opcode 011_MT[4,3,2,1,0]."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Ensure DVI is held low for at least 1µs after VCC supply for asynchronous reset."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x01"
+        ],
+        "length": null,
+        "pointer_target": null,
+        "notes": "Power On command (0x01)"
+      },
+      "notes": "Send Power On command to wake device."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x10"
+        ],
+        "length": null,
+        "pointer_target": null,
+        "notes": "Continuously H-Resolution Mode command (0x10)"
+      },
+      "notes": "Start continuous measurement."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait max 180ms for first measurement completion."
+    },
+    {
+      "transaction": {
+        "kind": "read",
+        "bytes": [],
+        "length": 2,
+        "pointer_target": null,
+        "notes": "Read 2 bytes (High Byte then Low Byte)"
+      },
+      "notes": "Read illuminance data register."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "h_resolution_measurement_time",
+      "value": 180,
+      "unit": "ms",
+      "condition": "H-Resolution Mode",
+      "notes": "Maximum time for H-Resolution mode measurement."
+    },
+    {
+      "name": "l_resolution_measurement_time",
+      "value": 24,
+      "unit": "ms",
+      "condition": "L-Resolution Mode",
+      "notes": "Maximum time for L-Resolution mode measurement."
+    },
+    {
+      "name": "dvi_reset_low_time",
+      "value": 1,
+      "unit": "us",
+      "condition": "After VCC supply",
+      "notes": "DVI must be held low for at least 1µs after VCC supply for reset."
+    },
+    {
+      "name": "i2c_scl_frequency",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Maximum",
+      "notes": "Maximum SCL clock frequency."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "illuminance_hres",
+      "formula": "Illuminance (lux) = raw_count / (1.2 * (69 / X)) where X is MTreg value (default 69).",
+      "integer_approximation_expression": {
+        "expression": "(raw_count * 1000) // (120 * 69 // X)",
+        "inputs": [
+          {
+            "name": "raw_count",
+            "byte_source": "high_byte:8 || low_byte:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "16-bit raw count from data register."
+          },
+          {
+            "name": "X",
+            "byte_source": null,
+            "source_signal": null,
+            "default_value": 69,
+            "config_source": "MTreg",
+            "description": "MTreg value (default 69)."
+          }
+        ],
+        "output": {
+          "name": "illuminance_millilux",
+          "unit": "millilux"
+        }
+      }
+    },
+    {
+      "name": "illuminance_hres2",
+      "formula": "Illuminance (lux) = raw_count / (1.2 * (69 / X) * 2) where X is MTreg value (default 69).",
+      "integer_approximation_expression": {
+        "expression": "(raw_count * 1000) // (240 * 69 // X)",
+        "inputs": [
+          {
+            "name": "raw_count",
+            "byte_source": "high_byte:8 || low_byte:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "16-bit raw count from data register."
+          },
+          {
+            "name": "X",
+            "byte_source": null,
+            "source_signal": null,
+            "default_value": 69,
+            "config_source": "MTreg",
+            "description": "MTreg value (default 69)."
+          }
+        ],
+        "output": {
+          "name": "illuminance_millilux",
+          "unit": "millilux"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "i2c_nack",
+      "description": "I2C NACK during write or read.",
+      "detection": "I2C bus error",
+      "driver_action": "return -EIO"
+    },
+    {
+      "name": "measurement_timeout",
+      "description": "Measurement not completed within max time.",
+      "detection": "Polling timeout",
+      "driver_action": "return -ETIMEDOUT"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "power_down",
+      "description": "Power down mode, no active state.",
+      "current_consumption_ua": 0.01,
+      "notes": "Entered via Power Down command (0x00)."
+    },
+    {
+      "name": "power_on",
+      "description": "Waiting for measurement command.",
+      "current_consumption_ua": 120,
+      "notes": "Entered via Power On command (0x01)."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "bh1750",
+      "page": 10,
+      "snippet": "Slave Address is 2 types, it is determined by ADDR Terminal ADDR = 'H' (ADDR ≥ 0.7VCC) → '1011100' ADDR = 'L' (ADDR ≤ 0.3VCC) → '0100011'"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Reset command is for only reset Illuminance data register. ( reset value is '0' )"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Continuously H-Resolution Mode ... Start measurement at 1lx resolution. Measurement Time is typically 120ms."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Change Measurement time ( High bit ) ... 01000_MT[7,6,5]"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 11,
+      "snippet": "H-reslution mode : Illuminance per 1 count ( lx / count )    = 1 / 1.2 *( 69 / X )"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 6,
+      "snippet": "DVI is I2C bus reference voltage terminal. And it is also asynchronous reset terminal. It is necessary to set to 'L' after VCC is supplied."
+    }
+  ],
+  "requires_human": [
+    "DVI is likely a typo for VCC in some contexts; confirm power supply sequence.",
+    "ADDR terminal has 3-state buffer; ensure proper pull-up/pull-down during power-up.",
+    "Measurement time may be doubled in some modes; verify actual timing."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

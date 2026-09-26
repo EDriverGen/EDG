@@ -1,0 +1,75 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef BH1750_H\n#define BH1750_H\n\n#include <stdint.h>\n\n#include \"cmsis_rtx.h\"\nstruct bh1750_dev {\n    I2C_HandleTypeDef *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint bh1750_init(struct bh1750_dev *dev, void *bus_handle);\nint bh1750_read_illuminance(struct bh1750_dev *dev, int32_t *raw);\n\n#endif\n",
+  "driver_source": "#include \"bh1750.h\"\n#include <stddef.h>\n\n#include \"cmsis_rtx.h\"\n#define BH1750_I2C_ADDR 0x23\n#define BH1750_CMD_POWER_ON 0x01\n#define BH1750_CMD_CONT_HRES 0x10\n#define BH1750_CMD_RESET 0x07\n\nstatic int i2c_write(struct bh1750_dev *dev, uint8_t *data, uint16_t size)\n{\n    if (HAL_I2C_Master_Transmit(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), data, size, 100) != HAL_OK)\n        return -1;\n    return 0;\n}\n\nstatic int i2c_read(struct bh1750_dev *dev, uint8_t *buf, uint16_t size)\n{\n    if (HAL_I2C_Master_Receive(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), buf, size, 100) != HAL_OK)\n        return -1;\n    return 0;\n}\n\nint bh1750_init(struct bh1750_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = (I2C_HandleTypeDef *)bus_handle;\n    dev->i2c_addr = BH1750_I2C_ADDR;\n    uint8_t cmd = BH1750_CMD_POWER_ON;\n    if (i2c_write(dev, &cmd, 1) != 0)\n        return -1;\n    return 0;\n}\n\nint bh1750_read_illuminance(struct bh1750_dev *dev, int32_t *raw)\n{\n    uint8_t cmd = BH1750_CMD_CONT_HRES;\n    if (i2c_write(dev, &cmd, 1) != 0)\n        return -1;\n    osDelay(180);\n    uint8_t buf[2];\n    if (i2c_read(dev, buf, 2) != 0)\n        return -1;\n    *raw = (int32_t)(((uint16_t)buf[0] << 8) | buf[1]);\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus_handle)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct bh1750_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "measure_continuous_hres: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "measure_continuous_hres: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "read_bytes": [
+            "0x01",
+            "0x90"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x01 0x90], raw_count = ((0x01 << 8) | 0x90) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.993,
+  "prompt_chars": 30974,
+  "raw_response": "{\"driver_header\": \"#ifndef BH1750_H\\n#define BH1750_H\\n\\n#include <stdint.h>\\n#include \\\"cmsis_rtx.h\\\"\\n\\nstruct bh1750_dev {\\n    I2C_HandleTypeDef *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint bh1750_init(struct bh1750_dev *dev, void *bus_handle);\\nint bh1750_read_illuminance(struct bh1750_dev *dev, int32_t *raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"bh1750.h\\\"\\n#include <stddef.h>\\n\\n#define BH1750_I2C_ADDR 0x23\\n#define BH1750_CMD_POWER_ON 0x01\\n#define BH1750_CMD_CONT_HRES 0x10\\n#define BH1750_CMD_RESET 0x07\\n\\nstatic int i2c_write(struct bh1750_dev *dev, uint8_t *data, uint16_t size)\\n{\\n    if (HAL_I2C_Master_Transmit(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), data, size, 100) != HAL_OK)\\n        return -1;\\n    return 0;\\n}\\n\\nstatic int i2c_read(struct bh1750_dev *dev, uint8_t *buf, uint16_t size)\\n{\\n    if (HAL_I2C_Master_Receive(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), buf, size, 100) != HAL_OK)\\n        return -1;\\n    return 0;\\n}\\n\\nint bh1750_init(struct bh1750_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = (I2C_HandleTypeDef *)bus_handle;\\n    dev->i2c_addr = BH1750_I2C_ADDR;\\n    uint8_t cmd = BH1750_CMD_POWER_ON;\\n    if (i2c_write(dev, &cmd, 1) != 0)\\n        return -1;\\n    return 0;\\n}\\n\\nint bh1750_read_illuminance(struct bh1750_dev *dev, int32_t *raw)\\n{\\n    uint8_t cmd = BH1750_CMD_CONT_HRES;\\n    if (i2c_write(dev, &cmd, 1) != 0)\\n        return -1;\\n    osDelay(180);\\n    uint8_t buf[2];\\n    if (i2c_read(dev, buf, 2) != 0)\\n        return -1;\\n    *raw = (int32_t)(((uint16_t)buf[0] << 8) | buf[1]);\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "a08465cb80a634eb"
+}

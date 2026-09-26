@@ -1,0 +1,120 @@
+{
+  "device_id": "sht30",
+  "rtos_id": "riot",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "sht30_init(&g_eval_dev, I2C_DEV(0))",
+    "channels": [
+      {
+        "id": "temp",
+        "call": "sht30_read_single_shot(&g_eval_dev, &temp_val, &hum_val)",
+        "out_arg": "temp_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "humidity",
+        "call": "sht30_read_single_shot(&g_eval_dev, &temp_val, &hum_val)",
+        "out_arg": "hum_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_percent"
+      }
+    ],
+    "dev_struct_type": "sht30_t",
+    "init_extra_setup_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x30",
+            "0xA2"
+          ]
+        ],
+        "note": "soft_reset"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x00",
+            "0x06"
+          ]
+        ],
+        "note": "general_call_reset"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x24",
+            "0x00"
+          ]
+        ],
+        "note": "single_shot_measurement_high_no_clock_stretching: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_packed_direct_read_1",
+        "mock_preload": {
+          "read_bytes": [
+            "0x66",
+            "0x66",
+            "0x93",
+            "0x80",
+            "0x00",
+            "0xA2"
+          ]
+        },
+        "expected_channels": {
+          "temp": 25000,
+          "humidity": 50000
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x66 << 8) | 0x66); ((((0x66 << 8) | 0x66) * 175000) // 65535) - 45000 = 25000; humidity: SRH=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 100000) // 65535) = 50000"
+      },
+      {
+        "name": "mechanical_packed_direct_read_2",
+        "mock_preload": {
+          "read_bytes": [
+            "0x80",
+            "0x00",
+            "0xA2",
+            "0x00",
+            "0x00",
+            "0x81"
+          ]
+        },
+        "expected_channels": {
+          "temp": 42501,
+          "humidity": 0
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 175000) // 65535) - 45000 = 42501; humidity: SRH=((0x00 << 8) | 0x00); ((((0x00 << 8) | 0x00) * 100000) // 65535) = 0"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "845621be57dc5ad4",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.537,
+  "prompt_chars": 52667,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"sht30_init(&g_eval_dev, I2C_DEV(0))\", \"channels\": [{\"id\": \"temp\", \"call\": \"sht30_read_single_shot(&g_eval_dev, &temp_val, &hum_val)\", \"out_arg\": \"temp_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}, {\"id\": \"humidity\", \"call\": \"sht30_read_single_shot(&g_eval_dev, &temp_val, &hum_val)\", \"out_arg\": \"hum_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_percent\"}], \"dev_struct_type\": \"sht30_t\", \"init_extra_setup_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x44\", \"write_prefix_any_of\": [[\"0x30\", \"0xA2\"]], \"note\": \"soft_reset\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x44\", \"write_prefix_any_of\": [[\"0x00\", \"0x06\"]], \"note\": \"general_call_reset\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x44\", \"write_prefix_any_of\": [[\"0x24\", \"0x00\"]], \"note\": \"single_shot_measurement_high_no_clock_stretching: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x44\", \"read_any\": true, \"forbid_write_prefix\": true, \"note\": \"single_shot_measurement_high_no_clock_stretching: direct read\"}], \"test_stimuli\": [{\"name\": \"nominal_positive\", \"mock_preload\": {\"read_bytes\": [\"0x6C\", \"0x8A\", \"0x3C\", \"0x6C\", \"0x8A\", \"0x3C\"]}, \"expected_channels\": {\"temp\": 25000, \"humidity\": 50000}, \"derivation\": \"ST=0x6C8A=27802, temp=((27802*175000)//65535)-45000=25000; SRH=0x6C8A=27802, hum=(27802*100000)//65535=50000\"}, {\"name\": \"zero_near_zero\", \"mock_preload\": {\"read_bytes\": [\"0x00\", \"0x01\", \"0x00\", \"0x00\", \"0x01\", \"0x00\"]}, \"expected_channels\": {\"temp\": -44733, \"humidity\": 1}, \"derivation\": \"ST=0x0001=1, temp=((1*175000)//65535)-45000=-44733; SRH=0x0001=1, hum=(1*100000)//65535=1\"}, {\"name\": \"negative_temperature\", \"mock_preload\": {\"read_bytes\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"temp\": -45000, \"humidity\": 0}, \"derivation\": \"ST=0x0000=0, temp=((0*175000)//65535)-45000=-45000; SRH=0x0000=0, hum=(0*100000)//65535=0\"}]}}"
+}

@@ -1,0 +1,84 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x44",
+      "write_prefix_any_of": [
+        [
+          "0x30",
+          "0xA2"
+        ]
+      ],
+      "note": "soft_reset: write"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x00",
+      "write_prefix_any_of": [
+        [
+          "0x06"
+        ]
+      ],
+      "note": "general_call_reset: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x44",
+      "write_prefix_any_of": [
+        [
+          "0x24",
+          "0x00"
+        ]
+      ],
+      "note": "single_shot_measurement_high_no_clock_stretching: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x44",
+      "read_any": true,
+      "forbid_write_prefix": true,
+      "note": "single_shot_measurement_high_no_clock_stretching: direct read read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "mechanical_packed_direct_read_1",
+      "mock_preload": {
+        "read_bytes": [
+          "0x66",
+          "0x66",
+          "0x93",
+          "0x80",
+          "0x00",
+          "0xA2"
+        ]
+      },
+      "expected_channels": {
+        "temp": 25000,
+        "humidity": 50000
+      },
+      "raw_tolerance": 0,
+      "derivation": "temp: ST=((0x66 << 8) | 0x66); ((((0x66 << 8) | 0x66) * 175000) // 65535) - 45000 = 25000; humidity: SRH=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 100000) // 65535) = 50000"
+    },
+    {
+      "name": "mechanical_packed_direct_read_2",
+      "mock_preload": {
+        "read_bytes": [
+          "0x80",
+          "0x00",
+          "0xA2",
+          "0x00",
+          "0x00",
+          "0x81"
+        ]
+      },
+      "expected_channels": {
+        "temp": 42501,
+        "humidity": 0
+      },
+      "raw_tolerance": 0,
+      "derivation": "temp: ST=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 175000) // 65535) - 45000 = 42501; humidity: SRH=((0x00 << 8) | 0x00); ((((0x00 << 8) | 0x00) * 100000) // 65535) = 0"
+    }
+  ],
+  "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+}

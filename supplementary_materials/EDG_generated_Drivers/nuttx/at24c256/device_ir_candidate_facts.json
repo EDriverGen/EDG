@@ -1,0 +1,731 @@
+{
+  "device_id": "at24c256",
+  "bus_type": "I2C",
+  "candidate_addresses": [
+    {
+      "value": "1010xxx",
+      "addressing_form": "7-bit device address (first 5 bits fixed 1010, next 2 bits A1,A0)",
+      "is_default": null,
+      "description": "Device address word consists of mandatory one, zero sequence for first five most significant bits (1010), then two device address bits A1, A0, then R/W bit.",
+      "evidence": {
+        "page": 10,
+        "snippet": "The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown. This is common to all two-wire EEPROM devices. The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus."
+      }
+    }
+  ],
+  "candidate_registers": [
+    {
+      "name": "Device Address Word",
+      "value": null,
+      "access": "write",
+      "size_bits": 8,
+      "description": "8-bit device address word: first 5 bits 1010, then A1, A0, then R/W bit.",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown. ... The eighth bit of the device address is the read/write operation select bit."
+      }
+    },
+    {
+      "name": "Data Word Address (High Byte)",
+      "value": null,
+      "access": "write",
+      "size_bits": 8,
+      "description": "High byte of the 15-bit data word address for AT24C256 (bits 14:8).",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+      }
+    },
+    {
+      "name": "Data Word Address (Low Byte)",
+      "value": null,
+      "access": "write",
+      "size_bits": 8,
+      "description": "Low byte of the 15-bit data word address for AT24C256 (bits 7:0).",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+      }
+    },
+    {
+      "name": "Data Word",
+      "value": null,
+      "access": "read-write",
+      "size_bits": 8,
+      "description": "8-bit data word read from or written to the memory.",
+      "semantic_roles": [
+        "data"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "Upon receipt of this address, the EEPROM will again respond with a zero and then clock in the first 8-bit data word."
+      }
+    }
+  ],
+  "candidate_bitfields": [
+    {
+      "register": "Device Address Word",
+      "name": "Fixed Pattern",
+      "bit_range": "7:3",
+      "reset_value": null,
+      "description": "First five most significant bits: 1010.",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown."
+      }
+    },
+    {
+      "register": "Device Address Word",
+      "name": "A1",
+      "bit_range": "2",
+      "reset_value": null,
+      "description": "Device address bit A1, must match hardwired A1 pin.",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus. These bits must compare to their corresponding hardwired input pins."
+      }
+    },
+    {
+      "register": "Device Address Word",
+      "name": "A0",
+      "bit_range": "1",
+      "reset_value": null,
+      "description": "Device address bit A0, must match hardwired A0 pin.",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus. These bits must compare to their corresponding hardwired input pins."
+      }
+    },
+    {
+      "register": "Device Address Word",
+      "name": "R/W",
+      "bit_range": "0",
+      "reset_value": null,
+      "description": "Read/Write select bit: 1 for read, 0 for write.",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "The eighth bit of the device address is the read/write operation select bit. A read operation is initiated if this bit is high and a write operation is initiated if this bit is low."
+      }
+    }
+  ],
+  "candidate_operations": [
+    {
+      "flow_id": "byte_write",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write a single byte to a given memory address.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Device Address Word",
+          "details": "Send start condition, then device address word with R/W=0.",
+          "evidence": {
+            "page": 10,
+            "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word Address (High Byte)",
+          "details": "Send high byte of data word address.",
+          "evidence": {
+            "page": 10,
+            "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word Address (Low Byte)",
+          "details": "Send low byte of data word address.",
+          "evidence": {
+            "page": 10,
+            "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word",
+          "details": "Send 8-bit data word.",
+          "evidence": {
+            "page": 10,
+            "snippet": "Following receipt of the 8-bit data word, the EEPROM will output a zero."
+          }
+        },
+        {
+          "op": "write",
+          "target": null,
+          "details": "Send stop condition to initiate internal write cycle.",
+          "evidence": {
+            "page": 10,
+            "snippet": "The addressing device, such as a microcontroller, then must terminate the write sequence with a stop condition. At this time the EEPROM enters an internally-timed write cycle, tWR, to the nonvolatile memory."
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait for write cycle completion (tWR max 5 ms or 10 ms depending on device variant).",
+          "evidence": {
+            "page": 5,
+            "snippet": "tWR: Write Cycle Time: 20 or 5 (3) ms (1.8V), 10 or 5 (3) ms (2.5V), 10 or 5 (3) ms (5.0V)."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 10,
+        "snippet": "BYTE WRITE: A write operation requires two 8-bit data word addresses following the device address word and acknowledgment. ... At this time the EEPROM enters an internally-timed write cycle, tWR, to the nonvolatile memory."
+      }
+    },
+    {
+      "flow_id": "page_write",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write up to 64 bytes in a page write operation.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Device Address Word",
+          "details": "Send start condition, then device address word with R/W=0.",
+          "evidence": {
+            "page": 10,
+            "snippet": "A page write is initiated the same way as a byte write, but the microcontroller does not send a stop condition after the first data word is clocked in."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word Address (High Byte)",
+          "details": "Send high byte of data word address.",
+          "evidence": {
+            "page": 10,
+            "snippet": "A page write is initiated the same way as a byte write"
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word Address (Low Byte)",
+          "details": "Send low byte of data word address.",
+          "evidence": {
+            "page": 10,
+            "snippet": "A page write is initiated the same way as a byte write"
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word",
+          "details": "Send first data word, then up to 63 more data words without stop condition. EEPROM acknowledges each.",
+          "evidence": {
+            "page": 10,
+            "snippet": "Instead, after the EEPROM acknowledges receipt of the first data word, the microcontroller can transmit up to 63 more data words. The EEPROM will respond with a zero after each data word received."
+          }
+        },
+        {
+          "op": "write",
+          "target": null,
+          "details": "Send stop condition to initiate internal write cycle.",
+          "evidence": {
+            "page": 10,
+            "snippet": "The microcontroller must terminate the page write sequence with a stop condition."
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait for write cycle completion (tWR).",
+          "evidence": {
+            "page": 5,
+            "snippet": "tWR: Write Cycle Time: 20 or 5 (3) ms (1.8V), 10 or 5 (3) ms (2.5V), 10 or 5 (3) ms (5.0V)."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 10,
+        "snippet": "PAGE WRITE: The 128K/256K EEPROM is capable of 64-byte page writes."
+      }
+    },
+    {
+      "flow_id": "acknowledge_polling",
+      "kind": "other",
+      "channels": [],
+      "summary": "Poll device after write to check if internal write cycle has completed.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Device Address Word",
+          "details": "Send start condition followed by device address word (with R/W bit as desired).",
+          "evidence": {
+            "page": 10,
+            "snippet": "This involves sending a start condition followed by the device address word. The read/write bit is representative of the operation desired."
+          }
+        },
+        {
+          "op": "read",
+          "target": null,
+          "details": "Check for acknowledge (zero) from EEPROM. If acknowledged, write cycle complete; if not, continue polling.",
+          "evidence": {
+            "page": 10,
+            "snippet": "Only if the internal write cycle has completed will the EEPROM respond with a zero, allowing the read or write sequence to continue."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 10,
+        "snippet": "ACKNOWLEDGE POLLING: Once the internally-timed write cycle has started and the EEPROM inputs are disabled, acknowledge polling can be initiated."
+      }
+    },
+    {
+      "flow_id": "current_address_read",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read a byte from the current internal address counter.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Device Address Word",
+          "details": "Send start condition, then device address word with R/W=1.",
+          "evidence": {
+            "page": 11,
+            "snippet": "Once the device address with the read/write select bit set to one is clocked in and acknowledged by the EEPROM, the current address data word is serially clocked out."
+          }
+        },
+        {
+          "op": "read",
+          "target": "Data Word",
+          "details": "Read 8-bit data word. Microcontroller does not acknowledge (NACK) and generates stop condition.",
+          "evidence": {
+            "page": 11,
+            "snippet": "The microcontroller does not respond with an input zero but does generate a following stop condition."
+          }
+        }
+      ],
+      "outputs": [
+        "data_byte"
+      ],
+      "evidence": {
+        "page": 11,
+        "snippet": "CURRENT ADDRESS READ: The internal data word address counter maintains the last address accessed during the last read or write operation, incremented by one."
+      }
+    },
+    {
+      "flow_id": "random_read",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read a byte from a specified memory address using a dummy write to load the address.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Device Address Word",
+          "details": "Send start condition, then device address word with R/W=0 (dummy write).",
+          "evidence": {
+            "page": 11,
+            "snippet": "A random read requires a 'dummy' byte write sequence to load in the data word address."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word Address (High Byte)",
+          "details": "Send high byte of data word address.",
+          "evidence": {
+            "page": 11,
+            "snippet": "Once the device address word and data word address are clocked in and acknowledged by the EEPROM"
+          }
+        },
+        {
+          "op": "write",
+          "target": "Data Word Address (Low Byte)",
+          "details": "Send low byte of data word address.",
+          "evidence": {
+            "page": 11,
+            "snippet": "Once the device address word and data word address are clocked in and acknowledged by the EEPROM"
+          }
+        },
+        {
+          "op": "write",
+          "target": null,
+          "details": "Generate another start condition (repeated start).",
+          "evidence": {
+            "page": 11,
+            "snippet": "the microcontroller must generate another start condition."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Device Address Word",
+          "details": "Send device address word with R/W=1 (current address read).",
+          "evidence": {
+            "page": 11,
+            "snippet": "The microcontroller now initiates a current address read by sending a device address with the read/write select bit high."
+          }
+        },
+        {
+          "op": "read",
+          "target": "Data Word",
+          "details": "Read 8-bit data word. Microcontroller does not acknowledge and generates stop condition.",
+          "evidence": {
+            "page": 11,
+            "snippet": "The EEPROM acknowledges the device address and serially clocks out the data word. The microcontroller does not respond with a zero but does generate a following stop condition."
+          }
+        }
+      ],
+      "outputs": [
+        "data_byte"
+      ],
+      "evidence": {
+        "page": 11,
+        "snippet": "RANDOM READ: A random read requires a 'dummy' byte write sequence to load in the data word address."
+      }
+    },
+    {
+      "flow_id": "sequential_read",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read multiple bytes sequentially starting from current or random address.",
+      "steps": [
+        {
+          "op": "other",
+          "target": null,
+          "details": "Initiate either a current address read or random address read to get first byte.",
+          "evidence": {
+            "page": 11,
+            "snippet": "Sequential reads are initiated by either a current address read or a random address read."
+          }
+        },
+        {
+          "op": "read",
+          "target": "Data Word",
+          "details": "After receiving each data word, microcontroller responds with acknowledge (ACK) to continue. EEPROM increments address and clocks out next byte.",
+          "evidence": {
+            "page": 11,
+            "snippet": "After the microcontroller receives a data word, it responds with an acknowledge. As long as the EEPROM receives an acknowledge, it will continue to increment the data word address and serially clock out sequential data words."
+          }
+        },
+        {
+          "op": "read",
+          "target": "Data Word",
+          "details": "To terminate, microcontroller does not acknowledge (NACK) and generates stop condition.",
+          "evidence": {
+            "page": 11,
+            "snippet": "The sequential read operation is terminated when the microcontroller does not respond with a zero but does generate a following stop condition."
+          }
+        }
+      ],
+      "outputs": [
+        "data_bytes"
+      ],
+      "evidence": {
+        "page": 11,
+        "snippet": "SEQUENTIAL READ: Sequential reads are initiated by either a current address read or a random address read."
+      }
+    },
+    {
+      "flow_id": "memory_reset",
+      "kind": "other",
+      "channels": [],
+      "summary": "Reset the device after protocol interruption, power loss, or system reset.",
+      "steps": [
+        {
+          "op": "other",
+          "target": null,
+          "details": "Clock up to 9 cycles on SCL while monitoring SDA. Look for SDA high in each cycle while SCL is high.",
+          "evidence": {
+            "page": 7,
+            "snippet": "After an interruption in protocol, power loss or system reset, any two-wire part can be reset by following these steps: (a) Clock up to 9 cycles, (b) look for SDA high in each cycle while SCL is high and then (c) create a start condition as SDA is high."
+          }
+        },
+        {
+          "op": "write",
+          "target": null,
+          "details": "Create a start condition as SDA is high.",
+          "evidence": {
+            "page": 7,
+            "snippet": "create a start condition as SDA is high."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 7,
+        "snippet": "MEMORY RESET: After an interruption in protocol, power loss or system reset, any two-wire part can be reset by following these steps: (a) Clock up to 9 cycles, (b) look for SDA high in each cycle while SCL is high and then (c) create a start condition as SDA is high."
+      }
+    }
+  ],
+  "candidate_channels": [],
+  "candidate_formulae": [],
+  "candidate_timing_constraints": [
+    {
+      "name": "tWR",
+      "value": "5 or 10 or 20",
+      "unit": "ms",
+      "condition": "Write cycle time: 5 ms for 'B' process devices, 10 ms for 2.5V/5.0V, 20 ms for 1.8V (non-B).",
+      "evidence": {
+        "page": 5,
+        "snippet": "tWR: Write Cycle Time: 20 or 5 (3) ms (1.8V), 10 or 5 (3) ms (2.5V), 10 or 5 (3) ms (5.0V)."
+      }
+    },
+    {
+      "name": "fSCL",
+      "value": "100 or 400 or 1000",
+      "unit": "kHz",
+      "condition": "Clock frequency: 100 kHz at 1.8V, 400 kHz at 2.5V/2.7V, 1 MHz at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "fSCL: Clock Frequency, SCL: 100 kHz (1.8V), 400 kHz (2.5V), 1000 kHz (5.0V)."
+      }
+    },
+    {
+      "name": "tLOW",
+      "value": "4.7 or 1.3 or 0.4",
+      "unit": "µs",
+      "condition": "Clock pulse width low: 4.7 µs at 1.8V, 1.3 µs at 2.5V, 0.4 µs at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tLOW: Clock Pulse Width Low: 4.7 µs (1.8V), 1.3 µs (2.5V), 0.4 µs (5.0V)."
+      }
+    },
+    {
+      "name": "tHIGH",
+      "value": "4.0 or 0.6 or 0.4",
+      "unit": "µs",
+      "condition": "Clock pulse width high: 4.0 µs at 1.8V, 0.6 µs at 2.5V, 0.4 µs at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tHIGH: Clock Pulse Width High: 4.0 µs (1.8V), 0.6 µs (2.5V), 0.4 µs (5.0V)."
+      }
+    },
+    {
+      "name": "tAA",
+      "value": "4.5 or 0.9 or 0.55",
+      "unit": "µs",
+      "condition": "Clock low to data out valid: 4.5 µs max at 1.8V, 0.9 µs max at 2.5V, 0.55 µs max at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tAA: Clock Low to Data Out Valid: 0.1 min, 4.5 max (1.8V); 0.05 min, 0.9 max (2.5V); 0.05 min, 0.55 max (5.0V)."
+      }
+    },
+    {
+      "name": "tBUF",
+      "value": "4.7 or 1.3 or 0.5",
+      "unit": "µs",
+      "condition": "Bus free time before new transmission: 4.7 µs at 1.8V, 1.3 µs at 2.5V, 0.5 µs at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tBUF: Time the bus must be free before a new transmission can start: 4.7 µs (1.8V), 1.3 µs (2.5V), 0.5 µs (5.0V)."
+      }
+    },
+    {
+      "name": "tHD.STA",
+      "value": "4.0 or 0.6 or 0.25",
+      "unit": "µs",
+      "condition": "Start hold time: 4.0 µs at 1.8V, 0.6 µs at 2.5V, 0.25 µs at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tHD.STA: Start Hold Time: 4.0 µs (1.8V), 0.6 µs (2.5V), 0.25 µs (5.0V)."
+      }
+    },
+    {
+      "name": "tSU.STA",
+      "value": "4.7 or 0.6 or 0.25",
+      "unit": "µs",
+      "condition": "Start set-up time: 4.7 µs at 1.8V, 0.6 µs at 2.5V, 0.25 µs at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tSU.STA: Start Set-up Time: 4.7 µs (1.8V), 0.6 µs (2.5V), 0.25 µs (5.0V)."
+      }
+    },
+    {
+      "name": "tHD.DAT",
+      "value": "0",
+      "unit": "µs",
+      "condition": "Data in hold time: 0 µs min for all voltages.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tHD.DAT: Data In Hold Time: 0 µs min."
+      }
+    },
+    {
+      "name": "tSU.DAT",
+      "value": "200 or 100",
+      "unit": "ns",
+      "condition": "Data in set-up time: 200 ns at 1.8V, 100 ns at 2.5V and 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tSU.DAT: Data In Set-up Time: 200 ns (1.8V), 100 ns (2.5V), 100 ns (5.0V)."
+      }
+    },
+    {
+      "name": "tR",
+      "value": "1.0 or 0.3",
+      "unit": "µs",
+      "condition": "Input rise time: 1.0 µs max at 1.8V, 0.3 µs max at 2.5V and 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tR: Inputs Rise Time: 1.0 µs (1.8V), 0.3 µs (2.5V), 0.3 µs (5.0V)."
+      }
+    },
+    {
+      "name": "tF",
+      "value": "300 or 100",
+      "unit": "ns",
+      "condition": "Input fall time: 300 ns max at 1.8V and 2.5V, 100 ns max at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tF: Inputs Fall Time: 300 ns (1.8V), 300 ns (2.5V), 100 ns (5.0V)."
+      }
+    },
+    {
+      "name": "tSU.STO",
+      "value": "4.7 or 0.6 or 0.25",
+      "unit": "µs",
+      "condition": "Stop set-up time: 4.7 µs at 1.8V, 0.6 µs at 2.5V, 0.25 µs at 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tSU.STO: Stop Set-up Time: 4.7 µs (1.8V), 0.6 µs (2.5V), 0.25 µs (5.0V)."
+      }
+    },
+    {
+      "name": "tDH",
+      "value": "100 or 50",
+      "unit": "ns",
+      "condition": "Data out hold time: 100 ns min at 1.8V, 50 ns min at 2.5V and 5.0V.",
+      "evidence": {
+        "page": 5,
+        "snippet": "tDH: Data Out Hold Time: 100 ns (1.8V), 50 ns (2.5V), 50 ns (5.0V)."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "datasheet",
+      "page": 1,
+      "snippet": "The AT24C128/256 provides 131,072/262,144 bits of serial electrically erasable and programmable read only memory (EEPROM) organized as 16,384/32,768 words of 8 bits each."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 1,
+      "snippet": "Two-wire Serial Interface"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 3,
+      "snippet": "SERIAL CLOCK (SCL): The SCL input is used to positive edge clock data into each EEPROM device and negative edge clock data out of each device."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 3,
+      "snippet": "SERIAL DATA (SDA): The SDA pin is bidirectional for serial data transfer. This pin is opendrain driven and may be wire-ORed with any number of other open-drain or open collector devices."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 3,
+      "snippet": "DEVICE/ADDRESSES (A1, A0): The A1 and A0 pins are device address inputs that are hardwired or left not connected for hardware compatibility with other AT24CXX devices."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 3,
+      "snippet": "WRITE PROTECT (WP): The write protect input, when connected to GND, allows normal write operations. When WP is connected high to VCC, all write operations to the memory are inhibited."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "The 128K/256K is internally organized as 256/512 pages of 64-bytes each. Random word addressing requires a 14/15-bit data word address."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "tWR: Write Cycle Time: 20 or 5 (3) ms (1.8V), 10 or 5 (3) ms (2.5V), 10 or 5 (3) ms (5.0V)."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "START CONDITION: A high-to-low transition of SDA with SCL high is a start condition which must precede any other command."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "STOP CONDITION: A low-to-high transition of SDA with SCL high is a stop condition."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "ACKNOWLEDGE: All addresses and data words are serially transmitted to and from the EEPROM in 8-bit words. The EEPROM sends a zero during the ninth clock cycle to acknowledge that it has received each word."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "MEMORY RESET: After an interruption in protocol, power loss or system reset, any two-wire part can be reset by following these steps: (a) Clock up to 9 cycles, (b) look for SDA high in each cycle while SCL is high and then (c) create a start condition as SDA is high."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown. This is common to all two-wire EEPROM devices."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "The eighth bit of the device address is the read/write operation select bit. A read operation is initiated if this bit is high and a write operation is initiated if this bit is low."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "BYTE WRITE: A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "PAGE WRITE: The 128K/256K EEPROM is capable of 64-byte page writes."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "ACKNOWLEDGE POLLING: Once the internally-timed write cycle has started and the EEPROM inputs are disabled, acknowledge polling can be initiated."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "CURRENT ADDRESS READ: The internal data word address counter maintains the last address accessed during the last read or write operation, incremented by one."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "RANDOM READ: A random read requires a 'dummy' byte write sequence to load in the data word address."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "SEQUENTIAL READ: Sequential reads are initiated by either a current address read or a random address read."
+    }
+  ],
+  "requires_human": [
+    "Determine the correct device address bits A1 and A0 based on hardware connections.",
+    "Select appropriate timing parameters based on supply voltage (1.8V, 2.5V, or 5.0V) and device variant (standard or 'B' process).",
+    "Decide whether to use delay or acknowledge polling after write operations.",
+    "Handle write protection via WP pin if needed."
+  ]
+}

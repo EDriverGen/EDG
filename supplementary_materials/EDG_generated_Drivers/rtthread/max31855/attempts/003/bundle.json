@@ -1,0 +1,147 @@
+{
+  "device_id": "max31855",
+  "rtos_id": "rtthread",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MAX31855_H\n#define MAX31855_H\n\n#include <stdint.h>\n\nstruct max31855_device {\n    struct rt_spi_device *spi_dev;\n};\n\nint max31855_init(struct max31855_device *dev, struct rt_spi_device *spi);\nint max31855_read_thermocouple(struct max31855_device *dev, int32_t *tc);\nint max31855_read_internal(struct max31855_device *dev, int32_t *internal);\n\n#endif /* MAX31855_H */",
+  "driver_source": "#include \"max31855.h\"\n#include <rtdevice.h>\n#include <rtthread.h>\n#include <stdint.h>\n\n#define MAX31855_FAULT_BIT (1 << 16)\n#define MAX31855_SCV_BIT  (1 << 2)\n#define MAX31855_SCG_BIT  (1 << 1)\n#define MAX31855_OC_BIT   (1 << 0)\n\nstatic int max31855_read_raw(struct max31855_device *dev, uint32_t *raw)\n{\n    uint8_t tx_buf[4] = {0};\n    uint8_t rx_buf[4] = {0};\n    rt_size_t ret;\n\n    ret = rt_spi_send_then_recv(dev->spi_dev, tx_buf, 0, rx_buf, 4);\n    if (ret != RT_EOK) {\n        return -1;\n    }\n\n    *raw = ((uint32_t)rx_buf[0] << 24) |\n           ((uint32_t)rx_buf[1] << 16) |\n           ((uint32_t)rx_buf[2] << 8)  |\n           ((uint32_t)rx_buf[3]);\n\n    return 0;\n}\n\nint max31855_init(struct max31855_device *dev, struct rt_spi_device *spi)\n{\n    dev->spi_dev = spi;\n    rt_thread_mdelay(200);\n    return 0;\n}\n\nint max31855_read_thermocouple(struct max31855_device *dev, int32_t *tc)\n{\n    uint32_t raw;\n    int ret;\n    int16_t raw_14;\n    int32_t temp;\n\n    ret = max31855_read_raw(dev, &raw);\n    if (ret != 0) {\n        return -1;\n    }\n\n    if (raw & MAX31855_FAULT_BIT) {\n        return 1;\n    }\n\n    raw_14 = (int16_t)((raw >> 18) & 0x3FFF);\n    if (raw_14 & 0x2000) {\n        raw_14 |= 0xC000;\n    }\n\n    temp = ((int32_t)raw_14) * 250 / 1000;\n    *tc = temp;\n    return 0;\n}\n\nint max31855_read_internal(struct max31855_device *dev, int32_t *internal)\n{\n    uint32_t raw;\n    int ret;\n    int16_t raw_12;\n    int32_t temp;\n\n    ret = max31855_read_raw(dev, &raw);\n    if (ret != 0) {\n        return -1;\n    }\n\n    if (raw & MAX31855_FAULT_BIT) {\n        return 1;\n    }\n\n    raw_12 = (int16_t)((raw >> 4) & 0x0FFF);\n    if (raw_12 & 0x0800) {\n        raw_12 |= 0xF000;\n    }\n\n    temp = ((int32_t)raw_12) * 625 / 10000;\n    *internal = temp;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "max31855_init(&g_eval_dev, spi)",
+    "channels": [
+      {
+        "id": "thermocouple",
+        "call": "max31855_read_thermocouple(&g_eval_dev, &tc)",
+        "out_arg": "tc",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_local",
+        "call": "max31855_read_internal(&g_eval_dev, &internal)",
+        "out_arg": "internal",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct max31855_device",
+    "init_extra_setup_c": "struct rt_spi_device *spi = (struct rt_spi_device *)rt_device_find(bus_name);\nif (spi == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_temperatures: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_spi_stream_bitfield_1",
+        "mock_preload": {
+          "stream": [
+            "0x0F",
+            "0xA0",
+            "0x43",
+            "0x10"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x03",
+            "0xE8"
+          ],
+          "temp_local": [
+            "0x04",
+            "0x31"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": 250,
+          "temp_local": 67
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0x0F 0xA0 0x43 0x10; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=1000; (((1000 >> 13) & 1) * (-8192) + ((1000 & 0x1FFF) ^ ((1000 >> 13) & 1) * 0x2000)) * 250 // 1000 = 250; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=1073; (((1073 >> 11) & 1) * (-2048) + ((1073 & 0x7FF) ^ ((1073 >> 11) & 1) * 0x800)) * 625 // 10000 = 67"
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_2",
+        "mock_preload": {
+          "stream": [
+            "0x13",
+            "0xA4",
+            "0x53",
+            "0x20"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x04",
+            "0xE9"
+          ],
+          "temp_local": [
+            "0x05",
+            "0x32"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": 314,
+          "temp_local": 83
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0x13 0xA4 0x53 0x20; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=1257; (((1257 >> 13) & 1) * (-8192) + ((1257 & 0x1FFF) ^ ((1257 >> 13) & 1) * 0x2000)) * 250 // 1000 = 314; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=1330; (((1330 >> 11) & 1) * (-2048) + ((1330 & 0x7FF) ^ ((1330 >> 11) & 1) * 0x800)) * 625 // 10000 = 83"
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_signed_negative",
+        "mock_preload": {
+          "stream": [
+            "0xFF",
+            "0x40",
+            "0xFD",
+            "0x00"
+          ]
+        },
+        "channel_preload_bytes": {
+          "thermocouple": [
+            "0x3F",
+            "0xD0"
+          ],
+          "temp_local": [
+            "0x0F",
+            "0xD0"
+          ]
+        },
+        "expected_channels": {
+          "thermocouple": -12,
+          "temp_local": -3
+        },
+        "raw_tolerance": 0,
+        "derivation": "SPI stream frame is MSB-first bytes 0xFF 0x40 0xFD 0x00; thermocouple: stream bits ((31, 31), (30, 18)) from source_channel=thermocouple_temperature encode raw_14=16336; (((16336 >> 13) & 1) * (-8192) + ((16336 & 0x1FFF) ^ ((16336 >> 13) & 1) * 0x2000)) * 250 // 1000 = 2036 (formula gives suspect 2036); signed two's-complement sanity: encoded 0x3FD0 represents -48, positive-path scale 1 // 4; (-48 * 1) // 4 = -12; temp_local: stream bits ((15, 15), (14, 4)) from source_channel=internal_temperature encode raw_12=4048; (((4048 >> 11) & 1) * (-2048) + ((4048 & 0x7FF) ^ ((4048 >> 11) & 1) * 0x800)) * 625 // 10000 = 125 (formula gives suspect 125); signed two's-complement sanity: encoded 0xFD0 represents -48, positive-path scale 1 // 16; (-48 * 1) // 16 = -3"
+      },
+      {
+        "name": "mechanical_spi_stream_fault_status",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x01",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_err": 1,
+        "derivation": "Device IR marks stream bit D16 (fault_bit_set) as a runtime-detectable fault/status condition; public driver read should return a nonzero error."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.spi_stream_bitfields+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "stream",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 13.825,
+  "prompt_chars": 33513,
+  "raw_response": "{\"driver_header\": \"#ifndef MAX31855_H\\n#define MAX31855_H\\n\\n#include <stdint.h>\\n\\nstruct max31855_device {\\n    struct rt_spi_device *spi_dev;\\n};\\n\\nint max31855_init(struct max31855_device *dev, struct rt_spi_device *spi);\\nint max31855_read_thermocouple(struct max31855_device *dev, int32_t *tc);\\nint max31855_read_internal(struct max31855_device *dev, int32_t *internal);\\n\\n#endif /* MAX31855_H */\", \"driver_source\": \"#include \\\"max31855.h\\\"\\n#include <rtdevice.h>\\n#include <rtthread.h>\\n#include <stdint.h>\\n\\n#define MAX31855_FAULT_BIT (1 << 16)\\n#define MAX31855_SCV_BIT  (1 << 2)\\n#define MAX31855_SCG_BIT  (1 << 1)\\n#define MAX31855_OC_BIT   (1 << 0)\\n\\nstatic int max31855_read_raw(struct max31855_device *dev, uint32_t *raw)\\n{\\n    uint8_t tx_buf[4] = {0};\\n    uint8_t rx_buf[4] = {0};\\n    rt_size_t ret;\\n\\n    ret = rt_spi_send_then_recv(dev->spi_dev, tx_buf, 0, rx_buf, 4);\\n    if (ret != RT_EOK) {\\n        return -1;\\n    }\\n\\n    *raw = ((uint32_t)rx_buf[0] << 24) |\\n           ((uint32_t)rx_buf[1] << 16) |\\n           ((uint32_t)rx_buf[2] << 8)  |\\n           ((uint32_t)rx_buf[3]);\\n\\n    return 0;\\n}\\n\\nint max31855_init(struct max31855_device *dev, struct rt_spi_device *spi)\\n{\\n    dev->spi_dev = spi;\\n    rt_thread_mdelay(200);\\n    return 0;\\n}\\n\\nint max31855_read_thermocouple(struct max31855_device *dev, int32_t *tc)\\n{\\n    uint32_t raw;\\n    int ret;\\n    int16_t raw_14;\\n    int32_t temp;\\n\\n    ret = max31855_read_raw(dev, &raw);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n\\n    if (raw & MAX31855_FAULT_BIT) {\\n        return 1;\\n    }\\n\\n    raw_14 = (int16_t)((raw >> 18) & 0x3FFF);\\n    if (raw_14 & 0x2000) {\\n        raw_14 |= 0xC000;\\n    }\\n\\n    temp = ((int32_t)raw_14) * 250 / 1000;\\n    *tc = temp;\\n    return 0;\\n}\\n\\nint max31855_read_internal(struct max31855_device *dev, int32_t *internal)\\n{\\n    uint32_t raw;\\n    int ret;\\n    int16_t raw_12;\\n    int32_t temp;\\n\\n    ret = max31855_read_raw(dev, &raw);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n\\n    if (raw & MAX31855_FAULT_BIT) {\\n        return 1;\\n    }\\n\\n    raw_12 = (int16_t)((raw >> 4) & 0x0FFF);\\n    if (raw_12 & 0x0800) {\\n        raw_12 |= 0xF000;\\n    }\\n\\n    temp = ((int32_t)raw_12) * 625 / 10000;\\n    *internal = temp;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "af86a48ccecc022e"
+}

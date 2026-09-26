@@ -1,0 +1,570 @@
+{
+  "attempt": 3,
+  "layer_failed": "probe",
+  "success": false,
+  "total_time_s": 61.023,
+  "bundle_summary": {
+    "device_id": "emc1413",
+    "rtos_id": "zephyr",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "header_chars": 516,
+    "source_chars": 2767,
+    "plan_hash": "9bbd96a6cbb16d67",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c",
+      "preamble_c"
+    ],
+    "stimuli_count": 2,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 11.833
+  },
+  "syntax": {
+    "success": true,
+    "errors": 0,
+    "warnings": 0
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 2,
+    "summary": "2 stim; 2 L1/L2",
+    "stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=temp_local:derivation `(0x1A * 1000) + (((0x80 >> 5) & 0x07) * 125)` -> 26500 == expected 26500.0; ch=temp_ext1:derivation `(0x64 * 1000) + (((0x00 >> 5) & 0x07) * 125)` -> 100000 == expected 100000.0; ch=temp_ext2:derivation `(0x7F * 1000) + (((0xE0 >> 5) & 0x07) * 125)` -> 127875 == expected 127875.0",
+        "warnings": []
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=temp_local:derivation `(0x64 * 1000) + (((0x00 >> 5) & 0x07) * 125)` -> 100000 == expected 100000.0; ch=temp_ext1:derivation `(0x7F * 1000) + (((0xE0 >> 5) & 0x07) * 125)` -> 127875 == expected 127875.0; ch=temp_ext2:big_endian_u16=0",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 10,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 10,
+    "summary": "10/10 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0xFE"
+            ]
+          ],
+          "note": "probe: write_then_read",
+          "source": "operation_flows[0].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0xFE"
+            ]
+          ],
+          "read_any": true,
+          "note": "probe: write_then_read Manufacturer ID"
+        },
+        "reason": "prefix overlap: [('0xFE',)] ∈ mechanical [('0xFE',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0xFD"
+            ]
+          ],
+          "note": "probe: write_then_read",
+          "source": "operation_flows[0].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0xFD"
+            ]
+          ],
+          "read_any": true,
+          "note": "probe: write_then_read Product ID"
+        },
+        "reason": "prefix overlap: [('0xFD',)] ∈ mechanical [('0xFD',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x03",
+              "0x00"
+            ]
+          ],
+          "note": "init: write",
+          "source": "operation_flows[1].steps[1]"
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x03",
+              "0x00"
+            ]
+          ],
+          "note": "init: write Configuration"
+        },
+        "reason": "prefix overlap: [('0x03', '0x00')] ∈ mechanical [('0x03', '0x00')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x04",
+              "0x06"
+            ]
+          ],
+          "note": "init: write",
+          "source": "operation_flows[1].steps[2]"
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x04",
+              "0x06"
+            ]
+          ],
+          "note": "init: write Conversion Rate"
+        },
+        "reason": "prefix overlap: [('0x04', '0x06')] ∈ mechanical [('0x04', '0x06')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_internal_temperature: write_then_read",
+          "source": "operation_flows[2].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_internal_temperature: write_then_read high byte"
+        },
+        "reason": "prefix overlap: [('0x00',)] ∈ mechanical [('0x00',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x29"
+            ]
+          ],
+          "note": "read_internal_temperature: write_then_read",
+          "source": "operation_flows[2].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x29"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_internal_temperature: write_then_read low byte"
+        },
+        "reason": "prefix overlap: [('0x29',)] ∈ mechanical [('0x29',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x01"
+            ]
+          ],
+          "note": "read_external_diode_1_temperature: write_then_read",
+          "source": "operation_flows[3].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x01"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_external_diode_1_temperature: write_then_read high byte"
+        },
+        "reason": "prefix overlap: [('0x01',)] ∈ mechanical [('0x01',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x10"
+            ]
+          ],
+          "note": "read_external_diode_1_temperature: write_then_read",
+          "source": "operation_flows[3].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x10"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_external_diode_1_temperature: write_then_read low byte"
+        },
+        "reason": "prefix overlap: [('0x10',)] ∈ mechanical [('0x10',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x23"
+            ]
+          ],
+          "note": "read_external_diode_2_temperature: write_then_read",
+          "source": "operation_flows[4].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x23"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_external_diode_2_temperature: write_then_read high byte"
+        },
+        "reason": "prefix overlap: [('0x23',)] ∈ mechanical [('0x23',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x24"
+            ]
+          ],
+          "note": "read_external_diode_2_temperature: write_then_read",
+          "source": "operation_flows[4].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x4C",
+          "write_prefix_any_of": [
+            [
+              "0x24"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_external_diode_2_temperature: write_then_read low byte"
+        },
+        "reason": "prefix overlap: [('0x24',)] ∈ mechanical [('0x24',)]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0xFD"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe: write_then_read Product ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x03",
+            "0x00"
+          ]
+        ],
+        "note": "init: write Configuration"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x04",
+            "0x06"
+          ]
+        ],
+        "note": "init: write Conversion Rate"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_internal_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x29"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_internal_temperature: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_1_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_1_temperature: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x23"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_2_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x24"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_external_diode_2_temperature: write_then_read low byte"
+      }
+    ]
+  },
+  "adapter_summary": {
+    "device_id": "emc1413",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "source_chars": 2990,
+    "warnings": []
+  },
+  "link": {
+    "success": true,
+    "errors": 0,
+    "warnings": 0,
+    "elf_path": "<RUN_DIR>/attempts/003/stage/out/emc1413_zephyr.elf",
+    "text_bytes": 9495,
+    "data_bytes": 80,
+    "bss_bytes": 48
+  },
+  "probe": {
+    "total": 2,
+    "passed": 0,
+    "expectation_failures": 2,
+    "outcomes": [
+      {
+        "stimulus_name": "mechanical_register_mapped_1",
+        "boot_detected": true,
+        "test_done": true,
+        "result_pass": true,
+        "result_err": false,
+        "read_err": null,
+        "read_raw": 26500.0,
+        "read_channels": {
+          "temp_local": 26500.0,
+          "temp_ext1": 875.0,
+          "temp_ext2": 255875.0
+        },
+        "mem_bytes": [],
+        "mem_probe_addr": null,
+        "mem_probe_len": null,
+        "memory_size_bytes": null,
+        "memory_page_bytes": null,
+        "display_frame_len": null,
+        "display_frame_err": null,
+        "display_status_err": null,
+        "display_status": null,
+        "rtc_get_err": null,
+        "rtc_set_err": null,
+        "rtc_time": {},
+        "trace_path": "<RUN_DIR>/attempts/003/stage/probe/trace_mechanical_register_mapped_1.jsonl",
+        "output_lines": [
+          "16:17:55.3207 [INFO] usart2: [host: 0.64s (+0.64s)|virt: 0s (+0s)] DRIVER_TEST START",
+          "16:17:55.4149 [INFO] usart2: [host: 0.74s (+93.7ms)|virt: 0s (+0s)] read_ch_temp_local=26500",
+          "16:17:55.4151 [INFO] usart2: [host: 0.74s (+0.34ms)|virt: 0s (+0s)] read_ch_temp_ext1=875",
+          "16:17:55.4154 [INFO] usart2: [host: 0.74s (+0.29ms)|virt: 0s (+0s)] read_ch_temp_ext2=255875",
+          "16:17:55.4194 [INFO] usart2: [host: 0.74s (+3.89ms)|virt: 0.1ms (+0.1ms)] read_raw=26500",
+          "16:17:55.4195 [INFO] usart2: [host: 0.74s (+0.13ms)|virt:    0.1ms (+0s)] RESULT: PASS",
+          "16:17:55.4196 [INFO] usart2: [host: 0.74s (+0.18ms)|virt:    0.1ms (+0s)] DRIVER_TEST DONE"
+        ],
+        "error": "",
+        "duration_s": 24.10709810256958,
+        "renode_exit": 0,
+        "expected_read_raw": null,
+        "expected_channels": {},
+        "expected_mem_bytes": null,
+        "expected_time": null,
+        "expected_err": null,
+        "runtime_path": "renode_i2c",
+        "slave_kind": "i2c_register_slave",
+        "spi_sub_mode": "",
+        "bus_kind": "i2c"
+      },
+      {
+        "stimulus_name": "mechanical_register_mapped_2",
+        "boot_detected": true,
+        "test_done": true,
+        "result_pass": true,
+        "result_err": false,
+        "read_err": null,
+        "read_raw": 100000.0,
+        "read_channels": {
+          "temp_local": 100000.0,
+          "temp_ext1": 224875.0,
+          "temp_ext2": 255875.0
+        },
+        "mem_bytes": [],
+        "mem_probe_addr": null,
+        "mem_probe_len": null,
+        "memory_size_bytes": null,
+        "memory_page_bytes": null,
+        "display_frame_len": null,
+        "display_frame_err": null,
+        "display_status_err": null,
+        "display_status": null,
+        "rtc_get_err": null,
+        "rtc_set_err": null,
+        "rtc_time": {},
+        "trace_path": "<RUN_DIR>/attempts/003/stage/probe/trace_mechanical_register_mapped_2.jsonl",
+        "output_lines": [
+          "16:18:19.4514 [INFO] usart2: [host: 0.62s (+0.62s)|virt: 0s (+0s)] DRIVER_TEST START",
+          "16:18:19.5362 [INFO] usart2: [host: 0.7s (+84.35ms)|virt: 0s (+0s)] read_ch_temp_local=100000",
+          "16:18:19.5364 [INFO] usart2: [host:  0.7s (+0.23ms)|virt: 0s (+0s)] read_ch_temp_ext1=224875",
+          "16:18:19.5393 [INFO] usart2: [host: 0.71s (+2.79ms)|virt: 0.1ms (+0.1ms)] read_ch_temp_ext2=255875",
+          "16:18:19.5394 [INFO] usart2: [host: 0.71s (+0.13ms)|virt:    0.1ms (+0s)] read_raw=100000",
+          "16:18:19.5394 [INFO] usart2: [host:   0.71s (+79?s)|virt:    0.1ms (+0s)] RESULT: PASS",
+          "16:18:19.5395 [INFO] usart2: [host: 0.71s (+0.11ms)|virt:    0.1ms (+0s)] DRIVER_TEST DONE"
+        ],
+        "error": "",
+        "duration_s": 24.19573736190796,
+        "renode_exit": 0,
+        "expected_read_raw": null,
+        "expected_channels": {},
+        "expected_mem_bytes": null,
+        "expected_time": null,
+        "expected_err": null,
+        "runtime_path": "renode_i2c",
+        "slave_kind": "i2c_register_slave",
+        "spi_sub_mode": "",
+        "bus_kind": "i2c"
+      }
+    ]
+  },
+  "feedback_chars": 4843
+}

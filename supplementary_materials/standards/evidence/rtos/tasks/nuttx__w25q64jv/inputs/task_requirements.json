@@ -1,0 +1,158 @@
+{
+  "task_package_id": "nuttx_generic_devfs__w25q64jv__spi0_polling",
+  "rtos": "nuttx",
+  "device": "w25q64jv",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/w25q64jv/nuttx",
+  "task_package": {
+    "package_id": "nuttx_generic_devfs__w25q64jv__spi0_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/nuttx_generic_devfs.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/nuttx_generic_devfs_spi0_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/w25q64jv.json",
+    "reference_driver_root": "DriverGen/data/references/w25q64jv/nuttx",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "nuttx_generic_devfs",
+        "rtos": "nuttx",
+        "board": "generic_devfs",
+        "integration": "nuttx_devfs",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "nuttx_generic_devfs_spi0_polling",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "i2c1",
+        "bus_symbol": "i2c1",
+        "backend": "NuttX devfs",
+        "address_mode": "spi_mode_0",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "w25q64jv",
+        "attachment_type": "spi_flash",
+        "required_bus_type": "spi"
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "w25q64jv + nuttx + spi0_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/*.pdf",
+      "DriverGen/data/references/w25q64jv/nuttx"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "nuttx_generic_devfs",
+    "board": "nucleo-f103rb",
+    "board_alias": "nuttx_f103rb",
+    "rtos": "nuttx",
+    "rtos_bundle": "nuttx",
+    "integration": "public_i2c_master_and_gpio_char_driver",
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "1"
+        ],
+        "spi": [
+          "0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "/dev/ttyS1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "optional"
+    },
+    "notes": [
+      "This platform targets the NuttX nucleo-f103rb board while using i2c_master lower-half devices and GPIO character devices.",
+      "Task packages follow NuttX reference drivers: board_i2cbus_initialize for I2C, stm32_spibus_initialize for SPI, /dev/ttyS1 for UART, /dev/gpio* for GPIO."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/i2c/i2c_master.h",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/spi/spi.h",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/ioexpander/gpio.h",
+      "DriverGen/data/rtos/nuttx-project/apps/system/i2c/i2c_main.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "nuttx_generic_devfs_spi0_polling",
+    "platform_id": "nuttx_generic_devfs",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "0",
+    "backend": "NuttX SPI lower-half",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "devid": 0
+    },
+    "notes": [
+      "SPI bus 0 on STM32F1. The RTOS contract provides stm32_spibus_initialize as the correct binding."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/spi/spi.h",
+      "DriverGen/data/references/adxl345/nuttx/adxl345_sample_ref.c",
+      "DriverGen/data/references/mcp3008/nuttx/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "w25q64jv",
+    "attachment_type": "spi_flash",
+    "required_bus_type": "spi",
+    "spi_proto": "memory",
+    "spi_mode": 0,
+    "spi_max_hz": 80000000,
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "addressing": {
+      "default": "spi1",
+      "selection_rule": "SPI CS# selected by board wiring."
+    },
+    "required_attachment": {
+      "signals": [
+        "CS",
+        "CLK",
+        "MOSI",
+        "MISO"
+      ],
+      "notes": [
+        "Standard SPI quad-pin connection."
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": "spi1",
+      "irq": "absent",
+      "dma": "absent"
+    },
+    "notes": [
+      "64M-bit SPI NOR Flash. Read 0x03, Page Program 0x02, Sector Erase 0x20."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/W25Q64JV.pdf",
+      "DriverGen/data/references/w25q64jv/*/*_ref.h"
+    ]
+  }
+}

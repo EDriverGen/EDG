@@ -1,0 +1,3183 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "chibios",
+    "board": "STM32F103RB-NUCLEO64",
+    "mcu_family": "stm32f1",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "bus_intent": {
+      "canonical_bus": "spi",
+      "connection_type": "spi",
+      "mode": "polling",
+      "backend": "ChibiOS HAL SPI driver",
+      "address_mode": "chip-select",
+      "bus_instance": "SPID1"
+    },
+    "device_id": "adxl345",
+    "device_ir_hash": "8e16cada1d13796c",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "chibios:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/chibios",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "chibios",
+      "sha": "d6e8ac9"
+    }
+  ],
+  "slots": {
+    "spi.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "spiInit"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.9
+    },
+    "spi.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "SPIConfig"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "spi.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "msg_t",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+            "source_slot": "spi.transfer",
+            "source_symbol": "spiExchange",
+            "signature": "msg_t spiExchange(void *ip, size_t n, const void *txbuf, void *rxbuf)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          },
+          {
+            "symbol": "WSPIDriver",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/hal/src/hal_wspi.c",
+            "source_slot": "spi.transaction_begin",
+            "source_symbol": "wspiAcquireBus",
+            "signature": "void wspiAcquireBus(WSPIDriver *wspip)",
+            "score": 0.85,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "spi.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "spiExchange"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "chThdSleepMilliseconds"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.9
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "HAL_RET_SUCCESS"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.8,
+        "symbols": [
+          {
+            "symbol": "msg_t",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+            "source_slot": "spi.transfer",
+            "source_symbol": "spiExchange",
+            "signature": "msg_t spiExchange(void *ip, size_t n, const void *txbuf, void *rxbuf)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error evidence is derived from return/status types used by bound APIs."
+        ]
+      },
+      "confidence": 0.65
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "SPID1",
+        "fields": {
+          "bus_instance": "SPID1",
+          "bus_symbol": "SPID1",
+          "backend": "ChibiOS HAL SPI driver",
+          "mode": "polling",
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.pin_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "fixed_attachment",
+      "status": "covered",
+      "bindings": [
+        "GPIOA"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.69
+    },
+    "spi.cs_control": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "driver_framework"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "spiSelectX"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.9
+    },
+    "spi.transaction_begin": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "wspiAcquireBus"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.85
+    },
+    "spi.transaction_end": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "wspiReleaseBus"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.85
+    },
+    "spi.transfer_registers": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    }
+  },
+  "symbols": {
+    "spi.acquire_or_bind": {
+      "slot_id": "spi.acquire_or_bind",
+      "symbol": "spiInit",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void spiInit(void)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/xhal/include/hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.9,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/xhal/include/hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:spiInit is a public HAL function from ChibiOS, matching the slot's intent to acquire/bind an SPI bus. It is declared in "
+      ]
+    },
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "symbol": "SPIConfig",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "struct hal_spi_config",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal_spi_v1.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal_spi_v1.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal_spi_v1.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:SPIConfig is a typedef for struct hal_spi_config, matching the slot's intent for SPI configuration types. It is declared"
+      ]
+    },
+    "spi.transfer": {
+      "slot_id": "spi.transfer",
+      "symbol": "spiExchange",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "msg_t spiExchange(void *ip, size_t n, const void *txbuf, void *rxbuf)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/xhal/include/hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/xhal/include/hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:spiExchange is the primary ChibiOS HAL SPI transfer function, matching the slot's intent and the task context's ChibiOS "
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "symbol": "chThdSleepMilliseconds",
+      "kind": "macro",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": null,
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/nil/include/ch.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/nil/include/ch.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.9,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/nil/include/ch.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "root-role+3.0",
+        "llm_bound:chThdSleepMilliseconds is a public macro in ChibiOS/RT that provides millisecond delay, matching the slot intent. It is "
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "symbol": "HAL_RET_SUCCESS",
+      "kind": "macro",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "MSG_OK",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "root-role+3.0",
+        "llm_bound:HAL_RET_SUCCESS is a canonical success macro from the ChibiOS HAL, matching the slot's intent for a generic success/erro"
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "symbol": "GPIOA",
+      "kind": "macro",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "((stm32_gpio_t *)GPIOA_BASE)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/xhal/ports/STM32/LLD/GPIOv2/stm32_gpio.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/xhal/ports/STM32/LLD/GPIOv2/stm32_gpio.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.69,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/xhal/ports/STM32/LLD/GPIOv2/stm32_gpio.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "root-role+3.0",
+        "integration-prefers-task-context",
+        "private-low-level-source",
+        "port-specific-source",
+        "llm_bound:The candidate GPIOA is a macro from a ChibiOS STM32F1 port header, matching the task context's board and MCU family. Its"
+      ]
+    },
+    "spi.cs_control": {
+      "slot_id": "spi.cs_control",
+      "symbol": "spiSelectX",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "CC_FORCE_INLINE static inline void spiSelectX(void *ip)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/xhal/include/hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.9,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/xhal/include/hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:spiSelectX is a public HAL function for SPI chip select control, matching the slot's intent and the ChibiOS context."
+      ]
+    },
+    "spi.transaction_begin": {
+      "slot_id": "spi.transaction_begin",
+      "symbol": "wspiAcquireBus",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void wspiAcquireBus(WSPIDriver *wspip)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/src/hal_wspi.c",
+      "implemented_in": null,
+      "required_headers": [],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.85,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/src/hal_wspi.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:The candidate wspiAcquireBus matches the slot's intent to acquire the SPI bus, with the highest score and a name contain"
+      ]
+    },
+    "spi.transaction_end": {
+      "slot_id": "spi.transaction_end",
+      "symbol": "wspiReleaseBus",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void wspiReleaseBus(WSPIDriver *wspip)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/src/hal_wspi.c",
+      "implemented_in": null,
+      "required_headers": [],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.85,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/src/hal_wspi.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:wspiReleaseBus matches the slot's intent to release the SPI bus, has the highest score, and is from the ChibiOS HAL sour"
+      ]
+    }
+  },
+  "_symbol_index": {
+    "spiInit": [
+      "spi.acquire_or_bind"
+    ],
+    "SPIConfig": [
+      "spi.key_types"
+    ],
+    "spiExchange": [
+      "spi.transfer"
+    ],
+    "chThdSleepMilliseconds": [
+      "runtime.delay_ms"
+    ],
+    "HAL_RET_SUCCESS": [
+      "runtime.error_status"
+    ],
+    "GPIOA": [
+      "integration.pin_binding"
+    ],
+    "spiSelectX": [
+      "spi.cs_control"
+    ],
+    "wspiAcquireBus": [
+      "spi.transaction_begin"
+    ],
+    "wspiReleaseBus": [
+      "spi.transaction_end"
+    ]
+  },
+  "slot_fulfillments": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+          "source_slot": "spi.transfer",
+          "source_symbol": "spiExchange",
+          "signature": "msg_t spiExchange(void *ip, size_t n, const void *txbuf, void *rxbuf)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "WSPIDriver",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/src/hal_wspi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "wspiAcquireBus",
+          "signature": "void wspiAcquireBus(WSPIDriver *wspip)",
+          "score": 0.85,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+          "source_slot": "spi.transfer",
+          "source_symbol": "spiExchange",
+          "signature": "msg_t spiExchange(void *ip, size_t n, const void *txbuf, void *rxbuf)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "SPID1",
+      "fields": {
+        "bus_instance": "SPID1",
+        "bus_symbol": "SPID1",
+        "backend": "ChibiOS HAL SPI driver",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "SPID1",
+      "fields": {
+        "bus_instance": "SPID1",
+        "bus_symbol": "SPID1",
+        "backend": "ChibiOS HAL SPI driver",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+          "source_slot": "spi.transfer",
+          "source_symbol": "spiExchange",
+          "signature": "msg_t spiExchange(void *ip, size_t n, const void *txbuf, void *rxbuf)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "WSPIDriver",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/src/hal_wspi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "wspiAcquireBus",
+          "signature": "void wspiAcquireBus(WSPIDriver *wspip)",
+          "score": 0.85,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/xhal/include/hal_spi.h",
+          "source_slot": "spi.transfer",
+          "source_symbol": "spiExchange",
+          "signature": "msg_t spiExchange(void *ip, size_t n, const void *txbuf, void *rxbuf)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "SPID1",
+    "bus_symbol": "SPID1",
+    "backend": "ChibiOS HAL SPI driver",
+    "mode": "polling",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "GPIOA:4"
+    },
+    "device_attachment": {
+      "device_id": "adxl345",
+      "attachment_type": "spi_accelerometer",
+      "required_bus_type": "spi",
+      "address_mode": "chip-select",
+      "addressing": null,
+      "required_attachment": {
+        "signals": [
+          "SCLK",
+          "MOSI",
+          "MISO",
+          "CS"
+        ],
+        "spi": {
+          "mode": "mode3",
+          "data_width_bits": 8,
+          "bit_order": "msb_first",
+          "max_hz": 5000000
+        },
+        "notes": [
+          "Use 4-wire SPI with chip select; register address byte encodes read/write and multi-byte burst bits."
+        ]
+      },
+      "optional_attachment": {
+        "interrupt_pins": [
+          "INT1",
+          "INT2"
+        ],
+        "alternate_bus": "i2c"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "protocol_hints": {
+        "spi_proto": "register",
+        "register_read_mask": "0x80",
+        "multi_byte_mask": "0x40",
+        "address_mask": "0x3F",
+        "read_when_set": true,
+        "primary_channels": [
+          "accel_x",
+          "accel_y",
+          "accel_z"
+        ]
+      },
+      "notes": [
+        "Reference drivers use register SPI, verify DEVID, configure DATA_FORMAT/BW_RATE/POWER_CTL, then burst-read DATAX0..DATAZ1.",
+        "Interrupt pins are not required for the minimal polling driver."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/adxl345/adxl345.pdf",
+        "DriverGen/evaluation/oracle/data/adxl345/meta.json",
+        "DriverGen/data/references/adxl345/*/*_ref.c"
+      ]
+    },
+    "include_headers": [
+      "avr/interrupt.h",
+      "avr/io.h",
+      "board.h",
+      "cache.h",
+      "ccportab.h",
+      "ch.h",
+      "chconf.h",
+      "chcore.h",
+      "chcore_timer.h",
+      "chcoresmp.h",
+      "chcoresmp_timer.h",
+      "chlicense.h",
+      "chporttypes.h",
+      "chtypes.h",
+      "cmparams.h",
+      "hal.h",
+      "hal_adc.h",
+      "hal_adc_lld.h",
+      "hal_buffered_serial.h",
+      "hal_buffers.h",
+      "hal_can.h",
+      "hal_can_lld.h",
+      "hal_channels.h",
+      "hal_community.h",
+      "hal_crypto.h",
+      "hal_crypto_fallback.h",
+      "hal_crypto_lld.h",
+      "hal_dac.h",
+      "hal_dac_lld.h",
+      "hal_efl.h",
+      "hal_efl_lld.h",
+      "hal_files.h",
+      "hal_flash.h",
+      "hal_gpt.h",
+      "hal_gpt_lld.h",
+      "hal_i2c.h",
+      "hal_i2c_lld.h",
+      "hal_i2s.h",
+      "hal_i2s_lld.h",
+      "hal_icu.h",
+      "hal_icu_lld.h",
+      "hal_ioblock.h",
+      "hal_lld.h",
+      "hal_lld_f100.h",
+      "hal_lld_f103.h",
+      "hal_lld_f105_f107.h",
+      "hal_mac.h",
+      "hal_mac_lld.h",
+      "hal_mmc_spi.h",
+      "hal_mmcsd.h",
+      "hal_objects.h",
+      "hal_pal.h",
+      "hal_pal_lld.h",
+      "hal_persistent.h",
+      "hal_pwm.h",
+      "hal_pwm_lld.h",
+      "hal_queues.h",
+      "hal_rtc.h",
+      "hal_rtc_lld.h",
+      "hal_safety.h",
+      "hal_sdc.h",
+      "hal_sdc_lld.h",
+      "hal_serial.h",
+      "hal_serial_lld.h",
+      "hal_serial_usb.h",
+      "hal_sio.h",
+      "hal_sio_lld.h",
+      "hal_spi.h",
+      "hal_spi_lld.h",
+      "hal_spi_v1.h",
+      "hal_spi_v1.inc",
+      "hal_spi_v2.h",
+      "hal_spi_v2.inc",
+      "hal_spi_v2_lld.h",
+      "hal_st.h",
+      "hal_st_lld.h",
+      "hal_streams.h",
+      "hal_trng.h",
+      "hal_trng_lld.h",
+      "hal_uart.h",
+      "hal_uart_lld.h",
+      "hal_usb.h",
+      "hal_usb_cdc.h",
+      "hal_usb_lld.h",
+      "hal_wdg.h",
+      "hal_wdg_lld.h",
+      "hal_wspi.h",
+      "hal_wspi_lld.h",
+      "halconf.h",
+      "mpu_v7m.h",
+      "nvic.h",
+      "os/common/ports/ARM-common/include/chtypes.h",
+      "os/common/ports/ARM-common/include/mpu_v7m.h",
+      "os/common/ports/ARMv7-M/chcore.h",
+      "os/hal/include/hal.h",
+      "os/hal/include/hal_adc.h",
+      "os/hal/include/hal_buffered_serial.h",
+      "os/hal/include/hal_buffers.h",
+      "os/hal/include/hal_can.h",
+      "os/hal/include/hal_channels.h",
+      "os/hal/include/hal_crypto.h",
+      "os/hal/include/hal_dac.h",
+      "os/hal/include/hal_efl.h",
+      "os/hal/include/hal_files.h",
+      "os/hal/include/hal_flash.h",
+      "os/hal/include/hal_gpt.h",
+      "os/hal/include/hal_i2c.h",
+      "os/hal/include/hal_i2s.h",
+      "os/hal/include/hal_icu.h",
+      "os/hal/include/hal_ioblock.h",
+      "os/hal/include/hal_mac.h",
+      "os/hal/include/hal_mmc_spi.h",
+      "os/hal/include/hal_mmcsd.h",
+      "os/hal/include/hal_objects.h",
+      "os/hal/include/hal_pal.h",
+      "os/hal/include/hal_persistent.h",
+      "os/hal/include/hal_pwm.h",
+      "os/hal/include/hal_queues.h",
+      "os/hal/include/hal_rtc.h",
+      "os/hal/include/hal_safety.h",
+      "os/hal/include/hal_sdc.h",
+      "os/hal/include/hal_serial.h",
+      "os/hal/include/hal_serial_usb.h",
+      "os/hal/include/hal_sio.h",
+      "os/hal/include/hal_spi.h",
+      "os/hal/include/hal_spi_v1.h",
+      "os/hal/include/hal_spi_v2.h",
+      "os/hal/include/hal_st.h",
+      "os/hal/include/hal_streams.h",
+      "os/hal/include/hal_trng.h",
+      "os/hal/include/hal_uart.h",
+      "os/hal/include/hal_usb.h",
+      "os/hal/include/hal_wdg.h",
+      "os/hal/include/hal_wspi.h",
+      "os/hal/osal/lib/osal_vt.h",
+      "os/hal/osal/os-less/ARMCMx/osal.h",
+      "os/hal/osal/os-less/AVR/osal.h",
+      "os/hal/osal/rt-nil/osal.h",
+      "os/hal/osal/sb/osal.h",
+      "os/hal/ports/STM32/LLD/ADCv1/hal_adc_lld.h",
+      "os/hal/ports/STM32/LLD/DMAv1/stm32_dma.h",
+      "os/hal/ports/STM32/LLD/OCTOSPIv1/hal_wspi_lld.h",
+      "os/hal/ports/STM32/LLD/QUADSPIv1/hal_wspi_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv1/hal_i2s_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv1/hal_spi_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv1/hal_spi_v2_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv2/hal_spi_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv2/hal_spi_v2_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv3/hal_spi_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.h",
+      "os/hal/ports/STM32/LLD/TIMv1/stm32_tim.h",
+      "os/hal/ports/STM32/STM32F1xx/hal_lld.h",
+      "os/hal/ports/STM32/STM32F1xx/hal_lld_f100.h",
+      "os/hal/ports/STM32/STM32F1xx/hal_lld_f103.h",
+      "os/hal/ports/STM32/STM32F1xx/hal_lld_f105_f107.h",
+      "os/hal/ports/STM32/STM32F1xx/stm32_isr.h",
+      "os/hal/ports/STM32/STM32F1xx/stm32_rcc.h",
+      "os/hal/ports/STM32/STM32F1xx/stm32_registry.h",
+      "os/nil/include/ch.h",
+      "os/nil/include/chevt.h",
+      "os/nil/include/chsem.h",
+      "os/oslib/include/chbsem.h",
+      "os/oslib/include/chmboxes.h",
+      "os/oslib/include/chobjfifos.h",
+      "os/oslib/include/chpipes.h",
+      "os/rt/include/chcond.h",
+      "os/rt/include/chearly.h",
+      "os/rt/include/chevents.h",
+      "os/rt/include/chinstances.h",
+      "os/rt/include/chobjects.h",
+      "os/rt/include/chschd.h",
+      "os/rt/include/chsem.h",
+      "os/rt/include/chsys.h",
+      "os/rt/include/chthreads.h",
+      "os/xhal/include/hal_spi.h",
+      "os/xhal/ports/STM32/LLD/GPIOv2/stm32_gpio.h",
+      "os/xhal/ports/STM32/LLD/SPIv2/hal_spi_lld.h",
+      "osal.h",
+      "osal_vt.h",
+      "osalconf.h",
+      "sbuser.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stm32_dma.h",
+      "stm32_dmamux.h",
+      "stm32_isr.h",
+      "stm32_rcc.h",
+      "stm32_registry.h",
+      "stm32_tim.h",
+      "string.h",
+      "time.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv3/hal_spi_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 52,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 82,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_spi.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transfer"
+        ],
+        "n_functions": 0,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/xhal/include/hal_spi.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types",
+          "spi.transaction_begin"
+        ],
+        "n_functions": 29,
+        "n_macros": 14,
+        "n_typedefs": 8,
+        "n_structs": 10,
+        "n_enums": 0
+      },
+      {
+        "path": "os/xhal/ports/STM32/LLD/SPIv2/hal_spi_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 11,
+        "n_macros": 39,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_spi_v1.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 30,
+        "n_typedefs": 4,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_spi_v2.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 31,
+        "n_typedefs": 4,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv1/hal_spi_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 24,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv2/hal_spi_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 24,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv2/hal_spi_v2_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 26,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv1/hal_spi_v2_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 48,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types"
+        ],
+        "n_functions": 12,
+        "n_macros": 81,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/QUADSPIv1/hal_wspi_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types"
+        ],
+        "n_functions": 8,
+        "n_macros": 67,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/sb/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 13,
+        "n_macros": 29,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/ARMCMx/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 34,
+        "n_macros": 45,
+        "n_typedefs": 14,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/AVR/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 32,
+        "n_macros": 38,
+        "n_typedefs": 12,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/rt-nil/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 37,
+        "n_macros": 37,
+        "n_typedefs": 15,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chsys.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 18,
+        "n_macros": 20,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chthreads.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 47,
+        "n_macros": 22,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chmboxes.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 18,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chobjfifos.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 17,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chbsem.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 10,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/nil/include/ch.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 131,
+        "n_typedefs": 45,
+        "n_structs": 6,
+        "n_enums": 0
+      },
+      {
+        "path": "os/nil/include/chevt.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 15,
+        "n_macros": 17,
+        "n_typedefs": 3,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chevents.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 28,
+        "n_macros": 8,
+        "n_typedefs": 3,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "os/nil/include/chsem.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chpipes.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 8,
+        "n_macros": 4,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chcond.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 10,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chschd.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 13,
+        "n_macros": 30,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chsem.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 17,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chinstances.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chobjects.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 11,
+        "n_structs": 8,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chearly.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 10,
+        "n_typedefs": 44,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/xhal/ports/STM32/LLD/GPIOv2/stm32_gpio.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 12,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv1/hal_i2s_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 5,
+        "n_macros": 25,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/hal_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 2,
+        "n_macros": 30,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/stm32_registry.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 0,
+        "n_macros": 952,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_mmc_spi.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 17,
+        "n_macros": 11,
+        "n_typedefs": 6,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_wspi.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 58,
+        "n_typedefs": 5,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_i2s.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 8,
+        "n_typedefs": 4,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 3,
+        "n_macros": 38,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_adc.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 11,
+        "n_macros": 3,
+        "n_typedefs": 6,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "os/common/ports/ARM-common/include/chtypes.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 15,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/common/ports/ARM-common/include/mpu_v7m.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 0,
+        "n_macros": 89,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/common/ports/ARMv7-M/chcore.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 18,
+        "n_macros": 85,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_buffered_serial.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 2,
+        "n_typedefs": 2,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_buffers.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 22,
+        "n_macros": 14,
+        "n_typedefs": 6,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_can.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 11,
+        "n_macros": 20,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_channels.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 5,
+        "n_macros": 30,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_crypto.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 40,
+        "n_macros": 18,
+        "n_typedefs": 13,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_dac.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 18,
+        "n_typedefs": 6,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_efl.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 1,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_files.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 1,
+        "n_macros": 15,
+        "n_typedefs": 2,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_flash.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 10,
+        "n_macros": 19,
+        "n_typedefs": 6,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_gpt.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 12,
+        "n_macros": 5,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_i2c.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 12,
+        "n_macros": 17,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_icu.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 9,
+        "n_macros": 13,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_ioblock.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 8,
+        "n_macros": 13,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_mac.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 20,
+        "n_typedefs": 6,
+        "n_structs": 6,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_mmcsd.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 8,
+        "n_macros": 159,
+        "n_typedefs": 6,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_objects.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 4,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_pal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 9,
+        "n_macros": 95,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_persistent.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 2,
+        "n_macros": 8,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_pwm.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 11,
+        "n_macros": 16,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_queues.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 14,
+        "n_macros": 20,
+        "n_typedefs": 6,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_rtc.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 17,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_safety.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 26,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_sdc.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 14,
+        "n_macros": 23,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_serial.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 24,
+        "n_typedefs": 2,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_serial_usb.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_sio.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 59,
+        "n_typedefs": 6,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_st.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 15,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_streams.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 3,
+        "n_macros": 13,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_trng.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_uart.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 17,
+        "n_macros": 29,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_usb.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 20,
+        "n_macros": 84,
+        "n_typedefs": 13,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_wdg.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 4,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/lib/osal_vt.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 5,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/ADCv1/hal_adc_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 12,
+        "n_macros": 73,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/DMAv1/stm32_dma.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 7,
+        "n_macros": 77,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/OCTOSPIv1/hal_wspi_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 8,
+        "n_macros": 41,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/TIMv1/stm32_tim.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 0,
+        "n_macros": 249,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/hal_lld_f100.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 0,
+        "n_macros": 107,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/hal_lld_f103.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 0,
+        "n_macros": 113,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/hal_lld_f105_f107.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 0,
+        "n_macros": 147,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/stm32_isr.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 2,
+        "n_macros": 94,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/stm32_rcc.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 0,
+        "n_macros": 130,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv3/hal_spi_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 17,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 23,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/src/hal_spi.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transfer"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 20,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/xhal/ports/STM32/LLD/SPIv2/hal_spi_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 16,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv2/hal_spi_v2_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 16,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv1/hal_spi_v2_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 16,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv2/hal_spi_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 13,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv1/hal_spi_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 13,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/xhal/src/hal_spi.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.transaction_begin",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 23,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/src/hal_mmc_spi.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin",
+          "spi.transfer"
+        ],
+        "n_functions": 39,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/ARMCMx/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 21,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/AVR/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 21,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/sb/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 6,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/src/hal_gpt.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/src/chsys.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 9,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/src/chvt.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/src/chinstances.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/xhal/src/hal_pal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 9,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv1/hal_i2s_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 7,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/src/hal_wspi.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 14,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/rt-nil/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/QUADSPIv1/hal_wspi_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/hal_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 5,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": []
+  },
+  "transaction_templates": [
+    {
+      "template_id": "adxl345_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "spi_write",
+          "args": {
+            "bytes": [
+              "0x2D",
+              "0x00"
+            ],
+            "length": null,
+            "pointer_target": "POWER_CTL",
+            "notes": null
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "spiExchange",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "spi_write",
+          "args": {
+            "bytes": [
+              "0x2D",
+              "0x08"
+            ],
+            "length": null,
+            "pointer_target": "POWER_CTL",
+            "notes": null
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "spiExchange",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.42,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (5 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "adxl345_read_sequence",
+      "steps": [
+        {
+          "op": "spi_write_then_read",
+          "args": {
+            "bytes": [
+              "0xF2"
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": null
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "spiExchange",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.5,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "slot_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'chibios' is integrated; n_roots=1 (no minimum)",
+        "evidence": {
+          "rtos_id": "chibios",
+          "n_roots": 1
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "all required slots covered",
+        "evidence": {
+          "missing_required": [],
+          "non_symbol_fulfillments": [
+            "integration.bus_instance_binding",
+            "runtime.error_status",
+            "spi.key_types"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (9 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "chibios:single:0::os/xhal/include/hal_spi.h",
+            "chibios:single:0::os/hal/include/hal_spi_v1.h",
+            "chibios:single:0::os/xhal/include/hal_spi.h",
+            "chibios:single:0::os/nil/include/ch.h",
+            "chibios:single:0::os/hal/include/hal.h",
+            "chibios:single:0::os/xhal/ports/STM32/LLD/GPIOv2/stm32_gpio.h",
+            "chibios:single:0::os/xhal/include/hal_spi.h",
+            "chibios:single:0::os/hal/src/hal_wspi.c"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [],
+        "missing_slots": [
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transfer",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer_registers"
+        ],
+        "new_files_added": [
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv3/hal_spi_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv3/hal_spi_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.h",
+          "chibios:single:0::os/hal/include/hal_spi.h",
+          "chibios:single:0::os/hal/src/hal_spi.c",
+          "chibios:single:0::os/xhal/include/hal_spi.h",
+          "chibios:single:0::os/xhal/ports/STM32/LLD/SPIv2/hal_spi_lld.h",
+          "chibios:single:0::os/hal/include/hal_spi_v1.h",
+          "chibios:single:0::os/hal/include/hal_spi_v2.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv1/hal_spi_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv2/hal_spi_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv2/hal_spi_v2_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv1/hal_spi_v2_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/QUADSPIv1/hal_wspi_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.c",
+          "chibios:single:0::os/xhal/ports/STM32/LLD/SPIv2/hal_spi_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv2/hal_spi_v2_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv1/hal_spi_v2_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv2/hal_spi_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv1/hal_spi_lld.c",
+          "chibios:single:0::os/xhal/src/hal_spi.c",
+          "chibios:single:0::os/hal/src/hal_mmc_spi.c",
+          "chibios:single:0::os/hal/osal/sb/osal.h",
+          "chibios:single:0::os/hal/osal/os-less/ARMCMx/osal.c",
+          "chibios:single:0::os/hal/osal/os-less/ARMCMx/osal.h",
+          "chibios:single:0::os/hal/osal/os-less/AVR/osal.c",
+          "chibios:single:0::os/hal/osal/os-less/AVR/osal.h",
+          "chibios:single:0::os/hal/osal/rt-nil/osal.h",
+          "chibios:single:0::os/hal/osal/sb/osal.c",
+          "chibios:single:0::os/hal/src/hal_gpt.c",
+          "chibios:single:0::os/rt/include/chsys.h",
+          "chibios:single:0::os/rt/include/chthreads.h",
+          "chibios:single:0::os/rt/src/chsys.c",
+          "chibios:single:0::os/rt/src/chvt.c",
+          "chibios:single:0::os/oslib/include/chmboxes.h",
+          "chibios:single:0::os/oslib/include/chobjfifos.h",
+          "chibios:single:0::os/oslib/include/chbsem.h",
+          "chibios:single:0::os/nil/include/ch.h",
+          "chibios:single:0::os/nil/include/chevt.h",
+          "chibios:single:0::os/rt/include/chevents.h",
+          "chibios:single:0::os/nil/include/chsem.h",
+          "chibios:single:0::os/oslib/include/chpipes.h",
+          "chibios:single:0::os/rt/include/chcond.h",
+          "chibios:single:0::os/rt/include/chschd.h",
+          "chibios:single:0::os/rt/include/chsem.h",
+          "chibios:single:0::os/rt/include/chinstances.h",
+          "chibios:single:0::os/rt/include/chobjects.h",
+          "chibios:single:0::os/rt/src/chinstances.c",
+          "chibios:single:0::os/xhal/src/hal_pal.c",
+          "chibios:single:0::os/rt/include/chearly.h",
+          "chibios:single:0::os/xhal/ports/STM32/LLD/GPIOv2/stm32_gpio.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv1/hal_i2s_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv1/hal_i2s_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/hal_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/stm32_registry.h",
+          "chibios:single:0::os/hal/include/hal_mmc_spi.h",
+          "chibios:single:0::os/hal/include/hal_wspi.h",
+          "chibios:single:0::os/hal/src/hal_wspi.c",
+          "chibios:single:0::os/hal/include/hal_i2s.h",
+          "chibios:single:0::os/hal/include/hal.h",
+          "chibios:single:0::os/hal/include/hal_adc.h",
+          "chibios:single:0::os/common/ports/ARM-common/include/chtypes.h",
+          "chibios:single:0::os/common/ports/ARM-common/include/mpu_v7m.h",
+          "chibios:single:0::os/common/ports/ARMv7-M/chcore.h",
+          "chibios:single:0::os/hal/include/hal_buffered_serial.h",
+          "chibios:single:0::os/hal/include/hal_buffers.h",
+          "chibios:single:0::os/hal/include/hal_can.h",
+          "chibios:single:0::os/hal/include/hal_channels.h",
+          "chibios:single:0::os/hal/include/hal_crypto.h",
+          "chibios:single:0::os/hal/include/hal_dac.h",
+          "chibios:single:0::os/hal/include/hal_efl.h",
+          "chibios:single:0::os/hal/include/hal_files.h",
+          "chibios:single:0::os/hal/include/hal_flash.h",
+          "chibios:single:0::os/hal/include/hal_gpt.h",
+          "chibios:single:0::os/hal/include/hal_i2c.h",
+          "chibios:single:0::os/hal/include/hal_icu.h",
+          "chibios:single:0::os/hal/include/hal_ioblock.h",
+          "chibios:single:0::os/hal/include/hal_mac.h",
+          "chibios:single:0::os/hal/include/hal_mmcsd.h",
+          "chibios:single:0::os/hal/include/hal_objects.h",
+          "chibios:single:0::os/hal/include/hal_pal.h",
+          "chibios:single:0::os/hal/include/hal_persistent.h",
+          "chibios:single:0::os/hal/include/hal_pwm.h",
+          "chibios:single:0::os/hal/include/hal_queues.h",
+          "chibios:single:0::os/hal/include/hal_rtc.h",
+          "chibios:single:0::os/hal/include/hal_safety.h",
+          "chibios:single:0::os/hal/include/hal_sdc.h",
+          "chibios:single:0::os/hal/include/hal_serial.h",
+          "chibios:single:0::os/hal/include/hal_serial_usb.h",
+          "chibios:single:0::os/hal/include/hal_sio.h",
+          "chibios:single:0::os/hal/include/hal_st.h",
+          "chibios:single:0::os/hal/include/hal_streams.h",
+          "chibios:single:0::os/hal/include/hal_trng.h",
+          "chibios:single:0::os/hal/include/hal_uart.h",
+          "chibios:single:0::os/hal/include/hal_usb.h",
+          "chibios:single:0::os/hal/include/hal_wdg.h",
+          "chibios:single:0::os/hal/osal/lib/osal_vt.h",
+          "chibios:single:0::os/hal/osal/rt-nil/osal.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/ADCv1/hal_adc_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/DMAv1/stm32_dma.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/OCTOSPIv1/hal_wspi_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/QUADSPIv1/hal_wspi_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/TIMv1/stm32_tim.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/hal_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/hal_lld_f100.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/hal_lld_f103.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/hal_lld_f105_f107.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/stm32_isr.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/stm32_rcc.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 14,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 111344,
+          "output_tokens_total": 15400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transfer",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "integration.pin_binding",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "missing_slots": [
+          "integration.bus_instance_binding",
+          "spi.transfer_registers"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 10
+        },
+        "token_usage": {
+          "input_tokens_delta": 27176,
+          "output_tokens_delta": 7000,
+          "input_tokens_total": 138520,
+          "output_tokens_total": 22400
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 11,
+    "n_bound": 9,
+    "n_fulfilled": 10,
+    "n_non_symbol_fulfillments": 3,
+    "n_required": 7,
+    "n_required_bound": 7,
+    "n_required_fulfilled": 7,
+    "n_required_symbol_bound": 6,
+    "provenance": {
+      "manifest_repo": 9,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 1.92,
+      "dir_router_llm": 20691.04,
+      "file_selector": 81.6,
+      "file_selector_llm": 131914.72,
+      "exact_symbol_file_backfill": 22.19,
+      "deep_parse": 383.46,
+      "include_expand": 212.51,
+      "symbol_rank": 1277.83,
+      "binder_deterministic": 2.49,
+      "binder_llm": 16630.5,
+      "gap_diagnoser_llm": 3862.48,
+      "source_kind_classifier": 0.03
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 14,
+        "file_selector": 4,
+        "symbol_binder": 10,
+        "gap_diagnoser": 2
+      },
+      "input_tokens_total": 140221,
+      "output_tokens_total": 23400,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "device_id": "dht22",
+  "rtos_id": "chibios",
+  "eval_class": "multi_channel",
+  "bus_kind": "gpio",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "dht22_init(&g_eval_dev, PAL_LINE(GPIOA, 0))",
+    "channels": [
+      {
+        "id": "humidity",
+        "call": "dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)",
+        "out_arg": "humidity_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_percent_rh"
+      },
+      {
+        "id": "temp",
+        "call": "dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)",
+        "out_arg": "temp_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct dht22_device",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "gpio1",
+        "note": "init: configure pin mode (output then input)"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "read_cycle: pulse / 1-wire handshake then sample bits"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_gpio_byte_frame_1",
+        "mock_preload": {
+          "payload": [
+            "0x02",
+            "0x58",
+            "0x02",
+            "0x7D",
+            "0xD9"
+          ]
+        },
+        "channel_preload_bytes": {
+          "humidity": [
+            "0x02",
+            "0x58"
+          ],
+          "temp": [
+            "0x02",
+            "0x7D"
+          ]
+        },
+        "expected_channels": {
+          "humidity": 60600,
+          "temp": 64337
+        },
+        "raw_tolerance": 0,
+        "derivation": "humidity: ((0x02 << 8) | 0x58) = 600; ((0x02 << 8) | 0x58) * 100 + ((0x02 << 8) | 0x58) = 60600; temp: ((0x02 << 8) | 0x7D) = 637; ((0x02 << 8) | 0x7D) * 100 + ((0x02 << 8) | 0x7D) = 64337; checksum: sum payload data bytes modulo 256 = 0xD9"
+      },
+      {
+        "name": "mechanical_gpio_byte_frame_2",
+        "mock_preload": {
+          "payload": [
+            "0x01",
+            "0xC7",
+            "0x01",
+            "0xEC",
+            "0xB5"
+          ]
+        },
+        "channel_preload_bytes": {
+          "humidity": [
+            "0x01",
+            "0xC7"
+          ],
+          "temp": [
+            "0x01",
+            "0xEC"
+          ]
+        },
+        "expected_channels": {
+          "humidity": 45955,
+          "temp": 49692
+        },
+        "raw_tolerance": 0,
+        "derivation": "humidity: ((0x01 << 8) | 0xC7) = 455; ((0x01 << 8) | 0xC7) * 100 + ((0x01 << 8) | 0xC7) = 45955; temp: ((0x01 << 8) | 0xEC) = 492; ((0x01 << 8) | 0xEC) * 100 + ((0x01 << 8) | 0xEC) = 49692; checksum: sum payload data bytes modulo 256 = 0xB5"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.gpio_byte_frame+read_channels+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "17bfa4ff020df6a6",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 11.863,
+  "prompt_chars": 51209,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"dht22_init(&g_eval_dev, PAL_LINE(GPIOA, 0))\", \"channels\": [{\"id\": \"humidity\", \"call\": \"dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)\", \"out_arg\": \"humidity_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_percent_rh\"}, {\"id\": \"temp\", \"call\": \"dht22_read_sensor(&g_eval_dev, &humidity_val, &temp_val)\", \"out_arg\": \"temp_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}], \"dev_struct_type\": \"struct dht22_device\", \"init_extra_setup_c\": \"\", \"preamble_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"gpio1\", \"note\": \"init: configure pin mode (output then input)\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"gpio1\", \"read_any\": true, \"note\": \"read_cycle: pulse / 1-wire handshake then sample bits\"}], \"test_stimuli\": [{\"name\": \"nominal_positive\", \"mock_preload\": {\"payload\": [\"0x01\", \"0x2C\", \"0x01\", \"0x5E\", \"0x8B\"]}, \"expected_channels\": {\"humidity\": 300, \"temp\": 350}, \"derivation\": \"humidity = integral_RH*100 + decimal_RH = 1*100 + 44 = 144? Wait recalc: bytes: 0x01 (integral_RH=1), 0x2C (decimal_RH=44), 0x01 (integral_T=1), 0x5E (decimal_T=94), checksum=0x8B. Sum=0x01+0x2C+0x01+0x5E=0x8B OK. humidity_milli = 1*100 + 44 = 144? But expected 300? Let's choose bytes to get nice numbers: integral_RH=2, decimal_RH=50 => humidity_milli=250? Actually 2*100+50=250. But we want 300? Let's set integral_RH=3, decimal_RH=0 => 300. So bytes: 0x03, 0x00, integral_T=2, decimal_T=50 => temp_milli=250? Wait temp_milli=2*100+50=250. But we want 350? Set integral_T=3, decimal_T=50 => 350. Checksum = 0x03+0x00+0x03+0x32=0x38. So payload: [0x03, 0x00, 0x03, 0x32, 0x38]. Derivation: humidity = 3*100 + 0 = 300; temp = 3*100 + 50 = 350.\"}, {\"name\": \"zero_and_near_zero\", \"mock_preload\": {\"payload\": [\"0x00\", \"0x00\", \"0x00\", \"0x01\", \"0x01\"]}, \"expected_channels\": {\"humidity\": 0, \"temp\": 1}, \"derivation\": \"humidity = 0*100 + 0 = 0; temp = 0*100 + 1 = 1; checksum = 0x00+0x00+0x00+0x01=0x01 OK.\"}, {\"name\": \"negative_temperature\", \"mock_preload\": {\"payload\": [\"0x01\", \"0x50\", \"0x80\", \"0x00\", \"0xD1\"]}, \"expected_channels\": {\"humidity\": 150, \"temp\": -12800}, \"derivation\": \"humidity = 1*100 + 80 = 180? Wait 0x50=80, so 1*100+80=180. But we want 150? Let's set integral_RH=1, decimal_RH=50 => 150. So bytes: 0x01, 0x32, integral_T negative: DHT22 temperature negative: integral_T is signed? Actually DHT22 temperature can be negative: highest bit of integral_T indicates sign. For -12.8°C, integral_T = -12, decimal_T = 8? But formula uses unsigned bytes? DHT22 datasheet: temperature is signed, but the byte representation: integral_T high bit indicates sign (1=negative). So for -12.8°C, integral_T = 0x80 | 12 = 0x8C? Actually negative: integral_T = 0x80 + 12 = 0x8C? But then decimal_T = 8? Then temp_milli = -(12*100 + 8) = -1208? Wait we want -12800? That would be -128.00°C, unrealistic. Let's choose simpler: integral_T=0x80 (meaning -0), decimal_T=0 => temp_milli=0? Not negative. Better: integral_T=0x81 (meaning -1), decimal_T=0 => temp_milli=-100. But we need negative. Let's set integral_T=0x80 (negative zero) decimal_T=0 => temp_milli=0. Not good. Let's set integral_T=0x81, decimal_T=50 => temp_milli = -(1*100+50) = -150. So bytes: 0x01, 0x32, 0x81, 0x32, checksum = 0x01+0x32+0x81+0x32=0xE6. Derivation: humidity = 1*100+50=150; temp = -(1*100+50) = -150.\"}]}}"
+}

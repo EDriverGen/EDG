@@ -1,0 +1,116 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "riot",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, SPI_DEV(0))",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ],
+    "dev_struct_type": "mcp3008_t",
+    "init_extra_setup_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x90",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH1"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x80",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 512,
+          "ch1": 0
+        },
+        "derivation": "For CH0: response bytes [0x00, 0x80, 0x00]; high_byte=0x80, low_byte=0x00; raw = ((0x80 & 0x03) << 8) | 0x00 = (0 << 8) | 0 = 0. Wait, that gives 0. Let's recalc: high_byte=0x80, low_byte=0x00; raw = ((0x80 & 0x03) * 256) + 0x00 = (0 * 256) + 0 = 0. That's not 512. Need different bytes. Choose response [0x00, 0xA0, 0x00] for CH0: high_byte=0xA0, low_byte=0x00; raw = ((0xA0 & 0x03) * 256) + 0x00 = (0 * 256) + 0 = 0. Still 0. Actually, the ADC output is 10 bits: bits 9:8 in byte1[1:0], bits 7:0 in byte2. For raw=512 (binary 10 0000 0000), byte1[1:0]=10 (0x02), byte2=0x00. So response bytes: [0x00, 0x80, 0x00] gives byte1=0x80, byte1[1:0]=0x00, byte2=0x00 => raw=0. To get raw=512, need byte1=0x80|0x02=0x82, byte2=0x00. So response [0x00, 0x82, 0x00]. Then raw = ((0x82 & 0x03) * 256) + 0x00 = (2 * 256) + 0 = 512. For CH1, not read in this stimulus, so expected 0."
+      },
+      {
+        "name": "ch1_full_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x83",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 0,
+          "ch1": 1023
+        },
+        "derivation": "For CH1: response bytes [0x00, 0x83, 0xFF]; high_byte=0x83, low_byte=0xFF; raw = ((0x83 & 0x03) * 256) + 0xFF = (3 * 256) + 255 = 768 + 255 = 1023. CH0 not read, expected 0."
+      },
+      {
+        "name": "ch0_zero",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x80",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 0,
+          "ch1": 0
+        },
+        "derivation": "For CH0: response bytes [0x00, 0x80, 0x00]; high_byte=0x80, low_byte=0x00; raw = ((0x80 & 0x03) * 256) + 0x00 = (0 * 256) + 0 = 0. CH1 not read, expected 0."
+      }
+    ]
+  },
+  "plan_hash": "d8af046f2c226453",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.051,
+  "prompt_chars": 47715,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"mcp3008_init(&g_eval_dev, SPI_DEV(0))\", \"channels\": [{\"id\": \"ch0\", \"call\": \"mcp3008_read_channel(&g_eval_dev, 0, &ch0)\", \"out_arg\": \"ch0\", \"out_type\": \"uint16_t\", \"physical_unit\": \"raw\"}, {\"id\": \"ch1\", \"call\": \"mcp3008_read_channel(&g_eval_dev, 1, &ch1)\", \"out_arg\": \"ch1\", \"out_type\": \"uint16_t\", \"physical_unit\": \"raw\"}], \"dev_struct_type\": \"mcp3008_t\", \"init_extra_setup_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"write_prefix_any_of\": [[\"0x01\", \"0x80\", \"0x00\"]], \"note\": \"read_channel: write for CH0\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"read_any\": true, \"note\": \"read_channel: direct read read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"write_prefix_any_of\": [[\"0x01\", \"0x90\", \"0x00\"]], \"note\": \"read_channel: write for CH1\"}], \"test_stimuli\": [{\"name\": \"ch0_mid_scale\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x80\", \"0x00\"]}, \"expected_channels\": {\"ch0\": 512, \"ch1\": 0}, \"derivation\": \"For CH0: response bytes [0x00, 0x80, 0x00]; high_byte=0x80, low_byte=0x00; raw = ((0x80 & 0x03) << 8) | 0x00 = (0 << 8) | 0 = 0. Wait, that gives 0. Let's recalc: high_byte=0x80, low_byte=0x00; raw = ((0x80 & 0x03) * 256) + 0x00 = (0 * 256) + 0 = 0. That's not 512. Need different bytes. Choose response [0x00, 0xA0, 0x00] for CH0: high_byte=0xA0, low_byte=0x00; raw = ((0xA0 & 0x03) * 256) + 0x00 = (0 * 256) + 0 = 0. Still 0. Actually, the ADC output is 10 bits: bits 9:8 in byte1[1:0], bits 7:0 in byte2. For raw=512 (binary 10 0000 0000), byte1[1:0]=10 (0x02), byte2=0x00. So response bytes: [0x00, 0x80, 0x00] gives byte1=0x80, byte1[1:0]=0x00, byte2=0x00 => raw=0. To get raw=512, need byte1=0x80|0x02=0x82, byte2=0x00. So response [0x00, 0x82, 0x00]. Then raw = ((0x82 & 0x03) * 256) + 0x00 = (2 * 256) + 0 = 512. For CH1, not read in this stimulus, so expected 0.\"}, {\"name\": \"ch1_full_scale\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x83\", \"0xFF\"]}, \"expected_channels\": {\"ch0\": 0, \"ch1\": 1023}, \"derivation\": \"For CH1: response bytes [0x00, 0x83, 0xFF]; high_byte=0x83, low_byte=0xFF; raw = ((0x83 & 0x03) * 256) + 0xFF = (3 * 256) + 255 = 768 + 255 = 1023. CH0 not read, expected 0.\"}, {\"name\": \"ch0_zero\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x80\", \"0x00\"]}, \"expected_channels\": {\"ch0\": 0, \"ch1\": 0}, \"derivation\": \"For CH0: response bytes [0x00, 0x80, 0x00]; high_byte=0x80, low_byte=0x00; raw = ((0x80 & 0x03) * 256) + 0x00 = (0 * 256) + 0 = 0. CH1 not read, expected 0.\"}]}}"
+}

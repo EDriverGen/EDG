@@ -1,0 +1,106 @@
+{
+  "device_id": "ds3231",
+  "rtos_id": "rtthread",
+  "eval_class": "rtc",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "rtc",
+    "init_call": "ds3231_init(&g_eval_dev, bus)",
+    "get_time_call": "ds3231_get_time(&g_eval_dev, &t)",
+    "set_time_call": "ds3231_set_time(&g_eval_dev, &t)",
+    "time_struct_decl": "struct ds3231_time drv;",
+    "time_struct_from_in": "struct ds3231_time drv; drv.seconds = bcd_encode(in->second); drv.minutes = bcd_encode(in->minute); drv.hours = bcd_encode(in->hour); drv.day = in->weekday; drv.date = bcd_encode(in->day); drv.month = bcd_encode(in->month); drv.year = bcd_encode(in->year - 2000);",
+    "time_fields": {
+      "year": "bcd_decode(drv.year) + 2000",
+      "month": "bcd_decode(drv.month)",
+      "day": "bcd_decode(drv.date)",
+      "hour": "bcd_decode(drv.hours)",
+      "minute": "bcd_decode(drv.minutes)",
+      "second": "bcd_decode(drv.seconds)",
+      "weekday": "drv.day"
+    },
+    "dev_struct_type": "struct ds3231_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "read_time_2024_03_15_14_30_45",
+        "mock_preload": {
+          "0x00": [
+            "0x45",
+            "0x30",
+            "0x14",
+            "0x06",
+            "0x15",
+            "0x03",
+            "0x24"
+          ]
+        },
+        "expected_time": {
+          "year": 2024,
+          "month": 3,
+          "day": 15,
+          "hour": 14,
+          "minute": 30,
+          "second": 45,
+          "weekday": 6
+        },
+        "derivation": "BCD bytes: 0x45=45 sec, 0x30=30 min, 0x14=14 hr, 0x06=day 6, 0x15=15 date, 0x03=3 month, 0x24=24 year -> 2024"
+      },
+      {
+        "name": "read_time_2025_12_25_08_05_00",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x05",
+            "0x08",
+            "0x04",
+            "0x25",
+            "0x12",
+            "0x25"
+          ]
+        },
+        "expected_time": {
+          "year": 2025,
+          "month": 12,
+          "day": 25,
+          "hour": 8,
+          "minute": 5,
+          "second": 0,
+          "weekday": 4
+        },
+        "derivation": "BCD bytes: 0x00=0 sec, 0x05=5 min, 0x08=8 hr, 0x04=day 4, 0x25=25 date, 0x12=12 month, 0x25=25 year -> 2025"
+      }
+    ]
+  },
+  "plan_hash": "44539ebd3eb92299",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 12.506,
+  "prompt_chars": 51423,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"rtc\", \"init_call\": \"ds3231_init(&g_eval_dev, bus)\", \"get_time_call\": \"ds3231_get_time(&g_eval_dev, &t)\", \"set_time_call\": \"ds3231_set_time(&g_eval_dev, &t)\", \"time_struct_decl\": \"struct ds3231_time drv;\", \"time_struct_from_in\": \"struct ds3231_time drv; drv.seconds = bcd_encode(in->second); drv.minutes = bcd_encode(in->minute); drv.hours = bcd_encode(in->hour); drv.day = in->weekday; drv.date = bcd_encode(in->day); drv.month = bcd_encode(in->month); drv.year = bcd_encode(in->year - 2000);\", \"time_fields\": {\"year\": \"bcd_decode(drv.year) + 2000\", \"month\": \"bcd_decode(drv.month)\", \"day\": \"bcd_decode(drv.date)\", \"hour\": \"bcd_decode(drv.hours)\", \"minute\": \"bcd_decode(drv.minutes)\", \"second\": \"bcd_decode(drv.seconds)\", \"weekday\": \"drv.day\"}, \"dev_struct_type\": \"struct ds3231_device\", \"init_extra_setup_c\": \"struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x68\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_time: write_then_read\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"0x68\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"write_time: write\"}], \"test_stimuli\": [{\"name\": \"read_time_2024_03_15_14_30_45\", \"mock_preload\": {\"0x00\": [\"0x45\", \"0x30\", \"0x14\", \"0x06\", \"0x15\", \"0x03\", \"0x24\"]}, \"expected_time\": {\"year\": 2024, \"month\": 3, \"day\": 15, \"hour\": 14, \"minute\": 30, \"second\": 45, \"weekday\": 6}, \"derivation\": \"BCD bytes: 0x45=45 sec, 0x30=30 min, 0x14=14 hr, 0x06=day 6, 0x15=15 date, 0x03=3 month, 0x24=24 year -> 2024\"}, {\"name\": \"read_time_2025_12_25_08_05_00\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x05\", \"0x08\", \"0x04\", \"0x25\", \"0x12\", \"0x25\"]}, \"expected_time\": {\"year\": 2025, \"month\": 12, \"day\": 25, \"hour\": 8, \"minute\": 5, \"second\": 0, \"weekday\": 4}, \"derivation\": \"BCD bytes: 0x00=0 sec, 0x05=5 min, 0x08=8 hr, 0x04=day 4, 0x25=25 date, 0x12=12 month, 0x25=25 year -> 2025\"}]}}"
+}

@@ -1,0 +1,124 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "apache-mynewt",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MCP3008_H\n#define MCP3008_H\n\n#include <stdint.h>\n\nstruct mcp3008_dev {\n    int spi_num;\n    int cs_pin;\n};\n\nint mcp3008_init(struct mcp3008_dev *dev, void *bus_handle);\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out);\n\n#endif",
+  "driver_source": "#include \"mcp3008.h\"\n#include <assert.h>\n#include <stddef.h>\n#include <stdint.h>\n\n#include <os/os_time.h>\nint mcp3008_init(struct mcp3008_dev *dev, void *bus_handle) {\n    (void)bus_handle;\n    dev->spi_num = 0;\n    dev->cs_pin = board_configured_cs;\n    hal_gpio_init_out(dev->cs_pin, 1);\n    os_time_delay(1);\n    return 0;\n}\n\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out) {\n    uint8_t tx_buf[3];\n    uint8_t rx_buf[3];\n    tx_buf[0] = 0x01;\n    tx_buf[1] = 0x80 | (channel << 4);\n    tx_buf[2] = 0x00;\n    hal_gpio_write(dev->cs_pin, 0);\n    int ret = hal_spi_txrx(dev->spi_num, tx_buf, rx_buf, 3);\n    hal_gpio_write(dev->cs_pin, 1);\n    if (ret != 0) {\n        return -1;\n    }\n    uint16_t raw = ((uint16_t)(rx_buf[1] & 0x03) << 8) | rx_buf[2];\n    *out = raw;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "dev_struct_type": "struct mcp3008_dev",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x90",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH1"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read for CH1"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x7F",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 1023
+        },
+        "derivation": "high_byte=0x7F, low_byte=0xFF; raw = ((0x7F & 0x03) * 256) + 0xFF = (3 * 256) + 255 = 1023"
+      },
+      {
+        "name": "ch1_zero",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch1": 0
+        },
+        "derivation": "high_byte=0x00, low_byte=0x00; raw = ((0x00 & 0x03) * 256) + 0x00 = 0"
+      },
+      {
+        "name": "ch0_quarter_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x40",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 256
+        },
+        "derivation": "high_byte=0x40, low_byte=0x00; raw = ((0x40 & 0x03) * 256) + 0x00 = (0 * 256) + 0 = 0? Wait, 0x40 & 0x03 = 0, so raw=0. Correcting: mock_preload stream [0x00, 0x01, 0x00] yields high_byte=0x01, low_byte=0x00; raw = ((0x01 & 0x03) * 256) + 0x00 = 256"
+      }
+    ]
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "command",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.339,
+  "prompt_chars": 34712,
+  "raw_response": "{\"driver_header\": \"#ifndef MCP3008_H\\n#define MCP3008_H\\n\\n#include <stdint.h>\\n\\nstruct mcp3008_dev {\\n    int spi_num;\\n    int cs_pin;\\n};\\n\\nint mcp3008_init(struct mcp3008_dev *dev, void *bus_handle);\\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"mcp3008.h\\\"\\n#include <assert.h>\\n#include <hal/hal_gpio.h>\\n#include <hal/hal_spi.h>\\n#include <os/os_time.h>\\n#include <stddef.h>\\n#include <stdint.h>\\n\\nint mcp3008_init(struct mcp3008_dev *dev, void *bus_handle) {\\n    (void)bus_handle;\\n    dev->spi_num = 0;\\n    dev->cs_pin = board_configured_cs;\\n    hal_gpio_init_out(dev->cs_pin, 1);\\n    os_time_delay(1);\\n    return 0;\\n}\\n\\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out) {\\n    uint8_t tx_buf[3];\\n    uint8_t rx_buf[3];\\n    tx_buf[0] = 0x01;\\n    tx_buf[1] = 0x80 | (channel << 4);\\n    tx_buf[2] = 0x00;\\n    hal_gpio_write(dev->cs_pin, 0);\\n    int ret = hal_spi_txrx(dev->spi_num, tx_buf, rx_buf, 3);\\n    hal_gpio_write(dev->cs_pin, 1);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n    uint16_t raw = ((uint16_t)(rx_buf[1] & 0x03) << 8) | rx_buf[2];\\n    *out = raw;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "1bce109f062b84c8"
+}

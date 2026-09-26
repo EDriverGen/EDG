@@ -1,0 +1,166 @@
+{
+  "task_package_id": "rtthread_stm32f103rb__w25q64jv__spi1_polling",
+  "rtos": "rtthread",
+  "device": "w25q64jv",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/w25q64jv/rtthread",
+  "task_package": {
+    "package_id": "rtthread_stm32f103rb__w25q64jv__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/rtthread_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/rtthread_stm32f103rb_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/w25q64jv.json",
+    "reference_driver_root": "DriverGen/data/references/w25q64jv/rtthread",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "rtthread_stm32f103rb",
+        "rtos": "rtthread",
+        "board": "stm32f103rb",
+        "integration": "rtthread_device",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "rtthread_stm32f103rb_spi1_polling",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "i2c1",
+        "bus_symbol": "i2c1",
+        "backend": "RT-Thread I2C",
+        "address_mode": "spi_mode_0",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "w25q64jv",
+        "attachment_type": "spi_flash",
+        "required_bus_type": "spi"
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "w25q64jv + rtthread + spi1_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/*.pdf",
+      "DriverGen/data/references/w25q64jv/rtthread"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "rtthread_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "rt-thread",
+    "rtos_bundle": "rt-thread",
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi10"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform corresponds to the existing local RT-Thread STM32F103RB experiments.",
+      "I2C, SPI, and GPIO timing drivers all rely on the repository BSP layer rather than a separate vendor SDK.",
+      "SPI experiments model a named rt_spi_device such as spi10; chip-select attachment is handled by the RT-Thread SPI device registration.",
+      "UART experiments model a named rt_device serial endpoint such as uart1."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread",
+      "DriverGen/data/board_context/rtthread_stm32f103rb_i2c1_polling.json",
+      "DriverGen/data/rtos/rt-thread/components/drivers/include/drivers/dev_spi.h",
+      "DriverGen/data/references/*/rtthread/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "rtthread_stm32f103rb_spi1_polling",
+    "platform_id": "rtthread_stm32f103rb",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "spi10",
+    "bus_instance_kind": "named_spi_device",
+    "bus_symbol": "spi10",
+    "backend": "RT-Thread SPI device framework",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "device_name": "spi10",
+      "chip_select": "configured_by_bsp_spi_device"
+    },
+    "notes": [
+      "Default RT-Thread SPI polling binding used for generated SPI device experiments.",
+      "RT-Thread exposes each chip-selected SPI peripheral as a named rt_spi_device; generated drivers should find it by name and configure mode/data_width/max_hz per device."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread/components/drivers/include/drivers/dev_spi.h",
+      "DriverGen/data/rtos/rt-thread/components/drivers/spi/dev_spi_core.c",
+      "DriverGen/data/references/max31855/rtthread/max31855_ref.c",
+      "DriverGen/data/references/adxl345/rtthread/adxl345_ref.c",
+      "DriverGen/data/references/mcp3008/rtthread/mcp3008_ref.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "w25q64jv",
+    "attachment_type": "spi_flash",
+    "required_bus_type": "spi",
+    "spi_proto": "memory",
+    "spi_mode": 0,
+    "spi_max_hz": 80000000,
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "addressing": {
+      "default": "spi1",
+      "selection_rule": "SPI CS# selected by board wiring."
+    },
+    "required_attachment": {
+      "signals": [
+        "CS",
+        "CLK",
+        "MOSI",
+        "MISO"
+      ],
+      "notes": [
+        "Standard SPI quad-pin connection."
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": "spi1",
+      "irq": "absent",
+      "dma": "absent"
+    },
+    "notes": [
+      "64M-bit SPI NOR Flash. Read 0x03, Page Program 0x02, Sector Erase 0x20."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/W25Q64JV.pdf",
+      "DriverGen/data/references/w25q64jv/*/*_ref.h"
+    ]
+  }
+}

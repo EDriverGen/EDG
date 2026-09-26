@@ -1,0 +1,586 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "hcsr04",
+  "rtos": "rtthread",
+  "board": "stm32f103rb",
+  "bus_type": "gpio",
+  "connection": {
+    "connection_type": "gpio_timing",
+    "mode": "polling",
+    "bus_instance": "default_gpio_slot",
+    "bus_symbol": "GET_PIN(A,0)/GET_PIN(A,1)",
+    "address_mode": null,
+    "backend": "rt-thread pin device + board microsecond timing"
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "rt_hw_us_delay",
+      "rt_thread_mdelay"
+    ],
+    "error_symbols": [
+      "rt_err_t"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "rt_pin_mode",
+      "rt_pin_read",
+      "rt_pin_write"
+    ],
+    "bus_api_signatures": {
+      "rt_pin_mode": "void rt_pin_mode(rt_uint64_t pin, rt_uint8_t mode)",
+      "rt_pin_read": "rt_int8_t rt_pin_read(rt_uint64_t pin)",
+      "rt_pin_write": "void rt_pin_write(rt_uint64_t pin, rt_uint8_t value)"
+    },
+    "bus_helper_types": [
+      "struct rt_pin_ops"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "bus_instance": "default_gpio_slot",
+    "bus_symbol": "GET_PIN(A,0)/GET_PIN(A,1)",
+    "include_headers": [],
+    "fixed_attachment": {
+      "trig_pin": "PA0",
+      "echo_pin": "PA1"
+    },
+    "required_helpers": [
+      "rt_thread_mdelay",
+      "rt_pin_mode",
+      "rt_pin_write",
+      "rt_pin_read"
+    ],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "default_gpio_slot",
+        "fields": {
+          "bus_instance": "default_gpio_slot",
+          "bus_symbol": "GET_PIN(A,0)/GET_PIN(A,1)",
+          "backend": "rt-thread pin device + board microsecond timing",
+          "mode": "polling"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "integration.pin_binding": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "trig_pin": "PA0",
+          "echo_pin": "PA1"
+        },
+        "fields": {
+          "fixed_attachment": {
+            "trig_pin": "PA0",
+            "echo_pin": "PA1"
+          },
+          "required_attachment": {
+            "signals": [
+              "trig",
+              "echo"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "hcsr04",
+    "required_bus_type": "gpio",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "trig",
+        "echo"
+      ],
+      "notes": [
+        "TRIG must be a digital output. ECHO must be a digital input that can be polled or timestamped at microsecond scale."
+      ]
+    },
+    "optional_attachment": {
+      "power_enable": "optional"
+    }
+  },
+  "api_bindings": {
+    "gpio.configure": {
+      "symbol": "rt_pin_mode",
+      "kind": "function",
+      "signature": "void rt_pin_mode(rt_uint64_t pin, rt_uint8_t mode)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.key_types": {
+      "symbol": "rt_pin_ops",
+      "kind": "struct",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drivers/drv_gpio.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.read": {
+      "symbol": "rt_pin_read",
+      "kind": "function",
+      "signature": "rt_int8_t rt_pin_read(rt_uint64_t pin)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.write": {
+      "symbol": "rt_pin_write",
+      "kind": "function",
+      "signature": "void rt_pin_write(rt_uint64_t pin, rt_uint8_t value)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_us": {
+      "symbol": "rt_hw_us_delay",
+      "kind": "function",
+      "signature": "void rt_hw_us_delay(rt_uint32_t us)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drv_common.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_pin_mode": {
+      "symbol": "rt_pin_mode",
+      "kind": "function",
+      "signature": "void rt_pin_mode(rt_uint64_t pin, rt_uint8_t mode)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_pin_read": {
+      "symbol": "rt_pin_read",
+      "kind": "function",
+      "signature": "rt_int8_t rt_pin_read(rt_uint64_t pin)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_pin_write": {
+      "symbol": "rt_pin_write",
+      "kind": "function",
+      "signature": "void rt_pin_write(rt_uint64_t pin, rt_uint8_t value)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_thread_mdelay": {
+      "symbol": "rt_thread_mdelay",
+      "kind": "function",
+      "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "rt_thread_mdelay",
+      "kind": "function",
+      "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::src/thread.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "rt_thread_mdelay",
+          "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "default_gpio_slot",
+      "fields": {
+        "bus_instance": "default_gpio_slot",
+        "bus_symbol": "GET_PIN(A,0)/GET_PIN(A,1)",
+        "backend": "rt-thread pin device + board microsecond timing",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "trig_pin": "PA0",
+        "echo_pin": "PA1"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "trig_pin": "PA0",
+          "echo_pin": "PA1"
+        },
+        "required_attachment": {
+          "signals": [
+            "trig",
+            "echo"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "default_gpio_slot",
+      "fields": {
+        "bus_instance": "default_gpio_slot",
+        "bus_symbol": "GET_PIN(A,0)/GET_PIN(A,1)",
+        "backend": "rt-thread pin device + board microsecond timing",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "trig_pin": "PA0",
+        "echo_pin": "PA1"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "trig_pin": "PA0",
+          "echo_pin": "PA1"
+        },
+        "required_attachment": {
+          "signals": [
+            "trig",
+            "echo"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::src/thread.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "rt_thread_mdelay",
+          "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "rt_pin_mode",
+    "rt_pin_read",
+    "rt_pin_write",
+    "rt_hw_us_delay",
+    "rt_thread_mdelay",
+    "rt_pin_ops"
+  ],
+  "allowed_symbol_provenance": {
+    "rt_pin_mode": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_pin_read": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_pin_write": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_hw_us_delay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drv_common.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_thread_mdelay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_pin_ops": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drivers/drv_gpio.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "hcsr04_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (1 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "hcsr04_read_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 12/12 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "kind": "declaration",
+      "for_symbol": "rt_pin_mode",
+      "slot_id": "gpio.configure"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "kind": "declaration",
+      "for_symbol": "rt_pin_read",
+      "slot_id": "gpio.read"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "kind": "declaration",
+      "for_symbol": "rt_pin_write",
+      "slot_id": "gpio.write"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/drv_common.c",
+      "kind": "declaration",
+      "for_symbol": "rt_hw_us_delay",
+      "slot_id": "runtime.delay_us"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "kind": "declaration",
+      "for_symbol": "rt_pin_mode",
+      "slot_id": "task_helper.rt_pin_mode"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "kind": "declaration",
+      "for_symbol": "rt_pin_read",
+      "slot_id": "task_helper.rt_pin_read"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/nano/drv_gpio.c",
+      "kind": "declaration",
+      "for_symbol": "rt_pin_write",
+      "slot_id": "task_helper.rt_pin_write"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "src/thread.c",
+      "kind": "declaration",
+      "for_symbol": "rt_thread_mdelay",
+      "slot_id": "task_helper.rt_thread_mdelay"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "src/thread.c",
+      "kind": "declaration",
+      "for_symbol": "rt_thread_mdelay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_gpio.c",
+      "kind": "declaration",
+      "for_symbol": "rt_pin_ops",
+      "slot_id": "gpio.key_types"
+    }
+  ],
+  "requires_human": []
+}

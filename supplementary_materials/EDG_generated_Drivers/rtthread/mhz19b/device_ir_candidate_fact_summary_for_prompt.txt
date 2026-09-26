@@ -1,0 +1,41 @@
+Summary: {"address_count": 0, "bitfield_count": 4, "bus_type": "UART", "channel_count": 3, "device_id": "mhz19b", "evidence_span_count": 21, "formula_count": 4, "operation_count": 6, "register_count": 6, "requires_human_count": 4, "timing_count": 6}
+Registers:
+- Read CO2 concentration command@0x86 access=write bits=8 roles=control desc=Command byte to read CO2 concentration
+- Calibrate Zero Point command@0x87 access=write bits=8 roles=control desc=Command byte to calibrate zero point
+- Calibrate Span Point command@0x88 access=write bits=8 roles=control desc=Command byte to calibrate span point
+- Self-calibration ON/OFF command@0x79 access=write bits=8 roles=control desc=Command byte to turn on/off self-calibration for zero point
+- Detection range setting command@0x99 access=write bits=8 roles=control desc=Command byte to set detection range
+- CO2 concentration response@None access=read bits=64 roles=result desc=9-byte response to read command: start byte, command, high byte, low byte, 4 reserved, checksum
+Bitfields:
+- Self-calibration ON/OFF command.Self-calibration enable bits=Byte3 roles=config desc=Byte3 value: 0xA0 enables self-calibration, 0x00 disables. Default is on.
+- Detection range setting command.Detection range value bits=Byte4-Byte7 roles=config desc=32-bit detection range value (0~2000, 0~5000, or 0~10000 ppm). Byte4: bits 24-31, Byte5: bits 16-23, Byte6: bits 8-15...
+- CO2 concentration response.CO2 concentration high byte bits=Byte2 roles=data desc=High byte of CO2 concentration value
+- CO2 concentration response.CO2 concentration low byte bits=Byte3 roles=data desc=Low byte of CO2 concentration value
+Operations:
+- read_co2 kind=read channels=CO2 outputs=CO2 concentration (ppm) summary=Read CO2 concentration via UART command 0x86 steps=[write:UART:Send 9-byte command: 0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, checksum; read:UART:Read 9-byte response: start byte 0xFF, command 0x86, high byte, low byte, 4 r...; postprocess:None:Calculate CO2 concentration = high_byte * 256 + low_byte]
+- calibrate_zero kind=calibration channels=CO2 outputs= summary=Calibrate zero point via command 0x87 steps=[write:UART:Send 9-byte command: 0xFF, 0x01, 0x87, 0x00, 0x00, 0x00, 0x00, 0x00, checksum...]
+- calibrate_span kind=calibration channels=CO2 outputs= summary=Calibrate span point via command 0x88 steps=[write:UART:Send 9-byte command: 0xFF, 0x01, 0x88, span_high, span_low, 0x00, 0x00, 0x00,...]
+- set_self_calibration kind=write channels= outputs= summary=Enable or disable self-calibration for zero point via command 0x79 steps=[write:UART:Send 9-byte command: 0xFF, 0x01, 0x79, enable_byte, 0x00, 0x00, 0x00, 0x00, c...]
+- set_detection_range kind=write channels= outputs= summary=Set detection range via command 0x99 steps=[write:UART:Send 9-byte command: 0xFF, 0x01, 0x99, 0x00, range_byte4, range_byte3, range_...]
+- hand_zero_calibration kind=calibration channels=CO2 outputs= summary=Zero point calibration by pulling HD pin low for at least 7 seconds steps=[set_signal:HD:Connect HD pin to low level (0V) for at least 7 seconds]
+Channels:
+- CO2 source=UART response bytes 2 and 3 formula=co2_concentration desc=Carbon dioxide concentration in ppm
+- CO2_PWM source=PWM signal timing formula=co2_pwm desc=CO2 concentration derived from PWM output
+- CO2_analog source=Analog output Vo (0.4~2V default) formula=co2_analog desc=CO2 concentration derived from analog voltage output
+Formulae:
+- co2_concentration inputs=high_byte,low_byte output=CO2 concentration in ppm formula=CO2 = high_byte * 256 + low_byte
+- co2_pwm inputs=TH,TL output=CO2 concentration in ppm for 0-2000ppm range formula=Cppm = 2000 * (TH - 2ms) / (TH + TL - 4ms)
+- co2_analog inputs=Vo,detection_range output=CO2 concentration in ppm formula=Vo = 0.4 + (2.0 - 0.4) * C / detection_range
+- checksum inputs=byte1,byte2,byte3,byte4,byte5,byte6,byte7 output=checksum byte formula=checksum = (~(sum(byte1..byte7)) + 1) & 0xFF
+Timing:
+- Preheat time=3 min when=Before normal operation
+- Response time T90=120 s when=Typical
+- HD pin low duration for zero calibration=7 s when=Hand-operated zero calibration
+- Stabilization time before zero calibration=20 min when=Before zero calibration, sensor must be stable at 400ppm
+- Self-calibration cycle=24 h when=After power on, every 24 hours
+- PWM cycle=1004 ms when=Typical, ±5%
+RequiresHuman:
+- Analog output voltage range is configurable from 0V to 3V; default is 0.4V to 2V. Customization may require factory configuration.
+- Detection range must be set to one of 0~2000, 0~5000, or 0~10000 ppm. The formula for PWM output uses 2000ppm range; adjust if different range is used.
+- Self-calibration is enabled by default; turn off for greenhouse, farm, or refrigerator applications.
+- Zero point calibration assumes 400ppm CO2 environment; ensure sensor is stable for 20 minutes before calibration.

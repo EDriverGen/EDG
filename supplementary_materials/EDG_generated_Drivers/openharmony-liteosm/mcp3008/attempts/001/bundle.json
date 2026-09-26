@@ -1,0 +1,93 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "openharmony-liteosm",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MCP3008_H\n#define MCP3008_H\n\n#include <stdint.h>\n#include \"spi_if.h\"\n\nstruct mcp3008_device {\n    DevHandle spi_handle;\n};\n\nint32_t mcp3008_init(struct mcp3008_device *dev, DevHandle bus_handle);\nint32_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out);\n\n#endif /* MCP3008_H */",
+  "driver_source": "#include \"mcp3008.h\"\n#include \"hdf_base.h\"\n#include <stdint.h>\n\n#include \"spi_if.h\"\nint32_t mcp3008_init(struct mcp3008_device *dev, DevHandle bus_handle)\n{\n    if (dev == NULL || bus_handle == NULL) {\n        return HDF_ERR_INVALID_PARAM;\n    }\n    dev->spi_handle = bus_handle;\n    return HDF_SUCCESS;\n}\n\nint32_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out)\n{\n    if (dev == NULL || dev->spi_handle == NULL || out == NULL) {\n        return HDF_ERR_INVALID_PARAM;\n    }\n    if (channel > 7) {\n        return HDF_ERR_INVALID_PARAM;\n    }\n\n    uint8_t tx_buf[3];\n    uint8_t rx_buf[3];\n    tx_buf[0] = 0x01;\n    tx_buf[1] = 0x80 | (channel << 4);\n    tx_buf[2] = 0x00;\n\n    struct SpiMsg msg;\n    msg.wbuf = tx_buf;\n    msg.rbuf = rx_buf;\n    msg.len = 3;\n    msg.speed = 3600000;\n    msg.delayUs = 0;\n    msg.csChange = 0;\n    msg.keepCs = 1;\n\n    int32_t ret = SpiTransfer(dev->spi_handle, &msg, 1);\n    if (ret != HDF_SUCCESS) {\n        return ret;\n    }\n\n    uint8_t high_byte = rx_buf[1];\n    uint8_t low_byte = rx_buf[2];\n    *out = (uint16_t)(((high_byte & 0x03) << 8) | low_byte);\n    return HDF_SUCCESS;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "DevHandle bus_handle = SpiOpen((struct SpiDevInfo *)bus_name);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_IO; }",
+    "dev_struct_type": "struct mcp3008_device",
+    "preamble_c": "#include \"spi_if.h\"\n#include \"hdf_base.h\"",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for ch0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x80",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 512
+        },
+        "derivation": "Response bytes: [0x00, 0x80, 0x00]. high_byte=0x80, low_byte=0x00. raw = ((0x80 & 0x03) << 8) | 0x00 = (0 << 8) | 0 = 512."
+      },
+      {
+        "name": "ch1_full_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0xFF",
+            "0xC0"
+          ]
+        },
+        "expected_channels": {
+          "ch1": 1023
+        },
+        "derivation": "Response bytes: [0x00, 0xFF, 0xC0]. high_byte=0xFF, low_byte=0xC0. raw = ((0xFF & 0x03) << 8) | 0xC0 = (3 << 8) | 192 = 768 + 192 = 960? But 1023 would be 0xFF & 0x03 = 3, low_byte=0xFF, raw=768+255=1023. So set low_byte=0xFF. Correct bytes: [0x00, 0xFF, 0xFF]."
+      }
+    ]
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "command",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.161,
+  "prompt_chars": 32177,
+  "raw_response": "{\"driver_header\": \"#ifndef MCP3008_H\\n#define MCP3008_H\\n\\n#include <stdint.h>\\n#include \\\"spi_if.h\\\"\\n\\nstruct mcp3008_device {\\n    DevHandle spi_handle;\\n};\\n\\nint32_t mcp3008_init(struct mcp3008_device *dev, DevHandle bus_handle);\\nint32_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out);\\n\\n#endif /* MCP3008_H */\", \"driver_source\": \"#include \\\"mcp3008.h\\\"\\n#include \\\"hdf_base.h\\\"\\n#include <stdint.h>\\n\\nint32_t mcp3008_init(struct mcp3008_device *dev, DevHandle bus_handle)\\n{\\n    if (dev == NULL || bus_handle == NULL) {\\n        return HDF_ERR_INVALID_PARAM;\\n    }\\n    dev->spi_handle = bus_handle;\\n    return HDF_SUCCESS;\\n}\\n\\nint32_t mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *out)\\n{\\n    if (dev == NULL || dev->spi_handle == NULL || out == NULL) {\\n        return HDF_ERR_INVALID_PARAM;\\n    }\\n    if (channel > 7) {\\n        return HDF_ERR_INVALID_PARAM;\\n    }\\n\\n    uint8_t tx_buf[3];\\n    uint8_t rx_buf[3];\\n    tx_buf[0] = 0x01;\\n    tx_buf[1] = 0x80 | (channel << 4);\\n    tx_buf[2] = 0x00;\\n\\n    struct SpiMsg msg;\\n    msg.wbuf = tx_buf;\\n    msg.rbuf = rx_buf;\\n    msg.len = 3;\\n    msg.speed = 3600000;\\n    msg.delayUs = 0;\\n    msg.csChange = 0;\\n    msg.keepCs = 1;\\n\\n    int32_t ret = SpiTransfer(dev->spi_handle, &msg, 1);\\n    if (ret != HDF_SUCCESS) {\\n        return ret;\\n    }\\n\\n    uint8_t high_byte = rx_buf[1];\\n    uint8_t low_byte = rx_buf[2];\\n    *out = (uint16_t)(((high_byte & 0x03) << 8) | low_byte);\\n    return HDF_SUCCESS;\\n}\\n\"}",
+  "plan_hash": "8549886f1623447a"
+}

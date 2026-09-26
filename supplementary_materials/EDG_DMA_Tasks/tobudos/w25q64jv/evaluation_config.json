@@ -1,0 +1,45 @@
+{
+  "task_package_id": "tobudos_alientek_ministm32f103rct6__w25q64jv__spi1_dma",
+  "device_id": "w25q64jv",
+  "rtos_id": "tobudos",
+  "board": "ALIENTEK-MiniSTM32F103RCT6",
+  "physical_bus": "spi",
+  "transfer_mode": "dma",
+  "pass_rule": "cumulative_L1_through_Lk",
+  "levels": [
+    "L1: build",
+    "L2: boot and execution",
+    "L3: protocol",
+    "L4: semantics",
+    "L5: robustness"
+  ],
+  "device_oracle": {
+    "meta": "EDG_DMA_Tasks/tobudos/w25q64jv/oracle/meta.json",
+    "physical_range": "EDG_DMA_Tasks/tobudos/w25q64jv/oracle/physical_range.json",
+    "required_writes": "EDG_DMA_Tasks/tobudos/w25q64jv/oracle/required_writes.json",
+    "stimuli": "EDG_DMA_Tasks/tobudos/w25q64jv/oracle/stimuli.json"
+  },
+  "dma_validation_requirements": [
+    {
+      "id": "dma_payload",
+      "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+    },
+    {
+      "id": "completion_order",
+      "requirement": "Consume receive data and reuse buffers only after the required completion event."
+    },
+    {
+      "id": "error_and_timeout",
+      "requirement": "Return the specified error and release transfer state after failure or timeout."
+    },
+    {
+      "id": "repeat_operation",
+      "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+    }
+  ],
+  "device_scenarios": [
+    "Read contiguous 64-byte and 256-byte payloads.",
+    "Program within a 256-byte page and check readback.",
+    "Keep chip select asserted across command/address and payload phases."
+  ]
+}

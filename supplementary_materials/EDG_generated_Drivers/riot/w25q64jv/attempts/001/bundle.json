@@ -1,0 +1,138 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "riot",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef W25Q64JV_H\n#define W25Q64JV_H\n\n#include <stdint.h>\n#include <stddef.h>\n\n#define W25Q64JV_PAGE_SIZE 256\n#define W25Q64JV_MEM_SIZE 8388608\n\n#include \"riot.h\"\ntypedef struct {\n    spi_t bus;\n    spi_cs_t cs;\n} w25q64jv_t;\n\nint w25q64jv_init(w25q64jv_t *dev, spi_t bus, spi_cs_t cs);\nint w25q64jv_read(w25q64jv_t *dev, uint32_t addr, uint8_t *buf, size_t len);\nint w25q64jv_write(w25q64jv_t *dev, uint32_t addr, const uint8_t *buf, size_t len);\n\n#endif /* W25Q64JV_H */\n",
+  "driver_source": "#include \"w25q64jv.h\"\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n#include <errno.h>\n#include \"ztimer.h\"\n\n#include \"riot.h\"\n#define CMD_READ_DATA      0x03\n#define CMD_PAGE_PROGRAM   0x02\n#define CMD_WRITE_ENABLE   0x06\n#define CMD_JEDEC_ID       0x9F\n\nstatic int w25q64jv_transfer(w25q64jv_t *dev, const uint8_t *tx, uint8_t *rx, size_t len)\n{\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\n    spi_transfer_bytes(dev->bus, dev->cs, false, tx, rx, len);\n    spi_release(dev->bus);\n    return 0;\n}\n\nint w25q64jv_init(w25q64jv_t *dev, spi_t bus, spi_cs_t cs)\n{\n    dev->bus = bus;\n    dev->cs = cs;\n\n    spi_init(bus);\n    spi_init_cs(bus, cs);\n\n    /* Wait for power-up */\n    ztimer_sleep(ZTIMER_MSEC, 5);\n\n    /* Send JEDEC ID command and read 3 bytes */\n    uint8_t tx_buf[4] = {CMD_JEDEC_ID, 0, 0, 0};\n    uint8_t rx_buf[4] = {0};\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\n    spi_transfer_bytes(dev->bus, dev->cs, false, tx_buf, rx_buf, 4);\n    spi_release(dev->bus);\n\n    /* Check JEDEC ID: expected 0xEF 0x40 0x17 for W25Q64JV */\n    if (rx_buf[1] != 0xEF || rx_buf[2] != 0x40 || rx_buf[3] != 0x17) {\n        return -ENODEV;\n    }\n\n    return 0;\n}\n\nint w25q64jv_read(w25q64jv_t *dev, uint32_t addr, uint8_t *buf, size_t len)\n{\n    if (addr + len > W25Q64JV_MEM_SIZE) {\n        return -EINVAL;\n    }\n\n    uint8_t cmd[4];\n    cmd[0] = CMD_READ_DATA;\n    cmd[1] = (addr >> 16) & 0xFF;\n    cmd[2] = (addr >> 8) & 0xFF;\n    cmd[3] = addr & 0xFF;\n\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\n    spi_transfer_bytes(dev->bus, dev->cs, false, cmd, NULL, 4);\n    spi_transfer_bytes(dev->bus, dev->cs, false, NULL, buf, len);\n    spi_release(dev->bus);\n\n    return 0;\n}\n\nint w25q64jv_write(w25q64jv_t *dev, uint32_t addr, const uint8_t *buf, size_t len)\n{\n    if (addr + len > W25Q64JV_MEM_SIZE) {\n        return -EINVAL;\n    }\n    if (len > W25Q64JV_PAGE_SIZE) {\n        return -EINVAL;\n    }\n\n    /* Write enable */\n    uint8_t we_cmd = CMD_WRITE_ENABLE;\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\n    spi_transfer_bytes(dev->bus, dev->cs, false, &we_cmd, NULL, 1);\n    spi_release(dev->bus);\n\n    /* Page program */\n    uint8_t cmd[4];\n    cmd[0] = CMD_PAGE_PROGRAM;\n    cmd[1] = (addr >> 16) & 0xFF;\n    cmd[2] = (addr >> 8) & 0xFF;\n    cmd[3] = addr & 0xFF;\n\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\n    spi_transfer_bytes(dev->bus, dev->cs, false, cmd, NULL, 4);\n    spi_transfer_bytes(dev->bus, dev->cs, false, buf, NULL, len);\n    spi_release(dev->bus);\n\n    /* Wait for program to complete (poll BUSY) */\n    uint8_t status_cmd = 0x05;\n    uint8_t status;\n    do {\n        spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\n        spi_transfer_bytes(dev->bus, dev->cs, false, &status_cmd, NULL, 1);\n        spi_transfer_bytes(dev->bus, dev->cs, false, NULL, &status, 1);\n        spi_release(dev->bus);\n    } while (status & 0x01);\n\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, SPI_DEV(0), SPI_HWCS(0))",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "w25q64jv_t",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write JEDEC ID command"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: direct read JEDEC ID response"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write read command + address"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: direct read data"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write enable"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: page program"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.105,
+  "prompt_chars": 38013,
+  "raw_response": "{\"driver_header\": \"#ifndef W25Q64JV_H\\n#define W25Q64JV_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <periph/spi.h>\\n\\n#define W25Q64JV_PAGE_SIZE 256\\n#define W25Q64JV_MEM_SIZE 8388608\\n\\ntypedef struct {\\n    spi_t bus;\\n    spi_cs_t cs;\\n} w25q64jv_t;\\n\\nint w25q64jv_init(w25q64jv_t *dev, spi_t bus, spi_cs_t cs);\\nint w25q64jv_read(w25q64jv_t *dev, uint32_t addr, uint8_t *buf, size_t len);\\nint w25q64jv_write(w25q64jv_t *dev, uint32_t addr, const uint8_t *buf, size_t len);\\n\\n#endif /* W25Q64JV_H */\", \"driver_source\": \"#include \\\"w25q64jv.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <string.h>\\n#include <errno.h>\\n#include <periph/spi.h>\\n#include \\\"ztimer.h\\\"\\n#include \\\"riot.h\\\"\\n\\n#define CMD_READ_DATA      0x03\\n#define CMD_PAGE_PROGRAM   0x02\\n#define CMD_WRITE_ENABLE   0x06\\n#define CMD_JEDEC_ID       0x9F\\n\\nstatic int w25q64jv_transfer(w25q64jv_t *dev, const uint8_t *tx, uint8_t *rx, size_t len)\\n{\\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\\n    spi_transfer_bytes(dev->bus, dev->cs, false, tx, rx, len);\\n    spi_release(dev->bus);\\n    return 0;\\n}\\n\\nint w25q64jv_init(w25q64jv_t *dev, spi_t bus, spi_cs_t cs)\\n{\\n    dev->bus = bus;\\n    dev->cs = cs;\\n\\n    spi_init(bus);\\n    spi_init_cs(bus, cs);\\n\\n    /* Wait for power-up */\\n    ztimer_sleep(ZTIMER_MSEC, 5);\\n\\n    /* Send JEDEC ID command and read 3 bytes */\\n    uint8_t tx_buf[4] = {CMD_JEDEC_ID, 0, 0, 0};\\n    uint8_t rx_buf[4] = {0};\\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\\n    spi_transfer_bytes(dev->bus, dev->cs, false, tx_buf, rx_buf, 4);\\n    spi_release(dev->bus);\\n\\n    /* Check JEDEC ID: expected 0xEF 0x40 0x17 for W25Q64JV */\\n    if (rx_buf[1] != 0xEF || rx_buf[2] != 0x40 || rx_buf[3] != 0x17) {\\n        return -ENODEV;\\n    }\\n\\n    return 0;\\n}\\n\\nint w25q64jv_read(w25q64jv_t *dev, uint32_t addr, uint8_t *buf, size_t len)\\n{\\n    if (addr + len > W25Q64JV_MEM_SIZE) {\\n        return -EINVAL;\\n    }\\n\\n    uint8_t cmd[4];\\n    cmd[0] = CMD_READ_DATA;\\n    cmd[1] = (addr >> 16) & 0xFF;\\n    cmd[2] = (addr >> 8) & 0xFF;\\n    cmd[3] = addr & 0xFF;\\n\\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\\n    spi_transfer_bytes(dev->bus, dev->cs, false, cmd, NULL, 4);\\n    spi_transfer_bytes(dev->bus, dev->cs, false, NULL, buf, len);\\n    spi_release(dev->bus);\\n\\n    return 0;\\n}\\n\\nint w25q64jv_write(w25q64jv_t *dev, uint32_t addr, const uint8_t *buf, size_t len)\\n{\\n    if (addr + len > W25Q64JV_MEM_SIZE) {\\n        return -EINVAL;\\n    }\\n    if (len > W25Q64JV_PAGE_SIZE) {\\n        return -EINVAL;\\n    }\\n\\n    /* Write enable */\\n    uint8_t we_cmd = CMD_WRITE_ENABLE;\\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\\n    spi_transfer_bytes(dev->bus, dev->cs, false, &we_cmd, NULL, 1);\\n    spi_release(dev->bus);\\n\\n    /* Page program */\\n    uint8_t cmd[4];\\n    cmd[0] = CMD_PAGE_PROGRAM;\\n    cmd[1] = (addr >> 16) & 0xFF;\\n    cmd[2] = (addr >> 8) & 0xFF;\\n    cmd[3] = addr & 0xFF;\\n\\n    spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\\n    spi_transfer_bytes(dev->bus, dev->cs, false, cmd, NULL, 4);\\n    spi_transfer_bytes(dev->bus, dev->cs, false, buf, NULL, len);\\n    spi_release(dev->bus);\\n\\n    /* Wait for program to complete (poll BUSY) */\\n    uint8_t status_cmd = 0x05;\\n    uint8_t status;\\n    do {\\n        spi_acquire(dev->bus, dev->cs, SPI_MODE_0, SPI_CLK_10MHZ);\\n        spi_transfer_bytes(dev->bus, dev->cs, false, &status_cmd, NULL, 1);\\n        spi_transfer_bytes(dev->bus, dev->cs, false, NULL, &status, 1);\\n        spi_release(dev->bus);\\n    } while (status & 0x01);\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "ba44f16c0903671d"
+}

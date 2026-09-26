@@ -1,0 +1,342 @@
+{
+  "device_id": "lsm303dlhc",
+  "rtos_id": "chibios",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "lsm303dlhc_init(&g_eval_dev, (I2CDriver *)bus_name)",
+    "channels": [
+      {
+        "id": "accel_x",
+        "call": "lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)",
+        "out_arg": "ax",
+        "out_type": "int32_t",
+        "physical_unit": "milli_g"
+      },
+      {
+        "id": "accel_y",
+        "call": "lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)",
+        "out_arg": "ay",
+        "out_type": "int32_t",
+        "physical_unit": "milli_g"
+      },
+      {
+        "id": "accel_z",
+        "call": "lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)",
+        "out_arg": "az",
+        "out_type": "int32_t",
+        "physical_unit": "milli_g"
+      },
+      {
+        "id": "mag_x",
+        "call": "lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)",
+        "out_arg": "mx",
+        "out_type": "int32_t",
+        "physical_unit": "milli_gauss"
+      },
+      {
+        "id": "mag_y",
+        "call": "lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)",
+        "out_arg": "my",
+        "out_type": "int32_t",
+        "physical_unit": "milli_gauss"
+      },
+      {
+        "id": "mag_z",
+        "call": "lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)",
+        "out_arg": "mz",
+        "out_type": "int32_t",
+        "physical_unit": "milli_gauss"
+      },
+      {
+        "id": "temp",
+        "call": "lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)",
+        "out_arg": "t",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct lsm303dlhc_dev",
+    "init_extra_setup_c": "",
+    "type_normalization_note": "scaled public units use int32_t to avoid int16_t overflow"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x19",
+        "write_prefix_any_of": [
+          [
+            "0x20",
+            "0x57"
+          ]
+        ],
+        "note": "init_accel: write CTRL_REG1_A"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x19",
+        "write_prefix_any_of": [
+          [
+            "0x23",
+            "0x08"
+          ]
+        ],
+        "note": "init_accel: write CTRL_REG4_A"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x00",
+            "0x0C"
+          ]
+        ],
+        "note": "init_mag: write CRA_REG_M"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x20"
+          ]
+        ],
+        "note": "init_mag: write CRB_REG_M"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x02",
+            "0x00"
+          ]
+        ],
+        "note": "init_mag: write MR_REG_M"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x19",
+        "write_prefix_any_of": [
+          [
+            "0xA8"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_accel: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_mag: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x1E",
+        "write_prefix_any_of": [
+          [
+            "0x31"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_mag: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "mock_preload": {
+          "0x19:0x29": [
+            "0x03"
+          ],
+          "0x19:0x28": [
+            "0xE8"
+          ],
+          "0x19:0x2B": [
+            "0x04"
+          ],
+          "0x19:0x2A": [
+            "0x31"
+          ],
+          "0x19:0x2D": [
+            "0x04"
+          ],
+          "0x19:0x2C": [
+            "0x7A"
+          ],
+          "0x1E:0x03": [
+            "0x04"
+          ],
+          "0x1E:0x04": [
+            "0xC3"
+          ],
+          "0x1E:0x07": [
+            "0x05"
+          ],
+          "0x1E:0x08": [
+            "0x0C"
+          ],
+          "0x1E:0x05": [
+            "0x05"
+          ],
+          "0x1E:0x06": [
+            "0x55"
+          ],
+          "0x1E:0x31": [
+            "0x05"
+          ],
+          "0x1E:0x32": [
+            "0x9E"
+          ]
+        },
+        "channel_preload_bytes": {
+          "accel_x": [
+            "0xE8",
+            "0x03"
+          ],
+          "accel_y": [
+            "0x31",
+            "0x04"
+          ],
+          "accel_z": [
+            "0x7A",
+            "0x04"
+          ],
+          "mag_x": [
+            "0x04",
+            "0xC3"
+          ],
+          "mag_y": [
+            "0x05",
+            "0x0C"
+          ],
+          "mag_z": [
+            "0x05",
+            "0x55"
+          ],
+          "temp": [
+            "0x05",
+            "0x9E"
+          ]
+        },
+        "expected_channels": {
+          "accel_x": 1000,
+          "accel_y": 1073,
+          "accel_z": 1146,
+          "mag_x": 1219,
+          "mag_y": 1292,
+          "mag_z": 1365,
+          "temp": 179750
+        },
+        "raw_tolerance": 0,
+        "derivation": "accel_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x03 << 8) | 0xE8) = 1000; accel_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x04 << 8) | 0x31) = 1073; accel_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x04 << 8) | 0x7A) = 1146; mag_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x04 << 8) | 0xC3) = 1219; mag_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x05 << 8) | 0x0C) = 1292; mag_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x05 << 8) | 0x55) = 1365; temp: ((0x05 << 8) | 0x9E) = 1438; (((0x05 << 8) | 0x9E)) * 125 = 179750"
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "mock_preload": {
+          "0x19:0x29": [
+            "0xFC"
+          ],
+          "0x19:0x28": [
+            "0x18"
+          ],
+          "0x19:0x2B": [
+            "0xFB"
+          ],
+          "0x19:0x2A": [
+            "0xCF"
+          ],
+          "0x19:0x2D": [
+            "0xFB"
+          ],
+          "0x19:0x2C": [
+            "0x86"
+          ],
+          "0x1E:0x03": [
+            "0xFB"
+          ],
+          "0x1E:0x04": [
+            "0x3D"
+          ],
+          "0x1E:0x07": [
+            "0xFA"
+          ],
+          "0x1E:0x08": [
+            "0xF4"
+          ],
+          "0x1E:0x05": [
+            "0xFA"
+          ],
+          "0x1E:0x06": [
+            "0xAB"
+          ],
+          "0x1E:0x31": [
+            "0xFA"
+          ],
+          "0x1E:0x32": [
+            "0x62"
+          ]
+        },
+        "channel_preload_bytes": {
+          "accel_x": [
+            "0x18",
+            "0xFC"
+          ],
+          "accel_y": [
+            "0xCF",
+            "0xFB"
+          ],
+          "accel_z": [
+            "0x86",
+            "0xFB"
+          ],
+          "mag_x": [
+            "0xFB",
+            "0x3D"
+          ],
+          "mag_y": [
+            "0xFA",
+            "0xF4"
+          ],
+          "mag_z": [
+            "0xFA",
+            "0xAB"
+          ],
+          "temp": [
+            "0xFA",
+            "0x62"
+          ]
+        },
+        "expected_channels": {
+          "accel_x": -1000,
+          "accel_y": -1073,
+          "accel_z": -1146,
+          "mag_x": -1219,
+          "mag_y": -1292,
+          "mag_z": -1365,
+          "temp": -179750
+        },
+        "raw_tolerance": 0,
+        "derivation": "accel_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFC << 8) | 0x18) - 65536) = -1000; accel_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFB << 8) | 0xCF) - 65536) = -1073; accel_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFB << 8) | 0x86) - 65536) = -1146; mag_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFB << 8) | 0x3D) - 65536) = -1219; mag_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFA << 8) | 0xF4) - 65536) = -1292; mag_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (((0xFA << 8) | 0xAB) - 65536) = -1365; temp: (((0xFA << 8) | 0x62) - 65536) = -1438; ((((0xFA << 8) | 0x62) - 65536)) * 125 = -179750"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "5c1a709abfbc9fff",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 11.405,
+  "prompt_chars": 57856,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"lsm303dlhc_init(&g_eval_dev, (I2CDriver *)bus_name)\", \"channels\": [{\"id\": \"accel_x\", \"call\": \"lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)\", \"out_arg\": \"ax\", \"out_type\": \"int16_t\"}, {\"id\": \"accel_y\", \"call\": \"lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)\", \"out_arg\": \"ay\", \"out_type\": \"int16_t\"}, {\"id\": \"accel_z\", \"call\": \"lsm303dlhc_read_accel(&g_eval_dev, &ax, &ay, &az)\", \"out_arg\": \"az\", \"out_type\": \"int16_t\"}, {\"id\": \"mag_x\", \"call\": \"lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)\", \"out_arg\": \"mx\", \"out_type\": \"int16_t\"}, {\"id\": \"mag_y\", \"call\": \"lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)\", \"out_arg\": \"my\", \"out_type\": \"int16_t\"}, {\"id\": \"mag_z\", \"call\": \"lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)\", \"out_arg\": \"mz\", \"out_type\": \"int16_t\"}, {\"id\": \"temp\", \"call\": \"lsm303dlhc_read_mag(&g_eval_dev, &mx, &my, &mz, &t)\", \"out_arg\": \"t\", \"out_type\": \"int32_t\"}], \"dev_struct_type\": \"struct lsm303dlhc_dev\", \"init_extra_setup_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x19\", \"write_prefix_any_of\": [[\"0x20\", \"0x57\"]], \"note\": \"init_accel: write CTRL_REG1_A\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x19\", \"write_prefix_any_of\": [[\"0x23\", \"0x08\"]], \"note\": \"init_accel: write CTRL_REG4_A\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x1E\", \"write_prefix_any_of\": [[\"0x00\", \"0x0C\"]], \"note\": \"init_mag: write CRA_REG_M\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x1E\", \"write_prefix_any_of\": [[\"0x01\", \"0x20\"]], \"note\": \"init_mag: write CRB_REG_M\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x1E\", \"write_prefix_any_of\": [[\"0x02\", \"0x00\"]], \"note\": \"init_mag: write MR_REG_M\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x19\", \"write_prefix_any_of\": [[\"0xA8\"]], \"read_any\": true, \"note\": \"read_accel: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x1E\", \"write_prefix_any_of\": [[\"0x03\"]], \"read_any\": true, \"note\": \"read_mag: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x1E\", \"write_prefix_any_of\": [[\"0x31\"]], \"read_any\": true, \"note\": \"read_mag: write_then_read\"}], \"test_stimuli\": [{\"name\": \"nominal_accel_and_mag\", \"mock_preload\": {\"0x27\": [\"0x08\"], \"0x28\": [\"0x00\", \"0x40\", \"0x00\", \"0x30\", \"0x00\", \"0x20\"], \"0x09\": [\"0x01\"], \"0x03\": [\"0x01\", \"0x00\", \"0x02\", \"0x00\", \"0x03\", \"0x00\"], \"0x31\": [\"0x00\", \"0x64\"]}, \"expected_channels\": {\"accel_x\": 64, \"accel_y\": 48, \"accel_z\": 32, \"mag_x\": 256, \"mag_y\": 768, \"mag_z\": 512, \"temp\": 12500}, \"derivation\": \"accel_x: raw=0x0040=64, output=64 (raw_count). accel_y: raw=0x0030=48, output=48. accel_z: raw=0x0020=32, output=32. mag_x: raw=0x0100=256, output=256 (raw_count). mag_y: raw=0x0300=768, output=768. mag_z: raw=0x0200=512, output=512. temp: raw=0x0064=100, output=100*125=12500 milli_degC.\"}, {\"name\": \"zero_and_negative\", \"mock_preload\": {\"0x27\": [\"0x08\"], \"0x28\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0x09\": [\"0x01\"], \"0x03\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0x31\": [\"0x00\", \"0x00\"]}, \"expected_channels\": {\"accel_x\": 0, \"accel_y\": 0, \"accel_z\": 0, \"mag_x\": 0, \"mag_y\": 0, \"mag_z\": 0, \"temp\": 0}, \"derivation\": \"All raw values are 0, so all outputs are 0.\"}, {\"name\": \"negative_temp\", \"mock_preload\": {\"0x27\": [\"0x08\"], \"0x28\": [\"0xFF\", \"0xC0\", \"0xFF\", \"0xD0\", \"0xFF\", \"0xE0\"], \"0x09\": [\"0x01\"], \"0x03\": [\"0xFF\", \"0x00\", \"0xFE\", \"0x00\", \"0xFD\", \"0x00\"], \"0x31\": [\"0xFF\", \"0x9C\"]}, \"expected_channels\": {\"accel_x\": -64, \"accel_y\": -48, \"accel_z\": -32, \"mag_x\": -256, \"mag_y\": -768, \"mag_z\": -512, \"temp\": -12500}, \"derivation\": \"accel_x: raw=0xFFC0=-64, output=-64. accel_y: raw=0xFFD0=-48, output=-48. accel_z: raw=0xFFE0=-32, output=-32. mag_x: raw=0xFF00=-256, output=-256. mag_y: raw=0xFD00=-768, output=-768. mag_z: raw=0xFE00=-512, output=-512. temp: raw=0xFF9C=-100, output=-100*125=-12500 milli_degC.\"}]}}"
+}

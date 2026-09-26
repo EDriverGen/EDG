@@ -1,0 +1,631 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "lsm303dlhc",
+  "scope": "Three-axis acceleration, three-axis magnetic field, and additional temperature reads over I2C; fixed normal 100 Hz/±2 g accelerometer and 15 Hz/±1.3 gauss magnetometer settings.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "addresses",
+        "accel_autoincrement",
+        "mag_autoincrement",
+        "temperature_burst"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "accel_control_map",
+        "mag_control_map",
+        "accel_data_map",
+        "mag_data_map",
+        "temperature_map",
+        "accel_odr",
+        "accel_range",
+        "mag_odr",
+        "temperature_enable",
+        "mag_gain",
+        "id_values",
+        "reserved",
+        "extra_register_map"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "bdu"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "accel_startup",
+        "bus_speed",
+        "mag_startup_claim"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "accel_byteorder",
+        "mag_encoding",
+        "accel_scale",
+        "accel_alignment",
+        "mag_scale",
+        "temperature_format_scale",
+        "temperature_absolute"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "accel_mode",
+        "accel_ready",
+        "mag_mode",
+        "mag_ready",
+        "accel_overrun",
+        "mag_lock"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "LSM303DLHC_datasheet.pdf",
+      "pages": 42,
+      "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "addresses",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "The accelerometer I2C address is 19; the magnetometer address is 1E.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_autoincrement",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Set subaddress bit7 for multibyte accelerometer reads.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_autoincrement",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "The magnetometer pointer increments automatically; reading XYZ data from 03 does not require bit7.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_control_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Accelerometer CTRL1/4/STATUS are at 20/23/27.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_control_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Magnetometer CRA/CRB/MR/STATUS are at 00/01/02/09.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_data_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Accelerometer 28..2D are ordered X_L/X_H/Y_L/Y_H/Z_L/Z_H.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_data_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Magnetometer 03..08 are ordered X_H/X_L/Z_H/Z_L/Y_H/Y_L.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "The temperature high/low registers are 31/32.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 39,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_byteorder",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "With default BLE=0, the accelerometer low byte is at the lower address; data use signed two's complement.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "The magnetometer returns the high byte first and uses two's complement.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_mode",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "LPen=0 and HR=1 select normal high-resolution operation; LPen=1 selects low power; ODR=0 powers down.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_odr",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "CTRL1 ODR occupies bits7:4; 0101=100 Hz, and the low 3 bits enable XYZ.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_range",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "CTRL4 FS bits5:4=00 select ±2 g; HR bit3=1 enables high resolution.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "FS00 sensitivity is 1 mg/LSB; multiply the effective raw count by sensitivity.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_alignment",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Alignment of the effective high-resolution bits within the 16-bit register word.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "The IR converts a 16-bit raw value. The supplied manual lists sensitivity and two's complement but does not specify effective-bit alignment, so the right-shift rule cannot be determined from this PDF alone."
+    },
+    {
+      "id": "accel_startup",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Normal-mode settling time is 7/ODR, approximately 70 ms at 100 Hz.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_ready",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "STATUS bit3=ZYXDA indicates new data on all three axes.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bdu",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "BDU=1 prevents output updates until both MSB and LSB are read, preserving one measurement.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_odr",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "CRA DO bits4:2=100 select 15 Hz.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_enable",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "CRA bit7=1 enables temperature; the default is 0.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_gain",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "CRB GN bits7:5=001 select ±1.3 gauss.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_mode",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "MR bits1:0 select continuous at 00, single at 01, and sleep at 10/11.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_ready",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "SR bit0=DRDY indicates a new measurement when set.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "At GN001, X/Y use 1100 LSB/gauss and Z uses 980; mGauss=raw/gain*1000.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_format_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Temperature uses left-justified 12-bit two's complement, with changes of 8 LSB/degree Celsius, or 125 millidegrees Celsius/LSB.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 39,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_absolute",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "The zero point required to convert temperature-output changes to absolute degrees Celsius.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 39,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "The source gives the rate of change but no absolute zero point; the IR labels it as absolute temperature, which cannot be confirmed from this PDF alone."
+    },
+    {
+      "id": "temperature_burst",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Whether a sequential two-byte read starting at 31 reaches 32.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 39,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "Page 21 of this revision states that addresses >=12 wrap to 00, while page 39 lists temperature registers 31/32. The manual is inconsistent, so this is not classified as wrong."
+    },
+    {
+      "id": "id_values",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Magnetometer 0A/0B/0C should return 48/34/33.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_speed",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "I2C supports up to 100 kHz in standard mode and 400 kHz in fast mode.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reserved",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Reserved and factory-calibration registers must not be modified.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_startup_claim",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "The fixed readiness delay after switching magnetometer modes.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ],
+      "reference_value_status": "not_uniquely_determined_by_source",
+      "source_note": "The IR specifies a typical 1 ms delay; no corresponding magnetometer specification was found in the supplied manual. Actual reads also poll DRDY."
+    },
+    {
+      "id": "extra_register_map",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Other accelerometer control, FIFO, INT, and CLICK register addresses follow Table 17.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        },
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_overrun",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "STATUS ZYXOR indicates that a new sample has overwritten data.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mag_lock",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "SR bit1 indicates the output-register lock state.",
+      "evidence": [
+        {
+          "document": "LSM303DLHC_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/lsm303dlhc/LSM303DLHC_datasheet.pages.json"
+        }
+      ]
+    }
+  ]
+}

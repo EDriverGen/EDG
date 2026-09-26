@@ -1,0 +1,728 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "adxl345",
+  "scope": "Three-axis acceleration, range/format configuration, and status reads over SPI; additional represented facts about self-test, calibration, FIFO, and event detection are included in the accuracy audit.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "spi_mode",
+        "spi_header",
+        "wire_count",
+        "burst_read"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "id",
+        "control_addresses",
+        "data_addresses",
+        "odr_default",
+        "data_default",
+        "range",
+        "full_resolution",
+        "reserved_region",
+        "activity_bits",
+        "tap_bits",
+        "power_bits",
+        "interrupt_map",
+        "selftest_polarity_bits",
+        "fifo_bits",
+        "fifo_overrun_location"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "configure_before_measure",
+        "selftest_procedure"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "first_sample_wait",
+        "extra_timing_1",
+        "extra_timing_2",
+        "extra_timing_3",
+        "extra_timing_4",
+        "extra_timing_5"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "alignment",
+        "encoding",
+        "scale",
+        "tap_thresholds",
+        "tap_times",
+        "offset",
+        "offset_formula",
+        "selftest_formula"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "standby",
+        "measure",
+        "data_ready",
+        "interrupt_clear"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "adxl345.pdf",
+      "pages": 36,
+      "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "spi_mode",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "SPI CPOL=1, CPHA=1; maximum 5 MHz.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_header",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "The first byte contains R/W, MB, and a 6-bit register address; MB=1 enables address incrementing.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_count",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "DATA_FORMAT D6=0 selects four-wire SPI; 1 selects three-wire SPI.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "id",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "DEVID address 00, value E5.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "control_addresses",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "BW_RATE/POWER_CTL/DATA_FORMAT are at 2C/2D/31, respectively.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "data_addresses",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "32..37 contain the low and high bytes of X/Y/Z, respectively.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "standby",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Power-up enters standby; POWER_CTL D3=0 maintains standby.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "measure",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "POWER_CTL D3=1 enables measurement.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "configure_before_measure",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Configure the required format, interrupts, and other settings in standby, then start measurement.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "odr_default",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "The low 4 bits of BW_RATE select the rate; the default is 0A=100 Hz.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "data_default",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "DATA_FORMAT resets to 00: 10-bit, +/-2 g, right-justified.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "range",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "DATA_FORMAT bits1:0 values 00/01/10/11 select +/-2/4/8/16 g.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "full_resolution",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "D3=1 increases resolution with range, up to 13 bits at approximately 3.9 mg/LSB; 0 fixes resolution at 10 bits.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "alignment",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "D2=1 selects left justification; 0 selects right justification with sign extension.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "All three axes use low-byte-first, signed two's-complement data.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "burst_read",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Read six bytes in one transfer starting at 32; SPI command byte F2 avoids inconsistent separate reads.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Full-resolution scaling is approximately 0.0039 g/LSB; fixed 10-bit scaling at 2/4/8/16 g is approximately 3.9/7.8/15.6/31.2 mg/LSB.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "first_sample_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Start-up/wake-up takes approximately 11.1 ms at 100 Hz.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "data_ready",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "INT_SOURCE D7 indicates new data.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interrupt_clear",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Read data to clear data-related interrupts; read INT_SOURCE to clear other interrupts.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reserved_region",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "01..1C are reserved and must not be accessed.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "tap_thresholds",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "THRESH_TAP/ACT/INACT/FF use 62.5 mg/LSB at addresses 1D/24/25/28.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "tap_times",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "DUR=625us/LSB，Latent/Window=1.25ms/LSB，TIME_INACT=1s/LSB，TIME_FF=5ms/LSB。",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "offset",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "OFSX/Y/Z at 1E/1F/20 are 8-bit two's-complement offsets, 15.6 mg/LSB, added to the output.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "offset_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Full-resolution calibration uses -round(raw_offset/4); for Z, first subtract the 256 LSB corresponding to 1 g.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "selftest_procedure",
+      "component": "O",
+      "category": "procedure",
+      "required": false,
+      "expected": "Use normal power at 100..800 or 3200 Hz, preferably full-resolution 16 g; average the same number of samples before and after enabling, and wait approximately 4 samples after enabling.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "selftest_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "The self-test difference is enabled minus disabled; multiply by the scale factor to obtain g.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "activity_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "ACT_INACT_CTL activity/inactivity coupling and axis-enable bit order follow Tables 21/22.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "tap_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "TAP_AXES D3 controls suppression and D2..0 enable axes; ACT_TAP_STATUS contains the corresponding status bits.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "LOW_POWER is D4; POWER_CTL has Link5/AUTO_SLEEP4/Sleep2/Wakeup1:0, with sleep rates of 8/4/2/1 Hz.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interrupt_map",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "INT_ENABLE/INT_MAP/INT_SOURCE bits7..0 correspond to ready/tap/double/activity/inactivity/FF/watermark/overrun; MAP0=INT1, 1=INT2.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "selftest_polarity_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "DATA_FORMAT D7 controls self-test; D5 controls interrupt inversion.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fifo_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "FIFO_CTL has mode7:6, trigger5, samples4:0; FIFO_STATUS has trigger7, entries5:0.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        },
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fifo_overrun_location",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "The overrun bit is INT_SOURCE bit0.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_1",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "At least 5 ns from CS falling to SCLK falling.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_2",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "At least 5 ns from SCLK rising to CS rising.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_3",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Release CS for at least 150 ns between SPI transfers.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_4",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Wait at least 5 us between the end of one FIFO read and the next FIFO read.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 21,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_5",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Self-test settles after approximately 4 samples.",
+      "evidence": [
+        {
+          "document": "adxl345.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/adxl345/adxl345.pages.json"
+        }
+      ]
+    }
+  ]
+}

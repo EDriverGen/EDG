@@ -1,0 +1,542 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "tmp421",
+  "scope": "TMP421 local+one remote channel in standard and extended range; represented one-shot/reset/configuration paths. TMP422/TMP423-only board advice excluded from coverage.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "addresses",
+        "pointer",
+        "read_coherence",
+        "reset_sw",
+        "reset_general",
+        "hs_entry"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "local_registers",
+        "remote_registers",
+        "id",
+        "range_control",
+        "channel_enable",
+        "busy"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "rate_default",
+        "conversion_time",
+        "sequence_wait",
+        "sck_fast",
+        "sck_hs",
+        "timeout",
+        "busy_powerup"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "standard_encoding",
+        "standard_formula",
+        "extended_formula",
+        "eta_factor",
+        "eta_error"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "shutdown",
+        "config_reset",
+        "oneshot",
+        "oneshot_busy",
+        "open",
+        "pvld",
+        "short"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "TMP421_datasheet.pdf",
+      "pages": 37,
+      "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "addresses",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Nine A1/A0 pin-selected addresses1C..1F,2A,4C..4F",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "8-bit pointer selects register; temperature supports special two-byte read",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        },
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "local_registers",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Local high00 low10",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "remote_registers",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Remote high01 low11",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_coherence",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Read high then low consecutively, or special two-byte read, for same conversion",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "id",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "FE=55 manufacturer, FF=21 TMP421 device",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "standard_encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Signed high8 plus unsigned fraction nibble12-bit0.0625C",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        },
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "standard_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Signed high*1000+upperlow*62.5 mdegC",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extended_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Extended high unsigned minus64 plus low fraction",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        },
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "range_control",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Config09 bit2 selects standard/extended",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "shutdown",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Config09 bit6=1 shutdown after conversion;0run",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "channel_enable",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Config0A bits4remote1,3local,2resistancecorrection",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config_reset",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Config09=00,0A=1C,0B=07",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "rate_default",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Ratecode07 is maximum8channel-conversions/sec; enabled-channel count affects channel update rate",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_time",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Per-channel conversion100..130ms,typ115ms",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sequence_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Two enabled channels may require260ms before BUSY clears",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        },
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        },
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "busy",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Status08 BUSYbit7=1 while ADCconverting",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "oneshot",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Write anyvalue0F in shutdown triggers allenabledchannels",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "oneshot_busy",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "One-shot during ongoing conversion is ignored",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_sw",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Write anyvalueFC to reset",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_general",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Generalcall address00 followedby06",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "open",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Lowbytebit0OPEN means discard remote result",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pvld",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Lowbytebit1PVLD=1 means power invalid",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "short",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Shorted diode reads-64C",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sck_fast",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Fastmode400kHz",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sck_hs",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Highspeed3.4MHz",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "hs_entry",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Above400kHz requires Hs master code00001xxx",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timeout",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "SCL/SDA low timeout typ30ms",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "busy_powerup",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "BUSY asserts within100us after TMP421 powerup",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "eta_factor",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Effectiveeta=1.008*300/(300-Nadjust)",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        },
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "eta_error",
+      "component": "V",
+      "category": "conversion",
+      "required": false,
+      "expected": "Terror=(eta/1.008-1)*(T+273.15)",
+      "evidence": [
+        {
+          "document": "TMP421_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/tmp421/TMP421_datasheet.pages.json"
+        }
+      ]
+    }
+  ]
+}

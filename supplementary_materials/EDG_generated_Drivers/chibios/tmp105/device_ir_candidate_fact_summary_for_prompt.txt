@@ -1,0 +1,41 @@
+Summary: {"address_count": 2, "bitfield_count": 9, "bus_type": "i2c", "channel_count": 1, "device_id": "tmp105", "evidence_span_count": 9, "formula_count": 1, "operation_count": 6, "register_count": 5, "requires_human_count": 2, "timing_count": 6}
+Addresses:
+- 1001000 form=7-bit default=None desc=Slave address when A0 pin is LOW
+- 1001001 form=7-bit default=None desc=Slave address when A0 pin is HIGH
+Registers:
+- Pointer Register@None access=write bits=8 roles=control desc=8-bit register used to address data registers; two LSBs (P1,P0) select register. Power-up reset P1/P0=00.
+- Temperature Register@None access=read-only bits=16 roles=result,data desc=12-bit read-only register storing most recent conversion output. Two bytes: MSB first, LSB second. Unused LSBs zero....
+- Configuration Register@0x00 access=read-write bits=8 roles=config,control desc=8-bit read/write register controlling operational modes. Bits: OS, R1, R0, F1, F0, POL, TM, SD. Power-up/reset all bi...
+- TLOW Register@None access=read-write bits=16 roles=threshold,config desc=12-bit low temperature limit register. Two bytes: MSB first, LSB second. LSB byte bits D3-D0 zero. Power-up reset val...
+- THIGH Register@None access=read-write bits=16 roles=threshold,config desc=12-bit high temperature limit register. Two bytes: MSB first, LSB second. LSB byte bits D3-D0 zero. Power-up reset va...
+Bitfields:
+- Configuration Register.OS bits=7 roles=trigger,control desc=One-Shot. Write 1 to start single conversion when in shutdown mode. Reads always 0.
+- Configuration Register.R1,R0 bits=6-5 roles=config desc=Converter resolution bits: 00=9-bit, 01=10-bit, 10=11-bit, 11=12-bit.
+- Configuration Register.F1,F0 bits=4-3 roles=config,threshold desc=Fault queue: number of consecutive faults to trigger alert. 00=1, 01=2, 10=4, 11=6.
+- Configuration Register.POL bits=2 roles=config desc=Polarity of ALERT pin: 0=active low, 1=active high.
+- Configuration Register.TM bits=1 roles=config desc=Thermostat mode: 0=Comparator mode, 1=Interrupt mode.
+- Configuration Register.SD bits=0 roles=config,power desc=Shutdown mode: 1=shutdown (low power), 0=continuous conversion.
+- Temperature Register.T11..T0 bits=15-4 roles=data,result desc=12-bit temperature data in two's complement format. MSB byte bits D7-D0 = T11..T4; LSB byte bits D7-D4 = T3..T0; LSB...
+- THIGH Register.H11..H0 bits=15-4 roles=threshold,data desc=12-bit high limit value. MSB byte bits D7-D0 = H11..H4; LSB byte bits D7-D4 = H3..H0; LSB byte bits D3-D0 = 0.
+- TLOW Register.L11..L0 bits=15-4 roles=threshold,data desc=12-bit low limit value. MSB byte bits D7-D0 = L11..L4; LSB byte bits D7-D4 = L3..L0; LSB byte bits D3-D0 = 0.
+Operations:
+- read_temperature kind=read channels=temperature outputs=raw_temperature_12bit summary=Read temperature register: write pointer 0x00, then read two bytes. steps=[write:Pointer Register:Write 0x00 to pointer register to select Temperature Register.; read:Temperature Register:Read two bytes (MSB first) from Temperature Register.]
+- write_configuration kind=write channels= outputs= summary=Write configuration register: write pointer 0x01, then write one data byte. steps=[write:Pointer Register:Write 0x01 to pointer register to select Configuration Register.; write:Configuration Register:Write one byte (MSB first) to Configuration Register.]
+- write_thigh kind=write channels= outputs= summary=Write THIGH register: write pointer 0x03, then write two data bytes. steps=[write:Pointer Register:Write 0x03 to pointer register to select THIGH Register.; write:THIGH Register:Write two bytes (MSB first) to THIGH Register.]
+- write_tlow kind=write channels= outputs= summary=Write TLOW register: write pointer 0x02, then write two data bytes. steps=[write:Pointer Register:Write 0x02 to pointer register to select TLOW Register.; write:TLOW Register:Write two bytes (MSB first) to TLOW Register.]
+- one_shot_conversion kind=other channels=temperature outputs=raw_temperature_12bit summary=Trigger one-shot conversion: write configuration with SD=1 and OS=1, then wait conversion time, then read temperature. steps=[write:Configuration Register:Write configuration byte with SD=1 and OS=1 to start single conversion.; delay:None:Wait for conversion time depending on resolution (e.g., 220ms for 12-bit).; read:Temperature Register:Read two bytes from Temperature Register.]
+- general_call_reset kind=other channels= outputs= summary=Reset device via General Call: send address 0x00, then second byte 0x06. steps=[write:General Call:Send General Call address (0x00) with R/W=0, then second byte 0x06 to reset i...]
+Channels:
+- temperature source=Temperature Register formula=temp_raw_to_celsius desc=Die temperature measurement
+Formulae:
+- temp_raw_to_celsius inputs=raw_12bit output=temperature_celsius formula=T(°C) = raw_12bit * 0.0625
+Timing:
+- conversion_time_9bit=27.5 ms when=9-bit resolution (R1,R0=00)
+- conversion_time_10bit=55 ms when=10-bit resolution (R1,R0=01)
+- conversion_time_11bit=110 ms when=11-bit resolution (R1,R0=10)
+- conversion_time_12bit=220 ms when=12-bit resolution (R1,R0=11)
+- timeout_time=54 ms when=Typical timeout if SCL or SDA held LOW between START and STOP
+- scl_frequency=1-400 kHz when=Fast mode operation
+RequiresHuman:
+- Power-up reset values for THIGH and TLOW registers are not explicitly given in the datasheet; need to determine from context or assume same as temperature register format.
+- The exact formula for temperature conversion is implied by resolution (0.0625°C per LSB for 12-bit) but not explicitly stated as a formula; confirmed by Table 5 examples.

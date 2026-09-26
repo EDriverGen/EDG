@@ -1,0 +1,147 @@
+{
+  "task_package_id": "apache_mynewt_generic_hal__mhz19b__uart0_polling",
+  "rtos": "apache-mynewt",
+  "device": "mhz19b",
+  "bus": "uart_polling",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/mhz19b/apache-mynewt",
+  "task_package": {
+    "package_id": "apache_mynewt_generic_hal__mhz19b__uart0_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/apache_mynewt_generic_hal.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/apache_mynewt_generic_hal_uart0_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mhz19b.json",
+    "reference_driver_root": "DriverGen/data/references/mhz19b/apache-mynewt",
+    "fixed_task_context": {},
+    "notes": [
+      "Apache Mynewt provides HAL UART helpers for this MH-Z19B fixed-frame polling task.",
+      "The resolver rebuilds fixed_task_context from the referenced platform, connection, and device layers."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_uart.h",
+      "DriverGen/data/raw/mhz19b",
+      "DriverGen/data/references/mhz19b/apache-mynewt"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "apache_mynewt_generic_hal",
+    "board": "generic_hal",
+    "board_alias": "mynewt_hal",
+    "rtos": "apache-mynewt",
+    "rtos_bundle": "apache-mynewt",
+    "integration": "mynewt_native_hal",
+    "integration_style": "integrated_rtos_hal_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "0"
+        ],
+        "spi": [
+          "0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "0"
+        ]
+      },
+      "timing": [
+        "os_time_delay",
+        "os_time_ms_to_ticks32"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Apache Mynewt includes kernel/os, hw/hal, hw/mcu, hw/bsp, hw/drivers, hw/sensor and hw/util in one repository.",
+      "Device drivers should prefer public HAL headers such as hal/hal_i2c.h, hal/hal_spi.h, hal/hal_gpio.h and OS helpers from os/os_time.h."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/kernel/os/include/os/os_time.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_i2c.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_spi.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_uart.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/util/i2cn/include/i2cn/i2cn.h",
+      "DriverGen/data/references/*/apache-mynewt/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "apache_mynewt_generic_hal_uart0_polling",
+    "platform_id": "apache_mynewt_generic_hal",
+    "connection_type": "uart_polling",
+    "mode": "polling",
+    "bus_instance": "0",
+    "bus_instance_kind": "hal_uart_num",
+    "bus_symbol": "0",
+    "backend": "Apache Mynewt HAL UART",
+    "address_mode": null,
+    "fixed_attachment": {
+      "uart_num": 0,
+      "baud_rate": 9600,
+      "data_bits": 8,
+      "parity": "none",
+      "stop_bits": 1
+    },
+    "notes": [
+      "Default Apache Mynewt UART polling binding for fixed 9-byte request/response sensors.",
+      "The MH-Z19B reference adapter passes UART number 0 to the reference driver."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_uart.h",
+      "DriverGen/data/rtos/apache-mynewt/kernel/os/include/os/os_time.h",
+      "DriverGen/data/references/mhz19b/apache-mynewt/mhz19b_eval_adapter.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "mhz19b",
+    "attachment_type": "uart_fixed_frame_sensor",
+    "required_bus_type": "uart",
+    "address_mode": null,
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "uart_tx",
+        "uart_rx"
+      ],
+      "notes": [
+        "MH-Z19B communicates over UART using fixed 9-byte command and response frames.",
+        "The task assumes a local UART instance configured for 9600 baud, 8 data bits, no parity, 1 stop bit."
+      ]
+    },
+    "optional_attachment": {
+      "pwm_output": "not used by this UART task",
+      "abc_calibration": "optional command path"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "optional",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "protocol_hints": {
+      "uart_proto": "fixed",
+      "frame_len": 9,
+      "baud_rate": 9600,
+      "read_co2_command": "0xFF 0x01 0x86 0x00 0x00 0x00 0x00 0x00 checksum",
+      "checksum": "one-byte complement checksum over bytes 1..7"
+    },
+    "notes": [
+      "Reference drivers resolve a named UART device, configure 9600 8N1, send the read-CO2 command, then read and validate a 9-byte response."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mhz19b",
+      "DriverGen/evaluation/oracle/data/mhz19b/meta.json",
+      "DriverGen/data/references/mhz19b/*/*_ref.h",
+      "DriverGen/data/references/mhz19b/rtthread"
+    ]
+  }
+}

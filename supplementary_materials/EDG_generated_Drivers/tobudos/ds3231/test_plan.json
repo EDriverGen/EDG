@@ -1,0 +1,98 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x68",
+      "write_prefix_any_of": [
+        [
+          "0x00"
+        ]
+      ],
+      "note": "read_time: write_then_read"
+    },
+    {
+      "phase": "write_cycle",
+      "addr_or_pin": "0x68",
+      "write_prefix_any_of": [
+        [
+          "0x00"
+        ]
+      ],
+      "note": "write_time: write"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "nominal_time",
+      "mock_preload": {
+        "0x00": [
+          "0x15"
+        ],
+        "0x01": [
+          "0x30"
+        ],
+        "0x02": [
+          "0x09"
+        ],
+        "0x03": [
+          "0x03"
+        ],
+        "0x04": [
+          "0x15"
+        ],
+        "0x05": [
+          "0x06"
+        ],
+        "0x06": [
+          "0x23"
+        ]
+      },
+      "expected_time": {
+        "second": 15,
+        "minute": 30,
+        "hour": 9,
+        "weekday": 3,
+        "day": 15,
+        "month": 6,
+        "year": 2023
+      },
+      "derivation": "BCD: 0x15=15, 0x30=30, 0x09=9, 0x03=3, 0x15=15, 0x06=6, 0x23=23 -> year 2000+23=2023"
+    },
+    {
+      "name": "zero_time",
+      "mock_preload": {
+        "0x00": [
+          "0x00"
+        ],
+        "0x01": [
+          "0x00"
+        ],
+        "0x02": [
+          "0x00"
+        ],
+        "0x03": [
+          "0x01"
+        ],
+        "0x04": [
+          "0x01"
+        ],
+        "0x05": [
+          "0x01"
+        ],
+        "0x06": [
+          "0x00"
+        ]
+      },
+      "expected_time": {
+        "second": 0,
+        "minute": 0,
+        "hour": 0,
+        "weekday": 1,
+        "day": 1,
+        "month": 1,
+        "year": 2000
+      },
+      "derivation": "BCD: all zeros except day/date/month=1, year=0 -> 2000"
+    }
+  ]
+}

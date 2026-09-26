@@ -1,0 +1,83 @@
+{
+  "device_id": "vl53l0x",
+  "rtos_id": "tobudos",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "vl53l0x_init(&g_eval_dev, bus_handle)",
+    "read_call": "vl53l0x_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct vl53l0x_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x52",
+        "write_prefix_any_of": [
+          [
+            "0xC0"
+          ],
+          [
+            "0xC1"
+          ],
+          [
+            "0xC2"
+          ],
+          [
+            "0x51"
+          ],
+          [
+            "0x61"
+          ]
+        ],
+        "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "distance_100mm",
+        "mock_preload": {
+          "0x51": [
+            "0x00",
+            "0x64"
+          ]
+        },
+        "expected_read_raw": 100,
+        "derivation": "mock_preload 0x51 = [0x00, 0x64] -> big-endian uint16 = 0x0064 = 100 mm"
+      },
+      {
+        "name": "distance_0mm",
+        "mock_preload": {
+          "0x51": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "mock_preload 0x51 = [0x00, 0x00] -> big-endian uint16 = 0x0000 = 0 mm"
+      },
+      {
+        "name": "distance_2000mm",
+        "mock_preload": {
+          "0x51": [
+            "0x07",
+            "0xD0"
+          ]
+        },
+        "expected_read_raw": 2000,
+        "derivation": "mock_preload 0x51 = [0x07, 0xD0] -> big-endian uint16 = 0x07D0 = 2000 mm"
+      }
+    ]
+  },
+  "plan_hash": "829326415566a77f",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.584,
+  "prompt_chars": 46764,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"vl53l0x_init(&g_eval_dev, bus_handle)\", \"read_call\": \"vl53l0x_read_distance(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"mm\", \"dev_struct_type\": \"struct vl53l0x_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x52\", \"write_prefix_any_of\": [[\"0xC0\"], [\"0xC1\"], [\"0xC2\"], [\"0x51\"], [\"0x61\"]], \"note\": \"read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2\"}], \"test_stimuli\": [{\"name\": \"distance_100mm\", \"mock_preload\": {\"0x51\": [\"0x00\", \"0x64\"]}, \"expected_read_raw\": 100, \"derivation\": \"mock_preload 0x51 = [0x00, 0x64] -> big-endian uint16 = 0x0064 = 100 mm\"}, {\"name\": \"distance_0mm\", \"mock_preload\": {\"0x51\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"mock_preload 0x51 = [0x00, 0x00] -> big-endian uint16 = 0x0000 = 0 mm\"}, {\"name\": \"distance_2000mm\", \"mock_preload\": {\"0x51\": [\"0x07\", \"0xD0\"]}, \"expected_read_raw\": 2000, \"derivation\": \"mock_preload 0x51 = [0x07, 0xD0] -> big-endian uint16 = 0x07D0 = 2000 mm\"}]}}"
+}

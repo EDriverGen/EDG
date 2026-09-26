@@ -1,0 +1,55 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "gpio1",
+      "write_prefix_any_of": [
+        [
+          "0x44"
+        ]
+      ],
+      "note": "convert_t: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "gpio1",
+      "read_any": true,
+      "note": "convert_t: direct read read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "positive_temperature_25C",
+      "mock_preload": {
+        "payload": [
+          "0x90",
+          "0x01"
+        ]
+      },
+      "expected_read_raw": 25000,
+      "derivation": "raw = 0x0190 = 400; temp_mdegC = 400 * 625 / 10 = 25000"
+    },
+    {
+      "name": "zero_temperature",
+      "mock_preload": {
+        "payload": [
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_read_raw": 0,
+      "derivation": "raw = 0x0000 = 0; temp_mdegC = 0 * 625 / 10 = 0"
+    },
+    {
+      "name": "negative_temperature_minus10C",
+      "mock_preload": {
+        "payload": [
+          "0x60",
+          "0xFF"
+        ]
+      },
+      "expected_read_raw": -10000,
+      "derivation": "raw = 0xFF60 = -160 (sign-extended from 12 bits); temp_mdegC = -160 * 625 / 10 = -10000"
+    }
+  ]
+}

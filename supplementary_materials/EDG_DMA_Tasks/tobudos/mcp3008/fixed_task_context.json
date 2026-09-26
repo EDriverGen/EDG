@@ -1,0 +1,406 @@
+{
+  "task_package_path": "EDG_DMA_Tasks/tobudos/mcp3008/task_package.json",
+  "task_package": {
+    "package_id": "tobudos_alientek_ministm32f103rct6__mcp3008__spi1_dma",
+    "platform_base_context": "EDG_DMA_Tasks/tobudos/mcp3008/platform_base_context.json",
+    "connection_binding_context": "EDG_DMA_Tasks/tobudos/mcp3008/connection_binding_context.json",
+    "device_attachment_context": "EDG_DMA_Tasks/tobudos/mcp3008/device_attachment_context.json",
+    "reference_driver_root": "DriverGen/data/references/mcp3008/tobudos",
+    "device_ir": "EDG_DMA_Tasks/tobudos/mcp3008/device_ir.json",
+    "dma_requirements": "EDG_DMA_Tasks/tobudos/mcp3008/dma_requirements.json",
+    "evaluation_config": "EDG_DMA_Tasks/tobudos/mcp3008/evaluation_config.json",
+    "mode": "dma",
+    "notes": [
+      "MCP3008 on tobudos: DMA payload transfers on the original hardware connection.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use DMA for the original three-byte SPI transaction with explicit transmit/receive synchronization."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+    ],
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "tobudos_alientek_ministm32f103rct6",
+        "rtos": "tobudos",
+        "rtos_bundle": "tobudos-project",
+        "board": "ALIENTEK-MiniSTM32F103RCT6",
+        "board_alias": "ministm32f103rct6",
+        "integration": "chipadaptation_stm32f1_hal",
+        "integration_style": "kernel_plus_chipadaptation_vendor_bsp",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rct6"
+      },
+      "connection": {
+        "binding_id": "tobudos_alientek_ministm32f103rct6_spi1_dma",
+        "platform_id": "tobudos_alientek_ministm32f103rct6",
+        "connection_type": "spi",
+        "mode": "dma",
+        "bus_instance": "spi1",
+        "bus_instance_kind": "named_hal_handle",
+        "bus_symbol": "hspi1",
+        "backend": "STM32CubeF1 HAL SPI DMA with tobudos completion handling",
+        "address_mode": "chip-select",
+        "fixed_attachment": {
+          "chip_select": "GPIOA:GPIO_PIN_4"
+        },
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "mcp3008",
+        "attachment_type": "spi_adc",
+        "required_bus_type": "spi",
+        "address_mode": "chip-select",
+        "addressing": null,
+        "required_attachment": {
+          "signals": [
+            "SCLK",
+            "MOSI",
+            "MISO",
+            "CS"
+          ],
+          "spi": {
+            "mode": "mode0",
+            "data_width_bits": 8,
+            "bit_order": "msb_first",
+            "max_hz": 3600000
+          },
+          "vref_mv": 3300,
+          "notes": [
+            "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+          ]
+        },
+        "optional_attachment": {
+          "differential_mode": "optional",
+          "vref_mv": "board_dependent"
+        },
+        "default_overrides": {
+          "bus_instance": "spi1",
+          "irq": "dma_completion",
+          "dma": "required",
+          "reset_gpio": null,
+          "power_gpio": null,
+          "vref_mv": 3300,
+          "mode": "dma",
+          "device_irq": "absent"
+        },
+        "protocol_hints": {
+          "spi_proto": "command",
+          "command_bytes": 3,
+          "single_ended_default": true,
+          "channels": [
+            "ch0",
+            "ch1",
+            "ch2",
+            "ch3",
+            "ch4",
+            "ch5",
+            "ch6",
+            "ch7"
+          ],
+          "result_bits": 10,
+          "result_formula": "((rx[1] & 0x03) << 8) | rx[2]",
+          "transfer_mode": "dma"
+        }
+      }
+    }
+  },
+  "platform_base_context": {
+    "platform_id": "tobudos_alientek_ministm32f103rct6",
+    "board": "ALIENTEK-MiniSTM32F103RCT6",
+    "board_alias": "ministm32f103rct6",
+    "rtos": "tobudos",
+    "rtos_bundle": "tobudos-project",
+    "integration": "chipadaptation_stm32f1_hal",
+    "integration_style": "kernel_plus_chipadaptation_vendor_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rct6",
+    "capabilities": {
+      "connection_types": [
+        "spi"
+      ],
+      "available_instances": {
+        "spi": [
+          "spi1"
+        ]
+      },
+      "timing": [
+        "tos_sleep_ms",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "available_for_dma_completion",
+      "dma": "available_for_selected_connection"
+    },
+    "notes": [
+      "DMA task on the original ALIENTEK-MiniSTM32F103RCT6 target and stm32f103rct6 MCU.",
+      "Use the selected existing RTOS/BSP/HAL backend and preserve the original bus connection."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "tobudos_alientek_ministm32f103rct6_spi1_dma",
+    "platform_id": "tobudos_alientek_ministm32f103rct6",
+    "connection_type": "spi",
+    "mode": "dma",
+    "bus_instance": "spi1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hspi1",
+    "backend": "STM32CubeF1 HAL SPI DMA with tobudos completion handling",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "GPIOA:GPIO_PIN_4"
+    },
+    "notes": [
+      "Enable the existing STM32F1 HAL DMA and selected bus modules.",
+      "Configure the original controller's DMA1 TX/RX channels, link handles, and install DMA/peripheral IRQ handlers.",
+      "Use HAL completion/error callbacks and an RTOS-compatible completion wait.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use DMA for the original three-byte SPI transaction with explicit transmit/receive synchronization."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+    ],
+    "dma": "required",
+    "completion_irq": "required",
+    "helper_usage_patterns": [],
+    "dma_requirements": {
+      "task_package_id": "tobudos_alientek_ministm32f103rct6__mcp3008__spi1_dma",
+      "mode": "dma",
+      "physical_bus": "spi",
+      "backend": "STM32CubeF1 HAL SPI DMA with tobudos completion handling",
+      "access_pattern": "explicit_hal_dma",
+      "candidate_transfer_apis": [
+        "HAL_SPI_TransmitReceive_DMA",
+        "HAL_SPI_Transmit_DMA",
+        "HAL_SPI_Receive_DMA"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 3,
+        "rx": 2
+      },
+      "minimum_core_payload_bytes": 1,
+      "configuration_requirements": [
+        "Enable the existing STM32F1 HAL DMA and selected bus modules.",
+        "Configure the original controller's DMA1 TX/RX channels, link handles, and install DMA/peripheral IRQ handlers.",
+        "Use HAL completion/error callbacks and an RTOS-compatible completion wait."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use DMA for the original three-byte SPI transaction with explicit transmit/receive synchronization."
+      ],
+      "device_scenarios": [
+        "Preserve channel-selection command bits.",
+        "Decode the 10-bit result at the correct bit offset."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+        "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+        "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+      ]
+    }
+  },
+  "device_attachment_context": {
+    "device_id": "mcp3008",
+    "attachment_type": "spi_adc",
+    "required_bus_type": "spi",
+    "address_mode": "chip-select",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCLK",
+        "MOSI",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 3600000
+      },
+      "vref_mv": 3300,
+      "notes": [
+        "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+      ]
+    },
+    "optional_attachment": {
+      "differential_mode": "optional",
+      "vref_mv": "board_dependent"
+    },
+    "default_overrides": {
+      "bus_instance": "spi1",
+      "irq": "dma_completion",
+      "dma": "required",
+      "reset_gpio": null,
+      "power_gpio": null,
+      "vref_mv": 3300,
+      "mode": "dma",
+      "device_irq": "absent"
+    },
+    "protocol_hints": {
+      "spi_proto": "command",
+      "command_bytes": 3,
+      "single_ended_default": true,
+      "channels": [
+        "ch0",
+        "ch1",
+        "ch2",
+        "ch3",
+        "ch4",
+        "ch5",
+        "ch6",
+        "ch7"
+      ],
+      "result_bits": 10,
+      "result_formula": "((rx[1] & 0x03) << 8) | rx[2]",
+      "transfer_mode": "dma"
+    },
+    "notes": [
+      "Use DMA for the original three-byte SPI transaction with explicit transmit/receive synchronization.",
+      "Preserve the original device protocol, addressing, units, and hardware attachment."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mcp3008/MCP3008.pdf",
+      "DriverGen/evaluation/oracle/data/mcp3008/meta.json",
+      "DriverGen/data/references/mcp3008/*/*_ref.c"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "tobudos_alientek_ministm32f103rct6__mcp3008__spi1_dma",
+    "rtos": "tobudos",
+    "rtos_bundle": "tobudos-project",
+    "board": "ALIENTEK-MiniSTM32F103RCT6",
+    "board_alias": "ministm32f103rct6",
+    "integration": "chipadaptation_stm32f1_hal",
+    "integration_style": "kernel_plus_chipadaptation_vendor_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rct6",
+    "bus_type": "spi",
+    "bus_instance": "spi1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hspi1",
+    "bus_backend": "STM32CubeF1 HAL SPI DMA with tobudos completion handling",
+    "address_mode": "chip-select",
+    "mode": "dma",
+    "irq": "dma_completion",
+    "dma": "required",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {
+      "chip_select": "GPIOA:GPIO_PIN_4"
+    },
+    "device_attachment_context_id": "mcp3008",
+    "device_addressing": null,
+    "device_irq": "absent",
+    "dma_requirements": {
+      "task_package_id": "tobudos_alientek_ministm32f103rct6__mcp3008__spi1_dma",
+      "mode": "dma",
+      "physical_bus": "spi",
+      "backend": "STM32CubeF1 HAL SPI DMA with tobudos completion handling",
+      "access_pattern": "explicit_hal_dma",
+      "candidate_transfer_apis": [
+        "HAL_SPI_TransmitReceive_DMA",
+        "HAL_SPI_Transmit_DMA",
+        "HAL_SPI_Receive_DMA"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 3,
+        "rx": 2
+      },
+      "minimum_core_payload_bytes": 1,
+      "configuration_requirements": [
+        "Enable the existing STM32F1 HAL DMA and selected bus modules.",
+        "Configure the original controller's DMA1 TX/RX channels, link handles, and install DMA/peripheral IRQ handlers.",
+        "Use HAL completion/error callbacks and an RTOS-compatible completion wait."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use DMA for the original three-byte SPI transaction with explicit transmit/receive synchronization."
+      ],
+      "device_scenarios": [
+        "Preserve channel-selection command bits.",
+        "Decode the 10-bit result at the correct bit offset."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+        "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+        "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+      ]
+    },
+    "source_evidence": [
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/tobudos-project/ChipAdaptation/platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+    ]
+  }
+}

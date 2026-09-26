@@ -1,0 +1,577 @@
+{
+  "device_id": "mhz19b",
+  "bus_type": "UART",
+  "candidate_addresses": [],
+  "candidate_registers": [
+    {
+      "name": "Read CO2 concentration command",
+      "value": "0x86",
+      "access": "write",
+      "size_bits": 8,
+      "description": "Command byte to read CO2 concentration",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "0x86 - Read CO2 concentration"
+      }
+    },
+    {
+      "name": "Calibrate Zero Point command",
+      "value": "0x87",
+      "access": "write",
+      "size_bits": 8,
+      "description": "Command byte to calibrate zero point",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "0X87-ZEROPOINTCALIBRATION"
+      }
+    },
+    {
+      "name": "Calibrate Span Point command",
+      "value": "0x88",
+      "access": "write",
+      "size_bits": 8,
+      "description": "Command byte to calibrate span point",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "OX88-SPANPOINTCALIBRATION"
+      }
+    },
+    {
+      "name": "Self-calibration ON/OFF command",
+      "value": "0x79",
+      "access": "write",
+      "size_bits": 8,
+      "description": "Command byte to turn on/off self-calibration for zero point",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "0x79- On/Off Self-calibration for Zero Point"
+      }
+    },
+    {
+      "name": "Detection range setting command",
+      "value": "0x99",
+      "access": "write",
+      "size_bits": 8,
+      "description": "Command byte to set detection range",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "0x99- Detection range setting"
+      }
+    },
+    {
+      "name": "CO2 concentration response",
+      "value": null,
+      "access": "read",
+      "size_bits": 64,
+      "description": "9-byte response to read command: start byte, command, high byte, low byte, 4 reserved, checksum",
+      "semantic_roles": [
+        "result"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "Return value: Byte0 Start Byte 0xFF, Byte1 Command 0x86, Byte2 Concentration (High 8 Byte), Byte3 Concentration (Low 8 Byte), ... Byte8 Checksum"
+      }
+    }
+  ],
+  "candidate_bitfields": [
+    {
+      "register": "Self-calibration ON/OFF command",
+      "name": "Self-calibration enable",
+      "bit_range": "Byte3",
+      "reset_value": "0xA0",
+      "description": "Byte3 value: 0xA0 enables self-calibration, 0x00 disables. Default is on.",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "ON this function, send command: FF 01 79 A0 00 00 00 00 E6; OFF this function, send command: FF 01 79 00 00 00 00 00 86; Default status is 'this function is on'."
+      }
+    },
+    {
+      "register": "Detection range setting command",
+      "name": "Detection range value",
+      "bit_range": "Byte4-Byte7",
+      "reset_value": null,
+      "description": "32-bit detection range value (0~2000, 0~5000, or 0~10000 ppm). Byte4: bits 24-31, Byte5: bits 16-23, Byte6: bits 8-15, Byte7: bits 0-7.",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Detection range 24~32 bit, Detection range 16~23 bit, Detection range 8~15 bit, Detection range 0~7 bit"
+      }
+    },
+    {
+      "register": "CO2 concentration response",
+      "name": "CO2 concentration high byte",
+      "bit_range": "Byte2",
+      "reset_value": null,
+      "description": "High byte of CO2 concentration value",
+      "semantic_roles": [
+        "data"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "Byte2 Concentration (High 8 Byte)"
+      }
+    },
+    {
+      "register": "CO2 concentration response",
+      "name": "CO2 concentration low byte",
+      "bit_range": "Byte3",
+      "reset_value": null,
+      "description": "Low byte of CO2 concentration value",
+      "semantic_roles": [
+        "data"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "Byte3 Concentration (Low 8 Byte)"
+      }
+    }
+  ],
+  "candidate_operations": [
+    {
+      "flow_id": "read_co2",
+      "kind": "read",
+      "channels": [
+        "CO2"
+      ],
+      "summary": "Read CO2 concentration via UART command 0x86",
+      "steps": [
+        {
+          "op": "write",
+          "target": "UART",
+          "details": "Send 9-byte command: 0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, checksum",
+          "evidence": {
+            "page": 7,
+            "snippet": "Send command: FF 01 86 00 00 00 00 00 79"
+          }
+        },
+        {
+          "op": "read",
+          "target": "UART",
+          "details": "Read 9-byte response: start byte 0xFF, command 0x86, high byte, low byte, 4 reserved, checksum",
+          "evidence": {
+            "page": 7,
+            "snippet": "Return value: FF 86 02 20 00 00 00 00 58"
+          }
+        },
+        {
+          "op": "postprocess",
+          "target": null,
+          "details": "Calculate CO2 concentration = high_byte * 256 + low_byte",
+          "evidence": {
+            "page": 7,
+            "snippet": "CO2 concentration = HIGH * 256 + LOW"
+          }
+        }
+      ],
+      "outputs": [
+        "CO2 concentration (ppm)"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "0x86- Read CO2 concentration"
+      }
+    },
+    {
+      "flow_id": "calibrate_zero",
+      "kind": "calibration",
+      "channels": [
+        "CO2"
+      ],
+      "summary": "Calibrate zero point via command 0x87",
+      "steps": [
+        {
+          "op": "write",
+          "target": "UART",
+          "details": "Send 9-byte command: 0xFF, 0x01, 0x87, 0x00, 0x00, 0x00, 0x00, 0x00, checksum (0x78). No return value.",
+          "evidence": {
+            "page": 9,
+            "snippet": "Send command: FF 01 87 00 00 00 00 00 78"
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 9,
+        "snippet": "0X87-ZEROPOINTCALIBRATION"
+      }
+    },
+    {
+      "flow_id": "calibrate_span",
+      "kind": "calibration",
+      "channels": [
+        "CO2"
+      ],
+      "summary": "Calibrate span point via command 0x88",
+      "steps": [
+        {
+          "op": "write",
+          "target": "UART",
+          "details": "Send 9-byte command: 0xFF, 0x01, 0x88, span_high, span_low, 0x00, 0x00, 0x00, checksum. No return value.",
+          "evidence": {
+            "page": 9,
+            "snippet": "Send command: FF 01 88 HIGH LOW 00 00 00 Checksum"
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 9,
+        "snippet": "OX88-SPANPOINTCALIBRATION"
+      }
+    },
+    {
+      "flow_id": "set_self_calibration",
+      "kind": "write",
+      "channels": [],
+      "summary": "Enable or disable self-calibration for zero point via command 0x79",
+      "steps": [
+        {
+          "op": "write",
+          "target": "UART",
+          "details": "Send 9-byte command: 0xFF, 0x01, 0x79, enable_byte, 0x00, 0x00, 0x00, 0x00, checksum. enable_byte = 0xA0 for on, 0x00 for off. No return value.",
+          "evidence": {
+            "page": 8,
+            "snippet": "ON: FF 01 79 A0 00 00 00 00 E6; OFF: FF 01 79 00 00 00 00 00 86"
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 8,
+        "snippet": "0x79- On/Off Self-calibration for Zero Point"
+      }
+    },
+    {
+      "flow_id": "set_detection_range",
+      "kind": "write",
+      "channels": [],
+      "summary": "Set detection range via command 0x99",
+      "steps": [
+        {
+          "op": "write",
+          "target": "UART",
+          "details": "Send 9-byte command: 0xFF, 0x01, 0x99, 0x00, range_byte4, range_byte3, range_byte2, range_byte1, checksum. No return value.",
+          "evidence": {
+            "page": 8,
+            "snippet": "set 0~2000ppm: FF 01 99 00 00 00 07 D0 8F; set 0~10000ppm: FF 01 99 00 00 00 27 10 2F"
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 8,
+        "snippet": "0x99- Detection range setting"
+      }
+    },
+    {
+      "flow_id": "hand_zero_calibration",
+      "kind": "calibration",
+      "channels": [
+        "CO2"
+      ],
+      "summary": "Zero point calibration by pulling HD pin low for at least 7 seconds",
+      "steps": [
+        {
+          "op": "set_signal",
+          "target": "HD",
+          "details": "Connect HD pin to low level (0V) for at least 7 seconds",
+          "evidence": {
+            "page": 8,
+            "snippet": "Connect module's HD pin to low level(0V), lasting for 7 seconds at least."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 8,
+        "snippet": "Hand-operated method: Connect module's HD pin to low level(0V), lasting for 7 seconds at least."
+      }
+    }
+  ],
+  "candidate_channels": [
+    {
+      "id": "CO2",
+      "description": "Carbon dioxide concentration in ppm",
+      "source": "UART response bytes 2 and 3",
+      "formula_id": "co2_concentration",
+      "evidence": {
+        "page": 7,
+        "snippet": "CO2 concentration = HIGH * 256 + LOW"
+      }
+    },
+    {
+      "id": "CO2_PWM",
+      "description": "CO2 concentration derived from PWM output",
+      "source": "PWM signal timing",
+      "formula_id": "co2_pwm",
+      "evidence": {
+        "page": 6,
+        "snippet": "CO2 concentration: Cppm=2000×(TH-2ms)/(TH+TL-4ms)"
+      }
+    },
+    {
+      "id": "CO2_analog",
+      "description": "CO2 concentration derived from analog voltage output",
+      "source": "Analog output Vo (0.4~2V default)",
+      "formula_id": "co2_analog",
+      "evidence": {
+        "page": 8,
+        "snippet": "Vo (V)=0.4V+(2.0V-0.4V)*C(concentration ppm) / detection range(ppm)"
+      }
+    }
+  ],
+  "candidate_formulae": [
+    {
+      "name": "co2_concentration",
+      "formula": "CO2 = high_byte * 256 + low_byte",
+      "inputs": [
+        "high_byte",
+        "low_byte"
+      ],
+      "output": "CO2 concentration in ppm",
+      "evidence": {
+        "page": 7,
+        "snippet": "CO2 concentration = HIGH * 256 + LOW"
+      }
+    },
+    {
+      "name": "co2_pwm",
+      "formula": "Cppm = 2000 * (TH - 2ms) / (TH + TL - 4ms)",
+      "inputs": [
+        "TH",
+        "TL"
+      ],
+      "output": "CO2 concentration in ppm for 0-2000ppm range",
+      "evidence": {
+        "page": 6,
+        "snippet": "CO2 concentration: Cppm=2000×(TH-2ms)/(TH+TL-4ms)"
+      }
+    },
+    {
+      "name": "co2_analog",
+      "formula": "Vo = 0.4 + (2.0 - 0.4) * C / detection_range",
+      "inputs": [
+        "Vo",
+        "detection_range"
+      ],
+      "output": "CO2 concentration in ppm",
+      "evidence": {
+        "page": 8,
+        "snippet": "Vo (V)=0.4V+(2.0V-0.4V)*C(concentration ppm) / detection range(ppm)"
+      }
+    },
+    {
+      "name": "checksum",
+      "formula": "checksum = (~(sum(byte1..byte7)) + 1) & 0xFF",
+      "inputs": [
+        "byte1",
+        "byte2",
+        "byte3",
+        "byte4",
+        "byte5",
+        "byte6",
+        "byte7"
+      ],
+      "output": "checksum byte",
+      "evidence": {
+        "page": 8,
+        "snippet": "Checksum = (Negative (Byte1+Byte2+Byte3+Byte4+Byte5+Byte6+Byte7))+1"
+      }
+    }
+  ],
+  "candidate_timing_constraints": [
+    {
+      "name": "Preheat time",
+      "value": 3,
+      "unit": "min",
+      "condition": "Before normal operation",
+      "evidence": {
+        "page": 5,
+        "snippet": "Preheat time: 3 min"
+      }
+    },
+    {
+      "name": "Response time T90",
+      "value": 120,
+      "unit": "s",
+      "condition": "Typical",
+      "evidence": {
+        "page": 5,
+        "snippet": "Response Time: T 90 < 120 s"
+      }
+    },
+    {
+      "name": "HD pin low duration for zero calibration",
+      "value": 7,
+      "unit": "s",
+      "condition": "Hand-operated zero calibration",
+      "evidence": {
+        "page": 8,
+        "snippet": "Connect module's HD pin to low level(0V), lasting for 7 seconds at least."
+      }
+    },
+    {
+      "name": "Stabilization time before zero calibration",
+      "value": 20,
+      "unit": "min",
+      "condition": "Before zero calibration, sensor must be stable at 400ppm",
+      "evidence": {
+        "page": 8,
+        "snippet": "Before calibrating the zero point, please ensure that the sensor is stable for more than 20 minutes at 400ppm ambient environment."
+      }
+    },
+    {
+      "name": "Self-calibration cycle",
+      "value": 24,
+      "unit": "h",
+      "condition": "After power on, every 24 hours",
+      "evidence": {
+        "page": 9,
+        "snippet": "The calibration cycle is every 24 hours since the module is power on."
+      }
+    },
+    {
+      "name": "PWM cycle",
+      "value": 1004,
+      "unit": "ms",
+      "condition": "Typical, ±5%",
+      "evidence": {
+        "page": 6,
+        "snippet": "Cycle: 1004ms±5%"
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "0x86 - Read CO2 concentration"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "0x79- On/Off Self-calibration for Zero Point"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "0x99- Detection range setting"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "0X87-ZEROPOINTCALIBRATION"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "OX88-SPANPOINTCALIBRATION"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "Checksum = (Negative (Byte1+Byte2+Byte3+Byte4+Byte5+Byte6+Byte7))+1"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "CO2 concentration = HIGH * 256 + LOW"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "CO2 concentration: Cppm=2000×(TH-2ms)/(TH+TL-4ms)"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "Vo (V)=0.4V+(2.0V-0.4V)*C(concentration ppm) / detection range(ppm)"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "Preheat time: 3 min"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "Response Time: T 90 < 120 s"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "Connect module's HD pin to low level(0V), lasting for 7 seconds at least."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "Before calibrating the zero point, please ensure that the sensor is stable for more than 20 minutes at 400ppm ambient environment."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "The calibration cycle is every 24 hours since the module is power on."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "Cycle: 1004ms±5%"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "Send command: FF 01 86 00 00 00 00 00 79"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "Return value: FF 86 02 20 00 00 00 00 58"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "ON: FF 01 79 A0 00 00 00 00 E6; OFF: FF 01 79 00 00 00 00 00 86"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "set 0~2000ppm: FF 01 99 00 00 00 07 D0 8F; set 0~10000ppm: FF 01 99 00 00 00 27 10 2F"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "Send command: FF 01 87 00 00 00 00 00 78"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "Send command: FF 01 88 HIGH LOW 00 00 00 Checksum"
+    }
+  ],
+  "requires_human": [
+    "Analog output voltage range is configurable from 0V to 3V; default is 0.4V to 2V. Customization may require factory configuration.",
+    "Detection range must be set to one of 0~2000, 0~5000, or 0~10000 ppm. The formula for PWM output uses 2000ppm range; adjust if different range is used.",
+    "Self-calibration is enabled by default; turn off for greenhouse, farm, or refrigerator applications.",
+    "Zero point calibration assumes 400ppm CO2 environment; ensure sensor is stable for 20 minutes before calibration."
+  ]
+}

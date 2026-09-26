@@ -1,0 +1,89 @@
+{
+  "device_id": "vl53l0x",
+  "rtos_id": "riot",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef VL53L0X_H\n#define VL53L0X_H\n\n#include <stdint.h>\n#include <stddef.h>\n#include \"periph/i2c.h\"\n\n#include \"riot.h\"\ntypedef struct {\n    i2c_t bus;\n    uint8_t addr;\n} vl53l0x_t;\n\nint vl53l0x_init(vl53l0x_t *dev, i2c_t bus);\nint vl53l0x_read_distance(vl53l0x_t *dev, int32_t *raw);\n\n#endif\n",
+  "driver_source": "#include \"vl53l0x.h\"\n#include \"xtimer.h\"\n#include <stdint.h>\n#include <stddef.h>\n\n#include \"riot.h\"\n#define VL53L0X_I2C_ADDR 0x52\n#define VL53L0X_DISTANCE_REG 0x00\n\nint vl53l0x_init(vl53l0x_t *dev, i2c_t bus) {\n    dev->bus = bus;\n    dev->addr = VL53L0X_I2C_ADDR;\n    xtimer_msleep(2);\n    return 0;\n}\n\nint vl53l0x_read_distance(vl53l0x_t *dev, int32_t *raw) {\n    uint8_t reg = VL53L0X_DISTANCE_REG;\n    uint8_t buf[2];\n    int ret;\n\n    ret = i2c_write_bytes(dev->bus, dev->addr, &reg, 1, 0);\n    if (ret != 0) return -1;\n\n    ret = i2c_read_bytes(dev->bus, dev->addr, buf, 2, 0);\n    if (ret != 0) return -1;\n\n    *raw = ((int32_t)buf[0] << 8) | buf[1];\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "vl53l0x_init(&g_eval_dev, I2C_DEV(0))",
+    "read_call": "vl53l0x_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "vl53l0x_t",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x52",
+        "write_prefix_any_of": [
+          [
+            "0xC0"
+          ],
+          [
+            "0xC1"
+          ],
+          [
+            "0xC2"
+          ],
+          [
+            "0x51"
+          ],
+          [
+            "0x61"
+          ]
+        ],
+        "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "distance_100mm",
+        "mock_preload": {
+          "0x52:0x00": [
+            "0x00",
+            "0x64"
+          ]
+        },
+        "expected_read_raw": 100,
+        "derivation": "mock_preload bytes [0x00, 0x64] represent big-endian uint16 value 0x0064 = 100. Device reports distance directly in mm, so expected_read_raw = 100."
+      },
+      {
+        "name": "distance_0mm",
+        "mock_preload": {
+          "0x52:0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "mock_preload bytes [0x00, 0x00] represent big-endian uint16 value 0x0000 = 0. Device reports distance directly in mm, so expected_read_raw = 0."
+      },
+      {
+        "name": "distance_65535mm",
+        "mock_preload": {
+          "0x52:0x00": [
+            "0xFF",
+            "0xFF"
+          ]
+        },
+        "expected_read_raw": 65535,
+        "derivation": "mock_preload bytes [0xFF, 0xFF] represent big-endian uint16 value 0xFFFF = 65535. Device reports distance directly in mm, so expected_read_raw = 65535."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 3.809,
+  "prompt_chars": 36916,
+  "raw_response": "{\"driver_header\": \"#ifndef VL53L0X_H\\n#define VL53L0X_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n#include \\\"periph/i2c.h\\\"\\n\\ntypedef struct {\\n    i2c_t bus;\\n    uint8_t addr;\\n} vl53l0x_t;\\n\\nint vl53l0x_init(vl53l0x_t *dev, i2c_t bus);\\nint vl53l0x_read_distance(vl53l0x_t *dev, int32_t *raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"vl53l0x.h\\\"\\n#include \\\"riot.h\\\"\\n#include \\\"xtimer.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n\\n#define VL53L0X_I2C_ADDR 0x52\\n#define VL53L0X_DISTANCE_REG 0x00\\n\\nint vl53l0x_init(vl53l0x_t *dev, i2c_t bus) {\\n    dev->bus = bus;\\n    dev->addr = VL53L0X_I2C_ADDR;\\n    xtimer_msleep(2);\\n    return 0;\\n}\\n\\nint vl53l0x_read_distance(vl53l0x_t *dev, int32_t *raw) {\\n    uint8_t reg = VL53L0X_DISTANCE_REG;\\n    uint8_t buf[2];\\n    int ret;\\n\\n    ret = i2c_write_bytes(dev->bus, dev->addr, &reg, 1, 0);\\n    if (ret != 0) return -1;\\n\\n    ret = i2c_read_bytes(dev->bus, dev->addr, buf, 2, 0);\\n    if (ret != 0) return -1;\\n\\n    *raw = ((int32_t)buf[0] << 8) | buf[1];\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "12274f682c741410"
+}

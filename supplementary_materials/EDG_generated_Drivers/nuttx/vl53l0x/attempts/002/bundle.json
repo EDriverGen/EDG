@@ -1,0 +1,89 @@
+{
+  "device_id": "vl53l0x",
+  "rtos_id": "nuttx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef VL53L0X_H\n#define VL53L0X_H\n\n#include <stdint.h>\n#include <nuttx/i2c/i2c_master.h>\n\nstruct i2c_master_s;\n\nstruct vl53l0x_dev_s {\n    struct i2c_master_s *bus;\n    uint8_t addr;\n};\n\nint vl53l0x_init(struct vl53l0x_dev_s *dev, struct i2c_master_s *bus);\nint vl53l0x_read_distance(struct vl53l0x_dev_s *dev, int32_t *raw);\n\n#endif /* VL53L0X_H */",
+  "driver_source": "#include \"vl53l0x.h\"\n#include <stdint.h>\n#include <string.h>\n#include <errno.h>\n#include \"arch.h\"\n\n#define VL53L0X_I2C_ADDR 0x52\n#define VL53L0X_READ_REG_0x51 0x51\n\nstatic int i2c_write_reg(struct i2c_master_s *bus, uint8_t addr, uint8_t reg)\n{\n    struct i2c_msg_s msg;\n    uint8_t buf[1];\n    buf[0] = reg;\n    msg.frequency = 100000;\n    msg.addr = addr;\n    msg.flags = 0;\n    msg.buffer = buf;\n    msg.length = 1;\n    int ret = I2C_TRANSFER(bus, &msg, 1);\n    if (ret < 0) {\n        return ret;\n    }\n    return 0;\n}\n\nstatic int i2c_read_reg16(struct i2c_master_s *bus, uint8_t addr, uint8_t reg, uint16_t *value)\n{\n    struct i2c_msg_s msg[2];\n    uint8_t reg_buf[1];\n    uint8_t data_buf[2];\n    reg_buf[0] = reg;\n    msg[0].frequency = 100000;\n    msg[0].addr = addr;\n    msg[0].flags = 0;\n    msg[0].buffer = reg_buf;\n    msg[0].length = 1;\n    msg[1].frequency = 100000;\n    msg[1].addr = addr;\n    msg[1].flags = I2C_M_READ;\n    msg[1].buffer = data_buf;\n    msg[1].length = 2;\n    int ret = I2C_TRANSFER(bus, msg, 2);\n    if (ret < 0) {\n        return ret;\n    }\n    *value = ((uint16_t)data_buf[0] << 8) | data_buf[1];\n    return 0;\n}\n\nint vl53l0x_init(struct vl53l0x_dev_s *dev, struct i2c_master_s *bus)\n{\n    if (dev == NULL || bus == NULL) {\n        return -EINVAL;\n    }\n    dev->bus = bus;\n    dev->addr = VL53L0X_I2C_ADDR;\n    up_mdelay(2);\n    return 0;\n}\n\nint vl53l0x_read_distance(struct vl53l0x_dev_s *dev, int32_t *raw)\n{\n    if (dev == NULL || dev->bus == NULL || raw == NULL) {\n        return -EINVAL;\n    }\n    uint16_t value;\n    int ret = i2c_read_reg16(dev->bus, dev->addr, VL53L0X_READ_REG_0x51, &value);\n    if (ret < 0) {\n        return ret;\n    }\n    *raw = (int32_t)value;\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "vl53l0x_init(&g_eval_dev, bus_handle)",
+    "read_call": "vl53l0x_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct vl53l0x_dev_s",
+    "init_extra_setup_c": "struct i2c_master_s *bus_handle = board_i2cbus_initialize(1);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"nuttx.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x52",
+        "write_prefix_any_of": [
+          [
+            "0xC0"
+          ],
+          [
+            "0xC1"
+          ],
+          [
+            "0xC2"
+          ],
+          [
+            "0x51"
+          ],
+          [
+            "0x61"
+          ]
+        ],
+        "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "distance_100mm",
+        "mock_preload": {
+          "0x51": [
+            "0x00",
+            "0x64"
+          ]
+        },
+        "expected_read_raw": 100,
+        "derivation": "mock_preload 0x51 returns [0x00, 0x64] = 0x0064 = 100 mm; raw value is already in mm, so expected_read_raw = 100"
+      },
+      {
+        "name": "distance_0mm",
+        "mock_preload": {
+          "0x51": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "mock_preload 0x51 returns [0x00, 0x00] = 0x0000 = 0 mm; expected_read_raw = 0"
+      },
+      {
+        "name": "distance_65535mm",
+        "mock_preload": {
+          "0x51": [
+            "0xFF",
+            "0xFF"
+          ]
+        },
+        "expected_read_raw": 65535,
+        "derivation": "mock_preload 0x51 returns [0xFF, 0xFF] = 0xFFFF = 65535 mm; expected_read_raw = 65535"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.218,
+  "prompt_chars": 34101,
+  "raw_response": "{\"driver_header\": \"#ifndef VL53L0X_H\\n#define VL53L0X_H\\n\\n#include <stdint.h>\\n#include <nuttx/i2c/i2c_master.h>\\n\\nstruct vl53l0x_dev_s {\\n    struct i2c_master_s *bus;\\n    uint8_t addr;\\n};\\n\\nint vl53l0x_init(struct vl53l0x_dev_s *dev, struct i2c_master_s *bus);\\nint vl53l0x_read_distance(struct vl53l0x_dev_s *dev, int32_t *raw);\\n\\n#endif /* VL53L0X_H */\", \"driver_source\": \"#include \\\"vl53l0x.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n#include <errno.h>\\n#include \\\"arch.h\\\"\\n\\n#define VL53L0X_I2C_ADDR 0x52\\n#define VL53L0X_READ_REG_0x51 0x51\\n\\nstatic int i2c_write_reg(struct i2c_master_s *bus, uint8_t addr, uint8_t reg)\\n{\\n    struct i2c_msg_s msg;\\n    uint8_t buf[1];\\n    buf[0] = reg;\\n    msg.frequency = 100000;\\n    msg.addr = addr;\\n    msg.flags = 0;\\n    msg.buffer = buf;\\n    msg.length = 1;\\n    int ret = I2C_TRANSFER(bus, &msg, 1);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    return 0;\\n}\\n\\nstatic int i2c_read_reg16(struct i2c_master_s *bus, uint8_t addr, uint8_t reg, uint16_t *value)\\n{\\n    struct i2c_msg_s msg[2];\\n    uint8_t reg_buf[1];\\n    uint8_t data_buf[2];\\n    reg_buf[0] = reg;\\n    msg[0].frequency = 100000;\\n    msg[0].addr = addr;\\n    msg[0].flags = 0;\\n    msg[0].buffer = reg_buf;\\n    msg[0].length = 1;\\n    msg[1].frequency = 100000;\\n    msg[1].addr = addr;\\n    msg[1].flags = I2C_M_READ;\\n    msg[1].buffer = data_buf;\\n    msg[1].length = 2;\\n    int ret = I2C_TRANSFER(bus, msg, 2);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    *value = ((uint16_t)data_buf[0] << 8) | data_buf[1];\\n    return 0;\\n}\\n\\nint vl53l0x_init(struct vl53l0x_dev_s *dev, struct i2c_master_s *bus)\\n{\\n    if (dev == NULL || bus == NULL) {\\n        return -EINVAL;\\n    }\\n    dev->bus = bus;\\n    dev->addr = VL53L0X_I2C_ADDR;\\n    up_mdelay(2);\\n    return 0;\\n}\\n\\nint vl53l0x_read_distance(struct vl53l0x_dev_s *dev, int32_t *raw)\\n{\\n    if (dev == NULL || dev->bus == NULL || raw == NULL) {\\n        return -EINVAL;\\n    }\\n    uint16_t value;\\n    int ret = i2c_read_reg16(dev->bus, dev->addr, VL53L0X_READ_REG_0x51, &value);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n    *raw = (int32_t)value;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "dfa30f468a6eac0a"
+}

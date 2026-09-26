@@ -1,0 +1,152 @@
+{
+  "device_id": "pcf8574",
+  "rtos_id": "threadx",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef PCF8574_H\n#define PCF8574_H\n\n#include <stdint.h>\n#include \"stm32f1xx_hal.h\"\n\n#include \"threadx.h\"\nstruct pcf8574_device {\n    I2C_HandleTypeDef *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint pcf8574_init(struct pcf8574_device *dev, void *bus_handle);\nint pcf8574_read_port(struct pcf8574_device *dev, uint8_t *port_byte);\n\n#endif\n",
+  "driver_source": "#include \"pcf8574.h\"\n#include \"stm32f1xx_hal.h\"\n#include <stddef.h>\n\n#include \"threadx.h\"\n#define PCF8574_I2C_ADDR 0x20\n\nint pcf8574_init(struct pcf8574_device *dev, void *bus_handle)\n{\n    if (dev == NULL || bus_handle == NULL) return -1;\n    dev->bus_handle = (I2C_HandleTypeDef *)bus_handle;\n    dev->i2c_addr = PCF8574_I2C_ADDR;\n    return 0;\n}\n\nint pcf8574_read_port(struct pcf8574_device *dev, uint8_t *port_byte)\n{\n    if (dev == NULL || dev->bus_handle == NULL || port_byte == NULL) return -1;\n    HAL_StatusTypeDef ret;\n    ret = HAL_I2C_Master_Receive(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), port_byte, 1, 100);\n    if (ret != HAL_OK) return -1;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "pcf8574_init(&g_eval_dev, bus_handle);",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "dev_struct_type": "struct pcf8574_device",
+    "channels": [
+      {
+        "id": "p0",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p1",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p2",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p3",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p4",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p5",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p6",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p7",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte);",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x20",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "flow_read_write_1: direct read read_port"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "all_pins_high",
+        "mock_preload": {
+          "read_bytes": [
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "p0": 1,
+          "p1": 1,
+          "p2": 1,
+          "p3": 1,
+          "p4": 1,
+          "p5": 1,
+          "p6": 1,
+          "p7": 1
+        },
+        "derivation": "Port byte 0xFF: bit0=1 => p0=1, bit1=1 => p1=1, ..., bit7=1 => p7=1."
+      },
+      {
+        "name": "all_pins_low",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "p0": 0,
+          "p1": 0,
+          "p2": 0,
+          "p3": 0,
+          "p4": 0,
+          "p5": 0,
+          "p6": 0,
+          "p7": 0
+        },
+        "derivation": "Port byte 0x00: all bits 0 => all channels 0."
+      },
+      {
+        "name": "mixed_pins",
+        "mock_preload": {
+          "read_bytes": [
+            "0xAA"
+          ]
+        },
+        "expected_channels": {
+          "p0": 0,
+          "p1": 1,
+          "p2": 0,
+          "p3": 1,
+          "p4": 0,
+          "p5": 1,
+          "p6": 0,
+          "p7": 1
+        },
+        "derivation": "Port byte 0xAA = 0b10101010: bit0=0 => p0=0, bit1=1 => p1=1, bit2=0 => p2=0, bit3=1 => p3=1, bit4=0 => p4=0, bit5=1 => p5=1, bit6=0 => p6=0, bit7=1 => p7=1."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 3.397,
+  "prompt_chars": 40310,
+  "raw_response": "{\"driver_header\": \"#ifndef PCF8574_H\\n#define PCF8574_H\\n\\n#include <stdint.h>\\n#include \\\"stm32f1xx_hal.h\\\"\\n\\nstruct pcf8574_device {\\n    I2C_HandleTypeDef *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint pcf8574_init(struct pcf8574_device *dev, void *bus_handle);\\nint pcf8574_read_port(struct pcf8574_device *dev, uint8_t *port_byte);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"pcf8574.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include <stddef.h>\\n\\n#define PCF8574_I2C_ADDR 0x20\\n\\nint pcf8574_init(struct pcf8574_device *dev, void *bus_handle)\\n{\\n    if (dev == NULL || bus_handle == NULL) return -1;\\n    dev->bus_handle = (I2C_HandleTypeDef *)bus_handle;\\n    dev->i2c_addr = PCF8574_I2C_ADDR;\\n    return 0;\\n}\\n\\nint pcf8574_read_port(struct pcf8574_device *dev, uint8_t *port_byte)\\n{\\n    if (dev == NULL || dev->bus_handle == NULL || port_byte == NULL) return -1;\\n    HAL_StatusTypeDef ret;\\n    ret = HAL_I2C_Master_Receive(dev->bus_handle, (uint16_t)(dev->i2c_addr << 1), port_byte, 1, 100);\\n    if (ret != HAL_OK) return -1;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "706118b90cf67cd8"
+}

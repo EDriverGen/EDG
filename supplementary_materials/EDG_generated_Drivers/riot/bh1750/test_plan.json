@@ -1,0 +1,58 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x23",
+      "write_prefix_any_of": [
+        [
+          "0x01"
+        ]
+      ],
+      "note": "power_on: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x23",
+      "write_prefix_any_of": [
+        [
+          "0x10"
+        ]
+      ],
+      "note": "continuous_h_resolution_mode: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x23",
+      "read_any": true,
+      "forbid_write_prefix": true,
+      "note": "continuous_h_resolution_mode: direct read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "low_light_100_lux",
+      "mock_preload": {
+        "read_bytes": [
+          "0x00",
+          "0x96"
+        ]
+      },
+      "expected_read_raw": 150,
+      "derivation": "single_channel raw-primary normalization: bytes [0x00 0x96], raw_count = ((0x00 << 8) | 0x96) = 150. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+      "raw_tolerance": 0
+    },
+    {
+      "name": "medium_light_500_lux",
+      "mock_preload": {
+        "read_bytes": [
+          "0x02",
+          "0x58"
+        ]
+      },
+      "expected_read_raw": 600,
+      "derivation": "single_channel raw-primary normalization: bytes [0x02 0x58], raw_count = ((0x02 << 8) | 0x58) = 600. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+      "raw_tolerance": 0
+    }
+  ],
+  "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+}

@@ -1,0 +1,243 @@
+{
+  "device_id": "ssd1306",
+  "rtos_id": "riot",
+  "eval_class": "display",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef SSD1306_H\n#define SSD1306_H\n\n#include <stdint.h>\n#include <stddef.h>\n#include <periph/i2c.h>\n\n#include \"riot.h\"\ntypedef struct {\n    i2c_t bus;\n    uint16_t addr;\n} ssd1306_t;\n\nint ssd1306_init(ssd1306_t *dev, i2c_t bus, uint16_t addr);\nint ssd1306_write_display_data(ssd1306_t *dev, const uint8_t *data, size_t len);\n\n#endif /* SSD1306_H */\n",
+  "driver_source": "#include \"ssd1306.h\"\n#include \"xtimer.h\"\n#include <stdint.h>\n#include <stddef.h>\n\n#include \"riot.h\"\n#define SSD1306_I2C_ADDR 0x3C\n\nstatic int ssd1306_write_cmd(ssd1306_t *dev, uint8_t cmd)\n{\n    return i2c_write_bytes(dev->bus, dev->addr, &cmd, 1, 0);\n}\n\nstatic int ssd1306_write_cmd2(ssd1306_t *dev, uint8_t cmd1, uint8_t cmd2)\n{\n    uint8_t buf[2] = {cmd1, cmd2};\n    return i2c_write_bytes(dev->bus, dev->addr, buf, 2, 0);\n}\n\nstatic int ssd1306_write_cmd3(ssd1306_t *dev, uint8_t cmd1, uint8_t cmd2, uint8_t cmd3)\n{\n    uint8_t buf[3] = {cmd1, cmd2, cmd3};\n    return i2c_write_bytes(dev->bus, dev->addr, buf, 3, 0);\n}\n\nint ssd1306_init(ssd1306_t *dev, i2c_t bus, uint16_t addr)\n{\n    int ret;\n    dev->bus = bus;\n    dev->addr = addr;\n\n    /* Power ON sequence: RES# handled externally, wait 3us after RES# high, then 100ms after VCC stable */\n    xtimer_msleep(100);\n\n    /* Display ON command (AFh) after power up */\n    ret = ssd1306_write_cmd(dev, 0xAF);\n    if (ret != 0) return ret;\n\n    /* Init sequence */\n    ret = ssd1306_write_cmd(dev, 0xAE);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd2(dev, 0xD5, 0x80);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd2(dev, 0xA8, 0x3F);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd2(dev, 0xD3, 0x00);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd(dev, 0x40);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd(dev, 0xA1);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd(dev, 0xC8);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd2(dev, 0xDA, 0x12);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd2(dev, 0x81, 0x7F);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd(dev, 0xA4);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd(dev, 0xA6);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd(dev, 0x2E);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd2(dev, 0x20, 0x00);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd3(dev, 0x21, 0x00, 0x7F);\n    if (ret != 0) return ret;\n\n    ret = ssd1306_write_cmd3(dev, 0x22, 0x00, 0x07);\n    if (ret != 0) return ret;\n\n    return 0;\n}\n\nint ssd1306_write_display_data(ssd1306_t *dev, const uint8_t *data, size_t len)\n{\n    int ret;\n    /* Set column address range (0x21, start=0, end=127) */\n    ret = ssd1306_write_cmd3(dev, 0x21, 0x00, 0x7F);\n    if (ret != 0) return ret;\n\n    /* Set page address range (0x22, start=0, end=7) */\n    ret = ssd1306_write_cmd3(dev, 0x22, 0x00, 0x07);\n    if (ret != 0) return ret;\n\n    /* Write data bytes */\n    ret = i2c_write_bytes(dev->bus, dev->addr, data, len, 0);\n    if (ret != 0) return ret;\n\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "display",
+    "init_call": "ssd1306_init(&g_eval_dev, I2C_DEV(0), 0x3C)",
+    "output_frame_call": "ssd1306_write_display_data(&g_eval_dev, data, len)",
+    "read_status_call": null,
+    "dev_struct_type": "ssd1306_t",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAF"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAE"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD5",
+            "0x80"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA8",
+            "0x3F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD3",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x40"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA1"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xC8"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xDA",
+            "0x12"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x81",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA4"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA6"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x2E"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x20",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21",
+            "0x00",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22",
+            "0x00",
+            "0x07"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21"
+          ]
+        ],
+        "note": "write_display_data: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22"
+          ]
+        ],
+        "note": "write_display_data: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "init_and_frame_output",
+        "mock_preload": {
+          "frame_ok": [
+            "0x00"
+          ]
+        },
+        "expected_frame_err": 0,
+        "derivation": "Init sequence writes all commands; frame output writes column/page address commands then data bytes. No read-back, so frame_ok sentinel returns 0x00 indicating success."
+      },
+      {
+        "name": "frame_output_with_data",
+        "mock_preload": {
+          "frame_ok": [
+            "0x00"
+          ]
+        },
+        "expected_frame_err": 0,
+        "derivation": "Frame output writes 128x64/8=1024 bytes of data after column/page address commands. frame_ok sentinel returns 0x00."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_display_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.271,
+  "prompt_chars": 40847,
+  "raw_response": "{\"driver_header\": \"#ifndef SSD1306_H\\n#define SSD1306_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <periph/i2c.h>\\n\\ntypedef struct {\\n    i2c_t bus;\\n    uint16_t addr;\\n} ssd1306_t;\\n\\nint ssd1306_init(ssd1306_t *dev, i2c_t bus, uint16_t addr);\\nint ssd1306_write_display_data(ssd1306_t *dev, const uint8_t *data, size_t len);\\n\\n#endif /* SSD1306_H */\", \"driver_source\": \"#include \\\"ssd1306.h\\\"\\n#include \\\"xtimer.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n\\n#define SSD1306_I2C_ADDR 0x3C\\n\\nstatic int ssd1306_write_cmd(ssd1306_t *dev, uint8_t cmd)\\n{\\n    return i2c_write_bytes(dev->bus, dev->addr, &cmd, 1, 0);\\n}\\n\\nstatic int ssd1306_write_cmd2(ssd1306_t *dev, uint8_t cmd1, uint8_t cmd2)\\n{\\n    uint8_t buf[2] = {cmd1, cmd2};\\n    return i2c_write_bytes(dev->bus, dev->addr, buf, 2, 0);\\n}\\n\\nstatic int ssd1306_write_cmd3(ssd1306_t *dev, uint8_t cmd1, uint8_t cmd2, uint8_t cmd3)\\n{\\n    uint8_t buf[3] = {cmd1, cmd2, cmd3};\\n    return i2c_write_bytes(dev->bus, dev->addr, buf, 3, 0);\\n}\\n\\nint ssd1306_init(ssd1306_t *dev, i2c_t bus, uint16_t addr)\\n{\\n    int ret;\\n    dev->bus = bus;\\n    dev->addr = addr;\\n\\n    /* Power ON sequence: RES# handled externally, wait 3us after RES# high, then 100ms after VCC stable */\\n    xtimer_msleep(100);\\n\\n    /* Display ON command (AFh) after power up */\\n    ret = ssd1306_write_cmd(dev, 0xAF);\\n    if (ret != 0) return ret;\\n\\n    /* Init sequence */\\n    ret = ssd1306_write_cmd(dev, 0xAE);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd2(dev, 0xD5, 0x80);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd2(dev, 0xA8, 0x3F);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd2(dev, 0xD3, 0x00);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd(dev, 0x40);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd(dev, 0xA1);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd(dev, 0xC8);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd2(dev, 0xDA, 0x12);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd2(dev, 0x81, 0x7F);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd(dev, 0xA4);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd(dev, 0xA6);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd(dev, 0x2E);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd2(dev, 0x20, 0x00);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd3(dev, 0x21, 0x00, 0x7F);\\n    if (ret != 0) return ret;\\n\\n    ret = ssd1306_write_cmd3(dev, 0x22, 0x00, 0x07);\\n    if (ret != 0) return ret;\\n\\n    return 0;\\n}\\n\\nint ssd1306_write_display_data(ssd1306_t *dev, const uint8_t *data, size_t len)\\n{\\n    int ret;\\n    /* Set column address range (0x21, start=0, end=127) */\\n    ret = ssd1306_write_cmd3(dev, 0x21, 0x00, 0x7F);\\n    if (ret != 0) return ret;\\n\\n    /* Set page address range (0x22, start=0, end=7) */\\n    ret = ssd1306_write_cmd3(dev, 0x22, 0x00, 0x07);\\n    if (ret != 0) return ret;\\n\\n    /* Write data bytes */\\n    ret = i2c_write_bytes(dev->bus, dev->addr, data, len, 0);\\n    if (ret != 0) return ret;\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "870701b4df5ecfde"
+}

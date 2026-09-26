@@ -1,0 +1,358 @@
+{
+  "device_id": "dht22",
+  "bus_type": "gpio_timing",
+  "address_rule": {
+    "type": "none",
+    "addressing_form": "none",
+    "addresses": []
+  },
+  "register_map": null,
+  "read_channels": [
+    {
+      "id": "humidity",
+      "raw_type": "uint16",
+      "physical_unit": "milli_percent_rh",
+      "flow_id": "read_sensor",
+      "source_bytes": [
+        "integral_RH",
+        "decimal_RH"
+      ],
+      "source_signal": null,
+      "formula_id": "humidity_formula",
+      "notes": "Relative humidity in percent, resolution 0.1%RH Canonicalized physical_unit to formula output unit 'milli_percent_rh'."
+    },
+    {
+      "id": "temperature",
+      "raw_type": "uint16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_sensor",
+      "source_bytes": [
+        "integral_T",
+        "decimal_T"
+      ],
+      "source_signal": null,
+      "formula_id": "temperature_formula",
+      "notes": "Temperature in Celsius, resolution 0.1°C Canonicalized physical_unit to formula output unit 'milli_degC'."
+    }
+  ],
+  "access_model": {
+    "kind": "gpio_timing",
+    "address_bytes": null,
+    "read_requires_pointer": null,
+    "direct_read_after_write": null,
+    "notes": "Single-bus protocol with start signal and 40-bit data response"
+  },
+  "operation_flows": [
+    {
+      "flow_id": "power_up",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "delay",
+          "delay_ms": 1000,
+          "notes": "Wait at least 1 second after power-up to allow sensor to stabilize"
+        }
+      ],
+      "outputs": [],
+      "notes": "After power supply, wait 1 second before sending any instruction"
+    },
+    {
+      "flow_id": "read_sensor",
+      "kind": "read",
+      "channels": [
+        "humidity",
+        "temperature"
+      ],
+      "preconditions": [
+        "Power-up delay completed",
+        "Minimum interval of 1.7 seconds since last read"
+      ],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "DATA",
+          "value": "low",
+          "duration_us": 18000,
+          "notes": "Set data-bus low for at least 18ms to send start signal"
+        },
+        {
+          "op": "delay",
+          "delay_ms": null,
+          "notes": "Wait 20-40us for sensor response after pulling low"
+        },
+        {
+          "op": "wait_signal",
+          "signal": "DATA",
+          "edge": "falling",
+          "timeout_ms": 0.2,
+          "notes": "Sensor pulls low for 80us as response signal"
+        },
+        {
+          "op": "wait_signal",
+          "signal": "DATA",
+          "edge": "rising",
+          "timeout_ms": 0.2,
+          "notes": "Sensor pulls high for 80us to prepare data"
+        },
+        {
+          "op": "measure_pulse",
+          "signal": "DATA",
+          "source_signal": "DATA",
+          "edge": "rising",
+          "notes": "Read 40 bits: each bit starts with 50us low, then high pulse length determines bit value (26-28us for 0, 70us for 1)"
+        },
+        {
+          "op": "postprocess",
+          "notes": "Verify checksum: sum of first 4 bytes (integral RH, decimal RH, integral T, decimal T) should equal checksum byte"
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "humidity",
+          "byte_source": "integral_RH:8 || decimal_RH:8",
+          "formula_id": "humidity_formula",
+          "unit": "milli_percent_rh",
+          "notes": "First 16 bits: 8-bit integral RH + 8-bit decimal RH",
+          "source_signal": null
+        },
+        {
+          "channel": "temperature",
+          "byte_source": "integral_T:8 || decimal_T:8",
+          "formula_id": "temperature_formula",
+          "unit": "milli_degC",
+          "notes": "Next 16 bits: 8-bit integral T + 8-bit decimal T",
+          "source_signal": null
+        }
+      ],
+      "requires_human": false,
+      "notes": "MCU sends start signal, sensor responds with 40-bit data"
+    }
+  ],
+  "raw_encoding": null,
+  "registers_or_commands": [],
+  "bitfields": [],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up: wait 1 second before any communication"
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "See operation_flows read_sensor for complete timing sequence"
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "start_signal_low_time",
+      "value": 18,
+      "unit": "ms",
+      "condition": "MCU must pull data-bus low for at least 18ms to send start signal",
+      "notes": "Minimum low time for start signal"
+    },
+    {
+      "name": "response_wait_time",
+      "value": 30,
+      "unit": "us",
+      "condition": "After pulling low, MCU waits 20-40us for sensor response",
+      "notes": "Typical wait time 30us"
+    },
+    {
+      "name": "response_low_time",
+      "value": 80,
+      "unit": "us",
+      "condition": "Sensor pulls low for 80us as response signal",
+      "notes": "Response low pulse duration"
+    },
+    {
+      "name": "response_high_time",
+      "value": 80,
+      "unit": "us",
+      "condition": "Sensor pulls high for 80us to prepare data",
+      "notes": "Response high pulse duration"
+    },
+    {
+      "name": "bit_low_time",
+      "value": 50,
+      "unit": "us",
+      "condition": "Each data bit starts with 50us low",
+      "notes": "Bit start low pulse"
+    },
+    {
+      "name": "bit_0_high_time",
+      "value": 27,
+      "unit": "us",
+      "condition": "High pulse of 26-28us indicates bit 0",
+      "notes": "Typical 27us"
+    },
+    {
+      "name": "bit_1_high_time",
+      "value": 70,
+      "unit": "us",
+      "condition": "High pulse of 70us indicates bit 1",
+      "notes": "Bit 1 high pulse duration"
+    },
+    {
+      "name": "power_up_delay",
+      "value": 1,
+      "unit": "s",
+      "condition": "After power supply, wait 1 second before sending instructions",
+      "notes": "Power-up stabilization time"
+    },
+    {
+      "name": "collecting_period",
+      "value": 1.7,
+      "unit": "s",
+      "condition": "Minimum interval between reads is 1.7 seconds",
+      "notes": "Collecting period"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "humidity_formula",
+      "formula": "humidity = integral_RH + decimal_RH/10",
+      "integer_approximation_expression": {
+        "expression": "integral_RH * 100 + decimal_RH",
+        "inputs": [
+          {
+            "name": "integral_RH",
+            "byte_source": "integral_RH:8 || decimal_RH:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "8-bit integral part of relative humidity",
+            "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+          },
+          {
+            "name": "decimal_RH",
+            "byte_source": "integral_RH:8 || decimal_RH:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "8-bit decimal part of relative humidity",
+            "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+          }
+        ],
+        "output": {
+          "name": "humidity_tenths",
+          "unit": "milli_percent_rh"
+        }
+      },
+      "notes": "Canonicalized x10 raw-value formula to a milli-unit executable expression ('percent_rh' -> 'milli_percent_rh') without truncating the tenths digit."
+    },
+    {
+      "name": "temperature_formula",
+      "formula": "temperature = integral_T + decimal_T/10",
+      "integer_approximation_expression": {
+        "expression": "integral_T * 100 + decimal_T",
+        "inputs": [
+          {
+            "name": "integral_T",
+            "byte_source": "integral_T:8 || decimal_T:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "8-bit integral part of temperature",
+            "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+          },
+          {
+            "name": "decimal_T",
+            "byte_source": "integral_T:8 || decimal_T:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "8-bit decimal part of temperature",
+            "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+          }
+        ],
+        "output": {
+          "name": "temperature_tenths",
+          "unit": "milli_degC"
+        }
+      },
+      "notes": "Canonicalized x10 raw-value formula to a milli-unit executable expression ('celsius' -> 'milli_degC') without truncating the tenths digit."
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "checksum_mismatch",
+      "condition": "Sum of first 4 data bytes does not equal checksum byte",
+      "detection": "After reading 40 bits, compute sum of integral_RH + decimal_RH + integral_T + decimal_T and compare with checksum byte",
+      "driver_action": "Discard data and retry read"
+    },
+    {
+      "name": "sensor_not_responding",
+      "condition": "Data line remains high after start signal",
+      "detection": "If sensor does not pull low within expected time after start signal",
+      "driver_action": "Return -EIO"
+    },
+    {
+      "name": "timeout_during_bit_read",
+      "condition": "Pulse width exceeds expected range",
+      "detection": "If high pulse is not within 26-28us or 70us range",
+      "driver_action": "Abort transaction and report error"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "low_power_mode",
+      "condition": "After data collection, if no start signal received, sensor enters low-power-consumption-mode",
+      "notes": "Sensor automatically enters low power mode after sending data"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "dht22",
+      "page": 2,
+      "snippet": "Resolution or sensitivity | humidity 0.1%RH;               | temperature 0.1Celsius"
+    },
+    {
+      "source_id": "dht22",
+      "page": 1,
+      "snippet": "Output signal   | digital signal via single-bus"
+    },
+    {
+      "source_id": "dht22",
+      "page": 2,
+      "snippet": "When power is supplied to sensor, don't send any instruction to the sensor within one second"
+    },
+    {
+      "source_id": "dht22",
+      "page": 3,
+      "snippet": "DATA=8 bit integral RH data+8 bit decimal RH data+8 bit integral T data+8 bit decimal T data+8 bit checksum"
+    },
+    {
+      "source_id": "dht22",
+      "page": 4,
+      "snippet": "Data-bus's free status is high voltage level. When communication between MCU and AM2303 begin, program of MCU will transform data-bus's voltage level from high to low level and this process must beyond at least 18ms"
+    },
+    {
+      "source_id": "dht22",
+      "page": 4,
+      "snippet": "then MCU will wait 20-40us for AM2303's response"
+    },
+    {
+      "source_id": "dht22",
+      "page": 4,
+      "snippet": "AM2303 will send out low-voltage-level signal and this signal last 80us as response signal"
+    },
+    {
+      "source_id": "dht22",
+      "page": 5,
+      "snippet": "every bit's transmission begin with low-voltage-level that last 50us"
+    },
+    {
+      "source_id": "dht22",
+      "page": 6,
+      "snippet": "70us voltage-length means 1bit data \"1\""
+    }
+  ],
+  "requires_human": [
+    "The exact high pulse duration for bit 0 is not explicitly given; typical values are 26-28us, but datasheet only states 70us for bit 1. Human may need to confirm or measure.",
+    "The formula for converting raw data to physical values is not fully specified; human may need to infer decimal place or sign handling."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

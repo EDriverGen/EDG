@@ -1,0 +1,160 @@
+{
+  "task_package_id": "chibios_generic_hal__bme280__i2c1_polling",
+  "rtos": "chibios",
+  "device": "bme280",
+  "bus": "i2c",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/bme280/chibios",
+  "task_package": {
+    "package_id": "chibios_generic_hal__bme280__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/chibios_generic_hal.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/chibios_generic_hal_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/bme280.json",
+    "reference_driver_root": "DriverGen/data/references/bme280/chibios",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "chibios_generic_hal",
+        "rtos": "chibios",
+        "board": "generic_hal",
+        "integration": "generic_driver_api",
+        "mcu": "unspecified_chibios_target"
+      },
+      "connection": {
+        "binding_id": "chibios_generic_hal_i2c1_polling",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "I2CD1",
+        "bus_symbol": "I2CD1",
+        "backend": "ChibiOS HAL I2C driver",
+        "address_mode": "7-bit",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "bme280",
+        "attachment_type": "i2c_sensor",
+        "required_bus_type": "i2c",
+        "addressing": {
+          "default": "0x76",
+          "alternates": [
+            "0x77"
+          ],
+          "selection_rule": "SDO determines the I2C address in I2C mode."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "No dedicated reset or interrupt line required for the minimal polling driver."
+          ]
+        }
+      }
+    }
+  },
+  "platform_base_context": {
+    "platform_id": "chibios_generic_hal",
+    "board": "STM32F103RB-NUCLEO64",
+    "board_alias": "chibios_f103rb",
+    "rtos": "chibios",
+    "rtos_bundle": "chibios",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "I2CD1"
+        ],
+        "spi": [
+          "SPID1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "SD2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "optional"
+    },
+    "notes": [
+      "This platform targets the ChibiOS STM32F103RB-NUCLEO64 demo family while using the portable HAL I2C driver and PAL GPIO layer.",
+      "I2C uses I2CDriver instances (I2CD1, I2CD2) with i2cMasterTransmitTimeout/i2cMasterReceiveTimeout.",
+      "SPI uses SPIDriver instances such as SPID1 with spiStart/spiExchange, and UART polling uses SerialDriver SD2.",
+      "GPIO uses the PAL layer with port+pad or line-level access."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_i2c.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_spi.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_serial.h",
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_pal.h",
+      "DriverGen/data/rtos/chibios/testhal/STM32/STM32F1xx/I2C/main.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "chibios_generic_hal_i2c1_polling",
+    "platform_id": "chibios_generic_hal",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "I2CD1",
+    "bus_instance_kind": "hal_driver_instance",
+    "bus_symbol": "I2CD1",
+    "backend": "ChibiOS HAL I2C driver",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Default ChibiOS I2C binding uses &I2CD1 driver instance."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/chibios/os/hal/include/hal_i2c.h",
+      "DriverGen/data/rtos/chibios/testhal/STM32/STM32F1xx/I2C/main.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "bme280",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x76",
+      "alternates": [
+        "0x77"
+      ],
+      "selection_rule": "SDO determines the I2C address in I2C mode."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "For I2C mode the CSB pin must stay inactive/high."
+      ]
+    },
+    "optional_attachment": {
+      "sdo_addr_select": "optional",
+      "csb_mode_pin": "required_for_i2c_mode"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers assume forced-mode single conversion reads using calibration values from the sensor."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/bme280",
+      "DriverGen/data/references/bme280/*/*_ref.h"
+    ]
+  }
+}

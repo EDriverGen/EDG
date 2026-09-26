@@ -1,0 +1,97 @@
+{
+  "task_package_id": "nuttx_generic_devfs__mhz19b__uart1_dma",
+  "rtos": "nuttx",
+  "rtos_bundle": "nuttx",
+  "board": "nucleo-f103rb",
+  "board_alias": "nuttx_f103rb",
+  "integration": "public_i2c_master_and_gpio_char_driver",
+  "integration_style": "nuttx_core_plus_apps_and_public_headers",
+  "mcu_family": "stm32f1",
+  "mcu": "stm32f103rb",
+  "bus_type": "uart_dma",
+  "bus_instance": "/dev/ttyS1",
+  "bus_instance_kind": "devfs_path",
+  "bus_symbol": "/dev/ttyS1",
+  "bus_backend": "NuttX STM32F103 serial driver with USART RX/TX DMA",
+  "address_mode": null,
+  "mode": "dma",
+  "irq": "dma_completion",
+  "dma": "required",
+  "reset_gpio": null,
+  "power_gpio": null,
+  "fixed_attachment": {
+    "device_path": "/dev/ttyS1",
+    "baud_rate": 9600,
+    "data_bits": 8,
+    "parity": "none",
+    "stop_bits": 1
+  },
+  "device_attachment_context_id": "mhz19b",
+  "device_addressing": null,
+  "device_irq": "optional",
+  "dma_requirements": {
+    "task_package_id": "nuttx_generic_devfs__mhz19b__uart1_dma",
+    "mode": "dma",
+    "physical_bus": "uart",
+    "backend": "NuttX STM32F103 serial driver with USART RX/TX DMA",
+    "access_pattern": "devfs_dma",
+    "candidate_transfer_apis": [
+      "open",
+      "read",
+      "write",
+      "tcgetattr",
+      "tcsetattr"
+    ],
+    "dma_channels": {
+      "controller": "DMA1",
+      "selection": "Use the DMA mapping of the USART registered as /dev/ttyS1 in the original board configuration."
+    },
+    "minimum_core_payload_bytes": 9,
+    "configuration_requirements": [
+      "Retain /dev/ttyS1 and the original physical UART connection at 9600-8N1.",
+      "Resolve the USART behind /dev/ttyS1 using the target serial-device mapping, and enable CONFIG_STM32_DMA1 plus CONFIG_USARTn_RXDMA and CONFIG_USARTn_TXDMA for that USART.",
+      "Reserve that UART for the sensor; handle partial reads/writes and the driver completion/error conventions."
+    ],
+    "generation_requirements": [
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+    ],
+    "device_scenarios": [
+      "Arm reception early enough to retain the response.",
+      "Accumulate receive events until the full frame is available.",
+      "Check header, checksum, timeout, and a subsequent request."
+    ],
+    "validation_requirements": [
+      {
+        "id": "dma_payload",
+        "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+      },
+      {
+        "id": "completion_order",
+        "requirement": "Consume receive data and reuse buffers only after the required completion event."
+      },
+      {
+        "id": "error_and_timeout",
+        "requirement": "Return the specified error and release transfer state after failure or timeout."
+      },
+      {
+        "id": "repeat_operation",
+        "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+      }
+    ],
+    "source_evidence": [
+      "DriverGen/data/rtos/nuttx-project/nuttx/arch/arm/src/stm32/stm32_serial.c",
+      "DriverGen/data/rtos/nuttx-project/nuttx/arch/arm/src/stm32/Kconfig"
+    ]
+  },
+  "source_evidence": [
+    "DriverGen/data/rtos/nuttx-project/nuttx/arch/arm/src/stm32/stm32_serial.c",
+    "DriverGen/data/rtos/nuttx-project/nuttx/arch/arm/src/stm32/Kconfig"
+  ]
+}

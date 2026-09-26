@@ -1,0 +1,199 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtems__max31855",
+  "device_id": "max31855",
+  "rtos_id": "rtems",
+  "bus": "spi",
+  "scope": "rtems fixed task for max31855; bus=spi, board=generic_devfs; only APIs needed by copied reference driver and fixed task configuration.",
+  "api_contract": {
+    "headers": [
+      "fcntl.h",
+      "unistd.h",
+      "sys/ioctl.h"
+    ],
+    "types": {
+      "resource": "file descriptor / caller-provided GPIO pin",
+      "status": "int, ssize_t, or rtems_status_code according to operation"
+    },
+    "task_binding": {
+      "bus": "spi",
+      "instance": "/dev/spidev0.0",
+      "mode": "polling",
+      "rtos": "rtems generic_devfs"
+    },
+    "operations": [
+      {
+        "name": "open",
+        "signature": "int open(const char *pathname, int flags, ...)"
+      },
+      {
+        "name": "ioctl",
+        "signature": "int ioctl(int fd, unsigned long request, ...)"
+      },
+      {
+        "name": "close",
+        "signature": "int close(int fd)"
+      },
+      {
+        "name": "SPI_IOC_MESSAGE",
+        "type": "struct spi_ioc_transfer"
+      }
+    ],
+    "preconditions": "Use task_requirements fixed bus and copied reference-driver preconditions; the task owns only its assigned bus."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "The caller provides the fixed RTEMS devfs SPI instance /dev/spidev0.0 through a path/descriptor; SPI mode 0 and fixed chip-select settings follow the task attachment.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.h",
+          "line_start": 4,
+          "line_end": 4
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 18,
+          "line_end": 18
+        }
+      ]
+    },
+    {
+      "id": "descriptor_lifecycle",
+      "category": "bus_binding",
+      "requirement": "Open the SPI descriptor with open(spi_path, O_RDWR) and close it after the transaction; retain file-interface error handling.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 18,
+          "line_end": 18
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 38,
+          "line_end": 38
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 25,
+          "line_end": 25
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 51,
+          "line_end": 51
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 54,
+          "line_end": 54
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/fcntl.h",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/unistd.h",
+          "line_start": 1,
+          "line_end": 1
+        }
+      ]
+    },
+    {
+      "id": "spi_configuration",
+      "category": "bus_configuration",
+      "requirement": "Retain the SPI mode, bits-per-word, and maximum-speed configuration APIs used by the task reference: ioctl with SPI_IOC_WR_MODE / SPI_IOC_WR_BITS_PER_WORD / SPI_IOC_WR_MAX_SPEED_HZ, including configuration-failure handling.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 23,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 24,
+          "line_end": 24
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 50,
+          "line_end": 50
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/spi/pack.md",
+          "line_start": 525,
+          "line_end": 533
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/spi/pack.md",
+          "line_start": 607,
+          "line_end": 607
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/spi/pack.md",
+          "line_start": 637,
+          "line_end": 637
+        }
+      ]
+    },
+    {
+      "id": "spi_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Support ioctl(fd, SPI_IOC_MESSAGE(n), &spi_ioc_transfer), retaining transmit/receive buffers, length, word width, speed, chip select, and success/failure return semantics sufficient for the fixed SPI polling transactions.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 23,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 24,
+          "line_end": 24
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__max31855/inputs/reference_drivers/max31855_ref.c",
+          "line_start": 50,
+          "line_end": 50
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/spi/pack.md",
+          "line_start": 525,
+          "line_end": 533
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/spi/pack.md",
+          "line_start": 594,
+          "line_end": 597
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/linux/spi/spidev.h",
+          "line_start": 1,
+          "line_end": 13
+        }
+      ]
+    }
+  ]
+}

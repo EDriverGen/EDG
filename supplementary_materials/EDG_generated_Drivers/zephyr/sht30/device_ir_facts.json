@@ -1,0 +1,1121 @@
+{
+  "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+  "source": "device_ir_projection_v1",
+  "device_id": "sht30",
+  "bus_type": "i2c",
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "addresses": [
+    {
+      "index": 0,
+      "address": "0x44",
+      "addressing_form": "7-bit",
+      "is_default": true,
+      "description": "Default I2C address when ADDR pin connected to logic low",
+      "raw_record": {
+        "address": "0x44",
+        "description": "Default I2C address when ADDR pin connected to logic low",
+        "is_default": true
+      }
+    },
+    {
+      "index": 1,
+      "address": "0x45",
+      "addressing_form": "7-bit",
+      "is_default": false,
+      "description": "Alternate I2C address when ADDR pin connected to logic high",
+      "raw_record": {
+        "address": "0x45",
+        "description": "Alternate I2C address when ADDR pin connected to logic high",
+        "is_default": false
+      }
+    }
+  ],
+  "registers": [
+    {
+      "index": 0,
+      "name": "Status Register",
+      "address": "0xF32D",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "Contains information on operational status of heater, alert mode, execution status of last command and last write sequence.",
+      "semantic_roles": [
+        "status"
+      ],
+      "byte_part": null,
+      "raw_record": {
+        "name": "Status Register",
+        "value": "0xF32D",
+        "access": "ro",
+        "size_bits": 16,
+        "description": "Contains information on operational status of heater, alert mode, execution status of last command and last write sequence."
+      }
+    }
+  ],
+  "bitfields": [
+    {
+      "index": 0,
+      "name": "Alert pending status",
+      "register": "Status Register",
+      "bit_range": 15,
+      "reset_value": null,
+      "description": "'0': no pending alerts, '1': at least one pending alert",
+      "semantic_roles": [
+        "status"
+      ],
+      "raw_record": {
+        "register": "Status Register",
+        "name": "Alert pending status",
+        "bits": 15,
+        "description": "'0': no pending alerts, '1': at least one pending alert"
+      }
+    },
+    {
+      "index": 1,
+      "name": "Heater status",
+      "register": "Status Register",
+      "bit_range": 13,
+      "reset_value": null,
+      "description": "'0': Heater OFF, '1': Heater ON",
+      "semantic_roles": [
+        "status"
+      ],
+      "raw_record": {
+        "register": "Status Register",
+        "name": "Heater status",
+        "bits": 13,
+        "description": "'0': Heater OFF, '1': Heater ON"
+      }
+    },
+    {
+      "index": 2,
+      "name": "RH tracking alert",
+      "register": "Status Register",
+      "bit_range": 11,
+      "reset_value": null,
+      "description": "'0': no alert, '1': alert",
+      "semantic_roles": [
+        "status"
+      ],
+      "raw_record": {
+        "register": "Status Register",
+        "name": "RH tracking alert",
+        "bits": 11,
+        "description": "'0': no alert, '1': alert"
+      }
+    },
+    {
+      "index": 3,
+      "name": "T tracking alert",
+      "register": "Status Register",
+      "bit_range": 10,
+      "reset_value": null,
+      "description": "'0': no alert, '1': alert",
+      "semantic_roles": [
+        "status"
+      ],
+      "raw_record": {
+        "register": "Status Register",
+        "name": "T tracking alert",
+        "bits": 10,
+        "description": "'0': no alert, '1': alert"
+      }
+    },
+    {
+      "index": 4,
+      "name": "System reset detected",
+      "register": "Status Register",
+      "bit_range": 4,
+      "reset_value": null,
+      "description": "'0': no reset detected since last 'clear status register' command, '1': reset detected (hard reset, soft reset command or supply fail)",
+      "semantic_roles": [
+        "status",
+        "trigger",
+        "clear"
+      ],
+      "raw_record": {
+        "register": "Status Register",
+        "name": "System reset detected",
+        "bits": 4,
+        "description": "'0': no reset detected since last 'clear status register' command, '1': reset detected (hard reset, soft reset command or supply fail)"
+      }
+    },
+    {
+      "index": 5,
+      "name": "Command status",
+      "register": "Status Register",
+      "bit_range": 1,
+      "reset_value": null,
+      "description": "'0': last command executed successfully, '1': last command not processed (invalid or failed checksum)",
+      "semantic_roles": [
+        "status",
+        "trigger"
+      ],
+      "raw_record": {
+        "register": "Status Register",
+        "name": "Command status",
+        "bits": 1,
+        "description": "'0': last command executed successfully, '1': last command not processed (invalid or failed checksum)"
+      }
+    },
+    {
+      "index": 6,
+      "name": "Write data checksum status",
+      "register": "Status Register",
+      "bit_range": null,
+      "reset_value": null,
+      "description": "'0': checksum of last write transfer was correct, '1': checksum of last write transfer failed",
+      "semantic_roles": [
+        "status",
+        "data"
+      ],
+      "raw_record": {
+        "register": "Status Register",
+        "name": "Write data checksum status",
+        "bits": 0,
+        "description": "'0': checksum of last write transfer was correct, '1': checksum of last write transfer failed"
+      }
+    }
+  ],
+  "operation_steps": [
+    {
+      "source": "operation_flows",
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x24",
+          "0x00"
+        ],
+        "notes": "Send START, I2C write header (device address + write bit), then 16-bit command 0x2400 (MSB 0x24, LSB 0x00) for high repeatability, no clock stretching."
+      },
+      "length": null,
+      "notes": "Send single shot measurement command with high repeatability and clock stretching disabled.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x24",
+            "0x00"
+          ],
+          "notes": "Send START, I2C write header (device address + write bit), then 16-bit command 0x2400 (MSB 0x24, LSB 0x00) for high repeatability, no clock stretching."
+        },
+        "notes": "Send single shot measurement command with high repeatability and clock stretching disabled."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait at least measurement duration (max 15 ms for high repeatability) before reading data.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 15,
+        "notes": "Wait at least measurement duration (max 15 ms for high repeatability) before reading data."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 6,
+        "notes": "Send START, I2C read header (device address + read bit). Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+      },
+      "length": 6,
+      "notes": "Read temperature and humidity data with CRC checksums.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 6,
+          "notes": "Send START, I2C read header (device address + read bit). Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+        },
+        "notes": "Read temperature and humidity data with CRC checksums."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "single_shot_measurement_high_clock_stretching",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x2C",
+          "0x06"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit command 0x2C06 (MSB 0x2C, LSB 0x06) for high repeatability, clock stretching enabled."
+      },
+      "length": null,
+      "notes": "Send single shot measurement command with clock stretching enabled.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x2C",
+            "0x06"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit command 0x2C06 (MSB 0x2C, LSB 0x06) for high repeatability, clock stretching enabled."
+        },
+        "notes": "Send single shot measurement command with clock stretching enabled."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "single_shot_measurement_high_clock_stretching",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "wait_until_ready",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Sensor pulls SCL low until measurement complete. Max measurement duration 15 ms.",
+      "semantic_roles": [
+        "status",
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "wait_until_ready",
+        "condition": "SCL line released by sensor",
+        "timeout_ms": 15,
+        "notes": "Sensor pulls SCL low until measurement complete. Max measurement duration 15 ms."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "single_shot_measurement_high_clock_stretching",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 6,
+        "notes": "Send START, I2C read header. Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+      },
+      "length": 6,
+      "notes": "Read measurement data after clock stretching ends.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 6,
+          "notes": "Send START, I2C read header. Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+        },
+        "notes": "Read measurement data after clock stretching ends."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "periodic_measurement_start",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x21",
+          "0x30"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit command 0x2130 for 1 mps, high repeatability (example from datasheet)."
+      },
+      "length": null,
+      "notes": "Start periodic data acquisition with specified repeatability and mps. Example uses 1 mps high repeatability.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x21",
+            "0x30"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit command 0x2130 for 1 mps, high repeatability (example from datasheet)."
+        },
+        "notes": "Start periodic data acquisition with specified repeatability and mps. Example uses 1 mps high repeatability."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "fetch_data_periodic",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xE0",
+          "0x00"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit fetch data command (0xE000)."
+      },
+      "length": null,
+      "notes": "Fetch data command to retrieve latest measurement.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xE0",
+            "0x00"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit fetch data command (0xE000)."
+        },
+        "notes": "Fetch data command to retrieve latest measurement."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "fetch_data_periodic",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 6,
+        "notes": "Send START, I2C read header. Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+      },
+      "length": 6,
+      "notes": "Read temperature and humidity data.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 6,
+          "notes": "Send START, I2C read header. Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+        },
+        "notes": "Read temperature and humidity data."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "break_command",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x30",
+          "0x93"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit break command (0x3093)."
+      },
+      "length": null,
+      "notes": "Break command to stop periodic acquisition and enter single shot mode.",
+      "semantic_roles": [
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x30",
+            "0x93"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit break command (0x3093)."
+        },
+        "notes": "Break command to stop periodic acquisition and enter single shot mode."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "break_command",
+      "flow_kind": "other",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait 1 ms for sensor to abort measurement and enter single shot mode.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 1,
+        "notes": "Wait 1 ms for sensor to abort measurement and enter single shot mode."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "soft_reset",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x30",
+          "0xA2"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit soft reset command (0x30A2)."
+      },
+      "length": null,
+      "notes": "Soft reset command.",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x30",
+            "0xA2"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit soft reset command (0x30A2)."
+        },
+        "notes": "Soft reset command."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "soft_reset",
+      "flow_kind": "init",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait soft reset time t_SR (max 1.5 ms) for sensor to enter idle state.",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 1.5,
+        "notes": "Wait soft reset time t_SR (max 1.5 ms) for sensor to enter idle state."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "general_call_reset",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x00",
+          "0x06"
+        ],
+        "notes": "Send START, general call address 0x00 (write), then second byte 0x06, then STOP."
+      },
+      "length": null,
+      "notes": "Reset via general call address. Affects all devices on bus that support general call.",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x00",
+            "0x06"
+          ],
+          "notes": "Send START, general call address 0x00 (write), then second byte 0x06, then STOP."
+        },
+        "notes": "Reset via general call address. Affects all devices on bus that support general call."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "general_call_reset",
+      "flow_kind": "init",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait for reset to complete; soft reset time t_SR (max 1.5 ms) is assumed similar.",
+      "semantic_roles": [
+        "status"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 1.5,
+        "notes": "Wait for reset to complete; soft reset time t_SR (max 1.5 ms) is assumed similar."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "heater_enable",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x30",
+          "0x6D"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit heater enable command (0x306D)."
+      },
+      "length": null,
+      "notes": "Enable heater.",
+      "semantic_roles": [
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x30",
+            "0x6D"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit heater enable command (0x306D)."
+        },
+        "notes": "Enable heater."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "heater_disable",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x30",
+          "0x66"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit heater disable command (0x3066)."
+      },
+      "length": null,
+      "notes": "Disable heater.",
+      "semantic_roles": [
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x30",
+            "0x66"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit heater disable command (0x3066)."
+        },
+        "notes": "Disable heater."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_status_register",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xF3",
+          "0x2D"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit command to read status register (0xF32D)."
+      },
+      "length": null,
+      "notes": "Command to read status register.",
+      "semantic_roles": [
+        "status",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0xF3",
+            "0x2D"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit command to read status register (0xF32D)."
+        },
+        "notes": "Command to read status register."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_status_register",
+      "flow_kind": "other",
+      "step_index": 1,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 3,
+        "notes": "Send START, I2C read header. Read 2 bytes status register, 1 byte CRC."
+      },
+      "length": 3,
+      "notes": "Read status register value.",
+      "semantic_roles": [
+        "status",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 3,
+          "notes": "Send START, I2C read header. Read 2 bytes status register, 1 byte CRC."
+        },
+        "notes": "Read status register value."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "clear_status_register",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x30",
+          "0x41"
+        ],
+        "notes": "Send START, I2C write header, then 16-bit command to clear status register (0x3041)."
+      },
+      "length": null,
+      "notes": "Clear status register flags.",
+      "semantic_roles": [
+        "status",
+        "trigger",
+        "clear"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x30",
+            "0x41"
+          ],
+          "notes": "Send START, I2C write header, then 16-bit command to clear status register (0x3041)."
+        },
+        "notes": "Clear status register flags."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "interface_reset",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "While leaving SDA high, toggle SCL nine or more times.",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "SDA",
+        "value": "high",
+        "notes": "While leaving SDA high, toggle SCL nine or more times."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "interface_reset",
+      "flow_kind": "init",
+      "step_index": 1,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Follow with a Transmission Start sequence (START condition) before next command.",
+      "semantic_roles": [
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "SDA",
+        "value": "high",
+        "notes": "Follow with a Transmission Start sequence (START condition) before next command."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power-up: after VDD reaches V_POR, wait t_PU (max 1 ms) for sensor to enter idle state.",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Power-up: after VDD reaches V_POR, wait t_PU (max 1 ms) for sensor to enter idle state."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 1,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Optionally perform soft reset (0x30A2) to ensure known state.",
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Optionally perform soft reset (0x30A2) to ensure known state."
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Use single shot measurement flow: send command, wait, read data.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Use single shot measurement flow: send command, wait, read data."
+      }
+    }
+  ],
+  "channels": [
+    {
+      "index": 0,
+      "id": "temperature",
+      "raw_type": "uint16",
+      "physical_unit": "milli_degC",
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "source_bytes": [
+        "temperature_msb",
+        "temperature_lsb"
+      ],
+      "source_signal": null,
+      "formula_id": "temperature_conversion",
+      "notes": "16-bit raw temperature value from sensor output",
+      "raw_record": {
+        "id": "temperature",
+        "raw_type": "uint16",
+        "physical_unit": "milli_degC",
+        "flow_id": "single_shot_measurement_high_no_clock_stretching",
+        "source_bytes": [
+          "temperature_msb",
+          "temperature_lsb"
+        ],
+        "formula_id": "temperature_conversion",
+        "notes": "16-bit raw temperature value from sensor output"
+      }
+    },
+    {
+      "index": 1,
+      "id": "humidity",
+      "raw_type": "uint16",
+      "physical_unit": "milli_percent",
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "source_bytes": [
+        "humidity_msb",
+        "humidity_lsb"
+      ],
+      "source_signal": null,
+      "formula_id": "humidity_conversion",
+      "notes": "16-bit raw humidity value from sensor output",
+      "raw_record": {
+        "id": "humidity",
+        "raw_type": "uint16",
+        "physical_unit": "milli_percent",
+        "flow_id": "single_shot_measurement_high_no_clock_stretching",
+        "source_bytes": [
+          "humidity_msb",
+          "humidity_lsb"
+        ],
+        "formula_id": "humidity_conversion",
+        "notes": "16-bit raw humidity value from sensor output"
+      }
+    }
+  ],
+  "formula_inputs": [
+    {
+      "formula_index": 0,
+      "formula_id": "temperature_conversion",
+      "input_index": 0,
+      "name": "ST",
+      "byte_source": "temperature_msb:8 || temperature_lsb:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "16-bit raw temperature value from sensor output.",
+      "expression": "((ST * 175000) // 65535) - 45000",
+      "output": {
+        "name": "temp_milliC",
+        "unit": "milli_degC"
+      },
+      "raw_record": {
+        "name": "ST",
+        "byte_source": "temperature_msb:8 || temperature_lsb:8",
+        "description": "16-bit raw temperature value from sensor output."
+      }
+    },
+    {
+      "formula_index": 1,
+      "formula_id": "humidity_conversion",
+      "input_index": 0,
+      "name": "SRH",
+      "byte_source": "humidity_msb:8 || humidity_lsb:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "16-bit raw humidity value from sensor output.",
+      "expression": "((SRH * 100000) // 65535)",
+      "output": {
+        "name": "humidity_milliPercent",
+        "unit": "milli_percent"
+      },
+      "raw_record": {
+        "name": "SRH",
+        "byte_source": "humidity_msb:8 || humidity_lsb:8",
+        "description": "16-bit raw humidity value from sensor output."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "sht30",
+      "page": 9,
+      "snippet": "I2C address A: 0x44 (default) ADDR (pin 2) connected to logic low"
+    },
+    {
+      "source_id": "sht30",
+      "page": 9,
+      "snippet": "I2C address B: 0x45 ADDR (pin 2) connected to logic high"
+    },
+    {
+      "source_id": "sht30",
+      "page": 10,
+      "snippet": "High repeatability, clock stretching disabled: 0x2400"
+    },
+    {
+      "source_id": "sht30",
+      "page": 10,
+      "snippet": "High repeatability, clock stretching enabled: 0x2C06"
+    },
+    {
+      "source_id": "sht30",
+      "page": 11,
+      "snippet": "e.g. 0x2130: 1 high repeatability mps - measurement per second"
+    },
+    {
+      "source_id": "sht30",
+      "page": 12,
+      "snippet": "Soft reset command: 0x30A2"
+    },
+    {
+      "source_id": "sht30",
+      "page": 12,
+      "snippet": "Reset command using the general call address: 0x0006"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Heater Enable: 0x306D"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Heater Disabled: 0x3066"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Command to read out the status register: 0xF32D"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Command to clear the status register: 0x3041"
+    },
+    {
+      "source_id": "sht30",
+      "page": 14,
+      "snippet": "T[°C] = -45 + 175 * ST / (2^16 - 1)"
+    },
+    {
+      "source_id": "sht30",
+      "page": 14,
+      "snippet": "RH[%] = 100 * SRH / (2^16 - 1)"
+    },
+    {
+      "source_id": "sht30",
+      "page": 7,
+      "snippet": "Measurement duration high repeatability: max 15 ms"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "CRC-8, polynomial 0x31, initialization 0xFF, reflect input false, reflect output false, final XOR 0x00"
+    }
+  ],
+  "coverage_hints": {
+    "identity_registers": [],
+    "identity_registers_not_referenced_by_flows": [],
+    "config_registers": [],
+    "config_registers_not_referenced_by_flows": [],
+    "result_registers": [],
+    "result_registers_not_referenced_by_flows": [],
+    "coefficient_registers": [],
+    "channels_without_source_bytes": [],
+    "formula_inputs_without_byte_source": [],
+    "non_contiguous_result_hints": [],
+    "default_only_init": []
+  },
+  "coverage_issues": [],
+  "summary": {
+    "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+    "address_count": 2,
+    "register_count": 1,
+    "bitfield_count": 7,
+    "operation_step_count": 25,
+    "channel_count": 2,
+    "formula_input_count": 2,
+    "evidence_span_count": 15,
+    "coverage_issue_count": 0,
+    "coverage_warning_count": 0,
+    "coverage_error_count": 0
+  }
+}

@@ -1,0 +1,755 @@
+{
+  "device_id": "tmp105",
+  "bus_type": "I2C",
+  "candidate_addresses": [
+    {
+      "value": "1001000",
+      "addressing_form": "7-bit",
+      "is_default": null,
+      "description": "Slave address when A0 pin is low",
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 11. Address Pin and Slave Addresses for the TMP105: A0=0 -> 1001000"
+      }
+    },
+    {
+      "value": "1001001",
+      "addressing_form": "7-bit",
+      "is_default": null,
+      "description": "Slave address when A0 pin is high",
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 11. Address Pin and Slave Addresses for the TMP105: A0=1 -> 1001001"
+      }
+    }
+  ],
+  "candidate_registers": [
+    {
+      "name": "Pointer Register",
+      "value": null,
+      "access": "write",
+      "size_bits": 8,
+      "description": "8-bit register used to address data registers; two LSBs (P1,P0) select register",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "The 8-bit Pointer Register of the devices is used to address a given data register. The Pointer Register uses the two LSBs to identify which of the data registers should respond to a read or write command."
+      }
+    },
+    {
+      "name": "Temperature Register",
+      "value": null,
+      "access": "read-only",
+      "size_bits": 16,
+      "description": "12-bit read-only register storing most recent conversion output; two bytes (MSB first)",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register that stores the output of the most recent conversion. Two bytes must be read to obtain data."
+      }
+    },
+    {
+      "name": "Configuration Register",
+      "value": "0x00",
+      "access": "read-write",
+      "size_bits": 8,
+      "description": "8-bit register controlling operational modes; power-up/reset value all bits 0",
+      "semantic_roles": [
+        "config",
+        "control"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "The Configuration Register is an 8-bit read/write register... The power-up/reset value of the Configuration Register is all bits equal to 0."
+      }
+    },
+    {
+      "name": "T LOW Register",
+      "value": null,
+      "access": "read-write",
+      "size_bits": 16,
+      "description": "16-bit register (12-bit data) for low temperature limit; two bytes MSB first",
+      "semantic_roles": [
+        "threshold",
+        "coefficient"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 10. Bytes 1 and 2 of TLOW Register"
+      }
+    },
+    {
+      "name": "T HIGH Register",
+      "value": null,
+      "access": "read-write",
+      "size_bits": 16,
+      "description": "16-bit register (12-bit data) for high temperature limit; two bytes MSB first",
+      "semantic_roles": [
+        "threshold",
+        "coefficient"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 9. Bytes 1 and 2 of THIGH Register"
+      }
+    }
+  ],
+  "candidate_bitfields": [
+    {
+      "register": "Pointer Register",
+      "name": "P1-P0",
+      "bit_range": "1:0",
+      "reset_value": "00",
+      "description": "Selects register: 00=Temperature, 01=Configuration, 10=T LOW, 11=T HIGH",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "Table 2. Pointer Addresses of the TMP105: P1,P0 -> Register"
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "OS",
+      "bit_range": "7",
+      "reset_value": "0",
+      "description": "One-Shot: write 1 to start single conversion in shutdown mode; reads as 0",
+      "semantic_roles": [
+        "trigger",
+        "control"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "writing a '1' to the OS bit starts a single temperature conversion... When the Configuration Register is read, the OS always reads zero."
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "R1-R0",
+      "bit_range": "6:5",
+      "reset_value": "00",
+      "description": "Converter resolution: 00=9-bit, 01=10-bit, 10=11-bit, 11=12-bit",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Resolution of the TMP105: R1,R0 -> Resolution"
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "F1-F0",
+      "bit_range": "4:3",
+      "reset_value": "00",
+      "description": "Fault queue: number of consecutive faults to trigger alert; 00=1, 01=2, 10=4, 11=6",
+      "semantic_roles": [
+        "config",
+        "threshold"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 7. Fault Settings of the TMP105: F1,F0 -> Consecutive Faults"
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "POL",
+      "bit_range": "2",
+      "reset_value": "0",
+      "description": "ALERT polarity: 0=active low, 1=active high",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "If POL = 0, the ALERT pin will be active LOW... For POL = 1, the ALERT pin will be active HIGH"
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "TM",
+      "bit_range": "1",
+      "reset_value": "0",
+      "description": "Thermostat mode: 0=Comparator mode, 1=Interrupt mode",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "The Thermostat Mode bit... whether to operate in Comparator Mode (TM = 0) or Interrupt Mode (TM = 1)."
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "SD",
+      "bit_range": "0",
+      "reset_value": "0",
+      "description": "Shutdown mode: 1=shutdown after current conversion, 0=continuous conversion",
+      "semantic_roles": [
+        "config",
+        "power"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "Shutdown Mode is enabled when the SD bit is 1; the device will shut down once the current conversion is completed. When SD is equal to 0, the device will maintain a continuous conversion state."
+      }
+    },
+    {
+      "register": "Temperature Register",
+      "name": "T11-T0",
+      "bit_range": "15:4",
+      "reset_value": null,
+      "description": "12-bit temperature data in two's complement format; bits 3:0 are zero",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "Table 3. Byte 1 of Temperature Register: D7-D0 = T11-T4; Table 4. Byte 2: D7-D4 = T3-T0, D3-D0 = 0"
+      }
+    },
+    {
+      "register": "T LOW Register",
+      "name": "L11-L0",
+      "bit_range": "15:4",
+      "reset_value": null,
+      "description": "12-bit low limit data; bits 3:0 are zero",
+      "semantic_roles": [
+        "threshold"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 10. Bytes 1 and 2 of TLOW Register: Byte1 D7-D0 = L11-L4, Byte2 D7-D4 = L3-L0, D3-D0 = 0"
+      }
+    },
+    {
+      "register": "T HIGH Register",
+      "name": "H11-H0",
+      "bit_range": "15:4",
+      "reset_value": null,
+      "description": "12-bit high limit data; bits 3:0 are zero",
+      "semantic_roles": [
+        "threshold"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 9. Bytes 1 and 2 of THIGH Register: Byte1 D7-D0 = H11-H4, Byte2 D7-D4 = H3-H0, D3-D0 = 0"
+      }
+    }
+  ],
+  "candidate_operations": [
+    {
+      "flow_id": "write_register",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write to a register by first sending pointer byte then data bytes",
+      "steps": [
+        {
+          "op": "write",
+          "target": "slave address",
+          "details": "Send slave address with R/W bit LOW",
+          "evidence": {
+            "page": 10,
+            "snippet": "The first byte transmitted by the master is the slave address, with the R/W bit LOW."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Pointer Register",
+          "details": "Send pointer value to select register",
+          "evidence": {
+            "page": 10,
+            "snippet": "The next byte transmitted by the master is the Pointer Register."
+          }
+        },
+        {
+          "op": "write",
+          "target": "data register",
+          "details": "Send one or more data bytes (MSB first) to the addressed register",
+          "evidence": {
+            "page": 10,
+            "snippet": "The next byte or bytes are written to the register addressed by the Pointer Register."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 10,
+        "snippet": "Every write operation to the TMP105 requires a value for the Pointer Register."
+      }
+    },
+    {
+      "flow_id": "read_register",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read from a register; pointer must be set first via a write",
+      "steps": [
+        {
+          "op": "write",
+          "target": "slave address",
+          "details": "Send slave address with R/W bit LOW to set pointer",
+          "evidence": {
+            "page": 10,
+            "snippet": "To change the register pointer for a read operation, a new value must be written to the Pointer Register. This is accomplished by issuing a slave address byte with the R/W bit LOW, followed by the Pointer Register byte."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Pointer Register",
+          "details": "Send pointer value to select register",
+          "evidence": {
+            "page": 10,
+            "snippet": "followed by the Pointer Register byte."
+          }
+        },
+        {
+          "op": "write_then_read",
+          "target": "slave address",
+          "details": "Send START condition, then slave address with R/W bit HIGH to initiate read",
+          "evidence": {
+            "page": 10,
+            "snippet": "The master can then generate a START condition and send the slave address byte with the R/W bit HIGH to initiate the read command."
+          }
+        },
+        {
+          "op": "read",
+          "target": "data register",
+          "details": "Read data bytes (MSB first); master acknowledges each byte except last",
+          "evidence": {
+            "page": 10,
+            "snippet": "The next byte is transmitted by the slave and is the most significant byte... The next byte transmitted by the slave is the least significant byte."
+          }
+        }
+      ],
+      "outputs": [
+        "register value"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "See Figure 6 for details of this sequence."
+      }
+    },
+    {
+      "flow_id": "one_shot_conversion",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "summary": "Trigger a single temperature conversion in shutdown mode by writing OS bit, then wait for conversion time and read temperature",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Configuration Register",
+          "details": "Write OS=1 (and SD=1) to start single conversion",
+          "evidence": {
+            "page": 8,
+            "snippet": "When the device is in Shutdown Mode, writing a '1' to the OS bit starts a single temperature conversion."
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait for conversion time (depends on resolution: 27.5ms to 220ms typical)",
+          "evidence": {
+            "page": 8,
+            "snippet": "Table 8. Resolution of the TMP105: Conversion Time (typical) 27.5ms to 220ms"
+          }
+        },
+        {
+          "op": "read",
+          "target": "Temperature Register",
+          "details": "Read two bytes from Temperature Register",
+          "evidence": {
+            "page": 6,
+            "snippet": "Two bytes must be read to obtain data"
+          }
+        }
+      ],
+      "outputs": [
+        "temperature raw value"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "The device will return to the shutdown state at the completion of the single conversion."
+      }
+    },
+    {
+      "flow_id": "general_call_reset",
+      "kind": "other",
+      "channels": [],
+      "summary": "Reset device via General Call with second byte 0x06",
+      "steps": [
+        {
+          "op": "write",
+          "target": "General Call address",
+          "details": "Send General Call address (0x00) with R/W bit LOW",
+          "evidence": {
+            "page": 11,
+            "snippet": "The TMP105 responds to a Two-Wire General Call address (0000000) if the eighth bit is 0."
+          }
+        },
+        {
+          "op": "write",
+          "target": "second byte",
+          "details": "Send second byte 0x06 to reset internal registers to power-up values",
+          "evidence": {
+            "page": 11,
+            "snippet": "If the second byte is 00000110, the TMP105 will latch the status of the address pin and reset the internal registers to their power-up values."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 11,
+        "snippet": "If the second byte is 00000110, the TMP105 will ... reset the internal registers to their power-up values."
+      }
+    },
+    {
+      "flow_id": "smbus_alert_response",
+      "kind": "other",
+      "channels": [],
+      "summary": "Respond to SMBus Alert command by returning slave address with alert direction bit",
+      "steps": [
+        {
+          "op": "write",
+          "target": "SMBus Alert command",
+          "details": "Master sends SMBus Alert command (00011001) on bus",
+          "evidence": {
+            "page": 11,
+            "snippet": "the master sends an SMBus Alert command (00011001) on the bus."
+          }
+        },
+        {
+          "op": "read",
+          "target": "slave address",
+          "details": "If ALERT active, device acknowledges and returns its slave address; LSB indicates THIGH (1) or TLOW (0) condition",
+          "evidence": {
+            "page": 11,
+            "snippet": "the devices will acknowledge the SMBus Alert command and respond by returning its slave address on the SDA line. The eighth bit (LSB) of the slave address byte will indicate if the temperature exceeding THIGH or falling below TLOW caused the ALERT condition."
+          }
+        }
+      ],
+      "outputs": [
+        "slave address with alert direction bit"
+      ],
+      "evidence": {
+        "page": 11,
+        "snippet": "Refer to Figure 7 for details of this sequence."
+      }
+    }
+  ],
+  "candidate_channels": [
+    {
+      "id": "temperature",
+      "description": "Die temperature measurement",
+      "source": "Temperature Register",
+      "formula_id": "temp_conversion",
+      "evidence": {
+        "page": 6,
+        "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register that stores the output of the most recent conversion."
+      }
+    }
+  ],
+  "candidate_formulae": [
+    {
+      "name": "temp_conversion",
+      "formula": "T(°C) = raw * 0.0625",
+      "inputs": [
+        "raw (12-bit two's complement integer)"
+      ],
+      "output": "temperature in °C",
+      "evidence": {
+        "page": 6,
+        "snippet": "Table 5. Temperature Data Format: 0.25°C -> 0000 0000 0100 (0x004), 0°C -> 0x000, -0.25°C -> 0xFFC"
+      }
+    }
+  ],
+  "candidate_timing_constraints": [
+    {
+      "name": "SCL operating frequency",
+      "value": "400",
+      "unit": "kHz",
+      "condition": "Fast mode",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. SCL Operating Frequency: 1 to 400 kHz"
+      }
+    },
+    {
+      "name": "Bus free time",
+      "value": "600",
+      "unit": "ns",
+      "condition": "Between STOP and START",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. Bus Free Time Between STOP and START Condition: min 600 ns"
+      }
+    },
+    {
+      "name": "Hold time after repeated START",
+      "value": "100",
+      "unit": "ns",
+      "condition": "After repeated START condition",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. Hold time after repeated START condition: min 100 ns"
+      }
+    },
+    {
+      "name": "Repeated START setup time",
+      "value": "100",
+      "unit": "ns",
+      "condition": "Repeated START condition",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. Repeated START Condition Setup Time: min 100 ns"
+      }
+    },
+    {
+      "name": "STOP condition setup time",
+      "value": "100",
+      "unit": "ns",
+      "condition": "STOP condition",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. STOP Condition Setup Time: min 100 ns"
+      }
+    },
+    {
+      "name": "Data hold time",
+      "value": "0",
+      "unit": "ns",
+      "condition": "Data hold",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. Data Hold Time: min 0 ns"
+      }
+    },
+    {
+      "name": "Data setup time",
+      "value": "100",
+      "unit": "ns",
+      "condition": "Data setup",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. Data Setup Time: min 100 ns"
+      }
+    },
+    {
+      "name": "SCL low period",
+      "value": "1300",
+      "unit": "ns",
+      "condition": "SCL clock low",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. SCL Clock LOW Period: min 1300 ns"
+      }
+    },
+    {
+      "name": "SCL high period",
+      "value": "600",
+      "unit": "ns",
+      "condition": "SCL clock high",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. SCL Clock HIGH Period: min 600 ns"
+      }
+    },
+    {
+      "name": "Clock/data fall time",
+      "value": "300",
+      "unit": "ns",
+      "condition": "Fall time",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. Clock/Data Fall Time: max 300 ns"
+      }
+    },
+    {
+      "name": "Clock/data rise time",
+      "value": "300",
+      "unit": "ns",
+      "condition": "SCLK ≤ 100kHz",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. Clock/Data Rise Time for SCLK ≤ 100kHz: max 300 ns"
+      }
+    },
+    {
+      "name": "Conversion time 9-bit",
+      "value": "27.5",
+      "unit": "ms",
+      "condition": "9-bit resolution",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Conversion Time (typical): 9 Bits -> 27.5ms"
+      }
+    },
+    {
+      "name": "Conversion time 10-bit",
+      "value": "55",
+      "unit": "ms",
+      "condition": "10-bit resolution",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Conversion Time (typical): 10 Bits -> 55ms"
+      }
+    },
+    {
+      "name": "Conversion time 11-bit",
+      "value": "110",
+      "unit": "ms",
+      "condition": "11-bit resolution",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Conversion Time (typical): 11 Bits -> 110ms"
+      }
+    },
+    {
+      "name": "Conversion time 12-bit",
+      "value": "220",
+      "unit": "ms",
+      "condition": "12-bit resolution",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Conversion Time (typical): 12 Bits -> 220ms"
+      }
+    },
+    {
+      "name": "Timeout time",
+      "value": "54",
+      "unit": "ms",
+      "condition": "Typical timeout",
+      "evidence": {
+        "page": 11,
+        "snippet": "The TMP105 will reset the serial interface if either SCL or SDA are held LOW for 54ms (typ) between a START and STOP condition."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "The 8-bit Pointer Register of the devices is used to address a given data register. The Pointer Register uses the two LSBs to identify which of the data registers should respond to a read or write command."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "Table 2. Pointer Addresses of the TMP105: P1,P0 -> Register"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register that stores the output of the most recent conversion. Two bytes must be read to obtain data."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "Table 5. Temperature Data Format: 0.25°C -> 0000 0000 0100 (0x004), 0°C -> 0x000, -0.25°C -> 0xFFC"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "The Configuration Register is an 8-bit read/write register... The power-up/reset value of the Configuration Register is all bits equal to 0."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "Shutdown Mode is enabled when the SD bit is 1; the device will shut down once the current conversion is completed. When SD is equal to 0, the device will maintain a continuous conversion state."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "The Thermostat Mode bit... whether to operate in Comparator Mode (TM = 0) or Interrupt Mode (TM = 1)."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "If POL = 0, the ALERT pin will be active LOW... For POL = 1, the ALERT pin will be active HIGH"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "Table 7. Fault Settings of the TMP105: F1,F0 -> Consecutive Faults"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "Table 8. Resolution of the TMP105: R1,R0 -> Resolution, Conversion Time"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "writing a '1' to the OS bit starts a single temperature conversion... When the Configuration Register is read, the OS always reads zero."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "Table 9. Bytes 1 and 2 of THIGH Register"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "Table 10. Bytes 1 and 2 of TLOW Register"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "Table 11. Address Pin and Slave Addresses for the TMP105: A0=0 -> 1001000, A0=1 -> 1001001"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "Every write operation to the TMP105 requires a value for the Pointer Register."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "To change the register pointer for a read operation, a new value must be written to the Pointer Register. This is accomplished by issuing a slave address byte with the R/W bit LOW, followed by the Pointer Register byte."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "The first byte transmitted by the master is the slave address, with the R/W bit LOW."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "The TMP105 responds to a Two-Wire General Call address (0000000) if the eighth bit is 0."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "If the second byte is 00000110, the TMP105 will latch the status of the address pin and reset the internal registers to their power-up values."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "the master sends an SMBus Alert command (00011001) on the bus."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "the devices will acknowledge the SMBus Alert command and respond by returning its slave address on the SDA line. The eighth bit (LSB) of the slave address byte will indicate if the temperature exceeding THIGH or falling below TLOW caused the ALERT condition."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "The TMP105 will reset the serial interface if either SCL or SDA are held LOW for 54ms (typ) between a START and STOP condition."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 12,
+      "snippet": "Table 12. Timing Diagram Definitions for the TMP105"
+    }
+  ],
+  "requires_human": []
+}

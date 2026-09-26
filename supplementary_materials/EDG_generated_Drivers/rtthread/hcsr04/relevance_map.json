@@ -1,0 +1,183 @@
+{
+  "relevance_map": [
+    {
+      "section_id": "s1",
+      "relevance": "low",
+      "category": "other",
+      "target_fields": [],
+      "reason": "Untitled/empty section with no driver-relevant technical content."
+    },
+    {
+      "section_id": "s2",
+      "relevance": "low",
+      "category": "other",
+      "target_fields": [],
+      "reason": "Title fragment only; no usable implementation details."
+    },
+    {
+      "section_id": "s3",
+      "relevance": "low",
+      "category": "other",
+      "target_fields": [],
+      "reason": "Cover/manual identification and website info only."
+    },
+    {
+      "section_id": "s4",
+      "relevance": "medium",
+      "category": "functional_description",
+      "target_fields": [
+        "conversion_formulae",
+        "power_states"
+      ],
+      "reason": "Overview likely describes sensing principle and operating modes at a high level, useful for understanding how the driver should interact with the sensor."
+    },
+    {
+      "section_id": "s5",
+      "relevance": "medium",
+      "category": "functional_description",
+      "target_fields": [
+        "power_states"
+      ],
+      "reason": "Features section may describe supported interfaces and operating behavior, which helps choose the driver mode, but likely lacks detailed implementation data."
+    },
+    {
+      "section_id": "s6",
+      "relevance": "high",
+      "category": "electrical_characteristics",
+      "target_fields": [
+        "timing_constraints",
+        "power_states"
+      ],
+      "reason": "Performance parameters table is typically important for timing and electrical limits that affect polling-mode driver behavior."
+    },
+    {
+      "section_id": "s7",
+      "relevance": "high",
+      "category": "pin_configuration",
+      "target_fields": [
+        "registers_or_commands",
+        "address_rule",
+        "power_states"
+      ],
+      "reason": "Interface definition table gives pin/function mapping needed to wire and drive the sensor correctly."
+    },
+    {
+      "section_id": "s8",
+      "relevance": "high",
+      "category": "initialization_procedure",
+      "target_fields": [
+        "init_sequence",
+        "power_states"
+      ],
+      "reason": "Mode selection table with resistor settings is part of hardware initialization/configuration and directly affects how the device is used."
+    },
+    {
+      "section_id": "s9",
+      "relevance": "high",
+      "category": "functional_description",
+      "target_fields": [
+        "read_sequence"
+      ],
+      "reason": "Measurement operation section is likely the main usage flow for taking readings and therefore important for the driver logic."
+    },
+    {
+      "section_id": "s10",
+      "relevance": "high",
+      "category": "initialization_procedure",
+      "target_fields": [
+        "init_sequence",
+        "timing_constraints"
+      ],
+      "reason": "GPIO mode section mentions TRIG and 10 us pulse timing, which is essential for trigger generation in a polling driver."
+    },
+    {
+      "section_id": "s11",
+      "relevance": "high",
+      "category": "functional_description",
+      "target_fields": [
+        "conversion_formulae",
+        "timing_constraints"
+      ],
+      "reason": "Distance formula and speed-of-sound details are directly needed to convert pulse timing into distance readings."
+    },
+    {
+      "section_id": "s12",
+      "relevance": "high",
+      "category": "initialization_procedure",
+      "target_fields": [
+        "init_sequence",
+        "power_states"
+      ],
+      "reason": "UART mode heading indicates an alternate operating mode that may require configuration handling in the driver or documentation of unsupported mode."
+    },
+    {
+      "section_id": "s13",
+      "relevance": "high",
+      "category": "communication_protocol",
+      "target_fields": [
+        "registers_or_commands",
+        "read_sequence",
+        "error_conditions"
+      ],
+      "reason": "UART command/response table contains command bytes and return values, which are core protocol details for implementation."
+    },
+    {
+      "section_id": "s14",
+      "relevance": "high",
+      "category": "initialization_procedure",
+      "target_fields": [
+        "init_sequence",
+        "power_states"
+      ],
+      "reason": "IIC mode heading identifies another configuration path relevant to device setup even if the target driver uses GPIO timing mode."
+    },
+    {
+      "section_id": "s15",
+      "relevance": "high",
+      "category": "communication_protocol",
+      "target_fields": [
+        "read_sequence"
+      ],
+      "reason": "Read data subsection likely explains how measurement data is fetched, which is relevant to driver read flow."
+    },
+    {
+      "section_id": "s16",
+      "relevance": "high",
+      "category": "communication_protocol",
+      "target_fields": [
+        "registers_or_commands",
+        "address_rule",
+        "read_sequence",
+        "error_conditions"
+      ],
+      "reason": "Command format table with address/command/return values is directly usable for protocol parsing and transaction generation."
+    },
+    {
+      "section_id": "s17",
+      "relevance": "medium",
+      "category": "application_notes",
+      "target_fields": [
+        "timing_constraints",
+        "error_conditions"
+      ],
+      "reason": "Application notes may include practical usage caveats and timing/connection warnings useful for a robust driver, though not core protocol data."
+    },
+    {
+      "section_id": "s18",
+      "relevance": "low",
+      "category": "package_mechanical",
+      "target_fields": [],
+      "reason": "Mechanical dimensions are not needed for driver code generation."
+    },
+    {
+      "section_id": "s19",
+      "relevance": "low",
+      "category": "ordering_information",
+      "target_fields": [],
+      "reason": "Download/update and vendor links are not relevant to runtime driver implementation."
+    }
+  ],
+  "extraction_plan": "Prioritize sections that define how the sensor is triggered and how distance is computed: extract GPIO mode timing from the measurement operation and GPIO sections, especially the TRIG pulse width and echo timing behavior. Use the performance parameters section for timing/electrical limits. Extract the distance conversion formula and any calibration constants from the formula section. If protocol support beyond GPIO is included, extract UART/IIC command tables, response bytes, and addressing rules, but treat them as secondary for the target gpio_timing polling driver. Interface definition should be used to map pins and roles. Mode-selection and initialization notes should be captured for configuration requirements and power/state assumptions.",
+  "extraction_notes": "This device is an HC-SR04-style ultrasonic ranging module; for a gpio_timing polling driver, the most important outputs are trigger pulse timing, echo measurement timing, and the distance formula. The document also includes UART and IIC variants or modes, so protocol-related sections are high relevance even if they may not be used by the selected driver type. No true register map is expected for a pure GPIO-timing sensor, so any command/address extraction is only applicable to the alternate UART/IIC modes. Sections with tables should be mined carefully because they likely contain the most actionable parameters.",
+  "stage_b_mode": "llm"
+}

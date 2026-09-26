@@ -1,0 +1,138 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 6.166,
+  "plan_summary": {
+    "device_id": "pca9685",
+    "rtos_id": "nuttx",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "plan_hash": "be596d7c2819c378",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 3,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 6.107
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 3,
+    "summary": "3 stim; 3 L1/L2",
+    "stimuli": [
+      {
+        "name": "led0_duty_50_percent",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=led0:big_endian_u32=0; ch=led1:big_endian_u32=0",
+        "warnings": []
+      },
+      {
+        "name": "led0_duty_25_percent",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=led0:little_endian_u32=1024; ch=led1:last_u8=0",
+        "warnings": []
+      },
+      {
+        "name": "led0_duty_100_percent",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=led0:little_endian_u16=4095; ch=led1:little_endian_u16=4095",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 2,
+    "missing_count": 0,
+    "llm_extras_count": 1,
+    "merged_count": 2,
+    "summary": "2/2 mechanical covered; 1 LLM extras",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x71",
+          "write_prefix_any_of": [
+            [
+              "0x08"
+            ]
+          ],
+          "note": "read_pwm_channel: write",
+          "source": "operation_flows[0].steps[0]"
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x71",
+          "write_prefix_any_of": [
+            [
+              "0x08"
+            ]
+          ],
+          "note": "read_pwm_channel: write"
+        },
+        "reason": "prefix overlap: [('0x08',)] ∈ mechanical [('0x08',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x71",
+          "write_prefix_any_of": [],
+          "note": "read_pwm_channel: direct read read",
+          "source": "operation_flows[0].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x71",
+          "write_prefix_any_of": [
+            [
+              "0x08"
+            ]
+          ],
+          "note": "read_pwm_channel: write"
+        },
+        "reason": "mechanical is read-any; LLM adds specific prefix",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x71",
+        "read_any": true,
+        "note": "read_pwm_channel: direct read"
+      }
+    ],
+    "merged": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x71",
+        "write_prefix_any_of": [
+          [
+            "0x08"
+          ]
+        ],
+        "note": "read_pwm_channel: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x71",
+        "read_any": true,
+        "note": "read_pwm_channel: direct read"
+      }
+    ]
+  }
+}

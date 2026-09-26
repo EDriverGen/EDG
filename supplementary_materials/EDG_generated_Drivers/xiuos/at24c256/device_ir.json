@@ -1,0 +1,697 @@
+{
+  "device_id": "at24c256",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x50",
+        "description": "A1=0, A0=0 (default when pins floating or tied to GND)",
+        "is_default": true
+      },
+      {
+        "address": "0x51",
+        "description": "A1=0, A0=1",
+        "is_default": false
+      },
+      {
+        "address": "0x52",
+        "description": "A1=1, A0=0",
+        "is_default": false
+      },
+      {
+        "address": "0x53",
+        "description": "A1=1, A0=1",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 32768,
+    "addressing": "2-byte",
+    "auto_increment": true,
+    "page_size_bytes": 64,
+    "write_busy_ms": 5,
+    "notes": "15-bit data word address (high byte bits 14:8, low byte bits 7:0). Page write up to 64 bytes. Write cycle time 5 ms for 'B' process devices, 10 ms for standard 2.5V/5.0V, 20 ms for 1.8V."
+  },
+  "read_channels": [
+    {
+      "id": "data_byte",
+      "raw_type": "uint8",
+      "physical_unit": "byte",
+      "flow_id": "current_address_read",
+      "source_bytes": [
+        "data_byte"
+      ],
+      "formula_id": null,
+      "notes": "Single byte read from current or specified address."
+    },
+    {
+      "id": "data_bytes",
+      "raw_type": "bytes",
+      "physical_unit": "byte",
+      "flow_id": "sequential_read",
+      "source_bytes": [
+        "data_bytes"
+      ],
+      "formula_id": null,
+      "notes": "Multiple bytes read sequentially."
+    }
+  ],
+  "access_model": {
+    "kind": "memory",
+    "address_bytes": 2,
+    "read_requires_pointer": false,
+    "direct_read_after_write": false,
+    "notes": "Memory device with 2-byte address. Read operations use dummy write to set address (random read) or current address read. Sequential read uses auto-increment."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "byte_write",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [
+        "WP pin must be low (GND) to enable writes."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              null
+            ],
+            "notes": "Send device address (R/W=0), high address byte, low address byte, then data byte. Stop condition initiates write cycle."
+          },
+          "notes": "Byte write: device address (R/W=0), 2 address bytes, data byte, stop. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 5,
+          "notes": "Wait for write cycle completion (tWR max 5 ms for 'B' process)."
+        }
+      ],
+      "outputs": [],
+      "notes": "Write a single byte to a given memory address."
+    },
+    {
+      "flow_id": "page_write",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [
+        "WP pin must be low."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              "DATA"
+            ],
+            "notes": "Send device address (R/W=0), high address byte, low address byte, then up to 64 data bytes. Stop condition initiates write cycle."
+          },
+          "notes": "Page write: device address (R/W=0), 2 address bytes, up to 64 data bytes, stop. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 5,
+          "notes": "Wait for write cycle completion."
+        }
+      ],
+      "outputs": [],
+      "notes": "Write up to 64 bytes in a page write operation."
+    },
+    {
+      "flow_id": "acknowledge_polling",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "After a write cycle has started."
+      ],
+      "steps": [
+        {
+          "op": "postprocess",
+          "transaction": null,
+          "notes": "Poll device: send device address; if acknowledged, write cycle complete. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+        }
+      ],
+      "outputs": [],
+      "notes": "Poll device after write to check if internal write cycle has completed."
+    },
+    {
+      "flow_id": "current_address_read",
+      "kind": "read",
+      "channels": [
+        "data_byte"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": null,
+            "length": 1,
+            "notes": "Send device address with R/W=1, then read one byte. Microcontroller NACKs and generates stop."
+          },
+          "notes": "Current address read: device address (R/W=1), read byte, NACK, stop. Canonicalized from write_then_read with no pointer/payload bytes; the slave address byte is handled by the bus layer."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "data_byte",
+          "byte_source": "read_byte",
+          "notes": "Single byte from current address."
+        }
+      ],
+      "notes": "Read a byte from the current internal address counter."
+    },
+    {
+      "flow_id": "random_read",
+      "kind": "read",
+      "channels": [
+        "data_byte"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              0,
+              0
+            ],
+            "notes": "Dummy write: device address (R/W=0), high address byte, low address byte."
+          },
+          "notes": "Dummy write to load address."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": null,
+            "length": 1,
+            "notes": "Repeated start, device address with R/W=1, read one byte, NACK, stop."
+          },
+          "notes": "Current address read after dummy write. Canonicalized from write_then_read with no pointer/payload bytes; the slave address byte is handled by the bus layer."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "data_byte",
+          "byte_source": "read_byte",
+          "notes": "Byte from specified address."
+        }
+      ],
+      "notes": "Read a byte from a specified memory address using a dummy write to load the address."
+    },
+    {
+      "flow_id": "sequential_read",
+      "kind": "read",
+      "channels": [
+        "data_bytes"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": null,
+            "length": "DATA",
+            "notes": "Initiate with current address read or random read. After each byte, microcontroller ACKs; to terminate, NACK and stop."
+          },
+          "notes": "Sequential read: start with current/random address read, then continue with ACK until NACK. Canonicalized from write_then_read with no pointer/payload bytes; the slave address byte is handled by the bus layer."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "data_bytes",
+          "byte_source": "read_bytes",
+          "notes": "Multiple bytes read sequentially."
+        }
+      ],
+      "notes": "Read multiple bytes sequentially starting from current or random address."
+    },
+    {
+      "flow_id": "memory_reset",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "After protocol interruption, power loss, or system reset."
+      ],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "SCL",
+          "notes": "Clock up to 9 cycles on SCL while monitoring SDA."
+        },
+        {
+          "op": "wait_signal",
+          "signal": "SDA",
+          "condition": "SDA high while SCL high",
+          "notes": "Look for SDA high in each cycle while SCL is high."
+        },
+        {
+          "op": "set_signal",
+          "signal": "SDA",
+          "notes": "Create a start condition as SDA is high."
+        }
+      ],
+      "outputs": [],
+      "notes": "Reset the device after protocol interruption, power loss, or system reset."
+    }
+  ],
+  "raw_encoding": null,
+  "registers_or_commands": [
+    {
+      "name": "Device Address Word",
+      "value": null,
+      "access": "wo",
+      "size_bits": 8,
+      "description": "8-bit device address word: first 5 bits 1010, then A1, A0, then R/W bit."
+    },
+    {
+      "name": "Data Word Address (High Byte)",
+      "value": null,
+      "access": "wo",
+      "size_bits": 8,
+      "description": "High byte of the 15-bit data word address for AT24C256 (bits 14:8)."
+    },
+    {
+      "name": "Data Word Address (Low Byte)",
+      "value": null,
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Low byte of the 15-bit data word address for AT24C256 (bits 7:0)."
+    },
+    {
+      "name": "Data Word",
+      "value": null,
+      "access": "rw",
+      "size_bits": 8,
+      "description": "8-bit data word read from or written to the memory."
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Device Address Word",
+      "name": "Fixed Pattern",
+      "bits": "7:3",
+      "access": "wo",
+      "description": "First five most significant bits: 1010."
+    },
+    {
+      "register": "Device Address Word",
+      "name": "A1",
+      "bits": "2",
+      "access": "wo",
+      "description": "Device address bit A1, must match hardwired A1 pin."
+    },
+    {
+      "register": "Device Address Word",
+      "name": "A0",
+      "bits": "1",
+      "access": "wo",
+      "description": "Device address bit A0, must match hardwired A0 pin."
+    },
+    {
+      "register": "Device Address Word",
+      "name": "R/W",
+      "bits": "0",
+      "access": "wo",
+      "description": "Read/Write select bit: 1 for read, 0 for write."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "No specific initialization required beyond power-up. Device enters standby mode after power-up."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "Use operation_flows for read operations: current_address_read, random_read, sequential_read."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "write_cycle_time",
+      "value": 5,
+      "unit": "ms",
+      "condition": "B process devices",
+      "notes": "Write cycle time tWR: 5 ms for 'B' process devices."
+    },
+    {
+      "name": "write_cycle_time_2_5V",
+      "value": 10,
+      "unit": "ms",
+      "condition": "2.5V/5.0V standard devices",
+      "notes": "Write cycle time tWR: 10 ms for 2.5V/5.0V."
+    },
+    {
+      "name": "write_cycle_time_1_8V",
+      "value": 20,
+      "unit": "ms",
+      "condition": "1.8V non-B devices",
+      "notes": "Write cycle time tWR: 20 ms for 1.8V (non-B)."
+    },
+    {
+      "name": "clock_frequency_1_8V",
+      "value": 100,
+      "unit": "kHz",
+      "condition": "Vcc = 1.8V",
+      "notes": "Clock frequency fSCL: 100 kHz at 1.8V."
+    },
+    {
+      "name": "clock_frequency_2_5V",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Vcc = 2.5V",
+      "notes": "Clock frequency fSCL: 400 kHz at 2.5V."
+    },
+    {
+      "name": "clock_frequency_5V",
+      "value": 1000,
+      "unit": "kHz",
+      "condition": "Vcc = 5.0V",
+      "notes": "Clock frequency fSCL: 1 MHz at 5.0V."
+    },
+    {
+      "name": "data_out_valid_time_1_8V",
+      "value": 4.5,
+      "unit": "µs",
+      "condition": "Vcc = 1.8V",
+      "notes": "Clock low to data out valid tAA: 4.5 µs max."
+    },
+    {
+      "name": "data_out_valid_time_2_5V",
+      "value": 0.9,
+      "unit": "µs",
+      "condition": "Vcc = 2.5V",
+      "notes": "Clock low to data out valid tAA: 0.9 µs max."
+    },
+    {
+      "name": "data_out_valid_time_5V",
+      "value": 0.55,
+      "unit": "µs",
+      "condition": "Vcc = 5.0V",
+      "notes": "Clock low to data out valid tAA: 0.55 µs max."
+    },
+    {
+      "name": "bus_free_time_1_8V",
+      "value": 4.7,
+      "unit": "µs",
+      "condition": "Vcc = 1.8V",
+      "notes": "Bus free time before new transmission tBUF: 4.7 µs."
+    },
+    {
+      "name": "bus_free_time_2_5V",
+      "value": 1.3,
+      "unit": "µs",
+      "condition": "Vcc = 2.5V",
+      "notes": "Bus free time before new transmission tBUF: 1.3 µs."
+    },
+    {
+      "name": "bus_free_time_5V",
+      "value": 0.5,
+      "unit": "µs",
+      "condition": "Vcc = 5.0V",
+      "notes": "Bus free time before new transmission tBUF: 0.5 µs."
+    },
+    {
+      "name": "start_hold_time_1_8V",
+      "value": 4.0,
+      "unit": "µs",
+      "condition": "Vcc = 1.8V",
+      "notes": "Start hold time tHD.STA: 4.0 µs."
+    },
+    {
+      "name": "start_hold_time_2_5V",
+      "value": 0.6,
+      "unit": "µs",
+      "condition": "Vcc = 2.5V",
+      "notes": "Start hold time tHD.STA: 0.6 µs."
+    },
+    {
+      "name": "start_hold_time_5V",
+      "value": 0.25,
+      "unit": "µs",
+      "condition": "Vcc = 5.0V",
+      "notes": "Start hold time tHD.STA: 0.25 µs."
+    },
+    {
+      "name": "start_setup_time_1_8V",
+      "value": 4.7,
+      "unit": "µs",
+      "condition": "Vcc = 1.8V",
+      "notes": "Start set-up time tSU.STA: 4.7 µs."
+    },
+    {
+      "name": "start_setup_time_2_5V",
+      "value": 0.6,
+      "unit": "µs",
+      "condition": "Vcc = 2.5V",
+      "notes": "Start set-up time tSU.STA: 0.6 µs."
+    },
+    {
+      "name": "start_setup_time_5V",
+      "value": 0.25,
+      "unit": "µs",
+      "condition": "Vcc = 5.0V",
+      "notes": "Start set-up time tSU.STA: 0.25 µs."
+    },
+    {
+      "name": "data_in_hold_time",
+      "value": 0,
+      "unit": "µs",
+      "condition": "All voltages",
+      "notes": "Data in hold time tHD.DAT: 0 µs min."
+    },
+    {
+      "name": "data_in_setup_time_1_8V",
+      "value": 200,
+      "unit": "ns",
+      "condition": "Vcc = 1.8V",
+      "notes": "Data in set-up time tSU.DAT: 200 ns."
+    },
+    {
+      "name": "data_in_setup_time_2_5V_5V",
+      "value": 100,
+      "unit": "ns",
+      "condition": "Vcc = 2.5V or 5.0V",
+      "notes": "Data in set-up time tSU.DAT: 100 ns."
+    },
+    {
+      "name": "input_rise_time_1_8V",
+      "value": 1.0,
+      "unit": "µs",
+      "condition": "Vcc = 1.8V",
+      "notes": "Input rise time tR: 1.0 µs max."
+    },
+    {
+      "name": "input_rise_time_2_5V_5V",
+      "value": 0.3,
+      "unit": "µs",
+      "condition": "Vcc = 2.5V or 5.0V",
+      "notes": "Input rise time tR: 0.3 µs max."
+    },
+    {
+      "name": "input_fall_time_1_8V_2_5V",
+      "value": 300,
+      "unit": "ns",
+      "condition": "Vcc = 1.8V or 2.5V",
+      "notes": "Input fall time tF: 300 ns max."
+    },
+    {
+      "name": "input_fall_time_5V",
+      "value": 100,
+      "unit": "ns",
+      "condition": "Vcc = 5.0V",
+      "notes": "Input fall time tF: 100 ns max."
+    },
+    {
+      "name": "stop_setup_time_1_8V",
+      "value": 4.7,
+      "unit": "µs",
+      "condition": "Vcc = 1.8V",
+      "notes": "Stop set-up time tSU.STO: 4.7 µs."
+    },
+    {
+      "name": "stop_setup_time_2_5V",
+      "value": 0.6,
+      "unit": "µs",
+      "condition": "Vcc = 2.5V",
+      "notes": "Stop set-up time tSU.STO: 0.6 µs."
+    },
+    {
+      "name": "stop_setup_time_5V",
+      "value": 0.25,
+      "unit": "µs",
+      "condition": "Vcc = 5.0V",
+      "notes": "Stop set-up time tSU.STO: 0.25 µs."
+    },
+    {
+      "name": "data_out_hold_time_1_8V",
+      "value": 100,
+      "unit": "ns",
+      "condition": "Vcc = 1.8V",
+      "notes": "Data out hold time tDH: 100 ns min."
+    },
+    {
+      "name": "data_out_hold_time_2_5V_5V",
+      "value": 50,
+      "unit": "ns",
+      "condition": "Vcc = 2.5V or 5.0V",
+      "notes": "Data out hold time tDH: 50 ns min."
+    }
+  ],
+  "conversion_formulae": [],
+  "error_conditions": [
+    {
+      "name": "write_cycle_nack",
+      "description": "Device does not acknowledge during write cycle (internal write in progress).",
+      "detection": "After start condition, device address sent; if no ACK received, write cycle still active.",
+      "driver_action": "Retry acknowledge polling after tWR delay."
+    },
+    {
+      "name": "write_protect_violation",
+      "description": "Write attempted while WP pin is high.",
+      "detection": "Device NACKs data byte or address after device address ACK.",
+      "driver_action": "Abort write and report error."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "standby",
+      "description": "Low power standby mode after power-up or after stop condition and completion of internal operations.",
+      "current_typ": 0.2,
+      "current_unit": "µA",
+      "condition": "Vcc = 1.8V"
+    },
+    {
+      "name": "active_write",
+      "description": "Active during write cycle.",
+      "current_typ": 2.0,
+      "current_unit": "mA",
+      "condition": "Vcc = 5.0V, write at 400 kHz"
+    },
+    {
+      "name": "active_read",
+      "description": "Active during read operation.",
+      "current_typ": 1.0,
+      "current_unit": "mA",
+      "condition": "Vcc = 5.0V, read at 400 kHz"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "at24c256",
+      "page": 1,
+      "snippet": "64-byte Page Write Mode (Partial Page Writes Allowed)"
+    },
+    {
+      "source_id": "at24c256",
+      "page": 1,
+      "snippet": "Self-timed Write Cycle (5 ms Max)"
+    },
+    {
+      "source_id": "at24c256",
+      "page": 3,
+      "snippet": "The A1 and A0 pins are device address inputs that are hardwired or left not connected for hardware compatibility with other AT24CXX devices."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 3,
+      "snippet": "WRITE PROTECT (WP): The write protect input, when connected to GND, allows normal write operations. When WP is connected high to VCC, all write operations to the memory are inhibited."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 5,
+      "snippet": "The Write Cycle Time of 5 ms only applies to the AT24C128/256 devices bearing the process letter 'B' on the package"
+    },
+    {
+      "source_id": "at24c256",
+      "page": 7,
+      "snippet": "A high-to-low transition of SDA with SCL high is a start condition which must precede any other command"
+    },
+    {
+      "source_id": "at24c256",
+      "page": 7,
+      "snippet": "A low-to-high transition of SDA with SCL high is a stop condition."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 7,
+      "snippet": "The EEPROM sends a zero during the ninth clock cycle to acknowledge that it has received each word."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 7,
+      "snippet": "After an interruption in protocol, power loss or system reset, any two-wire part can be reset by following these steps: (a) Clock up to 9 cycles, (b) look for SDA high in each cycle while SCL is high and then (c) create a start condition as SDA is high."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The eighth bit of the device address is the read/write operation select bit."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The 128K/256K EEPROM is capable of 64-byte page writes."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "Once the internally-timed write cycle has started and the EEPROM inputs are disabled, acknowledge polling can be initiated."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 11,
+      "snippet": "Read operations are initiated the same way as write operations with the exception that the read/write select bit in the device address word is set to one."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 11,
+      "snippet": "A random read requires a 'dummy' byte write sequence to load in the data word address."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 11,
+      "snippet": "Sequential reads are initiated by either a current address read or a random address read."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 5,
+      "snippet": "fSCL: 100 kHz at 1.8V, 400 kHz at 2.5V, 1 MHz at 5.0V"
+    }
+  ],
+  "requires_human": [
+    "Determine the correct device address bits A1 and A0 based on hardware connections.",
+    "Select appropriate timing parameters based on supply voltage (1.8V, 2.5V, or 5.0V) and device variant (standard or 'B' process).",
+    "Decide whether to use delay or acknowledge polling after write operations.",
+    "Handle write protection via WP pin if needed."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

@@ -1,0 +1,158 @@
+{
+  "task_package_id": "riot_generic_periph__vl53l0x__i2c1_polling",
+  "rtos": "riot",
+  "device": "vl53l0x",
+  "bus": "i2c",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/vl53l0x/riot",
+  "task_package": {
+    "package_id": "riot_generic_periph__vl53l0x__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/riot_generic_periph.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/riot_generic_periph_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/vl53l0x.json",
+    "reference_driver_root": "DriverGen/data/references/vl53l0x/riot",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "riot_generic_periph",
+        "rtos": "riot",
+        "board": "generic_periph",
+        "integration": "generic_driver_api",
+        "mcu": "unspecified_riot_target"
+      },
+      "connection": {
+        "binding_id": "riot_generic_periph_i2c1_polling",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "I2C_DEV(0)",
+        "bus_symbol": "I2C_DEV(0)",
+        "backend": "RIOT periph I2C driver",
+        "address_mode": "7-bit",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "vl53l0x",
+        "attachment_type": "i2c_sensor",
+        "required_bus_type": "i2c",
+        "addressing": {
+          "default": "0x29",
+          "alternates": [],
+          "selection_rule": "Default boot address before any address reprogramming."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "No dedicated reset or interrupt line required for the minimal polling driver."
+          ]
+        }
+      }
+    }
+  },
+  "platform_base_context": {
+    "platform_id": "riot_generic_periph",
+    "board": "nucleo-f103rb",
+    "board_alias": "riot_f103rb",
+    "rtos": "riot",
+    "rtos_bundle": "riot",
+    "integration": "riot_periph_driver_api",
+    "integration_style": "riot_periph_plus_ztimer",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "I2C_DEV(0)"
+        ],
+        "spi": [
+          "SPI_DEV(0)"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "UART_DEV(1)"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform targets RIOT's nucleo-f103rb board while using the portable periph/i2c.h, periph/spi.h, and periph/gpio.h APIs.",
+      "I2C uses integer i2c_t with acquire/release bus locking and read_regs/write_regs register access.",
+      "SPI uses periph/spi.h with spi_t, spi_cs_t, spi_acquire/spi_release and spi_transfer_bytes.",
+      "UART fixed-frame sensors use periph/uart.h with UART_DEV(1).",
+      "Delays use ztimer_sleep(ZTIMER_MSEC, ms) (preferred over legacy xtimer)."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/riot/drivers/include/periph/i2c.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/spi.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/uart.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/gpio.h",
+      "DriverGen/data/rtos/riot/drivers/bh1750fvi/bh1750fvi.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "riot_generic_periph_i2c1_polling",
+    "platform_id": "riot_generic_periph",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "I2C_DEV(0)",
+    "bus_instance_kind": "periph_device_macro",
+    "bus_symbol": "I2C_DEV(0)",
+    "backend": "RIOT periph I2C driver",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Default RIOT I2C binding uses I2C_DEV(0) with acquire/release locking."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/riot/drivers/include/periph/i2c.h",
+      "DriverGen/data/rtos/riot/drivers/bh1750fvi/bh1750fvi.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "vl53l0x",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x29",
+      "alternates": [],
+      "selection_rule": "Default boot address before any address reprogramming."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal reference driver uses only the core I2C register path documented in the datasheet."
+      ]
+    },
+    "optional_attachment": {
+      "xshut_pin": "optional",
+      "gpio1_interrupt_pin": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "This attachment context intentionally targets the datasheet-backed minimal single-shot flow, not the full ST API stack.",
+      "If a project needs advanced ranging modes or calibration workflows, additional vendor API context should be attached separately."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/vl53l0x/VL53L0X.pdf",
+      "DriverGen/data/references/vl53l0x/*/*_ref.h"
+    ]
+  }
+}

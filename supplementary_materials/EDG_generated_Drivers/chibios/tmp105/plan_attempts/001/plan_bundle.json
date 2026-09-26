@@ -1,0 +1,76 @@
+{
+  "device_id": "tmp105",
+  "rtos_id": "chibios",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "tmp105_init(&g_eval_dev, (void *)bus_name)",
+    "read_call": "tmp105_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct tmp105_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include \"ch.h\"\n#include \"hal.h\"\n#include \"hal_i2c_lld.h\"\n#include \"hal_i2c.h\"\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <string.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x19",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x19 0x00 decode to raw=((((0x19 << 8) | 0x00) >> 4) & 0xFFF) = 400; public value in milli_degC is (400 * 125) // 2 = 25000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 4) & 0xFFF) = 0; public value in milli_degC is (0 * 125) // 2 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xE7",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xE7 0x00 decode to raw=(((((0xE7 << 8) | 0x00) >> 4) & 0xFFF) - 4096) = -400; public value in milli_degC is (-400 * 125) // 2 = -25000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "6ec9aa63013e4ac0",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 5.134,
+  "prompt_chars": 46840,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"tmp105_init(&g_eval_dev, (void *)bus_name)\", \"read_call\": \"tmp105_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct tmp105_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"preamble_c\": \"#include \\\"ch.h\\\"\\n#include \\\"hal.h\\\"\\n#include \\\"hal_i2c_lld.h\\\"\\n#include \\\"hal_i2c.h\\\"\\n#include <stdbool.h>\\n#include <stddef.h>\\n#include <stdint.h>\\n#include <string.h>\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temperature: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x01\", \"0x90\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw = (0x01 << 8) | 0x90 = 400; ((400 >> 4) & 0xFFF) * 625 / 10 = 25 * 625 / 10 = 25000\"}, {\"name\": \"zero_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw = 0; ((0 >> 4) & 0xFFF) * 625 / 10 = 0\"}, {\"name\": \"negative_temperature_minus10C\", \"mock_preload\": {\"0x00\": [\"0xFF\", \"0x60\"]}, \"expected_read_raw\": -10000, \"derivation\": \"raw = 0xFF60 = -160 (12-bit sign-extended); ((-160 >> 4) & 0xFFF) = -10; -10 * 625 / 10 = -10000\"}]}}"
+}

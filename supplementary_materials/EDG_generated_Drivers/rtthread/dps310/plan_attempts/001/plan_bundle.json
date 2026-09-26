@@ -1,0 +1,198 @@
+{
+  "device_id": "dps310",
+  "rtos_id": "rtthread",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "dps310_init(&g_eval_dev, bus)",
+    "channels": [
+      {
+        "id": "pressure",
+        "call": "dps310_read_pressure(&g_eval_dev, &pressure_raw)",
+        "out_arg": "pressure_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "temperature",
+        "call": "dps310_read_temperature(&g_eval_dev, &temperature_mdegc)",
+        "out_arg": "temperature_mdegc",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct dps310_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x09"
+          ]
+        ],
+        "note": "init: CFG_REG"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0C"
+          ]
+        ],
+        "note": "init: RESET"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0D"
+          ]
+        ],
+        "note": "init: ID"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ],
+          [
+            "0x01"
+          ],
+          [
+            "0x02"
+          ],
+          [
+            "0x03"
+          ],
+          [
+            "0x04"
+          ],
+          [
+            "0x05"
+          ],
+          [
+            "0x06"
+          ],
+          [
+            "0x07"
+          ],
+          [
+            "0x08"
+          ],
+          [
+            "0x0A"
+          ],
+          [
+            "0x0B"
+          ],
+          [
+            "0x28"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_cycle: one of COEF_SRCE, FIFO_STS, INT_STS, MEAS_CFG, PRS_B0, PRS_B1, PRS_B2, PRS_CFG, TMP_B0, TMP_B1, TMP_B2, TMP_CFG"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "mock_preload": {
+          "0x77:0x00": [
+            "0x00"
+          ],
+          "0x77:0x01": [
+            "0x03"
+          ],
+          "0x77:0x02": [
+            "0xE8"
+          ],
+          "0x77:0x03": [
+            "0x00"
+          ],
+          "0x77:0x04": [
+            "0x04"
+          ],
+          "0x77:0x05": [
+            "0x31"
+          ]
+        },
+        "channel_preload_bytes": {
+          "pressure": [
+            "0x00",
+            "0x03",
+            "0xE8"
+          ],
+          "temperature": [
+            "0x00",
+            "0x04",
+            "0x31"
+          ]
+        },
+        "expected_channels": {
+          "pressure": 1000,
+          "temperature": 1073
+        },
+        "raw_tolerance": 0,
+        "derivation": "pressure: raw fallback because conversion expression is not executable from source bytes; ((0x00 << 16) | (0x03 << 8) | 0xE8) = 1000; temperature: raw fallback because conversion expression is not executable from source bytes; ((0x00 << 16) | (0x04 << 8) | 0x31) = 1073"
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "mock_preload": {
+          "0x77:0x00": [
+            "0xFF"
+          ],
+          "0x77:0x01": [
+            "0xFC"
+          ],
+          "0x77:0x02": [
+            "0x18"
+          ],
+          "0x77:0x03": [
+            "0xFF"
+          ],
+          "0x77:0x04": [
+            "0xFB"
+          ],
+          "0x77:0x05": [
+            "0xCF"
+          ]
+        },
+        "channel_preload_bytes": {
+          "pressure": [
+            "0xFF",
+            "0xFC",
+            "0x18"
+          ],
+          "temperature": [
+            "0xFF",
+            "0xFB",
+            "0xCF"
+          ]
+        },
+        "expected_channels": {
+          "pressure": -1000,
+          "temperature": -1073
+        },
+        "raw_tolerance": 0,
+        "derivation": "pressure: raw fallback because conversion expression is not executable from source bytes; ((0xFF << 16) | (0xFC << 8) | 0x18) = -1000; temperature: raw fallback because conversion expression is not executable from source bytes; ((0xFF << 16) | (0xFB << 8) | 0xCF) = -1073"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae"
+  },
+  "plan_hash": "c99af17a33b0ceff",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 19.139,
+  "prompt_chars": 45970,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"dps310_init(&g_eval_dev, bus)\", \"channels\": [{\"id\": \"pressure\", \"call\": \"dps310_read_pressure(&g_eval_dev, &pressure_raw)\", \"out_arg\": \"pressure_raw\", \"out_type\": \"int32_t\", \"physical_unit\": \"raw_count\"}, {\"id\": \"temperature\", \"call\": \"dps310_read_temperature(&g_eval_dev, &temperature_mdegc)\", \"out_arg\": \"temperature_mdegc\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}], \"dev_struct_type\": \"struct dps310_device\", \"init_extra_setup_c\": \"struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x77\", \"write_prefix_any_of\": [[\"0x09\"]], \"note\": \"init: CFG_REG\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x77\", \"write_prefix_any_of\": [[\"0x0C\"]], \"note\": \"init: RESET\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x77\", \"write_prefix_any_of\": [[\"0x0D\"]], \"note\": \"init: ID\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x77\", \"write_prefix_any_of\": [[\"0x00\"], [\"0x01\"], [\"0x02\"], [\"0x03\"], [\"0x04\"], [\"0x05\"], [\"0x06\"], [\"0x07\"], [\"0x08\"], [\"0x0A\"], [\"0x0B\"], [\"0x28\"]], \"read_any\": true, \"note\": \"read_cycle: one of COEF_SRCE, FIFO_STS, INT_STS, MEAS_CFG, PRS_B0, PRS_B1, PRS_B2, PRS_CFG, TMP_B0, TMP_B1, TMP_B2, TMP_CFG\"}], \"test_stimuli\": [{\"name\": \"positive_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\", \"0x00\"], \"0x03\": [\"0x00\", \"0x80\", \"0x00\"], \"0x0D\": [\"0x10\"], \"0x28\": [\"0x00\"], \"0x10\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"pressure\": 0, \"temperature\": 25000}, \"derivation\": \"Temperature raw = 0x008000 = 32768; kT = 524288; T_raw_scaled = 32768 / 524288 = 0.0625; c0 = 0, c1 = 0; T_comp = 0*0.5 + 0*0.0625 = 0; but to get 25000 milliDegC, set c0=50000, c1=0: T_comp = 50000*0.5 = 25000. So raw_temp=32768, kT=524288, c0=50000, c1=0 => ((32768*1000//524288)*0 + 50000*500)//1000 = 25000.\"}, {\"name\": \"positive_pressure\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x80\", \"0x00\"], \"0x03\": [\"0x00\", \"0x00\", \"0x00\"], \"0x0D\": [\"0x10\"], \"0x28\": [\"0x00\"], \"0x10\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"pressure\": 32768, \"temperature\": 0}, \"derivation\": \"Pressure raw = 0x008000 = 32768; semantic_kind=raw_count, so output is raw value 32768. Temperature raw = 0, c0=0, c1=0 => 0 milliDegC.\"}]}}"
+}

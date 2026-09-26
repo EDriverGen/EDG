@@ -1,0 +1,137 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "tobudos",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef W25Q64JV_H\n#define W25Q64JV_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct w25q64jv_dev {\n    void *bus_handle;\n    uint8_t cs_pin;\n    uint8_t cs_port;\n};\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\n\n#endif",
+  "driver_source": "#include \"w25q64jv.h\"\n#include \"stm32f1xx_hal.h\"\n#include <stdint.h>\n#include <stddef.h>\n\n#include \"tobudos.h\"\n#define W25Q64JV_CMD_READ_DATA    0x03\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\n#define W25Q64JV_CMD_JEDEC_ID     0x9F\n\n#define W25Q64JV_TIMEOUT 1000\n\nstatic void cs_low(struct w25q64jv_dev *dev) {\n    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);\n}\n\nstatic void cs_high(struct w25q64jv_dev *dev) {\n    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);\n}\n\nstatic int spi_transfer(struct w25q64jv_dev *dev, uint8_t *tx, uint8_t *rx, uint16_t size) {\n    SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)dev->bus_handle;\n    if (HAL_SPI_TransmitReceive(hspi, tx, rx, size, W25Q64JV_TIMEOUT) != HAL_OK) {\n        return -1;\n    }\n    return 0;\n}\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle) {\n    dev->bus_handle = bus_handle;\n    dev->cs_pin = GPIO_PIN_4;\n    dev->cs_port = (uint8_t)(uintptr_t)GPIOA;\n\n    HAL_Delay(5);\n\n    uint8_t tx[4] = {W25Q64JV_CMD_JEDEC_ID, 0, 0, 0};\n    uint8_t rx[4] = {0};\n    cs_low(dev);\n    int ret = spi_transfer(dev, tx, rx, 4);\n    cs_high(dev);\n    if (ret != 0) return ret;\n\n    if (rx[1] != 0xEF || rx[2] != 0x40 || rx[3] != 0x17) {\n        return -1;\n    }\n    return 0;\n}\n\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len) {\n    uint8_t cmd[4];\n    cmd[0] = W25Q64JV_CMD_READ_DATA;\n    cmd[1] = (uint8_t)(addr >> 16);\n    cmd[2] = (uint8_t)(addr >> 8);\n    cmd[3] = (uint8_t)(addr);\n\n    cs_low(dev);\n    int ret = spi_transfer(dev, cmd, cmd, 4);\n    if (ret != 0) {\n        cs_high(dev);\n        return ret;\n    }\n    ret = spi_transfer(dev, buf, buf, (uint16_t)len);\n    cs_high(dev);\n    return ret;\n}\n\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len) {\n    if (len > 256) return -1;\n\n    uint8_t tx[4 + 256];\n    tx[0] = W25Q64JV_CMD_WRITE_ENABLE;\n    cs_low(dev);\n    int ret = spi_transfer(dev, tx, tx, 1);\n    cs_high(dev);\n    if (ret != 0) return ret;\n\n    tx[0] = W25Q64JV_CMD_PAGE_PROGRAM;\n    tx[1] = (uint8_t)(addr >> 16);\n    tx[2] = (uint8_t)(addr >> 8);\n    tx[3] = (uint8_t)(addr);\n    for (size_t i = 0; i < len; i++) {\n        tx[4 + i] = buf[i];\n    }\n    cs_low(dev);\n    ret = spi_transfer(dev, tx, tx, (uint16_t)(4 + len));\n    cs_high(dev);\n    if (ret != 0) return ret;\n\n    HAL_Delay(3);\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write_page(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "struct w25q64jv_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write JEDEC ID command"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: read JEDEC ID response"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write read command + address"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: read data bytes"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write enable"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: page program command + address + data"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.845,
+  "prompt_chars": 39608,
+  "raw_response": "{\"driver_header\": \"#ifndef W25Q64JV_H\\n#define W25Q64JV_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct w25q64jv_dev {\\n    void *bus_handle;\\n    uint8_t cs_pin;\\n    uint8_t cs_port;\\n};\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"w25q64jv.h\\\"\\n#include \\\"tobudos.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n\\n#define W25Q64JV_CMD_READ_DATA    0x03\\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\\n#define W25Q64JV_CMD_JEDEC_ID     0x9F\\n\\n#define W25Q64JV_TIMEOUT 1000\\n\\nstatic void cs_low(struct w25q64jv_dev *dev) {\\n    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);\\n}\\n\\nstatic void cs_high(struct w25q64jv_dev *dev) {\\n    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);\\n}\\n\\nstatic int spi_transfer(struct w25q64jv_dev *dev, uint8_t *tx, uint8_t *rx, uint16_t size) {\\n    SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)dev->bus_handle;\\n    if (HAL_SPI_TransmitReceive(hspi, tx, rx, size, W25Q64JV_TIMEOUT) != HAL_OK) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle) {\\n    dev->bus_handle = bus_handle;\\n    dev->cs_pin = GPIO_PIN_4;\\n    dev->cs_port = (uint8_t)(uintptr_t)GPIOA;\\n\\n    HAL_Delay(5);\\n\\n    uint8_t tx[4] = {W25Q64JV_CMD_JEDEC_ID, 0, 0, 0};\\n    uint8_t rx[4] = {0};\\n    cs_low(dev);\\n    int ret = spi_transfer(dev, tx, rx, 4);\\n    cs_high(dev);\\n    if (ret != 0) return ret;\\n\\n    if (rx[1] != 0xEF || rx[2] != 0x40 || rx[3] != 0x17) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len) {\\n    uint8_t cmd[4];\\n    cmd[0] = W25Q64JV_CMD_READ_DATA;\\n    cmd[1] = (uint8_t)(addr >> 16);\\n    cmd[2] = (uint8_t)(addr >> 8);\\n    cmd[3] = (uint8_t)(addr);\\n\\n    cs_low(dev);\\n    int ret = spi_transfer(dev, cmd, cmd, 4);\\n    if (ret != 0) {\\n        cs_high(dev);\\n        return ret;\\n    }\\n    ret = spi_transfer(dev, buf, buf, (uint16_t)len);\\n    cs_high(dev);\\n    return ret;\\n}\\n\\nint w25q64jv_write_page(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len) {\\n    if (len > 256) return -1;\\n\\n    uint8_t tx[4 + 256];\\n    tx[0] = W25Q64JV_CMD_WRITE_ENABLE;\\n    cs_low(dev);\\n    int ret = spi_transfer(dev, tx, tx, 1);\\n    cs_high(dev);\\n    if (ret != 0) return ret;\\n\\n    tx[0] = W25Q64JV_CMD_PAGE_PROGRAM;\\n    tx[1] = (uint8_t)(addr >> 16);\\n    tx[2] = (uint8_t)(addr >> 8);\\n    tx[3] = (uint8_t)(addr);\\n    for (size_t i = 0; i < len; i++) {\\n        tx[4 + i] = buf[i];\\n    }\\n    cs_low(dev);\\n    ret = spi_transfer(dev, tx, tx, (uint16_t)(4 + len));\\n    cs_high(dev);\\n    if (ret != 0) return ret;\\n\\n    HAL_Delay(3);\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "32e3108e287306d1"
+}

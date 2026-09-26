@@ -1,0 +1,192 @@
+{
+  "device_id": "adxl345",
+  "rtos_id": "rtthread",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef ADXL345_H\n#define ADXL345_H\n\n#include <stdint.h>\n\nstruct adxl345_device {\n    struct rt_spi_device *spi;\n};\n\nint adxl345_init(struct adxl345_device *dev, struct rt_spi_device *spi);\nint adxl345_read_accel_x(struct adxl345_device *dev, int32_t *ax);\nint adxl345_read_accel_y(struct adxl345_device *dev, int32_t *ay);\nint adxl345_read_accel_z(struct adxl345_device *dev, int32_t *az);\n\n#endif /* ADXL345_H */",
+  "driver_source": "#include \"adxl345.h\"\n#include <rtthread.h>\n#include <rtdevice.h>\n#include <stdint.h>\n\n#define ADXL345_DEVID          0x00\n#define ADXL345_POWER_CTL      0x2D\n#define ADXL345_DATA_FORMAT    0x31\n#define ADXL345_BW_RATE        0x2C\n#define ADXL345_DATAX0         0x32\n\n#define ADXL345_READ_BIT       0x80\n#define ADXL345_MB_BIT         0x40\n\nstatic int adxl345_write_reg(struct adxl345_device *dev, uint8_t reg, uint8_t val)\n{\n    uint8_t tx[2] = { reg, val };\n    rt_size_t ret = rt_spi_send_then_recv(dev->spi, tx, 2, RT_NULL, 0);\n    return (ret == RT_EOK) ? 0 : -1;\n}\n\nstatic int adxl345_read_regs(struct adxl345_device *dev, uint8_t reg, uint8_t *buf, uint8_t len)\n{\n    uint8_t cmd = reg | ADXL345_READ_BIT;\n    if (len > 1) {\n        cmd |= ADXL345_MB_BIT;\n    }\n    rt_size_t ret = rt_spi_send_then_recv(dev->spi, &cmd, 1, buf, len);\n    return (ret == RT_EOK) ? 0 : -1;\n}\n\nint adxl345_init(struct adxl345_device *dev, struct rt_spi_device *spi)\n{\n    dev->spi = spi;\n    uint8_t devid;\n    if (adxl345_read_regs(dev, ADXL345_DEVID, &devid, 1) != 0) {\n        return -1;\n    }\n    if (devid != 0xE5) {\n        return -1;\n    }\n    if (adxl345_write_reg(dev, ADXL345_POWER_CTL, 0x00) != 0) return -1;\n    if (adxl345_write_reg(dev, ADXL345_DATA_FORMAT, 0x0B) != 0) return -1;\n    if (adxl345_write_reg(dev, ADXL345_BW_RATE, 0x0A) != 0) return -1;\n    if (adxl345_write_reg(dev, ADXL345_POWER_CTL, 0x08) != 0) return -1;\n    rt_thread_mdelay(12);\n    return 0;\n}\n\nstatic int adxl345_read_raw(struct adxl345_device *dev, int32_t *x, int32_t *y, int32_t *z)\n{\n    uint8_t buf[6];\n    if (adxl345_read_regs(dev, ADXL345_DATAX0, buf, 6) != 0) {\n        return -1;\n    }\n    int16_t raw_x = (int16_t)(buf[0] | (buf[1] << 8));\n    int16_t raw_y = (int16_t)(buf[2] | (buf[3] << 8));\n    int16_t raw_z = (int16_t)(buf[4] | (buf[5] << 8));\n    *x = raw_x;\n    *y = raw_y;\n    *z = raw_z;\n    return 0;\n}\n\nint adxl345_read_accel_x(struct adxl345_device *dev, int32_t *ax)\n{\n    int32_t x, y, z;\n    int ret = adxl345_read_raw(dev, &x, &y, &z);\n    if (ret != 0) return ret;\n    *ax = x;\n    return 0;\n}\n\nint adxl345_read_accel_y(struct adxl345_device *dev, int32_t *ay)\n{\n    int32_t x, y, z;\n    int ret = adxl345_read_raw(dev, &x, &y, &z);\n    if (ret != 0) return ret;\n    *ay = y;\n    return 0;\n}\n\nint adxl345_read_accel_z(struct adxl345_device *dev, int32_t *az)\n{\n    int32_t x, y, z;\n    int ret = adxl345_read_raw(dev, &x, &y, &z);\n    if (ret != 0) return ret;\n    *az = z;\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "adxl345_init(&g_eval_dev, spi)",
+    "channels": [
+      {
+        "id": "accel_x",
+        "call": "adxl345_read_accel_x(&g_eval_dev, &ax)",
+        "out_arg": "ax",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "accel_y",
+        "call": "adxl345_read_accel_y(&g_eval_dev, &ay)",
+        "out_arg": "ay",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "accel_z",
+        "call": "adxl345_read_accel_z(&g_eval_dev, &az)",
+        "out_arg": "az",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "struct adxl345_device",
+    "init_extra_setup_c": "struct rt_spi_device *spi = (struct rt_spi_device *)rt_device_find(bus_name);\nif (spi == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x80"
+          ]
+        ],
+        "note": "probe_device: write_then_read"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x2D",
+            "0x00"
+          ]
+        ],
+        "note": "init_measurement: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x31",
+            "0x0B"
+          ]
+        ],
+        "note": "init_measurement: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x2C",
+            "0x0A"
+          ]
+        ],
+        "note": "init_measurement: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x2D",
+            "0x08"
+          ]
+        ],
+        "note": "init_measurement: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0xF2"
+          ]
+        ],
+        "note": "read_acceleration: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "mock_preload": {
+          "0x32": [
+            "0xE8",
+            "0x03",
+            "0x31",
+            "0x04",
+            "0x7A",
+            "0x04"
+          ],
+          "0x00": [
+            "0xE5"
+          ]
+        },
+        "channel_preload_bytes": {
+          "accel_x": [
+            "0xE8",
+            "0x03"
+          ],
+          "accel_y": [
+            "0x31",
+            "0x04"
+          ],
+          "accel_z": [
+            "0x7A",
+            "0x04"
+          ]
+        },
+        "expected_channels": {
+          "accel_x": 1000,
+          "accel_y": 1073,
+          "accel_z": 1146
+        },
+        "raw_tolerance": 0,
+        "derivation": "accel_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (0xE8 | (0x03 << 8)) = 1000; accel_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (0x31 | (0x04 << 8)) = 1073; accel_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; (0x7A | (0x04 << 8)) = 1146"
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "mock_preload": {
+          "0x32": [
+            "0x18",
+            "0xFC",
+            "0xCF",
+            "0xFB",
+            "0x86",
+            "0xFB"
+          ],
+          "0x00": [
+            "0xE5"
+          ]
+        },
+        "channel_preload_bytes": {
+          "accel_x": [
+            "0x18",
+            "0xFC"
+          ],
+          "accel_y": [
+            "0xCF",
+            "0xFB"
+          ],
+          "accel_z": [
+            "0x86",
+            "0xFB"
+          ]
+        },
+        "expected_channels": {
+          "accel_x": -1000,
+          "accel_y": -1073,
+          "accel_z": -1146
+        },
+        "raw_tolerance": 0,
+        "derivation": "accel_x: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x18 | (0xFC << 8)) - 65536) = -1000; accel_y: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0xCF | (0xFB << 8)) - 65536) = -1073; accel_z: SECTION B3 semantic_kind=raw_count; public output is unconverted raw/code value; ((0x86 | (0xFB << 8)) - 65536) = -1146"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 16.538,
+  "prompt_chars": 37845,
+  "raw_response": "{\"driver_header\": \"#ifndef ADXL345_H\\n#define ADXL345_H\\n\\n#include <stdint.h>\\n\\nstruct adxl345_device {\\n    struct rt_spi_device *spi;\\n};\\n\\nint adxl345_init(struct adxl345_device *dev, struct rt_spi_device *spi);\\nint adxl345_read_accel_x(struct adxl345_device *dev, int32_t *ax);\\nint adxl345_read_accel_y(struct adxl345_device *dev, int32_t *ay);\\nint adxl345_read_accel_z(struct adxl345_device *dev, int32_t *az);\\n\\n#endif /* ADXL345_H */\", \"driver_source\": \"#include \\\"adxl345.h\\\"\\n#include <rtthread.h>\\n#include <rtdevice.h>\\n#include <stdint.h>\\n\\n#define ADXL345_DEVID          0x00\\n#define ADXL345_POWER_CTL      0x2D\\n#define ADXL345_DATA_FORMAT    0x31\\n#define ADXL345_BW_RATE        0x2C\\n#define ADXL345_DATAX0         0x32\\n\\n#define ADXL345_READ_BIT       0x80\\n#define ADXL345_MB_BIT         0x40\\n\\nstatic int adxl345_write_reg(struct adxl345_device *dev, uint8_t reg, uint8_t val)\\n{\\n    uint8_t tx[2] = { reg, val };\\n    rt_size_t ret = rt_spi_send_then_recv(dev->spi, tx, 2, RT_NULL, 0);\\n    return (ret == RT_EOK) ? 0 : -1;\\n}\\n\\nstatic int adxl345_read_regs(struct adxl345_device *dev, uint8_t reg, uint8_t *buf, uint8_t len)\\n{\\n    uint8_t cmd = reg | ADXL345_READ_BIT;\\n    if (len > 1) {\\n        cmd |= ADXL345_MB_BIT;\\n    }\\n    rt_size_t ret = rt_spi_send_then_recv(dev->spi, &cmd, 1, buf, len);\\n    return (ret == RT_EOK) ? 0 : -1;\\n}\\n\\nint adxl345_init(struct adxl345_device *dev, struct rt_spi_device *spi)\\n{\\n    dev->spi = spi;\\n    uint8_t devid;\\n    if (adxl345_read_regs(dev, ADXL345_DEVID, &devid, 1) != 0) {\\n        return -1;\\n    }\\n    if (devid != 0xE5) {\\n        return -1;\\n    }\\n    if (adxl345_write_reg(dev, ADXL345_POWER_CTL, 0x00) != 0) return -1;\\n    if (adxl345_write_reg(dev, ADXL345_DATA_FORMAT, 0x0B) != 0) return -1;\\n    if (adxl345_write_reg(dev, ADXL345_BW_RATE, 0x0A) != 0) return -1;\\n    if (adxl345_write_reg(dev, ADXL345_POWER_CTL, 0x08) != 0) return -1;\\n    rt_thread_mdelay(12);\\n    return 0;\\n}\\n\\nstatic int adxl345_read_raw(struct adxl345_device *dev, int32_t *x, int32_t *y, int32_t *z)\\n{\\n    uint8_t buf[6];\\n    if (adxl345_read_regs(dev, ADXL345_DATAX0, buf, 6) != 0) {\\n        return -1;\\n    }\\n    int16_t raw_x = (int16_t)(buf[0] | (buf[1] << 8));\\n    int16_t raw_y = (int16_t)(buf[2] | (buf[3] << 8));\\n    int16_t raw_z = (int16_t)(buf[4] | (buf[5] << 8));\\n    *x = raw_x;\\n    *y = raw_y;\\n    *z = raw_z;\\n    return 0;\\n}\\n\\nint adxl345_read_accel_x(struct adxl345_device *dev, int32_t *ax)\\n{\\n    int32_t x, y, z;\\n    int ret = adxl345_read_raw(dev, &x, &y, &z);\\n    if (ret != 0) return ret;\\n    *ax = x;\\n    return 0;\\n}\\n\\nint adxl345_read_accel_y(struct adxl345_device *dev, int32_t *ay)\\n{\\n    int32_t x, y, z;\\n    int ret = adxl345_read_raw(dev, &x, &y, &z);\\n    if (ret != 0) return ret;\\n    *ay = y;\\n    return 0;\\n}\\n\\nint adxl345_read_accel_z(struct adxl345_device *dev, int32_t *az)\\n{\\n    int32_t x, y, z;\\n    int ret = adxl345_read_raw(dev, &x, &y, &z);\\n    if (ret != 0) return ret;\\n    *az = z;\\n    return 0;\\n}\"}",
+  "plan_hash": "35c4d2ae7f8d34fb"
+}

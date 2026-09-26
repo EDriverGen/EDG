@@ -1,0 +1,71 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "rtthread",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "uint16_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "bh1750_device_t",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "continuous_h_resolution_mode: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "continuous_h_resolution_mode: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "continuous_h_resolution_typical",
+        "mock_preload": {
+          "read_bytes": [
+            "0x12",
+            "0x34"
+          ]
+        },
+        "expected_read_raw": 4660,
+        "derivation": "single_channel raw-primary normalization: bytes [0x12 0x34] -> raw_count=4660. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      },
+      {
+        "name": "continuous_h_resolution_mode2_high",
+        "mock_preload": {
+          "read_bytes": [
+            "0xFF",
+            "0xFE"
+          ]
+        },
+        "expected_read_raw": 65534,
+        "derivation": "single_channel raw-primary normalization: bytes [0xFF 0xFE] -> raw_count=65534. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      }
+    ],
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "cd243293c98a5d9b",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 22.448,
+  "prompt_chars": 41700,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"bh1750_init(&g_eval_dev, bus)\", \"read_call\": \"bh1750_read_illuminance(&g_eval_dev, &raw)\", \"primary_raw_type\": \"uint16_t\", \"primary_raw_unit\": \"lux\", \"dev_struct_type\": \"bh1750_device_t\", \"init_extra_setup_c\": \"struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x10\"]], \"note\": \"continuous_h_resolution_mode: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"read_any\": true, \"forbid_write_prefix\": true, \"note\": \"continuous_h_resolution_mode: direct read read\"}], \"test_stimuli\": [{\"name\": \"continuous_h_resolution_typical\", \"mock_preload\": {\"read_bytes\": [\"0x12\", \"0x34\"]}, \"expected_read_raw\": 4660, \"derivation\": \"Raw bytes 0x12 0x34 = 0x1234 = 4660 decimal. For H-resolution mode with default MTreg=69, lux = raw_counts / 1.2 = 4660 / 1.2 = 3883.33... but the adapter returns raw counts (uint16) as lux? Wait, the primary_raw_unit is lux, but the conversion formula is applied in the driver. The eval function drivergen_eval_read_raw_i32 returns the raw value from the adapter, which is the raw counts (uint16). However, the prompt says 'Do not use intermediate register codes as expected_read_raw when the api_contract exposes milli/micro/base-converted units.' Here the api_contract primary_raw_unit is 'lux', but the driver is expected to return lux (converted). But the eval_class is single_channel and the read_call returns raw counts? Actually, the adapter declares primary_raw_type=uint16_t and primary_raw_unit=lux. The read_call is bh1750_read_illuminance(&g_eval_dev, &raw). The driver function should return the converted lux value. So expected_read_raw should be the converted lux value. Let's compute: raw_counts=4660, MTreg=69 (default). For H-resolution: lux = (raw_counts * MTreg * 10) // (12 * 69) = (4660 * 69 * 10) // (12 * 69) = (4660 * 10) // 12 = 46600 // 12 = 3883. So expected_read_raw = 3883. But the derivation says 4660? That's inconsistent. Let's fix: The driver should convert. So expected_read_raw = 3883. However, the prompt says 'Do not use intermediate register codes as expected_read_raw when the api_contract exposes milli/micro/base-converted units.' So we must use the converted value. So expected_read_raw = 3883. But then the derivation must match. Let's recompute: raw_counts=0x1234=4660. lux = (4660 * 69 * 10) // (12 * 69) = (4660 * 10) // 12 = 46600 // 12 = 3883. So expected_read_raw = 3883. But the mock_preload read_bytes is [0x12, 0x34]. That's fine. However, the driver also needs to send the measurement command 0x10 first. The mock_preload only provides read_bytes for the read transaction. The write transaction (0x10) is not preloaded because it's a write. That's okay. So stimulus 1: name 'continuous_h_resolution_typical', mock_preload: {'read_bytes': [0x12, 0x34]}, expected_read_raw: 3883, derivation: 'Raw bytes 0x12 0x34 = 0x1234 = 4660 counts. For H-resolution mode with default MTreg=69, lux = (4660 * 69 * 10) // (12 * 69) = 46600 // 12 = 3883.'\"}, {\"name\": \"continuous_h_resolution_mode2_high\", \"mock_preload\": {\"read_bytes\": [\"0xFF\", \"0xFE\"]}, \"expected_read_raw\": 5461, \"derivation\": \"Raw bytes 0xFF 0xFE = 0xFFFE = 65534 counts. For H-resolution mode2 with default MTreg=69, lux = (raw_counts * MTreg * 10) // (24 * 69) = (65534 * 69 * 10) // (24 * 69) = (65534 * 10) // 24 = 655340 // 24 = 27305.833... integer division gives 27305. But wait, the driver uses integer arithmetic: (raw_counts * MTreg * 10) // (24 * 69). Let's compute: 65534 * 69 * 10 = 65534 * 690 = 45218460. 24 * 69 = 1656. 45218460 // 1656 = 27305. So expected_read_raw = 27305. But the derivation says 5461? That's wrong. Let's correct: Actually, the mode2 formula is lux = raw_counts / (1.2 * (69/MTreg) * 2) = raw_counts / (2.4) when MTreg=69. So lux = 65534 / 2.4 = 27305.833... integer: (65534 * 10) // 24 = 655340 // 24 = 27305. So expected_read_raw = 27305. But the stimulus name says 'continuous_h_resolution_mode2_high', so the driver must send command 0x11. The mock_preload read_bytes is [0xFF, 0xFE]. So expected_read_raw = 27305. Derivation: 'Raw bytes 0xFF 0xFE = 0xFFFE = 65534 counts. For H-resolution mode2 with default MTreg=69, lux = (65534 * 69 * 10) // (24 * 69) = 655340 // 24 = 27305.'\"}]}}"
+}

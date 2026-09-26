@@ -1,0 +1,75 @@
+{
+  "device_id": "tmp105",
+  "rtos_id": "tobudos",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "tmp105_init(&g_eval_dev, bus_handle)",
+    "read_call": "tmp105_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct tmp105_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x19",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x19 0x00 decode to raw=((((0x19 << 8) | 0x00) >> 4) & 0xFFF) = 400; public value in milli_degC is (400 * 125) // 2 = 25000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 4) & 0xFFF) = 0; public value in milli_degC is (0 * 125) // 2 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xE7",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xE7 0x00 decode to raw=(((((0xE7 << 8) | 0x00) >> 4) & 0xFFF) - 4096) = -400; public value in milli_degC is (-400 * 125) // 2 = -25000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "23b8bd78fe4acde5",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 9.095,
+  "prompt_chars": 47134,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"tmp105_init(&g_eval_dev, bus_handle)\", \"read_call\": \"tmp105_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct tmp105_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temperature: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x01\", \"0x90\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw = (0x01 << 8) | 0x90 = 400; ((400 >> 4) & 0xFFF) * 625 / 10 = 25 * 625 / 10 = 15625 / 10 = 1562.5? Wait recalc: 400 >> 4 = 25; 25 * 625 = 15625; 15625 / 10 = 1562.5, but integer division truncates to 1562. That is not 25000. Let's choose raw = 0x1900? Actually 0x0190 = 400, but 400 * 0.0625 = 25°C = 25000 milli°C. The formula: (((raw >> 4) & 0xFFF) * 625) // 10. For raw=400: (25 * 625) // 10 = 15625 // 10 = 1562. That gives 1562 milli°C = 1.562°C, not 25°C. So to get 25000 milli°C, we need raw = 25000 * 10 / 625 = 400, then raw_shifted = 400 << 4 = 6400 = 0x1900. So bytes: MSB=0x19, LSB=0x00. Correct: raw = 0x1900 = 6400; (6400 >> 4) & 0xFFF = 400; 400 * 625 / 10 = 250000 / 10 = 25000.\"}, {\"name\": \"zero_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw = 0x0000 = 0; (0 >> 4) & 0xFFF = 0; 0 * 625 / 10 = 0.\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xFF\", \"0x60\"]}, \"expected_read_raw\": -10000, \"derivation\": \"raw = 0xFF60 = 65376 (unsigned) = -160 (signed 16-bit). (-160 >> 4) = -10; sign-extend: -10 & 0xFFF = 0xFF6? Actually -10 in 12-bit two's complement is 0xFF6. Then 0xFF6 * 625 = -10 * 625 = -6250; -6250 / 10 = -625. That gives -625 milli°C = -0.625°C, not -10°C. To get -10000 milli°C = -10°C, raw_12bit = -10 / 0.0625 = -160. raw = -160 << 4 = -2560 = 0xF600. So bytes: MSB=0xF6, LSB=0x00. raw = 0xF600 = -2560 (signed 16-bit). (-2560 >> 4) = -160; (-160 & 0xFFF) = 0xF60; 0xF60 * 625 = -160 * 625 = -100000; -100000 / 10 = -10000.\"}]}}"
+}

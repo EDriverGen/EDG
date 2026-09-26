@@ -1,0 +1,53 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "rtthread",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, bus)",
+    "read_call": "lm75a_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct lm75a_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temp: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x32 0x00], raw_count = ((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "e57c8e6b5d18e2c7",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 14.401,
+  "prompt_chars": 43899,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"lm75a_init(&g_eval_dev, bus)\", \"read_call\": \"lm75a_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct lm75a_device\", \"init_extra_setup_c\": \"struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temp: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x01\", \"0x90\"]}, \"expected_read_raw\": 25000, \"derivation\": \"Raw register 0x0190 = 0b0000000110010000, right shift 5 gives 0b11001 = 25, sign extend from bit 10 (0) => 25, 25 * 125 = 3125? Wait recalc: 0x0190 = 400, >>5 = 12.5? Actually 0x0190 = 400 decimal, >>5 = 12.5? No integer: 400 >> 5 = 12, but 11-bit value is bits 15:5 = 0b00000001100 = 12, sign extend (bit10=0) => 12, 12 * 125 = 1500? That's 1.5 degC. Let's choose simpler: 0x00C8 = 200, >>5 = 6, 6*125=750? Not 25C. For 25C: raw_signed_11bit = 25/0.125 = 200. 200 << 5 = 6400 = 0x1900. So register bytes: 0x19, 0x00. Derivation: raw_signed_11bit = 200, 200 * 125 = 25000 milli_degC.\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xE6\", \"0x00\"]}, \"expected_read_raw\": -10000, \"derivation\": \"Register 0xE600 = 0b1110011000000000, bits 15:5 = 0b11100110000 = -80? Wait: 0xE600 >>5 = 0x730 = 1840, but 11-bit two's complement: bits 15:5 = 0b11100110000 = 0x730, sign extend from bit10 (1) => 0xFFFFF730 = -80? Actually 0x730 = 1840, but as 11-bit signed: 0x730 & 0x7FF = 0x330 = 816? Let's compute: 0xE600 = 58880, >>5 = 1840, 11-bit mask: 1840 & 0x7FF = 1840, bit10=1 so sign extend: 1840 - 2048 = -208. -208 * 125 = -26000? That's -26C. For -10C: raw_signed_11bit = -10/0.125 = -80. -80 << 5 = -2560, two's complement 16-bit: 0xF600. Bytes: 0xF6, 0x00. Derivation: raw_signed_11bit = -80, -80 * 125 = -10000 milli_degC.\"}]}}"
+}

@@ -1,0 +1,438 @@
+{
+  "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+  "source": "device_ir_projection_v1",
+  "device_id": "dht22",
+  "bus_type": "gpio_timing",
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "addresses": [],
+  "registers": [],
+  "bitfields": [],
+  "operation_steps": [
+    {
+      "source": "operation_flows",
+      "flow_id": "power_up",
+      "flow_kind": "power",
+      "step_index": 0,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait at least 1 second after power-up to allow sensor to stabilize",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 1000,
+        "notes": "Wait at least 1 second after power-up to allow sensor to stabilize"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_sensor",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Set data-bus low for at least 18ms to send start signal",
+      "semantic_roles": [
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "DATA",
+        "value": "low",
+        "duration_us": 18000,
+        "notes": "Set data-bus low for at least 18ms to send start signal"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_sensor",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait 20-40us for sensor response after pulling low",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": null,
+        "notes": "Wait 20-40us for sensor response after pulling low"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_sensor",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "wait_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Sensor pulls low for 80us as response signal",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "wait_signal",
+        "signal": "DATA",
+        "edge": "falling",
+        "timeout_ms": 0.2,
+        "notes": "Sensor pulls low for 80us as response signal"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_sensor",
+      "flow_kind": "read",
+      "step_index": 3,
+      "op": "wait_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Sensor pulls high for 80us to prepare data",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "wait_signal",
+        "signal": "DATA",
+        "edge": "rising",
+        "timeout_ms": 0.2,
+        "notes": "Sensor pulls high for 80us to prepare data"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_sensor",
+      "flow_kind": "read",
+      "step_index": 4,
+      "op": "measure_pulse",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Read 40 bits: each bit starts with 50us low, then high pulse length determines bit value (26-28us for 0, 70us for 1)",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "raw_record": {
+        "op": "measure_pulse",
+        "signal": "DATA",
+        "source_signal": "DATA",
+        "edge": "rising",
+        "notes": "Read 40 bits: each bit starts with 50us low, then high pulse length determines bit value (26-28us for 0, 70us for 1)"
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "read_sensor",
+      "flow_kind": "read",
+      "step_index": 5,
+      "op": "postprocess",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Verify checksum: sum of first 4 bytes (integral RH, decimal RH, integral T, decimal T) should equal checksum byte",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "postprocess",
+        "notes": "Verify checksum: sum of first 4 bytes (integral RH, decimal RH, integral T, decimal T) should equal checksum byte"
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power-up: wait 1 second before any communication",
+      "semantic_roles": [
+        "control"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Power-up: wait 1 second before any communication"
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "See operation_flows read_sensor for complete timing sequence",
+      "semantic_roles": [
+        "status"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "See operation_flows read_sensor for complete timing sequence"
+      }
+    }
+  ],
+  "channels": [
+    {
+      "index": 0,
+      "id": "humidity",
+      "raw_type": "uint16",
+      "physical_unit": "milli_percent_rh",
+      "flow_id": "read_sensor",
+      "source_bytes": [
+        "integral_RH",
+        "decimal_RH"
+      ],
+      "source_signal": null,
+      "formula_id": "humidity_formula",
+      "notes": "Relative humidity in percent, resolution 0.1%RH Canonicalized physical_unit to formula output unit 'milli_percent_rh'.",
+      "raw_record": {
+        "id": "humidity",
+        "raw_type": "uint16",
+        "physical_unit": "milli_percent_rh",
+        "flow_id": "read_sensor",
+        "source_bytes": [
+          "integral_RH",
+          "decimal_RH"
+        ],
+        "source_signal": null,
+        "formula_id": "humidity_formula",
+        "notes": "Relative humidity in percent, resolution 0.1%RH Canonicalized physical_unit to formula output unit 'milli_percent_rh'."
+      }
+    },
+    {
+      "index": 1,
+      "id": "temperature",
+      "raw_type": "uint16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_sensor",
+      "source_bytes": [
+        "integral_T",
+        "decimal_T"
+      ],
+      "source_signal": null,
+      "formula_id": "temperature_formula",
+      "notes": "Temperature in Celsius, resolution 0.1°C Canonicalized physical_unit to formula output unit 'milli_degC'.",
+      "raw_record": {
+        "id": "temperature",
+        "raw_type": "uint16",
+        "physical_unit": "milli_degC",
+        "flow_id": "read_sensor",
+        "source_bytes": [
+          "integral_T",
+          "decimal_T"
+        ],
+        "source_signal": null,
+        "formula_id": "temperature_formula",
+        "notes": "Temperature in Celsius, resolution 0.1°C Canonicalized physical_unit to formula output unit 'milli_degC'."
+      }
+    }
+  ],
+  "formula_inputs": [
+    {
+      "formula_index": 0,
+      "formula_id": "humidity_formula",
+      "input_index": 0,
+      "name": "integral_RH",
+      "byte_source": "integral_RH:8 || decimal_RH:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "8-bit integral part of relative humidity",
+      "expression": "integral_RH * 100 + decimal_RH",
+      "output": {
+        "name": "humidity_tenths",
+        "unit": "milli_percent_rh"
+      },
+      "raw_record": {
+        "name": "integral_RH",
+        "byte_source": "integral_RH:8 || decimal_RH:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "8-bit integral part of relative humidity",
+        "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+      }
+    },
+    {
+      "formula_index": 0,
+      "formula_id": "humidity_formula",
+      "input_index": 1,
+      "name": "decimal_RH",
+      "byte_source": "integral_RH:8 || decimal_RH:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "8-bit decimal part of relative humidity",
+      "expression": "integral_RH * 100 + decimal_RH",
+      "output": {
+        "name": "humidity_tenths",
+        "unit": "milli_percent_rh"
+      },
+      "raw_record": {
+        "name": "decimal_RH",
+        "byte_source": "integral_RH:8 || decimal_RH:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "8-bit decimal part of relative humidity",
+        "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+      }
+    },
+    {
+      "formula_index": 1,
+      "formula_id": "temperature_formula",
+      "input_index": 0,
+      "name": "integral_T",
+      "byte_source": "integral_T:8 || decimal_T:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "8-bit integral part of temperature",
+      "expression": "integral_T * 100 + decimal_T",
+      "output": {
+        "name": "temperature_tenths",
+        "unit": "milli_degC"
+      },
+      "raw_record": {
+        "name": "integral_T",
+        "byte_source": "integral_T:8 || decimal_T:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "8-bit integral part of temperature",
+        "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+      }
+    },
+    {
+      "formula_index": 1,
+      "formula_id": "temperature_formula",
+      "input_index": 1,
+      "name": "decimal_T",
+      "byte_source": "integral_T:8 || decimal_T:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "8-bit decimal part of temperature",
+      "expression": "integral_T * 100 + decimal_T",
+      "output": {
+        "name": "temperature_tenths",
+        "unit": "milli_degC"
+      },
+      "raw_record": {
+        "name": "decimal_T",
+        "byte_source": "integral_T:8 || decimal_T:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "8-bit decimal part of temperature",
+        "notes": "Canonicalized byte_source from GPIO byte-frame channel binding."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "dht22",
+      "page": 2,
+      "snippet": "Resolution or sensitivity | humidity 0.1%RH;               | temperature 0.1Celsius"
+    },
+    {
+      "source_id": "dht22",
+      "page": 1,
+      "snippet": "Output signal   | digital signal via single-bus"
+    },
+    {
+      "source_id": "dht22",
+      "page": 2,
+      "snippet": "When power is supplied to sensor, don't send any instruction to the sensor within one second"
+    },
+    {
+      "source_id": "dht22",
+      "page": 3,
+      "snippet": "DATA=8 bit integral RH data+8 bit decimal RH data+8 bit integral T data+8 bit decimal T data+8 bit checksum"
+    },
+    {
+      "source_id": "dht22",
+      "page": 4,
+      "snippet": "Data-bus's free status is high voltage level. When communication between MCU and AM2303 begin, program of MCU will transform data-bus's voltage level from high to low level and this process must beyond at least 18ms"
+    },
+    {
+      "source_id": "dht22",
+      "page": 4,
+      "snippet": "then MCU will wait 20-40us for AM2303's response"
+    },
+    {
+      "source_id": "dht22",
+      "page": 4,
+      "snippet": "AM2303 will send out low-voltage-level signal and this signal last 80us as response signal"
+    },
+    {
+      "source_id": "dht22",
+      "page": 5,
+      "snippet": "every bit's transmission begin with low-voltage-level that last 50us"
+    },
+    {
+      "source_id": "dht22",
+      "page": 6,
+      "snippet": "70us voltage-length means 1bit data \"1\""
+    }
+  ],
+  "coverage_hints": {
+    "identity_registers": [],
+    "identity_registers_not_referenced_by_flows": [],
+    "config_registers": [],
+    "config_registers_not_referenced_by_flows": [],
+    "result_registers": [],
+    "result_registers_not_referenced_by_flows": [],
+    "coefficient_registers": [],
+    "channels_without_source_bytes": [],
+    "formula_inputs_without_byte_source": [],
+    "non_contiguous_result_hints": [],
+    "default_only_init": []
+  },
+  "coverage_issues": [],
+  "summary": {
+    "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+    "address_count": 0,
+    "register_count": 0,
+    "bitfield_count": 0,
+    "operation_step_count": 9,
+    "channel_count": 2,
+    "formula_input_count": 4,
+    "evidence_span_count": 9,
+    "coverage_issue_count": 0,
+    "coverage_warning_count": 0,
+    "coverage_error_count": 0
+  }
+}

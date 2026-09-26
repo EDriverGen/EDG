@@ -1,0 +1,221 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/riot_generic_periph__w25q64jv__spi1_polling/task_package.json",
+  "task_package": {
+    "package_id": "riot_generic_periph__w25q64jv__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/riot_generic_periph.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/riot_generic_periph_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/w25q64jv.json",
+    "reference_driver_root": "DriverGen/data/references/w25q64jv/riot",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "riot_generic_periph",
+        "rtos": "riot",
+        "rtos_bundle": "riot",
+        "board": "nucleo-f103rb",
+        "board_alias": "riot_f103rb",
+        "integration": "riot_periph_driver_api",
+        "integration_style": "riot_periph_plus_ztimer",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "riot_generic_periph_spi1_polling",
+        "platform_id": "riot_generic_periph",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "SPI_DEV(0)",
+        "bus_instance_kind": "periph_device_macro",
+        "bus_symbol": "SPI_DEV(0)",
+        "backend": "RIOT periph SPI driver",
+        "address_mode": "chip-select",
+        "fixed_attachment": {
+          "cs_symbol": "SPI_HWCS(0)",
+          "chip_select": "SPI_HWCS(0)"
+        },
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "w25q64jv",
+        "attachment_type": "spi_flash",
+        "required_bus_type": "spi",
+        "address_mode": null,
+        "addressing": {
+          "default": "spi1",
+          "selection_rule": "SPI CS# selected by board wiring."
+        },
+        "required_attachment": {
+          "signals": [
+            "CS",
+            "CLK",
+            "MOSI",
+            "MISO"
+          ],
+          "notes": [
+            "Standard SPI quad-pin connection."
+          ]
+        },
+        "optional_attachment": {},
+        "default_overrides": {
+          "bus_instance": "spi1",
+          "irq": "absent",
+          "dma": "absent"
+        },
+        "protocol_hints": {}
+      }
+    },
+    "notes": [
+      "w25q64jv + riot + spi1_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/*.pdf",
+      "DriverGen/data/references/w25q64jv/riot"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "riot_generic_periph",
+    "board": "nucleo-f103rb",
+    "board_alias": "riot_f103rb",
+    "rtos": "riot",
+    "rtos_bundle": "riot",
+    "integration": "riot_periph_driver_api",
+    "integration_style": "riot_periph_plus_ztimer",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "I2C_DEV(0)"
+        ],
+        "spi": [
+          "SPI_DEV(0)"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "UART_DEV(1)"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform targets RIOT's nucleo-f103rb board while using the portable periph/i2c.h, periph/spi.h, and periph/gpio.h APIs.",
+      "I2C uses integer i2c_t with acquire/release bus locking and read_regs/write_regs register access.",
+      "SPI uses periph/spi.h with spi_t, spi_cs_t, spi_acquire/spi_release and spi_transfer_bytes.",
+      "UART fixed-frame sensors use periph/uart.h with UART_DEV(1).",
+      "Delays use ztimer_sleep(ZTIMER_MSEC, ms) (preferred over legacy xtimer)."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/riot/drivers/include/periph/i2c.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/spi.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/uart.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/gpio.h",
+      "DriverGen/data/rtos/riot/drivers/bh1750fvi/bh1750fvi.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "riot_generic_periph_spi1_polling",
+    "platform_id": "riot_generic_periph",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "SPI_DEV(0)",
+    "bus_instance_kind": "periph_device_macro",
+    "bus_symbol": "SPI_DEV(0)",
+    "backend": "RIOT periph SPI driver",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "cs_symbol": "SPI_HWCS(0)",
+      "chip_select": "SPI_HWCS(0)"
+    },
+    "notes": [
+      "Default RIOT SPI polling binding uses SPI_DEV(0) with spi_acquire/spi_release around each transfer.",
+      "RIOT chip-select handling is represented by spi_cs_t and can use hardware CS via SPI_HWCS(0) in the fixed experiment setup."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/riot/drivers/include/periph/spi.h",
+      "DriverGen/data/references/max31855/riot/max31855_ref.c",
+      "DriverGen/data/references/adxl345/riot/adxl345_ref.c",
+      "DriverGen/data/references/mcp3008/riot/mcp3008_ref.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "w25q64jv",
+    "attachment_type": "spi_flash",
+    "required_bus_type": "spi",
+    "spi_proto": "memory",
+    "spi_mode": 0,
+    "spi_max_hz": 80000000,
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "addressing": {
+      "default": "spi1",
+      "selection_rule": "SPI CS# selected by board wiring."
+    },
+    "required_attachment": {
+      "signals": [
+        "CS",
+        "CLK",
+        "MOSI",
+        "MISO"
+      ],
+      "notes": [
+        "Standard SPI quad-pin connection."
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": "spi1",
+      "irq": "absent",
+      "dma": "absent"
+    },
+    "notes": [
+      "64M-bit SPI NOR Flash. Read 0x03, Page Program 0x02, Sector Erase 0x20."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/W25Q64JV.pdf",
+      "DriverGen/data/references/w25q64jv/*/*_ref.h"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "riot_generic_periph__w25q64jv__spi1_polling",
+    "rtos": "riot",
+    "rtos_bundle": "riot",
+    "board": "nucleo-f103rb",
+    "board_alias": "riot_f103rb",
+    "integration": "riot_periph_driver_api",
+    "integration_style": "riot_periph_plus_ztimer",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "spi",
+    "bus_instance": "SPI_DEV(0)",
+    "bus_instance_kind": "periph_device_macro",
+    "bus_symbol": "SPI_DEV(0)",
+    "bus_backend": "RIOT periph SPI driver",
+    "address_mode": "chip-select",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {
+      "cs_symbol": "SPI_HWCS(0)",
+      "chip_select": "SPI_HWCS(0)"
+    },
+    "device_attachment_context_id": "w25q64jv",
+    "device_addressing": {
+      "default": "spi1",
+      "selection_rule": "SPI CS# selected by board wiring."
+    }
+  }
+}

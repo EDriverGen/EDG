@@ -1,0 +1,738 @@
+{
+  "device_id": "sht30",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x44",
+        "description": "Default I2C address when ADDR pin connected to logic low",
+        "is_default": true
+      },
+      {
+        "address": "0x45",
+        "description": "Alternate I2C address when ADDR pin connected to logic high",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": null,
+  "read_channels": [
+    {
+      "id": "temperature",
+      "raw_type": "uint16",
+      "physical_unit": "milli_degC",
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "source_bytes": [
+        "temperature_msb",
+        "temperature_lsb"
+      ],
+      "formula_id": "temperature_conversion",
+      "notes": "16-bit raw temperature value from sensor output"
+    },
+    {
+      "id": "humidity",
+      "raw_type": "uint16",
+      "physical_unit": "milli_percent",
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "source_bytes": [
+        "humidity_msb",
+        "humidity_lsb"
+      ],
+      "formula_id": "humidity_conversion",
+      "notes": "16-bit raw humidity value from sensor output"
+    }
+  ],
+  "access_model": {
+    "kind": "command_then_direct_read",
+    "address_bytes": 2,
+    "read_requires_pointer": false,
+    "direct_read_after_write": true,
+    "notes": "Commands are 16-bit; after measurement command, read data directly with I2C read header."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "single_shot_measurement_high_no_clock_stretching",
+      "kind": "read",
+      "channels": [
+        "temperature",
+        "humidity"
+      ],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x24",
+              "0x00"
+            ],
+            "notes": "Send START, I2C write header (device address + write bit), then 16-bit command 0x2400 (MSB 0x24, LSB 0x00) for high repeatability, no clock stretching."
+          },
+          "notes": "Send single shot measurement command with high repeatability and clock stretching disabled."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 15,
+          "notes": "Wait at least measurement duration (max 15 ms for high repeatability) before reading data."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 6,
+            "notes": "Send START, I2C read header (device address + read bit). Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+          },
+          "notes": "Read temperature and humidity data with CRC checksums."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temperature_msb:8 || temperature_lsb:8",
+          "formula_id": "temperature_conversion",
+          "unit": "milli_degC",
+          "notes": "First two data bytes are temperature MSB and LSB."
+        },
+        {
+          "channel": "humidity",
+          "byte_source": "humidity_msb:8 || humidity_lsb:8",
+          "formula_id": "humidity_conversion",
+          "unit": "milli_percent",
+          "notes": "After temperature CRC, next two bytes are humidity MSB and LSB."
+        }
+      ],
+      "notes": "Single shot measurement with high repeatability, no clock stretching. Data is read after waiting for measurement completion."
+    },
+    {
+      "flow_id": "single_shot_measurement_high_clock_stretching",
+      "kind": "read",
+      "channels": [
+        "temperature",
+        "humidity"
+      ],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x2C",
+              "0x06"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit command 0x2C06 (MSB 0x2C, LSB 0x06) for high repeatability, clock stretching enabled."
+          },
+          "notes": "Send single shot measurement command with clock stretching enabled."
+        },
+        {
+          "op": "wait_until_ready",
+          "condition": "SCL line released by sensor",
+          "timeout_ms": 15,
+          "notes": "Sensor pulls SCL low until measurement complete. Max measurement duration 15 ms."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 6,
+            "notes": "Send START, I2C read header. Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+          },
+          "notes": "Read measurement data after clock stretching ends."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temperature_msb:8 || temperature_lsb:8",
+          "formula_id": "temperature_conversion",
+          "unit": "milli_degC"
+        },
+        {
+          "channel": "humidity",
+          "byte_source": "humidity_msb:8 || humidity_lsb:8",
+          "formula_id": "humidity_conversion",
+          "unit": "milli_percent"
+        }
+      ],
+      "notes": "Single shot measurement with clock stretching; sensor holds SCL low until data ready."
+    },
+    {
+      "flow_id": "periodic_measurement_start",
+      "kind": "other",
+      "channels": [
+        "temperature",
+        "humidity"
+      ],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x21",
+              "0x30"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit command 0x2130 for 1 mps, high repeatability (example from datasheet)."
+          },
+          "notes": "Start periodic data acquisition with specified repeatability and mps. Example uses 1 mps high repeatability."
+        }
+      ],
+      "outputs": [],
+      "notes": "After this command, sensor continuously acquires data. Use fetch_data_periodic to read results."
+    },
+    {
+      "flow_id": "fetch_data_periodic",
+      "kind": "read",
+      "channels": [
+        "temperature",
+        "humidity"
+      ],
+      "preconditions": [
+        "Periodic measurement started"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xE0",
+              "0x00"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit fetch data command (0xE000)."
+          },
+          "notes": "Fetch data command to retrieve latest measurement."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 6,
+            "notes": "Send START, I2C read header. Read 2 bytes temperature, 1 byte CRC, 2 bytes humidity, 1 byte CRC."
+          },
+          "notes": "Read temperature and humidity data."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temperature_msb:8 || temperature_lsb:8",
+          "formula_id": "temperature_conversion",
+          "unit": "milli_degC"
+        },
+        {
+          "channel": "humidity",
+          "byte_source": "humidity_msb:8 || humidity_lsb:8",
+          "formula_id": "humidity_conversion",
+          "unit": "milli_percent"
+        }
+      ],
+      "notes": "Fetch data command clears data memory after read."
+    },
+    {
+      "flow_id": "break_command",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Periodic mode active"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x30",
+              "0x93"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit break command (0x3093)."
+          },
+          "notes": "Break command to stop periodic acquisition and enter single shot mode."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 1,
+          "notes": "Wait 1 ms for sensor to abort measurement and enter single shot mode."
+        }
+      ],
+      "outputs": [],
+      "notes": "Stops periodic data acquisition."
+    },
+    {
+      "flow_id": "soft_reset",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x30",
+              "0xA2"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit soft reset command (0x30A2)."
+          },
+          "notes": "Soft reset command."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 1.5,
+          "notes": "Wait soft reset time t_SR (max 1.5 ms) for sensor to enter idle state."
+        }
+      ],
+      "outputs": [],
+      "notes": "Soft reset forces system into well-defined state without removing power."
+    },
+    {
+      "flow_id": "general_call_reset",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Sensor able to process I2C commands"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x00",
+              "0x06"
+            ],
+            "notes": "Send START, general call address 0x00 (write), then second byte 0x06, then STOP."
+          },
+          "notes": "Reset via general call address. Affects all devices on bus that support general call."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 1.5,
+          "notes": "Wait for reset to complete; soft reset time t_SR (max 1.5 ms) is assumed similar."
+        }
+      ],
+      "outputs": [],
+      "notes": "General call reset is functionally identical to nReset pin reset."
+    },
+    {
+      "flow_id": "heater_enable",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x30",
+              "0x6D"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit heater enable command (0x306D)."
+          },
+          "notes": "Enable heater."
+        }
+      ],
+      "outputs": [],
+      "notes": "Heater is meant for plausibility checking only."
+    },
+    {
+      "flow_id": "heater_disable",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x30",
+              "0x66"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit heater disable command (0x3066)."
+          },
+          "notes": "Disable heater."
+        }
+      ],
+      "outputs": [],
+      "notes": "Heater disabled by default after reset."
+    },
+    {
+      "flow_id": "read_status_register",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xF3",
+              "0x2D"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit command to read status register (0xF32D)."
+          },
+          "notes": "Command to read status register."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 3,
+            "notes": "Send START, I2C read header. Read 2 bytes status register, 1 byte CRC."
+          },
+          "notes": "Read status register value."
+        }
+      ],
+      "outputs": [],
+      "notes": "Status register contains heater, alert, and command execution status."
+    },
+    {
+      "flow_id": "clear_status_register",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Sensor in idle state"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x30",
+              "0x41"
+            ],
+            "notes": "Send START, I2C write header, then 16-bit command to clear status register (0x3041)."
+          },
+          "notes": "Clear status register flags."
+        }
+      ],
+      "outputs": [],
+      "notes": "Clears bits 15, 11, 10, 4 of status register."
+    },
+    {
+      "flow_id": "interface_reset",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Communication lost"
+      ],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "SDA",
+          "value": "high",
+          "notes": "While leaving SDA high, toggle SCL nine or more times."
+        },
+        {
+          "op": "set_signal",
+          "signal": "SDA",
+          "value": "high",
+          "notes": "Follow with a Transmission Start sequence (START condition) before next command."
+        }
+      ],
+      "outputs": [],
+      "notes": "Resets serial interface only; status register preserves content."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 16,
+    "signed": false,
+    "right_shift": 0,
+    "sign_extend_from_bit": null,
+    "notes": "Raw values are 16-bit unsigned integers."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Status Register",
+      "value": "0xF32D",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "Contains information on operational status of heater, alert mode, execution status of last command and last write sequence."
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Status Register",
+      "name": "Alert pending status",
+      "bits": 15,
+      "description": "'0': no pending alerts, '1': at least one pending alert"
+    },
+    {
+      "register": "Status Register",
+      "name": "Heater status",
+      "bits": 13,
+      "description": "'0': Heater OFF, '1': Heater ON"
+    },
+    {
+      "register": "Status Register",
+      "name": "RH tracking alert",
+      "bits": 11,
+      "description": "'0': no alert, '1': alert"
+    },
+    {
+      "register": "Status Register",
+      "name": "T tracking alert",
+      "bits": 10,
+      "description": "'0': no alert, '1': alert"
+    },
+    {
+      "register": "Status Register",
+      "name": "System reset detected",
+      "bits": 4,
+      "description": "'0': no reset detected since last 'clear status register' command, '1': reset detected (hard reset, soft reset command or supply fail)"
+    },
+    {
+      "register": "Status Register",
+      "name": "Command status",
+      "bits": 1,
+      "description": "'0': last command executed successfully, '1': last command not processed (invalid or failed checksum)"
+    },
+    {
+      "register": "Status Register",
+      "name": "Write data checksum status",
+      "bits": 0,
+      "description": "'0': checksum of last write transfer was correct, '1': checksum of last write transfer failed"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up: after VDD reaches V_POR, wait t_PU (max 1 ms) for sensor to enter idle state."
+    },
+    {
+      "transaction": null,
+      "notes": "Optionally perform soft reset (0x30A2) to ensure known state."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "Use single shot measurement flow: send command, wait, read data."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "power_up_time",
+      "value": 1,
+      "unit": "ms",
+      "condition": "After hard reset, VDD >= V_POR",
+      "notes": "Time between VDD reaching V_POR and sensor entering idle state."
+    },
+    {
+      "name": "soft_reset_time",
+      "value": 1.5,
+      "unit": "ms",
+      "condition": "After soft reset command",
+      "notes": "Time between ACK of soft reset command and sensor entering idle state."
+    },
+    {
+      "name": "measurement_duration_low",
+      "value": 4,
+      "unit": "ms",
+      "condition": "Low repeatability, VDD >= 2.4V",
+      "notes": "Measurement duration for low repeatability."
+    },
+    {
+      "name": "measurement_duration_medium",
+      "value": 6,
+      "unit": "ms",
+      "condition": "Medium repeatability, VDD >= 2.4V",
+      "notes": "Measurement duration for medium repeatability."
+    },
+    {
+      "name": "measurement_duration_high",
+      "value": 15,
+      "unit": "ms",
+      "condition": "High repeatability, VDD >= 2.4V",
+      "notes": "Measurement duration for high repeatability."
+    },
+    {
+      "name": "minimal_waiting_time_after_command",
+      "value": 1,
+      "unit": "ms",
+      "condition": "After sending a command to the sensor",
+      "notes": "Minimal waiting time before another command can be received."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temperature_conversion",
+      "formula": "T[°C] = -45 + 175 * ST / (2^16 - 1)",
+      "integer_approximation_expression": {
+        "expression": "((ST * 175000) // 65535) - 45000",
+        "inputs": [
+          {
+            "name": "ST",
+            "byte_source": "temperature_msb:8 || temperature_lsb:8",
+            "description": "16-bit raw temperature value from sensor output."
+          }
+        ],
+        "output": {
+          "name": "temp_milliC",
+          "unit": "milli_degC"
+        }
+      },
+      "notes": "Canonicalized executable expression from the datasheet linear fraction formula and scaled output unit 'milli_degC'."
+    },
+    {
+      "name": "humidity_conversion",
+      "formula": "RH[%] = 100 * SRH / (2^16 - 1)",
+      "integer_approximation_expression": {
+        "expression": "((SRH * 100000) // 65535)",
+        "inputs": [
+          {
+            "name": "SRH",
+            "byte_source": "humidity_msb:8 || humidity_lsb:8",
+            "description": "16-bit raw humidity value from sensor output."
+          }
+        ],
+        "output": {
+          "name": "humidity_milliPercent",
+          "unit": "milli_percent"
+        }
+      },
+      "notes": "Canonicalized executable expression from the datasheet linear fraction formula and scaled output unit 'milli_percent'."
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "CRC checksum mismatch on read data",
+      "detection": "CRC-8 (polynomial 0x31, init 0xFF) computed over two data bytes does not match received CRC byte.",
+      "driver_action": "Discard data and retry read; if persistent, return -EIO."
+    },
+    {
+      "condition": "I2C NACK during read header",
+      "detection": "Sensor responds with NACK to read header (e.g., no data ready in periodic mode).",
+      "driver_action": "Retry after waiting measurement duration; if persistent, return -EAGAIN."
+    },
+    {
+      "condition": "Command status bit set",
+      "detection": "Status register bit 1 is '1' after command.",
+      "driver_action": "Re-send command; if persistent, return -EIO."
+    },
+    {
+      "condition": "Write data checksum status bit set",
+      "detection": "Status register bit 0 is '1' after write.",
+      "driver_action": "Re-send write with correct checksum; if persistent, return -EIO."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "idle",
+      "description": "Sensor not performing measurement or communication. Automatically entered after power-up or after measurement."
+    },
+    {
+      "name": "measuring",
+      "description": "Sensor performing measurement. Current consumption up to 1500 µA."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "sht30",
+      "page": 9,
+      "snippet": "I2C address A: 0x44 (default) ADDR (pin 2) connected to logic low"
+    },
+    {
+      "source_id": "sht30",
+      "page": 9,
+      "snippet": "I2C address B: 0x45 ADDR (pin 2) connected to logic high"
+    },
+    {
+      "source_id": "sht30",
+      "page": 10,
+      "snippet": "High repeatability, clock stretching disabled: 0x2400"
+    },
+    {
+      "source_id": "sht30",
+      "page": 10,
+      "snippet": "High repeatability, clock stretching enabled: 0x2C06"
+    },
+    {
+      "source_id": "sht30",
+      "page": 11,
+      "snippet": "e.g. 0x2130: 1 high repeatability mps - measurement per second"
+    },
+    {
+      "source_id": "sht30",
+      "page": 12,
+      "snippet": "Soft reset command: 0x30A2"
+    },
+    {
+      "source_id": "sht30",
+      "page": 12,
+      "snippet": "Reset command using the general call address: 0x0006"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Heater Enable: 0x306D"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Heater Disabled: 0x3066"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Command to read out the status register: 0xF32D"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "Command to clear the status register: 0x3041"
+    },
+    {
+      "source_id": "sht30",
+      "page": 14,
+      "snippet": "T[°C] = -45 + 175 * ST / (2^16 - 1)"
+    },
+    {
+      "source_id": "sht30",
+      "page": 14,
+      "snippet": "RH[%] = 100 * SRH / (2^16 - 1)"
+    },
+    {
+      "source_id": "sht30",
+      "page": 7,
+      "snippet": "Measurement duration high repeatability: max 15 ms"
+    },
+    {
+      "source_id": "sht30",
+      "page": 13,
+      "snippet": "CRC-8, polynomial 0x31, initialization 0xFF, reflect input false, reflect output false, final XOR 0x00"
+    }
+  ],
+  "requires_human": [
+    "The exact 16-bit command codes for read status register, clear status register, fetch data, break, and soft reset are not explicitly given in the provided snippets; they need to be confirmed from full datasheet.",
+    "The CRC polynomial is 0x31, initialization 0xFF, but the exact implementation details (reflect input/output, final XOR) are provided; however, the checksum algorithm must be implemented correctly.",
+    "The periodic mode commands (Table 10) have many combinations; the user must select appropriate repeatability and mps.",
+    "The ART command (0x2B32) is mentioned but not fully detailed in the snippets; its behavior and usage need human verification.",
+    "General call reset wait time: datasheet does not specify a wait time after general call reset; soft reset time (1.5 ms) is assumed but may differ."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

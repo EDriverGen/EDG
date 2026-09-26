@@ -1,0 +1,82 @@
+{
+  "device_id": "ds18b20",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "single_channel",
+  "bus_kind": "gpio",
+  "driver_header": "#ifndef DS18B20_H\n#define DS18B20_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct ds18b20_dev {\n    void *bus_handle;\n};\n\nint ds18b20_init(struct ds18b20_dev *dev, void *bus_handle);\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw);\n\n#endif",
+  "driver_source": "#include \"ds18b20.h\"\n#include \"stm32f1xx_hal.h\"\n#include \"stm32f1xx_hal_gpio.h\"\n#include <stddef.h>\n#include <stdint.h>\n\n#define DS18B20_DQ_PORT GPIOB\n#define DS18B20_DQ_PIN GPIO_PIN_5\n\n#define DS18B20_CMD_CONVERT_T 0x44\n#define DS18B20_CMD_READ_SCRATCHPAD 0xBE\n\n#define DS18B20_CONVERSION_DELAY_MS 750\n\nstatic void delay_us(uint32_t us) {\n    for (uint32_t i = 0; i < us; i++) {\n        for (volatile uint32_t j = 0; j < 12; j++) {}\n    }\n}\n\nstatic void ds18b20_write_bit(struct ds18b20_dev *dev, uint8_t bit) {\n    GPIO_TypeDef *port = DS18B20_DQ_PORT;\n    uint16_t pin = DS18B20_DQ_PIN;\n    if (bit) {\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\n        delay_us(1);\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\n        delay_us(60);\n    } else {\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\n        delay_us(60);\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\n        delay_us(1);\n    }\n}\n\nstatic uint8_t ds18b20_read_bit(struct ds18b20_dev *dev) {\n    GPIO_TypeDef *port = DS18B20_DQ_PORT;\n    uint16_t pin = DS18B20_DQ_PIN;\n    uint8_t bit;\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\n    delay_us(1);\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\n    delay_us(1);\n    bit = (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET) ? 1 : 0;\n    delay_us(60);\n    return bit;\n}\n\nstatic void ds18b20_write_byte(struct ds18b20_dev *dev, uint8_t byte) {\n    for (int i = 0; i < 8; i++) {\n        ds18b20_write_bit(dev, (byte >> i) & 0x01);\n    }\n}\n\nstatic uint8_t ds18b20_read_byte(struct ds18b20_dev *dev) {\n    uint8_t byte = 0;\n    for (int i = 0; i < 8; i++) {\n        if (ds18b20_read_bit(dev)) {\n            byte |= (1 << i);\n        }\n    }\n    return byte;\n}\n\nstatic int ds18b20_reset(struct ds18b20_dev *dev) {\n    GPIO_TypeDef *port = DS18B20_DQ_PORT;\n    uint16_t pin = DS18B20_DQ_PIN;\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\n    delay_us(480);\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\n    delay_us(70);\n    if (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET) {\n        return -1;\n    }\n    delay_us(410);\n    return 0;\n}\n\nint ds18b20_init(struct ds18b20_dev *dev, void *bus_handle) {\n    dev->bus_handle = bus_handle;\n    return ds18b20_reset(dev);\n}\n\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw) {\n    if (ds18b20_reset(dev) != 0) return -1;\n    ds18b20_write_byte(dev, 0xCC);\n    ds18b20_write_byte(dev, DS18B20_CMD_CONVERT_T);\n    HAL_Delay(DS18B20_CONVERSION_DELAY_MS);\n    if (ds18b20_reset(dev) != 0) return -1;\n    ds18b20_write_byte(dev, 0xCC);\n    ds18b20_write_byte(dev, DS18B20_CMD_READ_SCRATCHPAD);\n    uint8_t lsb = ds18b20_read_byte(dev);\n    uint8_t msb = ds18b20_read_byte(dev);\n    int16_t raw_temp = (int16_t)((msb << 8) | lsb);\n    *raw = (int32_t)raw_temp * 625 / 10;\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "ds18b20_init(&g_eval_dev, (void *)bus_name)",
+    "read_call": "ds18b20_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct ds18b20_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "write_prefix_any_of": [
+          [
+            "0x44"
+          ]
+        ],
+        "note": "convert_t: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "convert_t: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "positive_temperature_25C",
+        "mock_preload": {
+          "payload": [
+            "0x90",
+            "0x01"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "derivation": "raw = 0x0190 = 400; temp_milliC = 400 * 625 / 10 = 25000"
+      },
+      {
+        "name": "zero_temperature",
+        "mock_preload": {
+          "payload": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "raw = 0x0000 = 0; temp_milliC = 0 * 625 / 10 = 0"
+      },
+      {
+        "name": "negative_temperature_minus10C",
+        "mock_preload": {
+          "payload": [
+            "0x60",
+            "0xFF"
+          ]
+        },
+        "expected_read_raw": -10000,
+        "derivation": "raw = 0xFF60 = -160 (sign-extended from 12 bits); temp_milliC = -160 * 625 / 10 = -10000"
+      }
+    ]
+  },
+  "runtime_path": "renode_gpio_pulse",
+  "slave_kind": "gpio_pulse_injector",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.329,
+  "prompt_chars": 39496,
+  "raw_response": "{\"driver_header\": \"#ifndef DS18B20_H\\n#define DS18B20_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct ds18b20_dev {\\n    void *bus_handle;\\n};\\n\\nint ds18b20_init(struct ds18b20_dev *dev, void *bus_handle);\\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"ds18b20.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"stm32f1xx_hal_gpio.h\\\"\\n#include <stddef.h>\\n#include <stdint.h>\\n\\n#define DS18B20_DQ_PORT GPIOB\\n#define DS18B20_DQ_PIN GPIO_PIN_5\\n\\n#define DS18B20_CMD_CONVERT_T 0x44\\n#define DS18B20_CMD_READ_SCRATCHPAD 0xBE\\n\\n#define DS18B20_CONVERSION_DELAY_MS 750\\n\\nstatic void delay_us(uint32_t us) {\\n    for (uint32_t i = 0; i < us; i++) {\\n        for (volatile uint32_t j = 0; j < 12; j++) {}\\n    }\\n}\\n\\nstatic void ds18b20_write_bit(struct ds18b20_dev *dev, uint8_t bit) {\\n    GPIO_TypeDef *port = DS18B20_DQ_PORT;\\n    uint16_t pin = DS18B20_DQ_PIN;\\n    if (bit) {\\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\\n        delay_us(1);\\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\\n        delay_us(60);\\n    } else {\\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\\n        delay_us(60);\\n        HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\\n        delay_us(1);\\n    }\\n}\\n\\nstatic uint8_t ds18b20_read_bit(struct ds18b20_dev *dev) {\\n    GPIO_TypeDef *port = DS18B20_DQ_PORT;\\n    uint16_t pin = DS18B20_DQ_PIN;\\n    uint8_t bit;\\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\\n    delay_us(1);\\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\\n    delay_us(1);\\n    bit = (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET) ? 1 : 0;\\n    delay_us(60);\\n    return bit;\\n}\\n\\nstatic void ds18b20_write_byte(struct ds18b20_dev *dev, uint8_t byte) {\\n    for (int i = 0; i < 8; i++) {\\n        ds18b20_write_bit(dev, (byte >> i) & 0x01);\\n    }\\n}\\n\\nstatic uint8_t ds18b20_read_byte(struct ds18b20_dev *dev) {\\n    uint8_t byte = 0;\\n    for (int i = 0; i < 8; i++) {\\n        if (ds18b20_read_bit(dev)) {\\n            byte |= (1 << i);\\n        }\\n    }\\n    return byte;\\n}\\n\\nstatic int ds18b20_reset(struct ds18b20_dev *dev) {\\n    GPIO_TypeDef *port = DS18B20_DQ_PORT;\\n    uint16_t pin = DS18B20_DQ_PIN;\\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);\\n    delay_us(480);\\n    HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);\\n    delay_us(70);\\n    if (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET) {\\n        return -1;\\n    }\\n    delay_us(410);\\n    return 0;\\n}\\n\\nint ds18b20_init(struct ds18b20_dev *dev, void *bus_handle) {\\n    dev->bus_handle = bus_handle;\\n    return ds18b20_reset(dev);\\n}\\n\\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw) {\\n    if (ds18b20_reset(dev) != 0) return -1;\\n    ds18b20_write_byte(dev, 0xCC);\\n    ds18b20_write_byte(dev, DS18B20_CMD_CONVERT_T);\\n    HAL_Delay(DS18B20_CONVERSION_DELAY_MS);\\n    if (ds18b20_reset(dev) != 0) return -1;\\n    ds18b20_write_byte(dev, 0xCC);\\n    ds18b20_write_byte(dev, DS18B20_CMD_READ_SCRATCHPAD);\\n    uint8_t lsb = ds18b20_read_byte(dev);\\n    uint8_t msb = ds18b20_read_byte(dev);\\n    int16_t raw_temp = (int16_t)((msb << 8) | lsb);\\n    *raw = (int32_t)raw_temp * 625 / 10;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "7cb7908e44ef6f8d"
+}

@@ -1,0 +1,44 @@
+{
+  "task_package_id": "nuttx_generic_devfs__mhz19b__uart1_dma",
+  "device_id": "mhz19b",
+  "rtos_id": "nuttx",
+  "board": "nucleo-f103rb",
+  "physical_bus": "uart",
+  "transfer_mode": "dma",
+  "pass_rule": "cumulative_L1_through_Lk",
+  "levels": [
+    "L1: build",
+    "L2: boot and execution",
+    "L3: protocol",
+    "L4: semantics",
+    "L5: robustness"
+  ],
+  "device_oracle": {
+    "meta": "EDG_DMA_Tasks/nuttx/mhz19b/oracle/meta.json",
+    "required_writes": "EDG_DMA_Tasks/nuttx/mhz19b/oracle/required_writes.json",
+    "stimuli": "EDG_DMA_Tasks/nuttx/mhz19b/oracle/stimuli.json"
+  },
+  "dma_validation_requirements": [
+    {
+      "id": "dma_payload",
+      "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+    },
+    {
+      "id": "completion_order",
+      "requirement": "Consume receive data and reuse buffers only after the required completion event."
+    },
+    {
+      "id": "error_and_timeout",
+      "requirement": "Return the specified error and release transfer state after failure or timeout."
+    },
+    {
+      "id": "repeat_operation",
+      "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+    }
+  ],
+  "device_scenarios": [
+    "Arm reception early enough to retain the response.",
+    "Accumulate receive events until the full frame is available.",
+    "Check header, checksum, timeout, and a subsequent request."
+  ]
+}

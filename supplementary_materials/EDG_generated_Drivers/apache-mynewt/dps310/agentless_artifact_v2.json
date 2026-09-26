@@ -1,0 +1,2460 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "apache-mynewt",
+    "board": "generic_hal",
+    "mcu_family": "stm32f1",
+    "integration": "mynewt_native_hal",
+    "integration_style": "integrated_rtos_hal_bsp",
+    "bus_intent": {
+      "canonical_bus": "i2c",
+      "connection_type": "i2c",
+      "mode": "polling",
+      "backend": "Apache Mynewt HAL I2C",
+      "address_mode": "7-bit",
+      "bus_instance": "0"
+    },
+    "device_id": "dps310",
+    "device_ir_hash": "e8d363f193e5df31",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "apache-mynewt:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/apache-mynewt",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "apache-mynewt",
+      "sha": "2ba18b2"
+    }
+  ],
+  "slots": {
+    "i2c.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "hal_i2c_init"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "i2c.addressing": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "macro",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "address_rule",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "i2c.addressing",
+        "fulfillment_kind": "context_binding",
+        "source": "device_ir.address_rule+task_context.device_attachment",
+        "confidence": 0.9,
+        "value": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO pulled-down to GND",
+              "is_default": false
+            },
+            {
+              "address": "0x77",
+              "description": "SDO left floating or pulled-up to VDDIO (default)",
+              "is_default": true
+            }
+          ]
+        },
+        "fields": {
+          "address_rule": {
+            "type": "address_pins",
+            "addressing_form": "7-bit",
+            "addresses": [
+              {
+                "address": "0x76",
+                "description": "SDO pulled-down to GND",
+                "is_default": false
+              },
+              {
+                "address": "0x77",
+                "description": "SDO left floating or pulled-up to VDDIO (default)",
+                "is_default": true
+              }
+            ]
+          },
+          "addressing": {
+            "default": "0x77",
+            "alternates": [
+              "0x76"
+            ],
+            "selection_rule": "SDO/address-select pin changes the 7-bit I2C address."
+          },
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+        ]
+      },
+      "confidence": 0.9
+    },
+    "i2c.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "bus_i2c_dev"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "i2c.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "os_time_t",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+            "source_slot": "i2c.transfer",
+            "source_symbol": "i2cn_master_write_read_transact",
+            "signature": "int i2cn_master_write_read_transact(uint8_t i2c_num, struct hal_i2c_master_data *wdata, struct hal_i2c_master_data *rdata, os_time_t timeout, uint8_t last_op, int retries)",
+            "score": 0.65,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.read": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "hal_i2c_master_read"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.85
+    },
+    "i2c.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cn_master_write_read_transact"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    },
+    "i2c.write": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "hal_i2c_master_write"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.85
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "os_time_delay"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.9
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "os_error_t"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_api_return_status_convention",
+        "confidence": 0.75,
+        "symbols": [
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+            "source_slot": "i2c.acquire_or_bind",
+            "source_symbol": "hal_i2c_init",
+            "signature": "int hal_i2c_init(uint8_t i2c_num, void *cfg)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+            "source_slot": "i2c.read",
+            "source_symbol": "hal_i2c_master_read",
+            "signature": "int hal_i2c_master_read(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+            "score": 0.85,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+            "source_slot": "i2c.transfer",
+            "source_symbol": "i2cn_master_write_read_transact",
+            "signature": "int i2cn_master_write_read_transact(uint8_t i2c_num, struct hal_i2c_master_data *wdata, struct hal_i2c_master_data *rdata, os_time_t timeout, uint8_t last_op, int retries)",
+            "score": 0.65,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+            "source_slot": "i2c.write",
+            "source_symbol": "hal_i2c_master_write",
+            "signature": "int hal_i2c_master_write(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+            "score": 0.85,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "0",
+        "fields": {
+          "bus_instance": "0",
+          "bus_symbol": "0",
+          "backend": "Apache Mynewt HAL I2C",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.release": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    }
+  },
+  "symbols": {
+    "i2c.acquire_or_bind": {
+      "slot_id": "i2c.acquire_or_bind",
+      "symbol": "hal_i2c_init",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int hal_i2c_init(uint8_t i2c_num, void *cfg)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/hal/include/hal/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/hal/include/hal/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0"
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "symbol": "bus_i2c_dev",
+      "kind": "struct",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": null,
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/bus/drivers/i2c_common/include/bus/drivers/i2c_common.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/bus/drivers/i2c_common/include/bus/drivers/i2c_common.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/bus/drivers/i2c_common/include/bus/drivers/i2c_common.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The candidate bus_i2c_dev from the public include header matches the slot's intent for an I2C device struct and is from "
+      ]
+    },
+    "i2c.read": {
+      "slot_id": "i2c.read",
+      "symbol": "hal_i2c_master_read",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int hal_i2c_master_read(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/hal/include/hal/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.85,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/hal/include/hal/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The slot expects an I2C master read function; hal_i2c_master_read is the public HAL API for Mynewt, matching the task co"
+      ]
+    },
+    "i2c.transfer": {
+      "slot_id": "i2c.transfer",
+      "symbol": "i2cn_master_write_read_transact",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int i2cn_master_write_read_transact(uint8_t i2c_num, struct hal_i2c_master_data *wdata, struct hal_i2c_master_data *rdata, os_time_t timeout, uint8_t last_op, int retries)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/util/i2cn/include/i2cn/i2cn.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/util/i2cn/include/i2cn/i2cn.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The slot expects a function for i2c transfer; i2cn_master_write_read_transact performs combined write-read transactions,"
+      ]
+    },
+    "i2c.write": {
+      "slot_id": "i2c.write",
+      "symbol": "hal_i2c_master_write",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int hal_i2c_master_write(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "hw/hal/include/hal/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.85,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "hw/hal/include/hal/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:The slot expects a write function; hal_i2c_master_write is the public HAL API for Mynewt, matching the task context's RT"
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "symbol": "os_time_delay",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void os_time_delay(os_time_t osticks)",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::kernel/os/include/os/os_time.h",
+      "implemented_in": null,
+      "required_headers": [
+        "kernel/os/include/os/os_time.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.9,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "kernel/os/include/os/os_time.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "root-role+3.0",
+        "llm_bound:os_time_delay is the Apache Mynewt kernel's millisecond delay function, matching the slot's intent and task context. It "
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "symbol": "os_error_t",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "enum os_error",
+      "signature_source": "parser",
+      "declared_in": "apache-mynewt:single:0::kernel/os/include/os/os_error.h",
+      "implemented_in": null,
+      "required_headers": [
+        "kernel/os/include/os/os_error.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "apache-mynewt:single:0",
+          "path": "kernel/os/include/os/os_error.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "llm_bound:os_error_t is a public kernel typedef for error status, matching the slot's intent and expected kinds. It is from the Ap"
+      ]
+    }
+  },
+  "_symbol_index": {
+    "hal_i2c_init": [
+      "i2c.acquire_or_bind"
+    ],
+    "bus_i2c_dev": [
+      "i2c.key_types"
+    ],
+    "hal_i2c_master_read": [
+      "i2c.read"
+    ],
+    "i2cn_master_write_read_transact": [
+      "i2c.transfer"
+    ],
+    "hal_i2c_master_write": [
+      "i2c.write"
+    ],
+    "os_time_delay": [
+      "runtime.delay_ms"
+    ],
+    "os_error_t": [
+      "runtime.error_status"
+    ]
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x76",
+            "description": "SDO pulled-down to GND",
+            "is_default": false
+          },
+          {
+            "address": "0x77",
+            "description": "SDO left floating or pulled-up to VDDIO (default)",
+            "is_default": true
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO pulled-down to GND",
+              "is_default": false
+            },
+            {
+              "address": "0x77",
+              "description": "SDO left floating or pulled-up to VDDIO (default)",
+              "is_default": true
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x77",
+          "alternates": [
+            "0x76"
+          ],
+          "selection_rule": "SDO/address-select pin changes the 7-bit I2C address."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "os_time_t",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cn_master_write_read_transact",
+          "signature": "int i2cn_master_write_read_transact(uint8_t i2c_num, struct hal_i2c_master_data *wdata, struct hal_i2c_master_data *rdata, os_time_t timeout, uint8_t last_op, int retries)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "hal_i2c_init",
+          "signature": "int hal_i2c_init(uint8_t i2c_num, void *cfg)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "hal_i2c_master_read",
+          "signature": "int hal_i2c_master_read(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+          "score": 0.85,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cn_master_write_read_transact",
+          "signature": "int i2cn_master_write_read_transact(uint8_t i2c_num, struct hal_i2c_master_data *wdata, struct hal_i2c_master_data *rdata, os_time_t timeout, uint8_t last_op, int retries)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "source_slot": "i2c.write",
+          "source_symbol": "hal_i2c_master_write",
+          "signature": "int hal_i2c_master_write(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+          "score": 0.85,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "0",
+      "fields": {
+        "bus_instance": "0",
+        "bus_symbol": "0",
+        "backend": "Apache Mynewt HAL I2C",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x76",
+            "description": "SDO pulled-down to GND",
+            "is_default": false
+          },
+          {
+            "address": "0x77",
+            "description": "SDO left floating or pulled-up to VDDIO (default)",
+            "is_default": true
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x76",
+              "description": "SDO pulled-down to GND",
+              "is_default": false
+            },
+            {
+              "address": "0x77",
+              "description": "SDO left floating or pulled-up to VDDIO (default)",
+              "is_default": true
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x77",
+          "alternates": [
+            "0x76"
+          ],
+          "selection_rule": "SDO/address-select pin changes the 7-bit I2C address."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "0",
+      "fields": {
+        "bus_instance": "0",
+        "bus_symbol": "0",
+        "backend": "Apache Mynewt HAL I2C",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "os_time_t",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cn_master_write_read_transact",
+          "signature": "int i2cn_master_write_read_transact(uint8_t i2c_num, struct hal_i2c_master_data *wdata, struct hal_i2c_master_data *rdata, os_time_t timeout, uint8_t last_op, int retries)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "hal_i2c_init",
+          "signature": "int hal_i2c_init(uint8_t i2c_num, void *cfg)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "hal_i2c_master_read",
+          "signature": "int hal_i2c_master_read(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+          "score": 0.85,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cn_master_write_read_transact",
+          "signature": "int i2cn_master_write_read_transact(uint8_t i2c_num, struct hal_i2c_master_data *wdata, struct hal_i2c_master_data *rdata, os_time_t timeout, uint8_t last_op, int retries)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "source_slot": "i2c.write",
+          "source_symbol": "hal_i2c_master_write",
+          "signature": "int hal_i2c_master_write(uint8_t i2c_num, struct hal_i2c_master_data *pdata, uint32_t timeout, uint8_t last_op)",
+          "score": 0.85,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "0",
+    "bus_symbol": "0",
+    "backend": "Apache Mynewt HAL I2C",
+    "mode": "polling",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "device_attachment": {
+      "device_id": "dps310",
+      "attachment_type": "i2c_sensor",
+      "required_bus_type": "i2c",
+      "address_mode": "7-bit",
+      "addressing": {
+        "default": "0x77",
+        "alternates": [
+          "0x76"
+        ],
+        "selection_rule": "SDO/address-select pin changes the 7-bit I2C address."
+      },
+      "required_attachment": {
+        "signals": [],
+        "notes": [
+          "Minimal driver uses pure polling and does not require an interrupt pin."
+        ]
+      },
+      "optional_attachment": {
+        "sdo_addr_select": "optional",
+        "int_pin": "optional"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "notes": [
+        "Reference drivers perform software reset, wait for SENSOR_RDY/COEF_RDY, then read coefficients and trigger single conversions."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/dps310",
+        "DriverGen/data/references/dps310/*/*_ref.h"
+      ]
+    },
+    "include_headers": [
+      "assert.h",
+      "bus/bus.h",
+      "bus/bus_debug.h",
+      "bus/bus_driver.h",
+      "bus/drivers/i2c_common.h",
+      "bus/drivers/i2c_hal.h",
+      "bus/drivers/i2c_nrf52_twim.h",
+      "bus/drivers/i2c_nrf91_twim.h",
+      "bus/drivers/spi_common.h",
+      "defs/error.h",
+      "hal/hal_gpio.h",
+      "hal/hal_i2c.h",
+      "hal/hal_spi.h",
+      "hw/bus/drivers/i2c_common/include/bus/drivers/i2c_common.h",
+      "hw/bus/drivers/i2c_da1469x/include/bus/drivers/i2c_da1469x.h",
+      "hw/bus/drivers/i2c_hal/include/bus/drivers/i2c_hal.h",
+      "hw/bus/drivers/i2c_nrf52_twim/include/bus/drivers/i2c_nrf52_twim.h",
+      "hw/bus/drivers/i2c_nrf5340/include/bus/drivers/i2c_nrf5340.h",
+      "hw/bus/drivers/i2c_nrf91_twim/include/bus/drivers/i2c_nrf91_twim.h",
+      "hw/bus/drivers/spi_common/include/bus/drivers/spi_common.h",
+      "hw/bus/drivers/spi_stm32/include/bus/drivers/spi_stm32.h",
+      "hw/bus/include/bus/bus.h",
+      "hw/bus/include/bus/bus_debug.h",
+      "hw/bus/include/bus/bus_driver.h",
+      "hw/hal/include/hal/hal_bsp.h",
+      "hw/hal/include/hal/hal_debug.h",
+      "hw/hal/include/hal/hal_flash.h",
+      "hw/hal/include/hal/hal_gpio.h",
+      "hw/hal/include/hal/hal_i2c.h",
+      "hw/hal/include/hal/hal_spi.h",
+      "hw/hal/include/hal/hal_timer.h",
+      "hw/hal/include/hal/hal_uart.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/cmsis_nvic.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/cortex_m3.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/mcu.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/stm32_hal.h",
+      "hw/mcu/stm/stm32f1xx/include/mcu/stm32f1xx_mynewt_hal.h",
+      "hw/util/i2cn/include/i2cn/i2cn.h",
+      "i2cn/i2cn.h",
+      "inttypes.h",
+      "kernel/os/include/os/arch/arc/os/os_arch.h",
+      "kernel/os/include/os/arch/common.h",
+      "kernel/os/include/os/arch/cortex_m0/os/os_arch.h",
+      "kernel/os/include/os/arch/cortex_m3/os/os_arch.h",
+      "kernel/os/include/os/arch/cortex_m33/os/os_arch.h",
+      "kernel/os/include/os/arch/cortex_m4/os/os_arch.h",
+      "kernel/os/include/os/arch/cortex_m7/os/os_arch.h",
+      "kernel/os/include/os/arch/pic32/os/cp0defs.h",
+      "kernel/os/include/os/mynewt.h",
+      "kernel/os/include/os/os.h",
+      "kernel/os/include/os/os_dev.h",
+      "kernel/os/include/os/os_error.h",
+      "kernel/os/include/os/os_mutex.h",
+      "kernel/os/include/os/os_sanity.h",
+      "kernel/os/include/os/os_task.h",
+      "kernel/os/include/os/os_time.h",
+      "kernel/os/include/os/queue.h",
+      "logcfg/logcfg.h",
+      "mcu/cmsis_nvic.h",
+      "mcu/cortex_m0.h",
+      "mcu/cortex_m3.h",
+      "mcu/cortex_m33.h",
+      "mcu/cortex_m4.h",
+      "mcu/cortex_m7.h",
+      "mcu/da1469x_dma.h",
+      "mcu/da1469x_pd.h",
+      "mcu/mcu.h",
+      "mcu/mcu_arc.h",
+      "mcu/nrf52_hal.h",
+      "mcu/nrf5340_hal.h",
+      "mcu/nrf91_hal.h",
+      "mcu/stm32_hal.h",
+      "mcu/stm32f1_bsp.h",
+      "mcu/stm32f1xx_mynewt_hal.h",
+      "nrfx.h",
+      "os/arch/common.h",
+      "os/endian.h",
+      "os/mynewt.h",
+      "os/os.h",
+      "os/os_arch.h",
+      "os/os_callout.h",
+      "os/os_cputime.h",
+      "os/os_dev.h",
+      "os/os_error.h",
+      "os/os_eventq.h",
+      "os/os_fault.h",
+      "os/os_heap.h",
+      "os/os_mbuf.h",
+      "os/os_mempool.h",
+      "os/os_mutex.h",
+      "os/os_sanity.h",
+      "os/os_sched.h",
+      "os/os_sem.h",
+      "os/os_task.h",
+      "os/os_time.h",
+      "os/os_trace_api.h",
+      "os/queue.h",
+      "os/util.h",
+      "stats/stats.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdlib.h",
+      "stm32_common/mcu.h",
+      "stm32f1xx.h",
+      "stm32f1xx_hal.h",
+      "stm32f1xx_hal_def.h",
+      "stm32f1xx_hal_dma.h",
+      "stm32f1xx_hal_flash.h",
+      "stm32f1xx_hal_flash_ex.h",
+      "stm32f1xx_hal_gpio.h",
+      "stm32f1xx_hal_gpio_ex.h",
+      "stm32f1xx_hal_i2c.h",
+      "stm32f1xx_hal_iwdg.h",
+      "stm32f1xx_hal_rcc.h",
+      "stm32f1xx_hal_spi.h",
+      "stm32f1xx_hal_tim.h",
+      "stm32f1xx_hal_uart.h",
+      "stm32f1xx_ll_bus.h",
+      "stm32f1xx_ll_gpio.h",
+      "stm32f1xx_ll_tim.h",
+      "stm32f1xx_mynewt_hal.h",
+      "string.h",
+      "sys/debug_panic.h",
+      "sys/queue.h",
+      "syscfg/syscfg.h",
+      "sysdown/sysdown.h",
+      "sysflash/sysflash.h",
+      "sysinit/sysinit.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "hw/bus/drivers/i2c_hal/include/bus/drivers/i2c_hal.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.release",
+          "i2c.transfer",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_common/include/bus/drivers/i2c_common.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 2,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/include/bus/bus.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.release",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 12,
+        "n_macros": 4,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/include/bus/bus_driver.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 3,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 7,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/util/i2cn/include/i2cn/i2cn.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 3,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_da1469x/include/bus/drivers/i2c_da1469x.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release",
+          "i2c.transfer"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_nrf52_twim/include/bus/drivers/i2c_nrf52_twim.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release",
+          "i2c.transfer"
+        ],
+        "n_functions": 2,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_nrf5340/include/bus/drivers/i2c_nrf5340.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_nrf91_twim/include/bus/drivers/i2c_nrf91_twim.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release",
+          "i2c.transfer"
+        ],
+        "n_functions": 2,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_i2c.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 8,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_spi.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 12,
+        "n_macros": 11,
+        "n_typedefs": 1,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_timer.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_uart.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 7,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 2
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/stm32f1xx_mynewt_hal.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 2,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_bsp.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 9,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_debug.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 2,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_flash.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 12,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_time.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 14,
+        "n_macros": 16,
+        "n_typedefs": 3,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_error.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 2
+      },
+      {
+        "path": "kernel/os/include/os/os_dev.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 11,
+        "n_macros": 11,
+        "n_typedefs": 5,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/pic32/os/cp0defs.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 916,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_task.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 10,
+        "n_typedefs": 2,
+        "n_structs": 5,
+        "n_enums": 1
+      },
+      {
+        "path": "kernel/os/include/os/arch/arc/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/common.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 14,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m0/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m3/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m33/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m4/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/arch/cortex_m7/os/os_arch.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 4,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/include/bus/bus_debug.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 11,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/spi_stm32/include/bus/drivers/spi_stm32.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/spi_common/include/bus/drivers/spi_common.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/hal/include/hal/hal_gpio.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 6
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/cmsis_nvic.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/cortex_m3.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/mcu.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release",
+          "i2c.transfer"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32f1xx/include/mcu/stm32_hal.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/mynewt.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding",
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 7,
+        "n_macros": 10,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_mutex.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.release",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/os_sanity.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/include/os/queue.h",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.key_types",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "hw/bus/drivers/i2c_hal/src/i2c_hal.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.release",
+          "i2c.transfer",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 9,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/src/bus.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 20,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_da1469x/src/i2c_da1469x.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release",
+          "i2c.transfer"
+        ],
+        "n_functions": 19,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_nrf52_twim/src/i2c_nrf52_twim.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release",
+          "i2c.transfer"
+        ],
+        "n_functions": 20,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_nrf91_twim/src/i2c_nrf91_twim.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release",
+          "i2c.transfer"
+        ],
+        "n_functions": 18,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/bus/drivers/i2c_nrf5340/src/i2c_nrf5340.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.release"
+        ],
+        "n_functions": 20,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 6,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32_common/src/stm32_driver_mod_i2c_v1.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 10,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32_common/src/stm32_driver_mod_i2c_v2.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 9,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/mcu/stm/stm32_common/src/hal_i2c.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 8,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 6,
+        "n_enums": 0
+      },
+      {
+        "path": "hw/util/i2cn/src/i2cn.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 3,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/os/src/os_time.c",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 19,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": [
+      {
+        "path": "hw/util/i2cn/pkg.yml",
+        "root_id": "apache-mynewt:single:0",
+        "file_kind": "config",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.transfer"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ]
+  },
+  "transaction_templates": [
+    {
+      "template_id": "dps310_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x0D"
+            ],
+            "length": 1,
+            "pointer_target": "ID",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x0C",
+              "0x09"
+            ],
+            "length": 1,
+            "pointer_target": "RESET",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.42,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (5 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "dps310_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x00"
+            ],
+            "length": 3,
+            "pointer_target": "PSR_B2",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x03"
+            ],
+            "length": 3,
+            "pointer_target": "TMP_B2",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x10"
+            ],
+            "length": 18,
+            "pointer_target": "COEF",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x08"
+            ],
+            "length": 1,
+            "pointer_target": "MEAS_CFG",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x0A"
+            ],
+            "length": 1,
+            "pointer_target": "INT_STS",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x0B"
+            ],
+            "length": 1,
+            "pointer_target": "FIFO_STS",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cn_master_write_read_transact",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.9,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (6 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "slot_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'apache-mynewt' is integrated; n_roots=1 (no minimum)",
+        "evidence": {
+          "rtos_id": "apache-mynewt",
+          "n_roots": 1
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "all required slots covered",
+        "evidence": {
+          "missing_required": [],
+          "non_symbol_fulfillments": [
+            "i2c.addressing",
+            "i2c.key_types",
+            "integration.bus_instance_binding",
+            "runtime.error_status"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (7 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+            "apache-mynewt:single:0::hw/bus/drivers/i2c_common/include/bus/drivers/i2c_common.h",
+            "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+            "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+            "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+            "apache-mynewt:single:0::kernel/os/include/os/os_time.h",
+            "apache-mynewt:single:0::kernel/os/include/os/os_error.h"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [
+          "i2c.acquire_or_bind"
+        ],
+        "missing_slots": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "i2c.release"
+        ],
+        "new_files_added": [
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_hal/src/i2c_hal.c",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_hal/include/bus/drivers/i2c_hal.h",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_common/include/bus/drivers/i2c_common.h",
+          "apache-mynewt:single:0::hw/bus/include/bus/bus.h",
+          "apache-mynewt:single:0::hw/bus/include/bus/bus_driver.h",
+          "apache-mynewt:single:0::hw/bus/src/bus.c",
+          "apache-mynewt:single:0::hw/util/i2cn/include/i2cn/i2cn.h",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_da1469x/include/bus/drivers/i2c_da1469x.h",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_nrf52_twim/include/bus/drivers/i2c_nrf52_twim.h",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_nrf5340/include/bus/drivers/i2c_nrf5340.h",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_nrf91_twim/include/bus/drivers/i2c_nrf91_twim.h",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_da1469x/src/i2c_da1469x.c",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_nrf52_twim/src/i2c_nrf52_twim.c",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_nrf91_twim/src/i2c_nrf91_twim.c",
+          "apache-mynewt:single:0::hw/bus/drivers/i2c_nrf5340/src/i2c_nrf5340.c",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_i2c.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_spi.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_timer.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_uart.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/stm32f1xx_mynewt_hal.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_bsp.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_debug.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_flash.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32_common/src/stm32_driver_mod_i2c_v1.c",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32_common/src/stm32_driver_mod_i2c_v2.c",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32_common/src/hal_i2c.c",
+          "apache-mynewt:single:0::hw/util/i2cn/src/i2cn.c",
+          "apache-mynewt:single:0::hw/util/i2cn/pkg.yml",
+          "apache-mynewt:single:0::kernel/os/src/os_time.c",
+          "apache-mynewt:single:0::kernel/os/include/os/os_time.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_error.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_dev.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/pic32/os/cp0defs.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_task.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/arc/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/common.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m0/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m3/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m33/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m4/os/os_arch.h",
+          "apache-mynewt:single:0::kernel/os/include/os/arch/cortex_m7/os/os_arch.h",
+          "apache-mynewt:single:0::hw/bus/include/bus/bus_debug.h",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_stm32/include/bus/drivers/spi_stm32.h",
+          "apache-mynewt:single:0::hw/bus/drivers/spi_common/include/bus/drivers/spi_common.h",
+          "apache-mynewt:single:0::hw/hal/include/hal/hal_gpio.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/cmsis_nvic.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/cortex_m3.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/mcu.h",
+          "apache-mynewt:single:0::hw/mcu/stm/stm32f1xx/include/mcu/stm32_hal.h",
+          "apache-mynewt:single:0::kernel/os/include/os/mynewt.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_mutex.h",
+          "apache-mynewt:single:0::kernel/os/include/os/os_sanity.h",
+          "apache-mynewt:single:0::kernel/os/include/os/queue.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 44243,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "missing_slots": [
+          "i2c.addressing",
+          "integration.bus_instance_binding",
+          "i2c.release"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 8
+        },
+        "token_usage": {
+          "input_tokens_delta": 22836,
+          "output_tokens_delta": 5600,
+          "input_tokens_total": 67079,
+          "output_tokens_total": 14000
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 10,
+    "n_bound": 7,
+    "n_fulfilled": 9,
+    "n_non_symbol_fulfillments": 4,
+    "n_required": 9,
+    "n_required_bound": 9,
+    "n_required_fulfilled": 9,
+    "n_required_symbol_bound": 7,
+    "provenance": {
+      "manifest_repo": 7,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 2.46,
+      "dir_router_llm": 24070.5,
+      "file_selector": 20.03,
+      "file_selector_llm": 70355.81,
+      "exact_symbol_file_backfill": 6.08,
+      "deep_parse": 149.96,
+      "include_expand": 45.08,
+      "symbol_rank": 346.06,
+      "binder_deterministic": 3.12,
+      "binder_llm": 12165.31,
+      "gap_diagnoser_llm": 5257.47,
+      "source_kind_classifier": 0.03
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 8,
+        "gap_diagnoser": 3
+      },
+      "input_tokens_total": 69766,
+      "output_tokens_total": 15500,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

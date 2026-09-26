@@ -1,0 +1,104 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "zephyr",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MCP3008_H\n#define MCP3008_H\n\n#include <stdint.h>\n#include <zephyr/drivers/spi.h>\n\nstruct spi_dt_spec;\n\nstruct mcp3008_data {\n\tconst struct spi_dt_spec *spi_spec;\n};\n\nint mcp3008_init(struct mcp3008_data *dev, const struct spi_dt_spec *spi_spec);\nint mcp3008_read_channel(struct mcp3008_data *dev, uint8_t channel, uint16_t *result);\n\n#endif /* MCP3008_H */",
+  "driver_source": "#include \"mcp3008.h\"\n#include <stdint.h>\n#include <zephyr/drivers/spi.h>\n\n#include <zephyr/sys/byteorder.h>\nint mcp3008_init(struct mcp3008_data *dev, const struct spi_dt_spec *spi_spec)\n{\n\tdev->spi_spec = spi_spec;\n\treturn 0;\n}\n\nint mcp3008_read_channel(struct mcp3008_data *dev, uint8_t channel, uint16_t *result)\n{\n\tuint8_t tx_buf[3];\n\tuint8_t rx_buf[3];\n\tconst struct spi_buf tx_bufs[] = {\n\t\t{\n\t\t\t.buf = tx_buf,\n\t\t\t.len = sizeof(tx_buf)\n\t\t}\n\t};\n\tconst struct spi_buf rx_bufs[] = {\n\t\t{\n\t\t\t.buf = rx_buf,\n\t\t\t.len = sizeof(rx_buf)\n\t\t}\n\t};\n\tconst struct spi_buf_set tx = {\n\t\t.buffers = tx_bufs,\n\t\t.count = 1\n\t};\n\tconst struct spi_buf_set rx = {\n\t\t.buffers = rx_bufs,\n\t\t.count = 1\n\t};\n\tint ret;\n\n\ttx_buf[0] = 0x01;\n\ttx_buf[1] = 0x80 | (channel << 4);\n\ttx_buf[2] = 0x00;\n\n\tret = spi_transceive_dt(dev->spi_spec, &tx, &rx);\n\tif (ret < 0) {\n\t\treturn ret;\n\t}\n\n\t*result = ((uint16_t)(rx_buf[1] & 0x03) << 8) | (uint16_t)rx_buf[2];\n\treturn 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, spi_spec)",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t"
+      }
+    ],
+    "dev_struct_type": "struct mcp3008_data",
+    "init_extra_setup_c": "const struct spi_dt_spec *spi_spec = (const struct spi_dt_spec *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for CH0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x80",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 512
+        },
+        "derivation": "stream bytes: [0x00, 0x80, 0x00]. high_byte = 0x80, low_byte = 0x00. raw = ((0x80 & 0x03) << 8) | 0x00 = (0x00 << 8) | 0x00 = 0. Wait, 0x80 & 0x03 = 0x00, so raw = 0. That's not mid-scale. So high_byte = 0x80 | 0x02 = 0x82. stream: [0x00, 0x82, 0x00]. raw = ((0x82 & 0x03) << 8) | 0x00 = (0x02 << 8) | 0x00 = 512."
+      },
+      {
+        "name": "ch1_zero",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x80",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch1": 0
+        },
+        "derivation": "stream bytes: [0x00, 0x80, 0x00]. high_byte = 0x80, low_byte = 0x00. raw = ((0x80 & 0x03) << 8) | 0x00 = (0x00 << 8) | 0x00 = 0."
+      },
+      {
+        "name": "ch0_full_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0xFF",
+            "0xC0"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 1023
+        },
+        "derivation": "stream bytes: [0x00, 0xFF, 0xC0]. high_byte = 0xFF, low_byte = 0xC0. raw = ((0xFF & 0x03) << 8) | 0xC0 = (0x03 << 8) | 0xC0 = 0x300 | 0xC0 = 0x3C0 = 960. Wait, that's not 1023. Need raw=1023: high_byte bits [1:0] = 0x03, low_byte = 0xFF. So high_byte = 0x80 | 0x03 = 0x83, low_byte = 0xFF. stream: [0x00, 0x83, 0xFF]. raw = ((0x83 & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x300 | 0xFF = 0x3FF = 1023."
+      }
+    ]
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "command",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.156,
+  "prompt_chars": 39878,
+  "raw_response": "{\"driver_header\": \"#ifndef MCP3008_H\\n#define MCP3008_H\\n\\n#include <stdint.h>\\n#include <zephyr/drivers/spi.h>\\n\\nstruct mcp3008_data {\\n\\tconst struct spi_dt_spec *spi_spec;\\n};\\n\\nint mcp3008_init(struct mcp3008_data *dev, const struct spi_dt_spec *spi_spec);\\nint mcp3008_read_channel(struct mcp3008_data *dev, uint8_t channel, uint16_t *result);\\n\\n#endif /* MCP3008_H */\\n\", \"driver_source\": \"#include \\\"mcp3008.h\\\"\\n#include <stdint.h>\\n#include <zephyr/drivers/spi.h>\\n#include <zephyr/sys/byteorder.h>\\n\\nint mcp3008_init(struct mcp3008_data *dev, const struct spi_dt_spec *spi_spec)\\n{\\n\\tdev->spi_spec = spi_spec;\\n\\treturn 0;\\n}\\n\\nint mcp3008_read_channel(struct mcp3008_data *dev, uint8_t channel, uint16_t *result)\\n{\\n\\tuint8_t tx_buf[3];\\n\\tuint8_t rx_buf[3];\\n\\tconst struct spi_buf tx_bufs[] = {\\n\\t\\t{\\n\\t\\t\\t.buf = tx_buf,\\n\\t\\t\\t.len = sizeof(tx_buf)\\n\\t\\t}\\n\\t};\\n\\tconst struct spi_buf rx_bufs[] = {\\n\\t\\t{\\n\\t\\t\\t.buf = rx_buf,\\n\\t\\t\\t.len = sizeof(rx_buf)\\n\\t\\t}\\n\\t};\\n\\tconst struct spi_buf_set tx = {\\n\\t\\t.buffers = tx_bufs,\\n\\t\\t.count = 1\\n\\t};\\n\\tconst struct spi_buf_set rx = {\\n\\t\\t.buffers = rx_bufs,\\n\\t\\t.count = 1\\n\\t};\\n\\tint ret;\\n\\n\\ttx_buf[0] = 0x01;\\n\\ttx_buf[1] = 0x80 | (channel << 4);\\n\\ttx_buf[2] = 0x00;\\n\\n\\tret = spi_transceive_dt(dev->spi_spec, &tx, &rx);\\n\\tif (ret < 0) {\\n\\t\\treturn ret;\\n\\t}\\n\\n\\t*result = ((uint16_t)(rx_buf[1] & 0x03) << 8) | (uint16_t)rx_buf[2];\\n\\treturn 0;\\n}\\n\"}",
+  "plan_hash": "3caf9d4dac5ec364"
+}

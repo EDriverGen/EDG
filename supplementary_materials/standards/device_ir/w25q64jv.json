@@ -1,0 +1,773 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "w25q64jv",
+  "scope": "Standard SPI reads, page programming, 4 KB erasure, identification, reset, and power-down for W25Q64JV-IQ/JQ; other represented status bits and timing are additional accuracy checks.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "geometry",
+        "read",
+        "program",
+        "erase",
+        "identity",
+        "cs_active",
+        "byte_boundary",
+        "spi_modes",
+        "status_opcodes",
+        "quad_requirement"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "bp_bits",
+        "sec_tb_bits",
+        "sr2_fields",
+        "suspend_flag",
+        "driver_strength_bits",
+        "wps"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "page_boundary",
+        "erased_before_program",
+        "reset"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "read_clock",
+        "timing_0",
+        "timing_1",
+        "timing_2",
+        "timing_3",
+        "timing_4",
+        "timing_5",
+        "timing_6",
+        "timing_7",
+        "timing_8",
+        "timing_9",
+        "timing_10",
+        "timing_11",
+        "timing_12",
+        "timing_13",
+        "timing_14",
+        "timing_15",
+        "timing_16"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "raw_data"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "busy",
+        "wel",
+        "protection",
+        "powerdown"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "W25Q64JV.pdf",
+      "pages": 81,
+      "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "geometry",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "64 Mbit=8 MiB, 256-byte pages, 24-bit addresses.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Send 03h and a three-byte, most-significant-byte-first address, then read consecutive bytes.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "program",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "After 06h sets write enable, send 02h, a 24-bit address, and at most 256 data bytes; then wait for BUSY to clear.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "erase",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "20h plus a 24-bit address erases a 4 KB sector.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "identity",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "9Fh reads the three-byte identifier EF 40 17 for the IQ/JQ series.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 50,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw_data",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Return stored bytes and identifier values unchanged; interpret flags bitwise.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 50,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "busy",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "SR1 bit0 is BUSY; poll status to detect completion of programming/erasure.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wel",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "SR1 bit1 is WEL; it must be set before writing/erasing and clears on completion.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "protection",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Write/erase commands targeting protected regions are not executed.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cs_active",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "A falling /CS starts an instruction; /CS remains low throughout instruction transfer.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "byte_boundary",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Raise CS after a complete byte to trigger a programming/erase operation.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 22,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "page_boundary",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Page programming must not cross a 256-byte page boundary; excess data wrap within the current page and overwrite it.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "erased_before_program",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Page Program targets must contain erased FF bytes.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_modes",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Standard SPI supports Mode 0 or Mode 3.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_clock",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The maximum clock for 03h reads is 50 MHz.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 65,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "status_opcodes",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "05h/35h/15h read SR1/2/3, respectively.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Software reset sends 66h followed by 99h; an intervening command cancels reset enable.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 59,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "powerdown",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "B9h enters deep power-down, where only ABh resumes operation; ABh is ineffective while BUSY.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 44,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 45,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_0",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "After VCC reaches its minimum power-up value, wait at least 20 us before asserting CS.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 61,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_1",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Power-up waiting time before write operations is at most 5 ms.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 61,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_2",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Low voltage must persist for at least 100 us to ensure reinitialization after power-down.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 61,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_3",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Entering power-down takes at most 3 us.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_4",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "ABh wake-up without ID takes at most 3 us.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_5",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "ABh wake-up with ID reading takes at most 1.8 us.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_6",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "The next command can be issued within 20 us after a suspend command.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_7",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The next instruction can be issued within 30 us after software reset.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_8",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "The hardware RESET low pulse must last at least 1 us.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_9",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "A nonvolatile status write takes at most 15 ms.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_10",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Page programming takes at most 3 ms.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_11",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "A 4 KB sector erase takes at most 400 ms.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_12",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "A 32 KB block erase takes at most 1600 ms.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_13",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "A 64 KB block erase takes at most 2000 ms.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_14",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Chip erase takes at most 100 s.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 66,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_15",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "CS must be high for at least 50 ns between programming, erase, or write instructions.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 65,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timing_16",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "CS must be high for at least 10 ns between read instructions.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 65,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bp_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "SR1 BP2:0 occupy bits4:2.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sec_tb_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "SR1 SEC is bit6; TB is bit5.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sr2_fields",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "SR2 contains SRL(S8), QE(S9), LB(S13..11), and CMP(S14).",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "suspend_flag",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Global status bit S15 is SUS, indicating suspended erasure/programming.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "driver_strength_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "SR3 DRV0 and DRV1 occupy S21 and S22, respectively.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wps",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "SR3 WPS at S18 selects status-bit protection or individual block locking.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "quad_requirement",
+      "component": "B",
+      "category": "protocol",
+      "required": false,
+      "expected": "The QE requirement applies to Quad instructions; BBh and 92h are Dual instructions.",
+      "evidence": [
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        },
+        {
+          "document": "W25Q64JV.pdf",
+          "pdf_page": 47,
+          "page_text_file": "evidence/datasheets/w25q64jv/W25Q64JV.pages.json"
+        }
+      ]
+    }
+  ]
+}

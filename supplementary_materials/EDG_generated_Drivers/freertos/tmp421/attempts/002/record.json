@@ -1,0 +1,459 @@
+{
+  "attempt": 2,
+  "layer_failed": "probe",
+  "success": false,
+  "total_time_s": 83.383,
+  "bundle_summary": {
+    "device_id": "tmp421",
+    "rtos_id": "freertos",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "header_chars": 336,
+    "source_chars": 3188,
+    "plan_hash": "77016d67c84e6484",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 3,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 10.146
+  },
+  "syntax": {
+    "success": true,
+    "errors": 0,
+    "warnings": 0
+  },
+  "consistency": {
+    "overall": "mixed",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 1,
+    "consistent_count": 2,
+    "summary": "3 stim; 2 L1/L2; 1 llm_only",
+    "stimuli": [
+      {
+        "name": "nominal_positive",
+        "verdict": "llm_only",
+        "layer": "L3",
+        "evidence": "no channel could be L1-verified",
+        "warnings": [
+          "ch=temp_local: bytes=[0x00, 0x19, 0x50, 0x1A, 0x60] no interp = 25625.0",
+          "ch=temp_remote: bytes=[0x00, 0x19, 0x50, 0x1A, 0x60] no interp = 26875.0"
+        ]
+      },
+      {
+        "name": "zero_and_near_zero",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "partial: ch=temp_local:big_endian_u24=0",
+        "warnings": [
+          "ch=temp_remote: bytes=[0x00, 0x00, 0x00, 0x01, 0x00] no interp = 1000.0"
+        ]
+      },
+      {
+        "name": "negative_twos_complement",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=temp_local:derivation `-160*625/10` -> -10000.0 == expected -10000.0; ch=temp_remote:derivation `-160*625/10` -> -10000.0 == expected -10000.0",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 6,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 6,
+    "summary": "6/6 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFE"
+            ]
+          ],
+          "note": "probe_identity: write_then_read",
+          "source": "operation_flows[0].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFE"
+            ]
+          ],
+          "note": "probe_identity: write_then_read Manufacturer ID"
+        },
+        "reason": "prefix overlap: [('0xFE',)] ∈ mechanical [('0xFE',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFF"
+            ]
+          ],
+          "note": "probe_identity: write_then_read",
+          "source": "operation_flows[0].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFF"
+            ]
+          ],
+          "note": "probe_identity: write_then_read Device ID"
+        },
+        "reason": "prefix overlap: [('0xFF',)] ∈ mechanical [('0xFF',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read",
+          "source": "operation_flows[1].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read"
+        },
+        "reason": "prefix overlap: [('0x00',)] ∈ mechanical [('0x00',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x10"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read",
+          "source": "operation_flows[1].steps[2]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x10"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read low byte"
+        },
+        "reason": "prefix overlap: [('0x10',)] ∈ mechanical [('0x10',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x01"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read",
+          "source": "operation_flows[2].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x01"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read"
+        },
+        "reason": "prefix overlap: [('0x01',)] ∈ mechanical [('0x01',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x11"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read",
+          "source": "operation_flows[2].steps[2]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x11"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read low byte"
+        },
+        "reason": "prefix overlap: [('0x11',)] ∈ mechanical [('0x11',)]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFF"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Device ID"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x11"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read low byte"
+      }
+    ]
+  },
+  "adapter_summary": {
+    "device_id": "tmp421",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "source_chars": 2495,
+    "warnings": []
+  },
+  "link": {
+    "success": true,
+    "errors": 0,
+    "warnings": 0,
+    "elf_path": "<RUN_DIR>/attempts/002/stage/out/tmp421_freertos.elf",
+    "text_bytes": 8927,
+    "data_bytes": 96,
+    "bss_bytes": 68
+  },
+  "probe": {
+    "total": 3,
+    "passed": 2,
+    "expectation_failures": 1,
+    "outcomes": [
+      {
+        "stimulus_name": "nominal_positive",
+        "boot_detected": true,
+        "test_done": true,
+        "result_pass": true,
+        "result_err": false,
+        "read_err": null,
+        "read_raw": 25312.0,
+        "read_channels": {
+          "temp_local": 25312.0,
+          "temp_remote": 26375.0
+        },
+        "mem_bytes": [],
+        "mem_probe_addr": null,
+        "mem_probe_len": null,
+        "memory_size_bytes": null,
+        "memory_page_bytes": null,
+        "display_frame_len": null,
+        "display_frame_err": null,
+        "display_status_err": null,
+        "display_status": null,
+        "rtc_get_err": null,
+        "rtc_set_err": null,
+        "rtc_time": {},
+        "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_nominal_positive.jsonl",
+        "output_lines": [
+          "14:44:54.3479 [INFO] usart2: [host: 0.68s (+0.68s)|virt: 0s (+0s)] DRIVER_TEST START",
+          "14:44:54.4475 [INFO] usart2: [host: 0.78s (+99.17ms)|virt: 0s (+0s)] read_ch_temp_local=25312",
+          "14:44:54.4476 [INFO] usart2: [host:  0.78s (+0.16ms)|virt: 0s (+0s)] read_ch_temp_remote=26375",
+          "14:44:54.4476 [INFO] usart2: [host:    0.78s (+99?s)|virt: 0s (+0s)] read_raw=25312",
+          "14:44:54.4477 [INFO] usart2: [host:    0.78s (+69?s)|virt: 0s (+0s)] RESULT: PASS",
+          "14:44:54.4478 [INFO] usart2: [host:    0.78s (+99?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+        ],
+        "error": "",
+        "duration_s": 24.175132274627686,
+        "renode_exit": 0,
+        "expected_read_raw": null,
+        "expected_channels": {},
+        "expected_mem_bytes": null,
+        "expected_time": null,
+        "expected_err": null,
+        "runtime_path": "renode_i2c",
+        "slave_kind": "i2c_register_slave",
+        "spi_sub_mode": "",
+        "bus_kind": "i2c"
+      },
+      {
+        "stimulus_name": "zero_and_near_zero",
+        "boot_detected": true,
+        "test_done": true,
+        "result_pass": true,
+        "result_err": false,
+        "read_err": null,
+        "read_raw": 0.0,
+        "read_channels": {
+          "temp_local": 0.0,
+          "temp_remote": 1000.0
+        },
+        "mem_bytes": [],
+        "mem_probe_addr": null,
+        "mem_probe_len": null,
+        "memory_size_bytes": null,
+        "memory_page_bytes": null,
+        "display_frame_len": null,
+        "display_frame_err": null,
+        "display_status_err": null,
+        "display_status": null,
+        "rtc_get_err": null,
+        "rtc_set_err": null,
+        "rtc_time": {},
+        "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_zero_and_near_zero.jsonl",
+        "output_lines": [
+          "14:45:18.4934 [INFO] usart2: [host: 0.65s (+0.65s)|virt: 0s (+0s)] DRIVER_TEST START",
+          "14:45:18.6043 [INFO] usart2: [host:  0.76s (+0.11s)|virt: 0s (+0s)] read_ch_temp_local=0",
+          "14:45:18.6044 [INFO] usart2: [host: 0.76s (+0.19ms)|virt: 0s (+0s)] read_ch_temp_remote=1000",
+          "14:45:18.6045 [INFO] usart2: [host:   0.76s (+76?s)|virt: 0s (+0s)] read_raw=0",
+          "14:45:18.6046 [INFO] usart2: [host:   0.76s (+87?s)|virt: 0s (+0s)] RESULT: PASS",
+          "14:45:18.6047 [INFO] usart2: [host:   0.76s (+99?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+        ],
+        "error": "",
+        "duration_s": 24.251351833343506,
+        "renode_exit": 0,
+        "expected_read_raw": null,
+        "expected_channels": {},
+        "expected_mem_bytes": null,
+        "expected_time": null,
+        "expected_err": null,
+        "runtime_path": "renode_i2c",
+        "slave_kind": "i2c_register_slave",
+        "spi_sub_mode": "",
+        "bus_kind": "i2c"
+      },
+      {
+        "stimulus_name": "negative_twos_complement",
+        "boot_detected": true,
+        "test_done": true,
+        "result_pass": true,
+        "result_err": false,
+        "read_err": null,
+        "read_raw": -10000.0,
+        "read_channels": {
+          "temp_local": -10000.0,
+          "temp_remote": -10000.0
+        },
+        "mem_bytes": [],
+        "mem_probe_addr": null,
+        "mem_probe_len": null,
+        "memory_size_bytes": null,
+        "memory_page_bytes": null,
+        "display_frame_len": null,
+        "display_frame_err": null,
+        "display_status_err": null,
+        "display_status": null,
+        "rtc_get_err": null,
+        "rtc_set_err": null,
+        "rtc_time": {},
+        "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_negative_twos_complement.jsonl",
+        "output_lines": [
+          "14:45:42.6999 [INFO] usart2: [host: 0.62s (+0.62s)|virt: 0s (+0s)] DRIVER_TEST START",
+          "14:45:42.7999 [INFO] usart2: [host: 0.72s (+99.39ms)|virt: 0s (+0s)] read_ch_temp_local=-10000",
+          "14:45:42.8001 [INFO] usart2: [host:  0.72s (+0.18ms)|virt: 0s (+0s)] read_ch_temp_remote=-10000",
+          "14:45:42.8002 [INFO] usart2: [host:  0.72s (+0.12ms)|virt: 0s (+0s)] read_raw=-10000",
+          "14:45:42.8023 [INFO] usart2: [host:  0.73s (+2.17ms)|virt: 0s (+0s)] RESULT: PASS",
+          "14:45:42.8050 [INFO] usart2: [host:  0.73s (+2.63ms)|virt: 0.1ms (+0.1ms)] DRIVER_TEST DONE"
+        ],
+        "error": "",
+        "duration_s": 24.170092344284058,
+        "renode_exit": 0,
+        "expected_read_raw": null,
+        "expected_channels": {},
+        "expected_mem_bytes": null,
+        "expected_time": null,
+        "expected_err": null,
+        "runtime_path": "renode_i2c",
+        "slave_kind": "i2c_register_slave",
+        "spi_sub_mode": "",
+        "bus_kind": "i2c"
+      }
+    ]
+  },
+  "feedback_chars": 3674
+}

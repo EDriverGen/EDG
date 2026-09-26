@@ -1,0 +1,2364 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "chibios",
+    "board": "STM32F103RB-NUCLEO64",
+    "mcu_family": "stm32f1",
+    "integration": "chibios_hal_driver_layer",
+    "integration_style": "chibios_hal_plus_rt_kernel",
+    "bus_intent": {
+      "canonical_bus": "i2c",
+      "connection_type": "i2c",
+      "mode": "polling",
+      "backend": "ChibiOS HAL I2C driver",
+      "address_mode": "7-bit",
+      "bus_instance": "I2CD1"
+    },
+    "device_id": "mpu6050",
+    "device_ir_hash": "d87680ab382352d9",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "chibios:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/chibios",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "chibios",
+      "sha": "d6e8ac9"
+    }
+  ],
+  "slots": {
+    "i2c.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cAcquireBus"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "i2c.addressing": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "macro",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "address_rule",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "i2c.addressing",
+        "fulfillment_kind": "context_binding",
+        "source": "device_ir.address_rule+task_context.device_attachment",
+        "confidence": 0.9,
+        "value": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x68",
+              "description": "Default I2C address (AD0 = 0)",
+              "is_default": true
+            },
+            {
+              "address": "0x69",
+              "description": "Alternate I2C address (AD0 = 1)",
+              "is_default": false
+            }
+          ]
+        },
+        "fields": {
+          "address_rule": {
+            "type": "address_pins",
+            "addressing_form": "7-bit",
+            "addresses": [
+              {
+                "address": "0x68",
+                "description": "Default I2C address (AD0 = 0)",
+                "is_default": true
+              },
+              {
+                "address": "0x69",
+                "description": "Alternate I2C address (AD0 = 1)",
+                "is_default": false
+              }
+            ]
+          },
+          "addressing": {
+            "default": "0x68",
+            "alternates": [
+              "0x69"
+            ],
+            "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+          },
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+        ]
+      },
+      "confidence": 0.9
+    },
+    "i2c.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cstate_t"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "i2c.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "I2CDriver",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+            "source_slot": "i2c.acquire_or_bind",
+            "source_symbol": "i2cAcquireBus",
+            "signature": "void i2cAcquireBus(I2CDriver *i2cp)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          },
+          {
+            "symbol": "msg_t",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+            "source_slot": "i2c.read",
+            "source_symbol": "i2cMasterReceiveTimeout",
+            "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          },
+          {
+            "symbol": "i2caddr_t",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+            "source_slot": "i2c.read",
+            "source_symbol": "i2cMasterReceiveTimeout",
+            "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          },
+          {
+            "symbol": "sysinterval_t",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+            "source_slot": "i2c.read",
+            "source_symbol": "i2cMasterReceiveTimeout",
+            "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.read": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cMasterReceiveTimeout"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "i2c.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cMasterTransmitTimeout"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "i2c.write": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cMasterTransmitTimeout"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "multi_symbol_evidence",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.8,
+        "symbols": [
+          {
+            "symbol": "msg_t",
+            "kind": "type_ref",
+            "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+            "source_slot": "i2c.read",
+            "source_symbol": "i2cMasterReceiveTimeout",
+            "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error evidence is derived from return/status types used by bound APIs."
+        ]
+      },
+      "confidence": 0.8
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "I2CD1",
+        "fields": {
+          "bus_instance": "I2CD1",
+          "bus_symbol": "I2CD1",
+          "backend": "ChibiOS HAL I2C driver",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.release": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cReleaseBus"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    }
+  },
+  "symbols": {
+    "i2c.acquire_or_bind": {
+      "slot_id": "i2c.acquire_or_bind",
+      "symbol": "i2cAcquireBus",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void i2cAcquireBus(I2CDriver *i2cp)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0"
+      ]
+    },
+    "i2c.read": {
+      "slot_id": "i2c.read",
+      "symbol": "i2cMasterReceiveTimeout",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0"
+      ]
+    },
+    "i2c.write": {
+      "slot_id": "i2c.write",
+      "symbol": "i2cMasterTransmitTimeout",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "msg_t i2cMasterTransmitTimeout(I2CDriver *i2cp, i2caddr_t addr, const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0"
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "symbol": "i2cstate_t",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "enum { I2C_UNINIT = 0, /**< @brief Not initialized. */ I2C_STOP = 1, /**< @brief Stopped. */ I2C_REA",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:i2cstate_t is a ChibiOS I2C state typedef from the public HAL header, matching the slot's I2C bus context and expected k"
+      ]
+    },
+    "i2c.transfer": {
+      "slot_id": "i2c.transfer",
+      "symbol": "i2cMasterTransmitTimeout",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "msg_t i2cMasterTransmitTimeout(I2CDriver *i2cp, i2caddr_t addr, const uint8_t *txbuf, size_t txbytes, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:ChibiOS HAL public API function i2cMasterTransmitTimeout matches slot intent for I2C transfer with both transmit and rec"
+      ]
+    },
+    "i2c.release": {
+      "slot_id": "i2c.release",
+      "symbol": "i2cReleaseBus",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void i2cReleaseBus(I2CDriver *i2cp)",
+      "signature_source": "parser",
+      "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+      "implemented_in": null,
+      "required_headers": [
+        "os/hal/include/hal_i2c.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "chibios:single:0",
+          "path": "os/hal/include/hal_i2c.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[i2c]+2.0",
+        "llm_bound:i2cReleaseBus matches the slot intent and is a public HAL function from ChibiOS, fitting the task context."
+      ]
+    }
+  },
+  "_symbol_index": {
+    "i2cAcquireBus": [
+      "i2c.acquire_or_bind"
+    ],
+    "i2cMasterReceiveTimeout": [
+      "i2c.read"
+    ],
+    "i2cMasterTransmitTimeout": [
+      "i2c.write",
+      "i2c.transfer"
+    ],
+    "i2cstate_t": [
+      "i2c.key_types"
+    ],
+    "i2cReleaseBus": [
+      "i2c.release"
+    ]
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x68",
+            "description": "Default I2C address (AD0 = 0)",
+            "is_default": true
+          },
+          {
+            "address": "0x69",
+            "description": "Alternate I2C address (AD0 = 1)",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x68",
+              "description": "Default I2C address (AD0 = 0)",
+              "is_default": true
+            },
+            {
+              "address": "0x69",
+              "description": "Alternate I2C address (AD0 = 1)",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x68",
+          "alternates": [
+            "0x69"
+          ],
+          "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "I2CDriver",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "i2cAcquireBus",
+          "signature": "void i2cAcquireBus(I2CDriver *i2cp)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "i2caddr_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "sysinterval_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "I2CD1",
+      "fields": {
+        "bus_instance": "I2CD1",
+        "bus_symbol": "I2CD1",
+        "backend": "ChibiOS HAL I2C driver",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "7-bit",
+        "addresses": [
+          {
+            "address": "0x68",
+            "description": "Default I2C address (AD0 = 0)",
+            "is_default": true
+          },
+          {
+            "address": "0x69",
+            "description": "Alternate I2C address (AD0 = 1)",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "7-bit",
+          "addresses": [
+            {
+              "address": "0x68",
+              "description": "Default I2C address (AD0 = 0)",
+              "is_default": true
+            },
+            {
+              "address": "0x69",
+              "description": "Alternate I2C address (AD0 = 1)",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "0x68",
+          "alternates": [
+            "0x69"
+          ],
+          "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "I2CD1",
+      "fields": {
+        "bus_instance": "I2CD1",
+        "bus_symbol": "I2CD1",
+        "backend": "ChibiOS HAL I2C driver",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "I2CDriver",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "i2cAcquireBus",
+          "signature": "void i2cAcquireBus(I2CDriver *i2cp)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "i2caddr_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "sysinterval_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "msg_t",
+          "kind": "type_ref",
+          "declared_in": "chibios:single:0::os/hal/include/hal_i2c.h",
+          "source_slot": "i2c.read",
+          "source_symbol": "i2cMasterReceiveTimeout",
+          "signature": "msg_t i2cMasterReceiveTimeout(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes, sysinterval_t timeout)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "I2CD1",
+    "bus_symbol": "I2CD1",
+    "backend": "ChibiOS HAL I2C driver",
+    "mode": "polling",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "device_attachment": {
+      "device_id": "mpu6050",
+      "attachment_type": "i2c_sensor",
+      "required_bus_type": "i2c",
+      "address_mode": "7-bit",
+      "addressing": {
+        "default": "0x68",
+        "alternates": [
+          "0x69"
+        ],
+        "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+      },
+      "required_attachment": {
+        "signals": [],
+        "notes": [
+          "Minimal driver only needs I2C access to power management and sensor data registers."
+        ]
+      },
+      "optional_attachment": {
+        "ad0_pin": "optional",
+        "int_pin": "optional"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "notes": [
+        "Reference drivers wake the part from sleep and switch to PLL clocking before data reads."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/mpu6050/MPU6050.pdf",
+        "DriverGen/data/raw/mpu6050/MPU6050_RegisterMap.pdf",
+        "DriverGen/data/references/mpu6050/*/*_ref.h"
+      ]
+    },
+    "include_headers": [
+      "ccportab.h",
+      "ch.h",
+      "chporttypes.h",
+      "chtypes.h",
+      "core_cm3.h",
+      "hal.h",
+      "hal_adc_lld.h",
+      "hal_dac_lld.h",
+      "hal_i2c_lld.h",
+      "hal_rtc_lld.h",
+      "hal_usb_lld.h",
+      "os/common/ext/ST/STM32F1xx/stm32f100xb.h",
+      "os/common/ext/ST/STM32F1xx/stm32f101xb.h",
+      "os/common/ext/ST/STM32F1xx/system_stm32f1xx.h",
+      "os/common/ports/ARM-common/include/chtypes.h",
+      "os/hal/include/hal.h",
+      "os/hal/include/hal_adc.h",
+      "os/hal/include/hal_dac.h",
+      "os/hal/include/hal_i2c.h",
+      "os/hal/include/hal_i2s.h",
+      "os/hal/include/hal_ioblock.h",
+      "os/hal/include/hal_mac.h",
+      "os/hal/include/hal_rtc.h",
+      "os/hal/include/hal_sio.h",
+      "os/hal/include/hal_spi_v1.h",
+      "os/hal/include/hal_usb.h",
+      "os/hal/lib/fallback/I2C/hal_i2c_lld.h",
+      "os/hal/osal/lib/osal_vt.h",
+      "os/hal/osal/os-less/ARMCMx/osal.h",
+      "os/hal/osal/os-less/AVR/osal.h",
+      "os/hal/osal/rt-nil/osal.h",
+      "os/hal/osal/sb/osal.h",
+      "os/hal/ports/STM32/LLD/ADCv1/hal_adc_lld.h",
+      "os/hal/ports/STM32/LLD/DACv1/hal_dac_lld.h",
+      "os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.h",
+      "os/hal/ports/STM32/LLD/I2Cv2/hal_i2c_lld.h",
+      "os/hal/ports/STM32/LLD/I2Cv3/hal_i2c_lld.h",
+      "os/hal/ports/STM32/LLD/I2Cv4/hal_i2c_lld.h",
+      "os/hal/ports/STM32/LLD/OTGv1/hal_usb_lld.h",
+      "os/hal/ports/STM32/LLD/RTCv1/hal_rtc_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.h",
+      "os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.h",
+      "os/hal/ports/STM32/STM32F1xx/stm32_isr.h",
+      "os/nil/include/ch.h",
+      "os/nil/include/chevt.h",
+      "os/nil/include/chsem.h",
+      "os/oslib/include/chbsem.h",
+      "os/oslib/include/chmboxes.h",
+      "os/oslib/include/chobjfifos.h",
+      "os/oslib/include/chpipes.h",
+      "os/rt/include/chcond.h",
+      "os/rt/include/chearly.h",
+      "os/rt/include/chevents.h",
+      "os/rt/include/chinstances.h",
+      "os/rt/include/chobjects.h",
+      "os/rt/include/chschd.h",
+      "os/rt/include/chsem.h",
+      "os/rt/include/chsys.h",
+      "os/rt/include/chthreads.h",
+      "osal.h",
+      "osal_vt.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stm32_otg.h",
+      "string.h",
+      "system_stm32f1xx.h",
+      "time.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 8,
+        "n_macros": 27,
+        "n_typedefs": 6,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_i2c.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 12,
+        "n_macros": 17,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv4/hal_i2c_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.write"
+        ],
+        "n_functions": 11,
+        "n_macros": 31,
+        "n_typedefs": 4,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv2/hal_i2c_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.write"
+        ],
+        "n_functions": 8,
+        "n_macros": 29,
+        "n_typedefs": 4,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv3/hal_i2c_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.write"
+        ],
+        "n_functions": 8,
+        "n_macros": 37,
+        "n_typedefs": 4,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/lib/fallback/I2C/hal_i2c_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 5,
+        "n_macros": 7,
+        "n_typedefs": 5,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/stm32_isr.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 2,
+        "n_macros": 94,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_usb.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types"
+        ],
+        "n_functions": 20,
+        "n_macros": 84,
+        "n_typedefs": 13,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 11,
+        "n_macros": 82,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 12,
+        "n_macros": 81,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/common/ext/ST/STM32F1xx/stm32f100xb.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 0,
+        "n_macros": 4620,
+        "n_typedefs": 25,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/common/ext/ST/STM32F1xx/stm32f101xb.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 0,
+        "n_macros": 4292,
+        "n_typedefs": 23,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_adc.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 11,
+        "n_macros": 3,
+        "n_typedefs": 6,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_ioblock.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 8,
+        "n_macros": 13,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_sio.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_dac.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 18,
+        "n_typedefs": 6,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_i2s.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_mac.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_rtc.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 17,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/include/hal_spi_v1.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/sb/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/ARMCMx/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/AVR/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/rt-nil/osal.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chsys.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chthreads.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chmboxes.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chobjfifos.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chbsem.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 10,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/nil/include/ch.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/nil/include/chevt.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 15,
+        "n_macros": 17,
+        "n_typedefs": 3,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chevents.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/nil/include/chsem.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/oslib/include/chpipes.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 8,
+        "n_macros": 4,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chcond.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 10,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chschd.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 13,
+        "n_macros": 30,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chsem.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 17,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chinstances.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chobjects.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/include/chearly.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 10,
+        "n_typedefs": 44,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/common/ext/ST/STM32F1xx/system_stm32f1xx.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/common/ports/ARM-common/include/chtypes.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 15,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/lib/osal_vt.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 5,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/ADCv1/hal_adc_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 12,
+        "n_macros": 73,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/DACv1/hal_dac_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 6,
+        "n_macros": 45,
+        "n_typedefs": 5,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/OTGv1/hal_usb_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types"
+        ],
+        "n_functions": 16,
+        "n_macros": 34,
+        "n_typedefs": 5,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/RTCv1/hal_rtc_lld.h",
+        "root_id": "chibios:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 9,
+        "n_macros": 6,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "os/hal/src/hal_i2c.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 12,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 15,
+        "n_macros": 25,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv2/hal_i2c_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 14,
+        "n_macros": 15,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv3/hal_i2c_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 20,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/I2Cv4/hal_i2c_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 22,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/lib/fallback/I2C/hal_i2c_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 18,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/ARMCMx/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 21,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/os-less/AVR/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 21,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/sb/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 6,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/src/hal_gpt.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/src/chsys.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 9,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/src/chvt.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/rt/src/chinstances.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/osal/rt-nil/osal.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 23,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 20,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "os/hal/ports/STM32/STM32F1xx/stm32_isr.c",
+        "root_id": "chibios:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "i2c.addressing"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": []
+  },
+  "transaction_templates": [
+    {
+      "template_id": "mpu6050_init_sequence",
+      "steps": [
+        {
+          "op": "i2c_write",
+          "args": {
+            "bytes": [
+              "0x6B",
+              "0x00"
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": null
+          },
+          "slot_id": "i2c.write",
+          "bound_symbol": "i2cMasterTransmitTimeout",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.5,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "mpu6050_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x3B"
+            ],
+            "length": 14,
+            "pointer_target": "ACCEL_XOUT_H",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "i2cMasterTransmitTimeout",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.9,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [
+      "slot_coverage"
+    ],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'chibios' is integrated; n_roots=1 (no minimum)",
+        "evidence": {
+          "rtos_id": "chibios",
+          "n_roots": 1
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": false,
+        "severity": "error",
+        "message": "1 required slot(s) uncovered: ['runtime.delay_ms']",
+        "evidence": {
+          "missing_required": [
+            "runtime.delay_ms"
+          ],
+          "non_symbol_fulfillments": [
+            "i2c.addressing",
+            "i2c.key_types",
+            "integration.bus_instance_binding",
+            "runtime.error_status"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (6 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "chibios:single:0::os/hal/include/hal_i2c.h",
+            "chibios:single:0::os/hal/include/hal_i2c.h",
+            "chibios:single:0::os/hal/include/hal_i2c.h",
+            "chibios:single:0::os/hal/include/hal_i2c.h",
+            "chibios:single:0::os/hal/include/hal_i2c.h",
+            "chibios:single:0::os/hal/include/hal_i2c.h"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [
+          "i2c.acquire_or_bind",
+          "i2c.read",
+          "i2c.write"
+        ],
+        "missing_slots": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.transfer",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "i2c.release"
+        ],
+        "new_files_added": [
+          "chibios:single:0::os/hal/src/hal_i2c.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.h",
+          "chibios:single:0::os/hal/include/hal_i2c.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv4/hal_i2c_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv2/hal_i2c_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv3/hal_i2c_lld.h",
+          "chibios:single:0::os/hal/lib/fallback/I2C/hal_i2c_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/stm32_isr.h",
+          "chibios:single:0::os/hal/include/hal_usb.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.h",
+          "chibios:single:0::os/common/ext/ST/STM32F1xx/stm32f100xb.h",
+          "chibios:single:0::os/common/ext/ST/STM32F1xx/stm32f101xb.h",
+          "chibios:single:0::os/hal/include/hal_adc.h",
+          "chibios:single:0::os/hal/include/hal_ioblock.h",
+          "chibios:single:0::os/hal/include/hal_sio.h",
+          "chibios:single:0::os/hal/include/hal.h",
+          "chibios:single:0::os/hal/include/hal_dac.h",
+          "chibios:single:0::os/hal/include/hal_i2s.h",
+          "chibios:single:0::os/hal/include/hal_mac.h",
+          "chibios:single:0::os/hal/include/hal_rtc.h",
+          "chibios:single:0::os/hal/include/hal_spi_v1.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv2/hal_i2c_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv3/hal_i2c_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/I2Cv4/hal_i2c_lld.c",
+          "chibios:single:0::os/hal/lib/fallback/I2C/hal_i2c_lld.c",
+          "chibios:single:0::os/hal/osal/sb/osal.h",
+          "chibios:single:0::os/hal/osal/os-less/ARMCMx/osal.c",
+          "chibios:single:0::os/hal/osal/os-less/ARMCMx/osal.h",
+          "chibios:single:0::os/hal/osal/os-less/AVR/osal.c",
+          "chibios:single:0::os/hal/osal/os-less/AVR/osal.h",
+          "chibios:single:0::os/hal/osal/rt-nil/osal.h",
+          "chibios:single:0::os/hal/osal/sb/osal.c",
+          "chibios:single:0::os/hal/src/hal_gpt.c",
+          "chibios:single:0::os/rt/include/chsys.h",
+          "chibios:single:0::os/rt/include/chthreads.h",
+          "chibios:single:0::os/rt/src/chsys.c",
+          "chibios:single:0::os/rt/src/chvt.c",
+          "chibios:single:0::os/oslib/include/chmboxes.h",
+          "chibios:single:0::os/oslib/include/chobjfifos.h",
+          "chibios:single:0::os/oslib/include/chbsem.h",
+          "chibios:single:0::os/nil/include/ch.h",
+          "chibios:single:0::os/nil/include/chevt.h",
+          "chibios:single:0::os/rt/include/chevents.h",
+          "chibios:single:0::os/nil/include/chsem.h",
+          "chibios:single:0::os/oslib/include/chpipes.h",
+          "chibios:single:0::os/rt/include/chcond.h",
+          "chibios:single:0::os/rt/include/chschd.h",
+          "chibios:single:0::os/rt/include/chsem.h",
+          "chibios:single:0::os/rt/include/chinstances.h",
+          "chibios:single:0::os/rt/include/chobjects.h",
+          "chibios:single:0::os/rt/src/chinstances.c",
+          "chibios:single:0::os/rt/include/chearly.h",
+          "chibios:single:0::os/common/ext/ST/STM32F1xx/system_stm32f1xx.h",
+          "chibios:single:0::os/common/ports/ARM-common/include/chtypes.h",
+          "chibios:single:0::os/hal/osal/lib/osal_vt.h",
+          "chibios:single:0::os/hal/osal/rt-nil/osal.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/ADCv1/hal_adc_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/DACv1/hal_dac_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/OTGv1/hal_usb_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/RTCv1/hal_rtc_lld.h",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv3/hal_spi_v2_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/LLD/SPIv4/hal_spi_v2_lld.c",
+          "chibios:single:0::os/hal/ports/STM32/STM32F1xx/stm32_isr.c"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 60426,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "i2c.key_types",
+          "i2c.transfer",
+          "i2c.release"
+        ],
+        "missing_slots": [
+          "i2c.addressing",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "integration.bus_instance_binding"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 6
+        },
+        "token_usage": {
+          "input_tokens_delta": 16021,
+          "output_tokens_delta": 4200,
+          "input_tokens_total": 76447,
+          "output_tokens_total": 12600
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 10,
+    "n_bound": 6,
+    "n_fulfilled": 9,
+    "n_non_symbol_fulfillments": 4,
+    "n_required": 9,
+    "n_required_bound": 8,
+    "n_required_fulfilled": 8,
+    "n_required_symbol_bound": 5,
+    "provenance": {
+      "manifest_repo": 6,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 2.05,
+      "dir_router_llm": 23963.42,
+      "file_selector": 87.78,
+      "file_selector_llm": 22459.17,
+      "exact_symbol_file_backfill": 25.03,
+      "deep_parse": 372.46,
+      "include_expand": 89.97,
+      "symbol_rank": 2028.25,
+      "binder_deterministic": 3.18,
+      "binder_llm": 11443.72,
+      "gap_diagnoser_llm": 9685.42,
+      "source_kind_classifier": 0.03
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 6,
+        "gap_diagnoser": 4
+      },
+      "input_tokens_total": 79963,
+      "output_tokens_total": 14600,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

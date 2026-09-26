@@ -1,0 +1,80 @@
+{
+  "device_id": "tmp105",
+  "rtos_id": "threadx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef TMP105_H\n#define TMP105_H\n\n#include <stdint.h>\n\nstruct tmp105_dev {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint tmp105_init(struct tmp105_dev *dev, void *bus_handle);\nint tmp105_read_temperature(struct tmp105_dev *dev, int32_t *raw);\n\n#endif",
+  "driver_source": "#include \"tmp105.h\"\n#include \"stm32f1xx_hal.h\"\n#include \"tx_api.h\"\n\n#include \"threadx.h\"\n#define TMP105_I2C_ADDR 0x48\n#define TMP105_PTR_TEMP 0x00\n\nstatic int tmp105_write_then_read(struct tmp105_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    HAL_StatusTypeDef ret;\n    ret = HAL_I2C_Mem_Read((I2C_HandleTypeDef *)dev->bus_handle,\n                           (uint16_t)(dev->i2c_addr << 1),\n                           reg,\n                           I2C_MEMADD_SIZE_8BIT,\n                           buf,\n                           len,\n                           100);\n    return (ret == HAL_OK) ? 0 : -1;\n}\n\nint tmp105_init(struct tmp105_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = TMP105_I2C_ADDR;\n    return 0;\n}\n\nint tmp105_read_temperature(struct tmp105_dev *dev, int32_t *raw)\n{\n    uint8_t buf[2];\n    int ret;\n    int16_t raw12;\n    int32_t milli;\n\n    tx_thread_sleep(220);\n\n    ret = tmp105_write_then_read(dev, TMP105_PTR_TEMP, buf, 2);\n    if (ret != 0) {\n        return -1;\n    }\n\n    raw12 = (int16_t)(((uint16_t)buf[0] << 8) | buf[1]);\n    raw12 >>= 4;\n    if (raw12 & 0x0800) {\n        raw12 |= 0xF000;\n    }\n\n    milli = ((int32_t)raw12 * 625) / 10;\n    *raw = milli;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "tmp105_init(&g_eval_dev, bus_handle)",
+    "read_call": "tmp105_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct tmp105_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x19",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x19 0x00 decode to raw=((((0x19 << 8) | 0x00) >> 4) & 0xFFF) = 400; public value in milli_degC is (400 * 125) // 2 = 25000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 4) & 0xFFF) = 0; public value in milli_degC is (0 * 125) // 2 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xE7",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xE7 0x00 decode to raw=(((((0xE7 << 8) | 0x00) >> 4) & 0xFFF) - 4096) = -400; public value in milli_degC is (-400 * 125) // 2 = -25000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.848,
+  "prompt_chars": 33512,
+  "raw_response": "{\"driver_header\": \"#ifndef TMP105_H\\n#define TMP105_H\\n\\n#include <stdint.h>\\n\\nstruct tmp105_dev {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint tmp105_init(struct tmp105_dev *dev, void *bus_handle);\\nint tmp105_read_temperature(struct tmp105_dev *dev, int32_t *raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"tmp105.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"tx_api.h\\\"\\n\\n#define TMP105_I2C_ADDR 0x48\\n#define TMP105_PTR_TEMP 0x00\\n\\nstatic int tmp105_write_then_read(struct tmp105_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    HAL_StatusTypeDef ret;\\n    ret = HAL_I2C_Mem_Read((I2C_HandleTypeDef *)dev->bus_handle,\\n                           (uint16_t)(dev->i2c_addr << 1),\\n                           reg,\\n                           I2C_MEMADD_SIZE_8BIT,\\n                           buf,\\n                           len,\\n                           100);\\n    return (ret == HAL_OK) ? 0 : -1;\\n}\\n\\nint tmp105_init(struct tmp105_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = TMP105_I2C_ADDR;\\n    return 0;\\n}\\n\\nint tmp105_read_temperature(struct tmp105_dev *dev, int32_t *raw)\\n{\\n    uint8_t buf[2];\\n    int ret;\\n    int16_t raw12;\\n    int32_t milli;\\n\\n    tx_thread_sleep(220);\\n\\n    ret = tmp105_write_then_read(dev, TMP105_PTR_TEMP, buf, 2);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n\\n    raw12 = (int16_t)(((uint16_t)buf[0] << 8) | buf[1]);\\n    raw12 >>= 4;\\n    if (raw12 & 0x0800) {\\n        raw12 |= 0xF000;\\n    }\\n\\n    milli = ((int32_t)raw12 * 625) / 10;\\n    *raw = milli;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "9bdae15d9fe94713"
+}

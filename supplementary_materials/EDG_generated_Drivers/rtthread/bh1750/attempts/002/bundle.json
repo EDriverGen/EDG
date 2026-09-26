@@ -1,0 +1,76 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "rtthread",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef BH1750_H\n#define BH1750_H\n\n#include <stdint.h>\n#include <rtdevice.h>\n\n#define BH1750_I2C_ADDR 0x23\n\ntypedef struct {\n    struct rt_i2c_bus_device *bus;\n    uint8_t i2c_addr;\n    uint8_t mt_reg;\n} bh1750_device_t;\n\nint bh1750_init(bh1750_device_t *dev, struct rt_i2c_bus_device *bus);\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw);\n\n#endif\n",
+  "driver_source": "#include \"bh1750.h\"\n#include <rtthread.h>\n\n#define BH1750_POWER_ON 0x01\n#define BH1750_RESET 0x07\n#define BH1750_CONT_H_RES_MODE 0x10\n#define BH1750_CONT_H_RES_MODE2 0x11\n#define BH1750_CONT_L_RES_MODE 0x13\n#define BH1750_ONE_TIME_H_RES_MODE 0x20\n#define BH1750_ONE_TIME_H_RES_MODE2 0x21\n#define BH1750_ONE_TIME_L_RES_MODE 0x23\n\nstatic int bh1750_write_cmd(bh1750_device_t *dev, uint8_t cmd)\n{\n    struct rt_i2c_msg msg;\n    uint8_t buf[1] = {cmd};\n    msg.addr = dev->i2c_addr;\n    msg.flags = RT_I2C_WR;\n    msg.len = 1;\n    msg.buf = buf;\n    if (rt_i2c_transfer(dev->bus, &msg, 1) != 1)\n        return -1;\n    return 0;\n}\n\nstatic int bh1750_read_raw(bh1750_device_t *dev, uint16_t *raw)\n{\n    struct rt_i2c_msg msg;\n    uint8_t buf[2];\n    msg.addr = dev->i2c_addr;\n    msg.flags = RT_I2C_RD;\n    msg.len = 2;\n    msg.buf = buf;\n    if (rt_i2c_transfer(dev->bus, &msg, 1) != 1)\n        return -1;\n    *raw = ((uint16_t)buf[0] << 8) | buf[1];\n    return 0;\n}\n\nint bh1750_init(bh1750_device_t *dev, struct rt_i2c_bus_device *bus)\n{\n    dev->bus = bus;\n    dev->i2c_addr = BH1750_I2C_ADDR;\n    dev->mt_reg = 69;\n    return 0;\n}\n\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw)\n{\n    int ret;\n    ret = bh1750_write_cmd(dev, BH1750_CONT_H_RES_MODE);\n    if (ret != 0)\n        return -1;\n    rt_thread_mdelay(180);\n    ret = bh1750_read_raw(dev, raw);\n    if (ret != 0)\n        return -1;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "uint16_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "bh1750_device_t",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "continuous_h_resolution_mode: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "continuous_h_resolution_mode: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "continuous_h_resolution_typical",
+        "mock_preload": {
+          "read_bytes": [
+            "0x12",
+            "0x34"
+          ]
+        },
+        "expected_read_raw": 4660,
+        "derivation": "single_channel raw-primary normalization: bytes [0x12 0x34] -> raw_count=4660. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      },
+      {
+        "name": "continuous_h_resolution_mode2_high",
+        "mock_preload": {
+          "read_bytes": [
+            "0xFF",
+            "0xFE"
+          ]
+        },
+        "expected_read_raw": 65534,
+        "derivation": "single_channel raw-primary normalization: bytes [0xFF 0xFE] -> raw_count=65534. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      }
+    ],
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.436,
+  "prompt_chars": 27840,
+  "raw_response": "{\"driver_header\": \"#ifndef BH1750_H\\n#define BH1750_H\\n\\n#include <stdint.h>\\n#include <rtdevice.h>\\n\\n#define BH1750_I2C_ADDR 0x23\\n\\ntypedef struct {\\n    struct rt_i2c_bus_device *bus;\\n    uint8_t i2c_addr;\\n    uint8_t mt_reg;\\n} bh1750_device_t;\\n\\nint bh1750_init(bh1750_device_t *dev, struct rt_i2c_bus_device *bus);\\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"bh1750.h\\\"\\n#include <rtthread.h>\\n\\n#define BH1750_POWER_ON 0x01\\n#define BH1750_RESET 0x07\\n#define BH1750_CONT_H_RES_MODE 0x10\\n#define BH1750_CONT_H_RES_MODE2 0x11\\n#define BH1750_CONT_L_RES_MODE 0x13\\n#define BH1750_ONE_TIME_H_RES_MODE 0x20\\n#define BH1750_ONE_TIME_H_RES_MODE2 0x21\\n#define BH1750_ONE_TIME_L_RES_MODE 0x23\\n\\nstatic int bh1750_write_cmd(bh1750_device_t *dev, uint8_t cmd)\\n{\\n    struct rt_i2c_msg msg;\\n    uint8_t buf[1] = {cmd};\\n    msg.addr = dev->i2c_addr;\\n    msg.flags = RT_I2C_WR;\\n    msg.len = 1;\\n    msg.buf = buf;\\n    if (rt_i2c_transfer(dev->bus, &msg, 1) != 1)\\n        return -1;\\n    return 0;\\n}\\n\\nstatic int bh1750_read_raw(bh1750_device_t *dev, uint16_t *raw)\\n{\\n    struct rt_i2c_msg msg;\\n    uint8_t buf[2];\\n    msg.addr = dev->i2c_addr;\\n    msg.flags = RT_I2C_RD;\\n    msg.len = 2;\\n    msg.buf = buf;\\n    if (rt_i2c_transfer(dev->bus, &msg, 1) != 1)\\n        return -1;\\n    *raw = ((uint16_t)buf[0] << 8) | buf[1];\\n    return 0;\\n}\\n\\nint bh1750_init(bh1750_device_t *dev, struct rt_i2c_bus_device *bus)\\n{\\n    dev->bus = bus;\\n    dev->i2c_addr = BH1750_I2C_ADDR;\\n    dev->mt_reg = 69;\\n    return 0;\\n}\\n\\nint bh1750_read_illuminance(bh1750_device_t *dev, uint16_t *raw)\\n{\\n    int ret;\\n    ret = bh1750_write_cmd(dev, BH1750_CONT_H_RES_MODE);\\n    if (ret != 0)\\n        return -1;\\n    rt_thread_mdelay(180);\\n    ret = bh1750_read_raw(dev, raw);\\n    if (ret != 0)\\n        return -1;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "cd243293c98a5d9b"
+}

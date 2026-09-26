@@ -1,0 +1,224 @@
+{
+  "ok": true,
+  "superset": true,
+  "covered_count": 6,
+  "missing_count": 0,
+  "llm_extras_count": 2,
+  "merged_count": 6,
+  "summary": "6/6 mechanical covered; 2 LLM extras",
+  "covered": [
+    {
+      "mechanical": {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write",
+        "source": "operation_flows[0].steps[0]"
+      },
+      "llm_match": {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: READ_DATA command + 3-byte address"
+      },
+      "reason": "prefix overlap: [('0x03',)] ∈ mechanical [('0x03',)]",
+      "covered": true
+    },
+    {
+      "mechanical": {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [],
+        "note": "read_memory: direct read read",
+        "source": "operation_flows[0].steps[1]",
+        "read_any": true
+      },
+      "llm_match": {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: READ_DATA command + 3-byte address"
+      },
+      "reason": "mechanical is read-any; LLM adds specific prefix",
+      "covered": true
+    },
+    {
+      "mechanical": {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write",
+        "source": "operation_flows[1].steps[0]"
+      },
+      "llm_match": {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: WRITE_ENABLE"
+      },
+      "reason": "prefix overlap: [('0x06',)] ∈ mechanical [('0x06',)]",
+      "covered": true
+    },
+    {
+      "mechanical": {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: write",
+        "source": "operation_flows[1].steps[1]"
+      },
+      "llm_match": {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+      },
+      "reason": "prefix overlap: [('0x02',)] ∈ mechanical [('0x02',)]",
+      "covered": true
+    },
+    {
+      "mechanical": {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write",
+        "source": "operation_flows[2].steps[0]"
+      },
+      "llm_match": {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: JEDEC ID command"
+      },
+      "reason": "prefix overlap: [('0x9F',)] ∈ mechanical [('0x9F',)]",
+      "covered": true
+    },
+    {
+      "mechanical": {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [],
+        "note": "init: direct read read",
+        "source": "operation_flows[2].steps[1]",
+        "read_any": true
+      },
+      "llm_match": {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: JEDEC ID command"
+      },
+      "reason": "mechanical is read-any; LLM adds specific prefix",
+      "covered": true
+    }
+  ],
+  "missing": [],
+  "llm_extras": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x00",
+      "read_any": true,
+      "note": "init: read 3 JEDEC ID bytes"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x00",
+      "read_any": true,
+      "note": "read_memory: data bytes"
+    }
+  ],
+  "merged": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x00",
+      "write_prefix_any_of": [
+        [
+          "0x9F"
+        ]
+      ],
+      "note": "init: JEDEC ID command"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x00",
+      "read_any": true,
+      "note": "init: read 3 JEDEC ID bytes"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x00",
+      "write_prefix_any_of": [
+        [
+          "0x03"
+        ]
+      ],
+      "note": "read_memory: READ_DATA command + 3-byte address"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x00",
+      "read_any": true,
+      "note": "read_memory: data bytes"
+    },
+    {
+      "phase": "write_cycle",
+      "addr_or_pin": "spi1",
+      "write_prefix_any_of": [
+        [
+          "0x06"
+        ]
+      ],
+      "note": "write_page: WRITE_ENABLE"
+    },
+    {
+      "phase": "write_cycle",
+      "addr_or_pin": "spi1",
+      "write_prefix_any_of": [
+        [
+          "0x02"
+        ]
+      ],
+      "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+    }
+  ]
+}

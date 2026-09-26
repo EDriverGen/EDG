@@ -1,0 +1,589 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "mpu6050",
+  "scope": "Seven-channel sensor reads over I2C, default ranges, and temperature/acceleration/angular-rate conversion; auxiliary bus, FIFO, and low-power fields are additional facts.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "pointer"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "identity",
+        "accel_map",
+        "temp_map",
+        "gyro_map",
+        "range_registers",
+        "reset",
+        "config_fields",
+        "selftest_fields",
+        "power_extra_fields",
+        "aux_register_map",
+        "other_registers",
+        "fifo_addresses",
+        "fifo_count_access"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "burst"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "bus_speed",
+        "startup_wait",
+        "sampling_rule"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "encoding",
+        "accel_scale",
+        "gyro_scale",
+        "temp_scale"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "default_ranges",
+        "wake",
+        "sleep",
+        "clock",
+        "data_ready",
+        "cycle"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "MPU6050.pdf",
+      "pages": 59,
+      "page_text_file": "evidence/datasheets/mpu6050/MPU6050.pages.json"
+    },
+    {
+      "document": "MPU6050_RegisterMap.pdf",
+      "pages": 46,
+      "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "AD0 low/high selects 68/69.",
+      "evidence": [
+        {
+          "document": "MPU6050.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050.pages.json"
+        },
+        {
+          "document": "MPU6050.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_speed",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "I2C supports up to 400 kHz.",
+      "evidence": [
+        {
+          "document": "MPU6050.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050.pages.json"
+        },
+        {
+          "document": "MPU6050.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "The register pointer is one byte; sequential reads increment the address.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "identity",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "WHO_AM_I is at 75 with value 68.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 45,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "3B..40 contain the high/low bytes of XYZ acceleration.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "41/42 contain the temperature high/low bytes.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "gyro_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "43..48 contain the high/low bytes of XYZ gyroscope data.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "All seven outputs are big-endian signed 16-bit values.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "burst",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Read 14 bytes from 3B to obtain all seven values from the same sample time.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "range_registers",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "GYRO_CONFIG=1B and ACCEL_CONFIG=1C; both range fields occupy bits4:3.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "default_ranges",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Reset defaults are ±2 g and ±250 degrees/second; the IR uses these ranges for default conversion.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "accel_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "AFS0..3 select ±2/4/8/16 g with sensitivities of 16384/8192/4096/2048 LSB/g; g=raw*range/32768.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "gyro_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "FS0..3 select ±250/500/1000/2000 degrees/second, with sensitivities of 131/65.5/32.8/16.4 LSB/(degree/second); result=raw/sensitivity.",
+      "evidence": [
+        {
+          "document": "MPU6050.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_scale",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Temperature in degrees Celsius = signed TEMP_OUT/340+36.53.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wake",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "PWR_MGMT_1=6B; clear bit6 SLEEP to start operation, and write 00 to retain the internal clock.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 40,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 41,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sleep",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Write 40 to 6B to enter sleep.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 40,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "startup_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The maximum start-up time from power-up to register availability is 100 ms.",
+      "evidence": [
+        {
+          "document": "MPU6050.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clock",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "The internal oscillator is the power-up default; CLKSEL bits2:0 select the clock source.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 40,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Set PWR_MGMT_1 bit7 to reset the device.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 41,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "data_ready",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "INT_STATUS (3A) bit0 indicates new data and clears when status is read.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sampling_rule",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Sample rate = gyroscope output rate/(1+SMPLRT_DIV); the gyroscope rate is 8 kHz with DLPF disabled and 1 kHz with it enabled; acceleration updates at 1 kHz.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config_fields",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "CONFIG=1A，EXT_SYNC_SET bits5:3、DLPF_CFG bits2:0。",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "selftest_fields",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "GYRO/ACCEL_CONFIG bits7/6/5 control self-test for the three axes.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_extra_fields",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "In 6B, CYCLE is bit5 and TEMP_DIS bit3; 6C contains wake bits7:6 and six-axis standby bits5..0.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 40,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 42,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "cycle",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "CYCLE=1 with SLEEP=0 periodically wakes the device to sample acceleration.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 40,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "aux_register_map",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "The address mapping of auxiliary I2C master/slave registers 24..36 and 63..67, and external data 49..60, is correct.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "other_registers",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "SELF_TEST0D..10，SMPLRT_DIV19，FIFO_EN23，INT_PIN_CFG37，INT_ENABLE38，INT_STATUS3A，USER_CTRL6A。",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fifo_addresses",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "FIFO count is at 72/73; the data port is 74.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 43,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 44,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fifo_count_access",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Whether the FIFO count registers are writable.",
+      "evidence": [
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        },
+        {
+          "document": "MPU6050_RegisterMap.pdf",
+          "pdf_page": 43,
+          "page_text_file": "evidence/datasheets/mpu6050/MPU6050_RegisterMap.pages.json"
+        }
+      ],
+      "source_note": "The summary table on page 8 marks R/W, while the detailed description on page 43 says Read Only. The IR follows the summary table and is not classified as wrong."
+    }
+  ]
+}

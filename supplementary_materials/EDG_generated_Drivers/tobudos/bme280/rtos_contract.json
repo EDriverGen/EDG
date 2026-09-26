@@ -1,0 +1,864 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "bme280",
+  "rtos": "tobudos",
+  "board": "ALIENTEK-MiniSTM32F103RCT6",
+  "bus_type": "i2c",
+  "connection": {
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_symbol": "hi2c1",
+    "address_mode": "7-bit",
+    "backend": "STM32F1 HAL I2C through ChipAdaptation",
+    "helper_usage_patterns": []
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "HAL_Delay"
+    ],
+    "error_symbols": [
+      "HAL_StatusTypeDef"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "HAL_I2C_Init",
+      "I2C_ADDRESSINGMODE_10BIT",
+      "HAL_I2C_Master_Receive",
+      "HAL_I2C_Mem_Read",
+      "HAL_I2C_Master_Transmit",
+      "HAL_I2C_DeInit"
+    ],
+    "bus_api_signatures": {
+      "HAL_I2C_Init": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+      "I2C_ADDRESSINGMODE_10BIT": "(I2C_OAR1_ADDMODE | 0x00004000U)",
+      "HAL_I2C_Master_Receive": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_Mem_Read": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_Master_Transmit": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_DeInit": "HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)"
+    },
+    "bus_helper_types": [
+      "I2C_HandleTypeDef",
+      "HAL_StatusTypeDef"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "chipadaptation_stm32f1_hal",
+    "integration_style": "kernel_plus_chipadaptation_vendor_bsp",
+    "bus_instance": "i2c1",
+    "bus_symbol": "hi2c1",
+    "include_headers": [
+      "Legacy/stm32_hal_legacy.h",
+      "Legacy/stm32f1xx_hal_can_legacy.h",
+      "core/include/tos_k.h",
+      "core/include/tos_task.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_ex_legacy.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_legacy.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cec.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_conf_template.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dac.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_eth.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_hcd.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2s.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_irda.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_mmc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nand.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sd.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_smartcard.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sram.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_fsmc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_i2c.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_rcc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_sdmmc.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_system.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_tim.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h",
+      "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h",
+      "port.h",
+      "port_config.h",
+      "stddef.h",
+      "stm32_assert.h",
+      "stm32f1xx.h",
+      "stm32f1xx_hal.h",
+      "stm32f1xx_hal_adc.h",
+      "stm32f1xx_hal_adc_ex.h",
+      "stm32f1xx_hal_can.h",
+      "stm32f1xx_hal_can_ex_legacy.h",
+      "stm32f1xx_hal_cec.h",
+      "stm32f1xx_hal_conf.h",
+      "stm32f1xx_hal_cortex.h",
+      "stm32f1xx_hal_crc.h",
+      "stm32f1xx_hal_dac.h",
+      "stm32f1xx_hal_def.h",
+      "stm32f1xx_hal_dma.h",
+      "stm32f1xx_hal_dma_ex.h",
+      "stm32f1xx_hal_eth.h",
+      "stm32f1xx_hal_exti.h",
+      "stm32f1xx_hal_flash.h",
+      "stm32f1xx_hal_flash_ex.h",
+      "stm32f1xx_hal_gpio.h",
+      "stm32f1xx_hal_gpio_ex.h",
+      "stm32f1xx_hal_hcd.h",
+      "stm32f1xx_hal_i2c.h",
+      "stm32f1xx_hal_i2s.h",
+      "stm32f1xx_hal_irda.h",
+      "stm32f1xx_hal_iwdg.h",
+      "stm32f1xx_hal_mmc.h",
+      "stm32f1xx_hal_nand.h",
+      "stm32f1xx_hal_nor.h",
+      "stm32f1xx_hal_pccard.h",
+      "stm32f1xx_hal_pcd.h",
+      "stm32f1xx_hal_pwr.h",
+      "stm32f1xx_hal_rcc.h",
+      "stm32f1xx_hal_rcc_ex.h",
+      "stm32f1xx_hal_rtc.h",
+      "stm32f1xx_hal_sd.h",
+      "stm32f1xx_hal_smartcard.h",
+      "stm32f1xx_hal_spi.h",
+      "stm32f1xx_hal_sram.h",
+      "stm32f1xx_hal_tim.h",
+      "stm32f1xx_hal_uart.h",
+      "stm32f1xx_hal_usart.h",
+      "stm32f1xx_hal_wwdg.h",
+      "stm32f1xx_ll_bus.h",
+      "stm32f1xx_ll_i2c.h",
+      "stm32f1xx_ll_rcc.h",
+      "stm32f1xx_ll_system.h",
+      "stm32f1xx_ll_utils.h",
+      "tos_barrier.h",
+      "tos_binary_heap.h",
+      "tos_bitmap.h",
+      "tos_char_fifo.h",
+      "tos_compiler.h",
+      "tos_completion.h",
+      "tos_config.h",
+      "tos_config_check.h",
+      "tos_config_default.h",
+      "tos_countdownlatch.h",
+      "tos_cpu.h",
+      "tos_cpu_def.h",
+      "tos_cpu_types.h",
+      "tos_event.h",
+      "tos_fault.h",
+      "tos_global.h",
+      "tos_k.h",
+      "tos_kerr.h",
+      "tos_klib.h",
+      "tos_ktypes.h",
+      "tos_list.h",
+      "tos_mail_queue.h",
+      "tos_message_queue.h",
+      "tos_mmblk.h",
+      "tos_mmheap.h",
+      "tos_mutex.h",
+      "tos_pend.h",
+      "tos_pm.h",
+      "tos_priority_mail_queue.h",
+      "tos_priority_message_queue.h",
+      "tos_priority_queue.h",
+      "tos_ring_queue.h",
+      "tos_robin.h",
+      "tos_rwlock.h",
+      "tos_sched.h",
+      "tos_sem.h",
+      "tos_slist.h",
+      "tos_stopwatch.h",
+      "tos_sys.h",
+      "tos_task.h",
+      "tos_tick.h",
+      "tos_tickless.h",
+      "tos_time.h",
+      "tos_timer.h",
+      "tos_version.h"
+    ],
+    "fixed_attachment": {},
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "i2c1",
+        "fields": {
+          "bus_instance": "i2c1",
+          "bus_symbol": "hi2c1",
+          "backend": "STM32F1 HAL I2C through ChipAdaptation",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "bme280",
+    "required_bus_type": "i2c",
+    "addressing": {
+      "default": "0x76",
+      "alternates": [
+        "0x77"
+      ],
+      "selection_rule": "SDO determines the I2C address in I2C mode."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "For I2C mode the CSB pin must stay inactive/high."
+      ]
+    },
+    "optional_attachment": {
+      "sdo_addr_select": "optional",
+      "csb_mode_pin": "required_for_i2c_mode"
+    }
+  },
+  "api_bindings": {
+    "i2c.acquire_or_bind": {
+      "symbol": "HAL_I2C_Init",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.addressing": {
+      "symbol": "I2C_ADDRESSINGMODE_10BIT",
+      "kind": "macro",
+      "signature": "(I2C_OAR1_ADDMODE | 0x00004000U)",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.key_types": {
+      "symbol": "I2C_HandleTypeDef",
+      "kind": "typedef",
+      "signature": "struct __I2C_HandleTypeDef { I2C_TypeDef *Instance; /*!< I2C registers base address */ I2C_InitTypeD",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.6166666666666667,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.read": {
+      "symbol": "HAL_I2C_Master_Receive",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.transfer": {
+      "symbol": "HAL_I2C_Mem_Read",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.write": {
+      "symbol": "HAL_I2C_Master_Transmit",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "signature": "void HAL_Delay(uint32_t Delay)",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.error_status": {
+      "symbol": "HAL_StatusTypeDef",
+      "kind": "typedef",
+      "signature": "enum { HAL_OK = 0x00U, HAL_ERROR = 0x01U, HAL_BUSY = 0x02U, HAL_TIMEOUT = 0x03U }",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.release": {
+      "symbol": "HAL_I2C_DeInit",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_DeInit(I2C_HandleTypeDef *hi2c)",
+      "required_headers": [
+        "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "I2C_HandleTypeDef",
+          "kind": "type_ref",
+          "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "hi2c1",
+        "backend": "STM32F1 HAL I2C through ChipAdaptation",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "i2c1",
+      "fields": {
+        "bus_instance": "i2c1",
+        "bus_symbol": "hi2c1",
+        "backend": "STM32F1 HAL I2C through ChipAdaptation",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "I2C_HandleTypeDef",
+          "kind": "type_ref",
+          "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "HAL_I2C_Init",
+          "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "HAL_I2C_Init",
+    "I2C_HandleTypeDef",
+    "HAL_I2C_Master_Receive",
+    "HAL_I2C_Mem_Read",
+    "HAL_I2C_Master_Transmit",
+    "HAL_Delay",
+    "I2C_ADDRESSINGMODE_10BIT",
+    "HAL_StatusTypeDef",
+    "HAL_I2C_DeInit"
+  ],
+  "allowed_symbol_provenance": {
+    "HAL_I2C_Init": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "I2C_HandleTypeDef": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Master_Receive": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Mem_Read": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Master_Transmit": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_Delay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "I2C_ADDRESSINGMODE_10BIT": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_StatusTypeDef": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_DeInit": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "tobudos-project:companion:tobudos-chipadaptation::platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "bme280_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (4 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "bme280_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xD0"
+            ],
+            "length": 1,
+            "pointer_target": "id",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x88"
+            ],
+            "length": 26,
+            "pointer_target": "calibration",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xE1"
+            ],
+            "length": 7,
+            "pointer_target": "calibration_humidity",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0xF7"
+            ],
+            "length": 8,
+            "pointer_target": "press_msb",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.633,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (6 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 9/9 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Init",
+      "slot_id": "i2c.acquire_or_bind"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "I2C_HandleTypeDef",
+      "slot_id": "i2c.key_types"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Master_Receive",
+      "slot_id": "i2c.read"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Mem_Read",
+      "slot_id": "i2c.transfer"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Master_Transmit",
+      "slot_id": "i2c.write"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_Delay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "I2C_ADDRESSINGMODE_10BIT",
+      "slot_id": "i2c.addressing"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_StatusTypeDef",
+      "slot_id": "runtime.error_status"
+    },
+    {
+      "root_id": "tobudos-project:companion:tobudos-chipadaptation",
+      "path": "platform/vendor_bsp/st/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_DeInit",
+      "slot_id": "i2c.release"
+    }
+  ],
+  "requires_human": [
+    "integration.bus_instance_binding"
+  ]
+}

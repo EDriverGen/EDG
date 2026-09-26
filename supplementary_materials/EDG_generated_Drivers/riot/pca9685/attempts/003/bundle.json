@@ -1,0 +1,116 @@
+{
+  "device_id": "pca9685",
+  "rtos_id": "riot",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef PCA9685_H\n#define PCA9685_H\n\n#include <stdint.h>\n#include <periph/i2c.h>\n\n#include \"riot.h\"\ntypedef struct {\n    i2c_t bus;\n    uint16_t addr;\n} pca9685_t;\n\nint pca9685_init(pca9685_t *dev, i2c_t bus, uint16_t addr);\nint pca9685_read_pwm_channel(pca9685_t *dev, uint8_t channel, uint16_t *value);\n\n#endif /* PCA9685_H */\n",
+  "driver_source": "#include \"pca9685.h\"\n#include <errno.h>\n#include <stdint.h>\n#include <string.h>\n#include <xtimer.h>\n\n#include \"riot.h\"\n#define PCA9685_LED0_OFF_L 0x08\n#define PCA9685_MODE1 0x00\n#define PCA9685_MODE1_SLEEP (1 << 4)\n\nint pca9685_init(pca9685_t *dev, i2c_t bus, uint16_t addr)\n{\n    dev->bus = bus;\n    dev->addr = addr;\n    return 0;\n}\n\nint pca9685_read_pwm_channel(pca9685_t *dev, uint8_t channel, uint16_t *value)\n{\n    uint8_t reg = PCA9685_LED0_OFF_L + (channel * 4);\n    uint8_t buf[4];\n    int ret;\n\n    ret = i2c_read_regs(dev->bus, dev->addr, reg, buf, 4, 0);\n    if (ret < 0) {\n        return -EIO;\n    }\n\n    uint8_t off_l = buf[0];\n    uint8_t off_h = buf[1];\n    *value = ((uint16_t)(off_h & 0x0F) * 256) + off_l;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "pca9685_init(&g_eval_dev, I2C_DEV(0), 0x40)",
+    "channels": [
+      {
+        "id": "led0",
+        "call": "pca9685_read_pwm_channel(&g_eval_dev, 0, &led0)",
+        "out_arg": "led0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "led1",
+        "call": "pca9685_read_pwm_channel(&g_eval_dev, 1, &led1)",
+        "out_arg": "led1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ],
+    "dev_struct_type": "pca9685_t",
+    "init_extra_setup_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x71",
+        "write_prefix_any_of": [
+          [
+            "0x08"
+          ]
+        ],
+        "note": "read_pwm_channel: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x71",
+        "read_any": true,
+        "note": "read_pwm_channel: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "led0_50_percent_duty",
+        "mock_preload": {
+          "0x08": [
+            "0x00",
+            "0x08"
+          ],
+          "0x0A": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "led0": 2048,
+          "led1": 0
+        },
+        "derivation": "led0: off_l=0x00, off_h=0x08 -> ((0x08 & 0x0F) * 256) + 0x00 = 2048; led1: off_l=0x00, off_h=0x00 -> 0"
+      },
+      {
+        "name": "led0_full_duty",
+        "mock_preload": {
+          "0x08": [
+            "0xFF",
+            "0x0F"
+          ],
+          "0x0A": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "led0": 4095,
+          "led1": 0
+        },
+        "derivation": "led0: off_l=0xFF, off_h=0x0F -> ((0x0F & 0x0F) * 256) + 0xFF = 4095; led1: off_l=0x00, off_h=0x00 -> 0"
+      },
+      {
+        "name": "led0_zero_duty",
+        "mock_preload": {
+          "0x08": [
+            "0x00",
+            "0x00"
+          ],
+          "0x0A": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "led0": 0,
+          "led1": 0
+        },
+        "derivation": "led0: off_l=0x00, off_h=0x00 -> 0; led1: off_l=0x00, off_h=0x00 -> 0"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 3.67,
+  "prompt_chars": 40778,
+  "raw_response": "{\"driver_header\": \"#ifndef PCA9685_H\\n#define PCA9685_H\\n\\n#include <stdint.h>\\n#include <periph/i2c.h>\\n\\ntypedef struct {\\n    i2c_t bus;\\n    uint16_t addr;\\n} pca9685_t;\\n\\nint pca9685_init(pca9685_t *dev, i2c_t bus, uint16_t addr);\\nint pca9685_read_pwm_channel(pca9685_t *dev, uint8_t channel, uint16_t *value);\\n\\n#endif /* PCA9685_H */\", \"driver_source\": \"#include \\\"pca9685.h\\\"\\n#include \\\"riot.h\\\"\\n#include <errno.h>\\n#include <stdint.h>\\n#include <string.h>\\n#include <xtimer.h>\\n\\n#define PCA9685_LED0_OFF_L 0x08\\n#define PCA9685_MODE1 0x00\\n#define PCA9685_MODE1_SLEEP (1 << 4)\\n\\nint pca9685_init(pca9685_t *dev, i2c_t bus, uint16_t addr)\\n{\\n    dev->bus = bus;\\n    dev->addr = addr;\\n    return 0;\\n}\\n\\nint pca9685_read_pwm_channel(pca9685_t *dev, uint8_t channel, uint16_t *value)\\n{\\n    uint8_t reg = PCA9685_LED0_OFF_L + (channel * 4);\\n    uint8_t buf[4];\\n    int ret;\\n\\n    ret = i2c_read_regs(dev->bus, dev->addr, reg, buf, 4, 0);\\n    if (ret < 0) {\\n        return -EIO;\\n    }\\n\\n    uint8_t off_l = buf[0];\\n    uint8_t off_h = buf[1];\\n    *value = ((uint16_t)(off_h & 0x0F) * 256) + off_l;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "608d2ff4912fb248"
+}

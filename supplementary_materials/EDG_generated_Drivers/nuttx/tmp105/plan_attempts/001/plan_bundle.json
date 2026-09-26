@@ -1,0 +1,75 @@
+{
+  "device_id": "tmp105",
+  "rtos_id": "nuttx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "tmp105_init(&g_eval_dev, bus_handle)",
+    "read_call": "tmp105_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct tmp105_dev",
+    "init_extra_setup_c": "struct i2c_master_s *bus_handle = board_i2cbus_initialize(1);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x19",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x19 0x00 decode to raw=((((0x19 << 8) | 0x00) >> 4) & 0xFFF) = 400; public value in milli_degC is (400 * 125) // 2 = 25000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 4) & 0xFFF) = 0; public value in milli_degC is (0 * 125) // 2 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xE7",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xE7 0x00 decode to raw=(((((0xE7 << 8) | 0x00) >> 4) & 0xFFF) - 4096) = -400; public value in milli_degC is (-400 * 125) // 2 = -25000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "29e82f2adce7e878",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 19.373,
+  "prompt_chars": 48255,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"tmp105_init(&g_eval_dev, bus_handle)\", \"read_call\": \"tmp105_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct tmp105_dev\", \"init_extra_setup_c\": \"struct i2c_master_s *bus_handle = board_i2cbus_initialize(1);\\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temperature: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x01\", \"0x90\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw = 0x0190 = 400; (((400 >> 4) & 0xFFF) * 625) // 10 = (25 * 625) // 10 = 15625 // 10 = 1562? Wait recalc: 400 >> 4 = 25; 25 * 625 = 15625; 15625 // 10 = 1562.5 -> integer 1562. But expected 25000? Let's recalc: 0x0190 = 400 decimal. 400 >> 4 = 25. 25 * 625 = 15625. 15625 // 10 = 1562. So expected_read_raw = 1562. But 25C should be 25000 milli_degC. The formula gives milli_degC? Actually 0.0625 degC per LSB, so 25 degC = 25 / 0.0625 = 400 raw. Then milli_degC = 25 * 1000 = 25000. The integer expression (((raw >> 4) & 0xFFF) * 625) // 10: raw=400, raw>>4=25, 25*625=15625, //10=1562. That's 1562 milli_degC = 1.562 degC, not 25. So the formula is for raw value? Let's check: ADC_CODE = raw >> 4 = 25. Temperature C = 25 * 0.0625 = 1.5625. So milli_degC = 1562.5 -> 1562. So 25C raw would be 25/0.0625 = 400, but that gives 1.5625C. So to get 25C, raw should be 25/0.0625 = 400? No, 25C / 0.0625 = 400. So raw=400 gives 25C? Actually 400 * 0.0625 = 25. So raw=400 gives 25C. Then milli_degC = 25000. But formula gives 1562. So the formula is wrong? Let's re-evaluate: The integer expression is (((raw >> 4) & 0xFFF) * 625) // 10. For raw=400 (0x0190), raw>>4 = 25, 25*625=15625, //10=1562. That's 1562 milli_degC = 1.562C. So to get 25000 milli_degC, we need raw such that (((raw>>4)&0xFFF)*625)//10 = 25000 => (raw>>4)*625 = 250000 => raw>>4 = 400 => raw = 6400 = 0x1900. So mock_preload should be [0x19, 0x00]. Let's correct: raw = 0x1900 = 6400. Then raw>>4 = 400, 400*625=250000, //10=25000. So expected_read_raw = 25000. Derivation: raw = 0x1900 = 6400; (((6400 >> 4) & 0xFFF) * 625) // 10 = (400 * 625) // 10 = 250000 // 10 = 25000.\"}, {\"name\": \"zero_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw = 0x0000 = 0; (((0 >> 4) & 0xFFF) * 625) // 10 = 0.\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xFF\", \"0x60\"]}, \"expected_read_raw\": -10000, \"derivation\": \"raw = 0xFF60 = 65376 (unsigned) = -160 (signed 16-bit). raw >> 4 = -10 (arithmetic shift). (-10 & 0xFFF) = 4086. 4086 * 625 = 2553750. 2553750 // 10 = 255375. But expected -10000? Let's compute: -10C = -10000 milli_degC. ADC_CODE = -10 / 0.0625 = -160. So raw should be -160 << 4 = -2560 = 0xF600. So mock_preload should be [0xF6, 0x00]. Then raw = 0xF600 = -2560 (signed 16-bit). raw >> 4 = -160. (-160 & 0xFFF) = 3936. 3936 * 625 = 2460000. 2460000 // 10 = 246000. That's not -10000. Something is off. Let's re-derive: The formula is for milli_degC. For -10C, milli_degC = -10000. ADC_CODE = -10 / 0.0625 = -160. So raw = ADC_CODE << 4 = -2560. In two's complement 16-bit: -2560 = 0xF600. Now apply formula: raw = 0xF600 = -2560 (signed). raw >> 4 = -160 (arithmetic shift). (-160) & 0xFFF = 3936 (since -160 in two's complement 12-bit: 0xF60, but & 0xFFF gives 0xF60 = 3936). 3936 * 625 = 2460000. 2460000 // 10 = 246000. That's 246000 milli_degC = 246C, not -10C. So the formula seems to assume unsigned? Let's check: The device IR says signed, but the integer expression uses & 0xFFF which masks to 12-bit unsigned. So the formula treats the 12-bit value as unsigned. For negative temperatures, the raw 12-bit two's complement value should be interpreted as unsigned and then converted? Actually typical TMP105: temperature = (ADC_CODE * 0.0625) where ADC_CODE is 12-bit signed. So for -10C, ADC_CODE = -160 = 0xF60 as 12-bit signed. But if we treat 0xF60 as unsigned, it's 3936. Then 3936 * 0.0625 = 246C. That's wrong. So the formula must handle sign extension. The integer expression given is (((raw >> 4) & 0xFFF) * 625) // 10. This does not sign-extend. So for negative values, we need to sign-extend from bit 11. Let's compute correctly: raw = 0xF600 = -2560. raw >> 4 = -160 (arithmetic shift). Then we need to sign-extend from bit 11: value = (raw >> 4) & 0xFFF; if value & 0x800 then value -= 0x1000. So value = -160 & 0xFFF = 3936; since 3936 & 0x800 = 0x800, value = 3936 - 4096 = -160. Then -160 * 625 = -100000; //10 = -10000. So expected_read_raw = -10000. Derivation: raw = 0xF600 = -2560; raw >> 4 = -160; sign-extend: (-160 & 0xFFF) = 3936, 3936 >= 0x800 so subtract 0x1000 => -160; -160 * 625 = -100000; -100000 // 10 = -10000.\"}]}}"
+}

@@ -1,0 +1,822 @@
+{
+  "split_plan_enabled": true,
+  "success": false,
+  "final_attempt": 3,
+  "total_time_s": 16.473,
+  "device_id": "mcp3008",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "layer_failed": "link",
+  "plan_summary": {
+    "plan_hash": "31b1a2715dd6205a",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 2
+  },
+  "final_elf_path": null,
+  "plan_attempts": [
+    {
+      "attempt": 1,
+      "success": true,
+      "total_time_s": 6.859,
+      "plan_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "cmsis-rtx",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "plan_hash": "31b1a2715dd6205a",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 6.818
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 1,
+        "summary": "2 stim; 1 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: derivation says channel is not read",
+              "ch=ch1: derivation says channel is not read"
+            ]
+          },
+          {
+            "name": "ch1_quarter_scale",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "partial: ch=ch0:last_u8=0",
+            "warnings": [
+              "ch=ch1: bytes=[0x00, 0x40, 0x00] no interp = 1024.0"
+            ]
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch0: write command"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ]
+      },
+      "validation_errors": [
+        "test_plan multi_channel stimulus 'ch0_mid_scale' is only partially checkable: ch=ch0: derivation says channel is not read; ch=ch1: derivation says channel is not read. Every expected_channels entry must have matching mock_preload data and an executable derivation for this same stimulus; do not declare placeholder channels as 0 or 'not read'.",
+        "test_plan multi_channel stimulus 'ch1_quarter_scale' is only partially checkable: ch=ch1: bytes=[0x00, 0x40, 0x00] no interp = 1024.0. Every expected_channels entry must have matching mock_preload data and an executable derivation for this same stimulus; do not declare placeholder channels as 0 or 'not read'."
+      ]
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "layer_failed": "link",
+      "success": false,
+      "total_time_s": 3.489,
+      "bundle_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "cmsis-rtx",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "header_chars": 332,
+        "source_chars": 566,
+        "plan_hash": "31b1a2715dd6205a",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 3.16
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 1,
+        "summary": "2 stim; 1 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: derivation says channel is not read",
+              "ch=ch1: derivation says channel is not read"
+            ]
+          },
+          {
+            "name": "ch1_quarter_scale",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "partial: ch=ch0:last_u8=0",
+            "warnings": [
+              "ch=ch1: bytes=[0x00, 0x40, 0x00] no interp = 1024.0"
+            ]
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch0: write command"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "mcp3008",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "source_chars": 2404,
+        "warnings": []
+      },
+      "link": {
+        "success": false,
+        "errors": 3,
+        "warnings": 0,
+        "elf_path": null,
+        "text_bytes": 0,
+        "data_bytes": 0,
+        "bss_bytes": 0
+      },
+      "feedback_chars": 3104
+    },
+    {
+      "attempt": 2,
+      "layer_failed": "link",
+      "success": false,
+      "total_time_s": 3.149,
+      "bundle_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "cmsis-rtx",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "header_chars": 315,
+        "source_chars": 548,
+        "plan_hash": "31b1a2715dd6205a",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 2.826
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 1,
+        "summary": "2 stim; 1 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: derivation says channel is not read",
+              "ch=ch1: derivation says channel is not read"
+            ]
+          },
+          {
+            "name": "ch1_quarter_scale",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "partial: ch=ch0:last_u8=0",
+            "warnings": [
+              "ch=ch1: bytes=[0x00, 0x40, 0x00] no interp = 1024.0"
+            ]
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch0: write command"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "mcp3008",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "source_chars": 2404,
+        "warnings": []
+      },
+      "link": {
+        "success": false,
+        "errors": 1,
+        "warnings": 0,
+        "elf_path": null,
+        "text_bytes": 0,
+        "data_bytes": 0,
+        "bss_bytes": 0
+      },
+      "feedback_chars": 2666
+    },
+    {
+      "attempt": 3,
+      "layer_failed": "link",
+      "success": false,
+      "total_time_s": 2.964,
+      "bundle_summary": {
+        "device_id": "mcp3008",
+        "rtos_id": "cmsis-rtx",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "header_chars": 315,
+        "source_chars": 548,
+        "plan_hash": "31b1a2715dd6205a",
+        "api_contract_keys": [
+          "channels",
+          "dev_struct_type",
+          "eval_class",
+          "init_call",
+          "init_extra_setup_c"
+        ],
+        "stimuli_count": 2,
+        "model": "deepseek-v4-flash",
+        "generation_time_s": 2.637
+      },
+      "syntax": {
+        "success": true,
+        "errors": 0,
+        "warnings": 0
+      },
+      "consistency": {
+        "overall": "mixed",
+        "ok": true,
+        "inconsistent_count": 0,
+        "llm_only_count": 1,
+        "consistent_count": 1,
+        "summary": "2 stim; 1 L1/L2; 1 llm_only",
+        "stimuli": [
+          {
+            "name": "ch0_mid_scale",
+            "verdict": "llm_only",
+            "layer": "L3",
+            "evidence": "no channel could be L1-verified",
+            "warnings": [
+              "ch=ch0: derivation says channel is not read",
+              "ch=ch1: derivation says channel is not read"
+            ]
+          },
+          {
+            "name": "ch1_quarter_scale",
+            "verdict": "consistent_l1",
+            "layer": "L1",
+            "evidence": "partial: ch=ch0:last_u8=0",
+            "warnings": [
+              "ch=ch1: bytes=[0x00, 0x40, 0x00] no interp = 1024.0"
+            ]
+          }
+        ]
+      },
+      "coverage": {
+        "ok": true,
+        "superset": true,
+        "covered_count": 2,
+        "missing_count": 0,
+        "llm_extras_count": 2,
+        "merged_count": 3,
+        "summary": "2/2 mechanical covered; 2 LLM extras",
+        "covered": [
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel: write",
+              "source": "operation_flows[0].steps[0]"
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "prefix overlap: [('0x01', '0x80', '0x00')] ∈ mechanical [('0x01', '0x80', '0x00')]",
+            "covered": true
+          },
+          {
+            "mechanical": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [],
+              "note": "read_channel: direct read read",
+              "source": "operation_flows[0].steps[1]",
+              "read_any": true
+            },
+            "llm_match": {
+              "phase": "read_cycle",
+              "addr_or_pin": "spi1",
+              "write_prefix_any_of": [
+                [
+                  "0x01",
+                  "0x80",
+                  "0x00"
+                ]
+              ],
+              "note": "read_channel ch0: write command"
+            },
+            "reason": "mechanical is read-any; LLM adds specific prefix",
+            "covered": true
+          }
+        ],
+        "missing": [],
+        "llm_extras": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ],
+        "merged": [
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x80",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch0: write command"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "read_any": true,
+            "note": "read_channel ch0: read response"
+          },
+          {
+            "phase": "read_cycle",
+            "addr_or_pin": "spi1",
+            "write_prefix_any_of": [
+              [
+                "0x01",
+                "0x90",
+                "0x00"
+              ]
+            ],
+            "note": "read_channel ch1: write command"
+          }
+        ]
+      },
+      "adapter_summary": {
+        "device_id": "mcp3008",
+        "eval_class": "multi_channel",
+        "bus_kind": "spi",
+        "source_chars": 2404,
+        "warnings": []
+      },
+      "link": {
+        "success": false,
+        "errors": 1,
+        "warnings": 0,
+        "elf_path": null,
+        "text_bytes": 0,
+        "data_bytes": 0,
+        "bss_bytes": 0
+      },
+      "feedback_chars": 2666
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "byte-order",
+      "statement": "raw reads decode as last u8",
+      "source_attempt": 1,
+      "evidence": "stim `ch1_quarter_scale` matched last_u8"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"cmsis_rtx.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"mcp3008.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include \"stm32f1xx_hal.h\"` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "compile-includes",
+      "statement": "`#include <stdint.h>` resolved cleanly under stub_compile — KEEP this exact include (do NOT switch to a different vendor / cross-family / LL header in the next attempt)",
+      "source_attempt": 1,
+      "evidence": "L1 syntax compile passed for driver_header+driver_source"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=read_cycle requires write <read> to addr spi1",
+      "source_attempt": 1,
+      "evidence": "operation_flows[0].steps[1]"
+    },
+    {
+      "kind": "init-opcode",
+      "statement": "phase=read_cycle requires write [0x01, 0x80, 0x00] to addr spi1",
+      "source_attempt": 1,
+      "evidence": "operation_flows[0].steps[0]"
+    }
+  ]
+}

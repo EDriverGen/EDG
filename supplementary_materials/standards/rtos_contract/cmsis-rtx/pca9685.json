@@ -1,0 +1,225 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "cmsis-rtx__pca9685",
+  "device_id": "pca9685",
+  "rtos_id": "cmsis-rtx",
+  "bus": "i2c",
+  "scope": "cmsis-rtx i2c RTOS/BSP API minimum contract for cmsis-rtx__pca9685; based on copied reference implementation and configuration, existing i2c API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "cmsis-rtx",
+    "bus": "i2c",
+    "task_binding": {
+      "connection_type": "i2c",
+      "mode": "polling",
+      "bus_instance": "i2c1",
+      "bus_symbol": "hi2c1",
+      "backend": "STM32CubeF1 HAL I2C with CMSIS-RTOS2 timing",
+      "address_mode": "7-bit"
+    },
+    "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "pca9685_ref.h",
+      "stm32f1xx_hal.h",
+      "stdint.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "HAL_Delay",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+            "line": 33,
+            "text": "HAL_Delay(1);"
+          }
+        ],
+        "available_declaration": "void HAL_Delay(uint32_t Delay);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/cmsis-rtx/i2c/pack.md",
+          "line_start": 556,
+          "line_end": 558
+        }
+      },
+      {
+        "symbol": "HAL_I2C_Init",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+            "line": 25,
+            "text": "if (HAL_I2C_Init(bus) != HAL_OK)"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 65,
+          "line_end": 66
+        }
+      },
+      {
+        "symbol": "HAL_I2C_Master_Transmit",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+            "line": 15,
+            "text": "return HAL_I2C_Master_Transmit(dev->bus, (uint16_t)(dev->addr << 1),"
+          },
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+            "line": 63,
+            "text": "return HAL_I2C_Master_Transmit(dev->bus, (uint16_t)(dev->addr << 1),"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 50,
+          "line_end": 58
+        }
+      },
+      {
+        "symbol": "HAL_I2C_Mem_Read",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_eval_adapter.c",
+            "line": 10,
+            "text": "if (HAL_I2C_Mem_Read(&g_i2c, (uint16_t)(PCA9685_I2C_ADDR << 1),"
+          },
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+            "line": 7,
+            "text": "return HAL_I2C_Mem_Read(dev->bus, (uint16_t)(dev->addr << 1), reg,"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 63,
+          "line_end": 65
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/cmsis-rtx/i2c/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's i2c connection context (i2c1; STM32CubeF1 HAL I2C with CMSIS-RTOS2 timing) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 25,
+          "line_end": 25
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: HAL_I2C_Init.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 25,
+          "line_end": 25
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: HAL_I2C_Master_Transmit, HAL_I2C_Mem_Read. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_eval_adapter.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 63,
+          "line_end": 63
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_eval_adapter.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 7,
+          "line_end": 7
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 63,
+          "line_end": 63
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "Provide the task-used wait/delay primitive with the reference time unit and blocking behavior: HAL_Delay.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.c",
+          "line_start": 33,
+          "line_end": 33
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/reference_drivers/pca9685_ref.h",
+          "line_start": 4,
+          "line_end": 44
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__pca9685/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

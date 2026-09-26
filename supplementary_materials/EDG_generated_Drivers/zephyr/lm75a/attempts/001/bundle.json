@@ -1,0 +1,59 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "zephyr",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef LM75A_H\n#define LM75A_H\n\n#include <stdint.h>\n\nstruct device;\n\nint lm75a_init(const struct device *dev);\nint lm75a_read_temp(const struct device *dev, int32_t *raw);\n\n#endif /* LM75A_H */\n",
+  "driver_source": "#include \"lm75a.h\"\n#include \"zephyr.h\"\n#include <stdint.h>\n\n#define LM75A_I2C_ADDR 0x48\n#define LM75A_REG_TEMP 0x00\n\nint lm75a_init(const struct device *dev)\n{\n    if (!device_is_ready(dev)) {\n        return -1;\n    }\n    k_msleep(100);\n    return 0;\n}\n\nint lm75a_read_temp(const struct device *dev, int32_t *raw)\n{\n    uint8_t cmd = LM75A_REG_TEMP;\n    uint8_t buf[2];\n    int ret;\n\n    ret = i2c_write(dev, &cmd, 1, LM75A_I2C_ADDR);\n    if (ret != 0) {\n        return -1;\n    }\n\n    ret = i2c_read(dev, buf, 2, LM75A_I2C_ADDR);\n    if (ret != 0) {\n        return -1;\n    }\n\n    int32_t raw_val = ((int32_t)buf[0] << 8) | buf[1];\n    raw_val >>= 5;\n    if (raw_val & 0x400) {\n        raw_val |= ~0x7FF;\n    }\n    *raw = raw_val;\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(g_eval_dev)",
+    "read_call": "lm75a_read_temp(g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"zephyr.h\"",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temp: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x32 0x00], raw_count = ((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 5.182,
+  "prompt_chars": 31878,
+  "raw_response": "{\"driver_header\": \"#ifndef LM75A_H\\n#define LM75A_H\\n\\n#include <stdint.h>\\n\\nint lm75a_init(const struct device *dev);\\nint lm75a_read_temp(const struct device *dev, int32_t *raw);\\n\\n#endif /* LM75A_H */\", \"driver_source\": \"#include \\\"lm75a.h\\\"\\n#include \\\"zephyr.h\\\"\\n#include <stdint.h>\\n\\n#define LM75A_I2C_ADDR 0x48\\n#define LM75A_REG_TEMP 0x00\\n\\nint lm75a_init(const struct device *dev)\\n{\\n    if (!device_is_ready(dev)) {\\n        return -1;\\n    }\\n    k_msleep(100);\\n    return 0;\\n}\\n\\nint lm75a_read_temp(const struct device *dev, int32_t *raw)\\n{\\n    uint8_t cmd = LM75A_REG_TEMP;\\n    uint8_t buf[2];\\n    int ret;\\n\\n    ret = i2c_write(dev, &cmd, 1, LM75A_I2C_ADDR);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n\\n    ret = i2c_read(dev, buf, 2, LM75A_I2C_ADDR);\\n    if (ret != 0) {\\n        return -1;\\n    }\\n\\n    int32_t raw_val = ((int32_t)buf[0] << 8) | buf[1];\\n    raw_val >>= 5;\\n    if (raw_val & 0x400) {\\n        raw_val |= ~0x7FF;\\n    }\\n    *raw = raw_val;\\n    return 0;\\n}\"}",
+  "plan_hash": "598c60b37b6bc7ae"
+}

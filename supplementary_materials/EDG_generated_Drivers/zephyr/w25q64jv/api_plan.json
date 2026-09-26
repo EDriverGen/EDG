@@ -1,0 +1,11 @@
+{
+  "eval_class": "memory",
+  "init_call": "w25q64jv_init(&g_eval_dev, &spi_cfg)",
+  "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+  "mem_write_call": "w25q64jv_write_page(&g_eval_dev, addr, buf, len)",
+  "memory_size_bytes": 8388608,
+  "memory_page_bytes": 256,
+  "dev_struct_type": "const struct device *",
+  "init_extra_setup_c": "const struct device *spi_dev = device_get_binding(bus_name);\nif (spi_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\nstruct spi_dt_spec spi_cfg = {\n    .bus = spi_dev,\n    .config = {\n        .frequency = 104000000,\n        .operation = SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB | SPI_WORD_SET(8),\n        .slave = 0,\n        .cs = { .gpio = GPIO_DT_SPEC_GET(DT_NODELABEL(spi1), cs_gpios) }\n    }\n};",
+  "preamble_c": "#include <zephyr/drivers/spi.h>\n#include <zephyr/device.h>\n#include <zephyr/kernel.h>\n#include <errno.h>"
+}

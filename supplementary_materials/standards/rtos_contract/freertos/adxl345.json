@@ -1,0 +1,113 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "freertos__adxl345",
+  "device_id": "adxl345",
+  "rtos_id": "freertos",
+  "bus": "spi",
+  "scope": "FreeRTOS with STM32CubeF1 HAL on STM32F103RB; this fixed ADXL345 task uses polling on SPI1 with GPIOA/4 chip select. The standard covers caller-provided SPI bindings, polling transfers, and chip-select control; the sampling interval in sample_ref is application policy.",
+  "api_contract": {
+    "headers": [
+      "stm32f1xx_hal.h",
+      "stm32f1xx_hal_spi.h",
+      "stm32f1xx_hal_gpio.h"
+    ],
+    "types": {
+      "spi": "SPI_HandleTypeDef *",
+      "port": "GPIO_TypeDef *",
+      "pin": "uint16_t",
+      "status": "HAL_StatusTypeDef"
+    },
+    "binding": {
+      "instance": "SPI1",
+      "handle": "hspi1",
+      "chip_select": "GPIOA / GPIO_PIN_4",
+      "configuration": "Mode 3, 8-bit, MSB-first, <=5 MHz; caller supplies initialized handle."
+    },
+    "operations": [
+      {
+        "name": "HAL_SPI_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+        "semantics": "blocking polling write; checks HAL_StatusTypeDef result"
+      },
+      {
+        "name": "HAL_SPI_TransmitReceive",
+        "signature": "HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout)",
+        "semantics": "blocking same-length full-duplex transfer; checks result"
+      },
+      {
+        "name": "HAL_GPIO_WritePin",
+        "signature": "void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)",
+        "semantics": "assert CS low for transfer and deassert it high after completion"
+      }
+    ],
+    "task_binding": {
+      "bus": "spi",
+      "instance": "spi1",
+      "symbol": "hspi1",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL SPI with FreeRTOS timing"
+    }
+  },
+  "facts": [
+    {
+      "id": "spi_binding",
+      "category": "bus_binding",
+      "requirement": "Retain the SPI_HandleTypeDef handle and the task's fixed SPI1/hspi1, SPI mode, and GPIOA/4 chip-select binding; the caller initializes the bus and passes it in.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__adxl345/inputs/reference_drivers/adxl345_ref.h",
+          "line_start": 9,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__adxl345/inputs/task_requirements.json",
+          "line_start": 73,
+          "line_end": 93
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__adxl345/inputs/task_requirements.json",
+          "line_start": 108,
+          "line_end": 116
+        }
+      ]
+    },
+    {
+      "id": "spi_transfer",
+      "category": "bus_transfer",
+      "requirement": "Provide blocking HAL SPI write and synchronous transmit/receive APIs, with handle, TX/RX buffers, byte count, timeout, and HAL_StatusTypeDef return value, sufficient for the reference register writes, readbacks, and burst reads.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 12,
+          "line_end": 27
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 52,
+          "line_end": 57
+        }
+      ]
+    },
+    {
+      "id": "spi_cs",
+      "category": "gpio_chip_select",
+      "requirement": "Provide HAL GPIO pin writes to assert chip select low before each SPI transaction and release it high afterward.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 10,
+          "line_end": 27
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 52,
+          "line_end": 57
+        }
+      ]
+    }
+  ]
+}

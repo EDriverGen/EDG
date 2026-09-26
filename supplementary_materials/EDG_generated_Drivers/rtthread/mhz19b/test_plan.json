@@ -1,0 +1,66 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "uart1",
+      "write_prefix_any_of": [
+        [
+          "0xFF",
+          "0x01",
+          "0x86",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x79"
+        ]
+      ],
+      "note": "read_co2: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "uart1",
+      "read_any": true,
+      "note": "read_co2: direct read read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "co2_800ppm",
+      "mock_preload": {
+        "read_bytes": [
+          "0xFF",
+          "0x86",
+          "0x03",
+          "0x20",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x57"
+        ]
+      },
+      "expected_read_raw": 800,
+      "derivation": "Response bytes: start=0xFF, cmd=0x86, high=0x03, low=0x20, reserved=0x00*4, checksum. CO2 = 0x03*256 + 0x20 = 768 + 32 = 800 ppm. Checksum = (~(0x86+0x03+0x20+0x00+0x00+0x00+0x00) + 1) & 0xFF = (~(0xA9) + 1) & 0xFF = (0x56 + 1) & 0xFF = 0x57."
+    },
+    {
+      "name": "co2_2000ppm",
+      "mock_preload": {
+        "read_bytes": [
+          "0xFF",
+          "0x86",
+          "0x07",
+          "0xD0",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0x00",
+          "0xA3"
+        ]
+      },
+      "expected_read_raw": 2000,
+      "derivation": "Response bytes: start=0xFF, cmd=0x86, high=0x07, low=0xD0, reserved=0x00*4, checksum. CO2 = 0x07*256 + 0xD0 = 1792 + 208 = 2000 ppm. Checksum = (~(0x86+0x07+0xD0+0x00+0x00+0x00+0x00) + 1) & 0xFF = (~(0x15D) + 1) & 0xFF = (~(0x5D) + 1) & 0xFF = (0xA2 + 1) & 0xFF = 0xA3."
+    }
+  ]
+}

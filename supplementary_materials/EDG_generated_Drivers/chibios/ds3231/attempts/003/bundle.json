@@ -1,0 +1,136 @@
+{
+  "device_id": "ds3231",
+  "rtos_id": "chibios",
+  "eval_class": "rtc",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef DS3231_H\n#define DS3231_H\n\n#include <stdint.h>\n\nstruct ds3231_time {\n    uint8_t seconds;\n    uint8_t minutes;\n    uint8_t hours;\n    uint8_t day;\n    uint8_t date;\n    uint8_t month;\n    uint8_t year;\n};\n\nstruct ds3231_device {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint ds3231_init(struct ds3231_device *dev, void *bus_handle);\nint ds3231_get_time(struct ds3231_device *dev, struct ds3231_time *t);\nint ds3231_set_time(struct ds3231_device *dev, const struct ds3231_time *t);\n\n#endif",
+  "driver_source": "#include \"ds3231.h\"\n#include \"ch.h\"\n#include \"hal.h\"\n#include <stdint.h>\n#include <string.h>\n\n#include \"chibios.h\"\n#define DS3231_I2C_ADDR 0x68\n#define DS3231_I2C_TIMEOUT MS2ST(100)\n\nstatic int ds3231_write_then_read(struct ds3231_device *dev, uint8_t reg, uint8_t *buf, size_t len)\n{\n    i2cAcquireBus((I2CDriver *)dev->bus_handle);\n    msg_t ret = i2cMasterTransmitTimeout((I2CDriver *)dev->bus_handle, DS3231_I2C_ADDR, &reg, 1, buf, len, DS3231_I2C_TIMEOUT);\n    i2cReleaseBus((I2CDriver *)dev->bus_handle);\n    return (ret == MSG_OK) ? 0 : -1;\n}\n\nstatic int ds3231_write(struct ds3231_device *dev, uint8_t reg, const uint8_t *data, size_t len)\n{\n    uint8_t txbuf[1 + len];\n    txbuf[0] = reg;\n    memcpy(txbuf + 1, data, len);\n    i2cAcquireBus((I2CDriver *)dev->bus_handle);\n    msg_t ret = i2cMasterTransmitTimeout((I2CDriver *)dev->bus_handle, DS3231_I2C_ADDR, txbuf, 1 + len, NULL, 0, DS3231_I2C_TIMEOUT);\n    i2cReleaseBus((I2CDriver *)dev->bus_handle);\n    return (ret == MSG_OK) ? 0 : -1;\n}\n\nint ds3231_init(struct ds3231_device *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = DS3231_I2C_ADDR;\n    return 0;\n}\n\nint ds3231_get_time(struct ds3231_device *dev, struct ds3231_time *t)\n{\n    uint8_t buf[7];\n    if (ds3231_write_then_read(dev, 0x00, buf, 7) != 0)\n        return -1;\n    t->seconds = ((buf[0] >> 4) * 10) + (buf[0] & 0x0F);\n    t->minutes = ((buf[1] >> 4) * 10) + (buf[1] & 0x0F);\n    t->hours = ((buf[2] >> 4) * 10) + (buf[2] & 0x0F);\n    t->day = buf[3];\n    t->date = ((buf[4] >> 4) * 10) + (buf[4] & 0x0F);\n    t->month = ((buf[5] >> 4) * 10) + (buf[5] & 0x0F);\n    t->year = ((buf[6] >> 4) * 10) + (buf[6] & 0x0F);\n    return 0;\n}\n\nint ds3231_set_time(struct ds3231_device *dev, const struct ds3231_time *t)\n{\n    uint8_t data[7];\n    data[0] = ((t->seconds / 10) << 4) | (t->seconds % 10);\n    data[1] = ((t->minutes / 10) << 4) | (t->minutes % 10);\n    data[2] = ((t->hours / 10) << 4) | (t->hours % 10);\n    data[3] = t->day;\n    data[4] = ((t->date / 10) << 4) | (t->date % 10);\n    data[5] = ((t->month / 10) << 4) | (t->month % 10);\n    data[6] = ((t->year / 10) << 4) | (t->year % 10);\n    return ds3231_write(dev, 0x00, data, 7);\n}\n",
+  "api_contract": {
+    "eval_class": "rtc",
+    "init_call": "ds3231_init(&g_eval_dev, (void *)bus_name)",
+    "get_time_call": "ds3231_get_time(&g_eval_dev, &t)",
+    "set_time_call": "ds3231_set_time(&g_eval_dev, &t)",
+    "time_struct_decl": "struct ds3231_time drv;",
+    "time_struct_from_in": "struct ds3231_time drv; drv.seconds = in->second; drv.minutes = in->minute; drv.hours = in->hour; drv.day = in->weekday; drv.date = in->day; drv.month = in->month; drv.year = in->year - 2000;",
+    "time_fields": {
+      "year": "drv.year + 2000",
+      "month": "drv.month",
+      "day": "drv.date",
+      "hour": "drv.hours",
+      "minute": "drv.minutes",
+      "second": "drv.seconds",
+      "weekday": "drv.day"
+    },
+    "dev_struct_type": "struct ds3231_device",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include \"ch.h\"\n#include \"hal.h\"\n#include <stdint.h>\n#include <string.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_time",
+        "mock_preload": {
+          "0x00": [
+            "0x59",
+            "0x59",
+            "0x23",
+            "0x03",
+            "0x31",
+            "0x12",
+            "0x24"
+          ]
+        },
+        "expected_time": {
+          "year": 2024,
+          "month": 12,
+          "day": 31,
+          "hour": 23,
+          "minute": 59,
+          "second": 59,
+          "weekday": 3
+        },
+        "derivation": "BCD bytes: seconds=0x59=59, minutes=0x59=59, hours=0x23=23, day=0x03=3, date=0x31=31, month=0x12=12, year=0x24=24 -> year+2000=2024"
+      },
+      {
+        "name": "zero_time",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x01",
+            "0x01",
+            "0x01",
+            "0x00"
+          ]
+        },
+        "expected_time": {
+          "year": 2000,
+          "month": 1,
+          "day": 1,
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "weekday": 1
+        },
+        "derivation": "BCD bytes: seconds=0x00=0, minutes=0x00=0, hours=0x00=0, day=0x01=1, date=0x01=1, month=0x01=1, year=0x00=0 -> year+2000=2000"
+      },
+      {
+        "name": "leap_year_feb29",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00",
+            "0x12",
+            "0x04",
+            "0x29",
+            "0x02",
+            "0x24"
+          ]
+        },
+        "expected_time": {
+          "year": 2024,
+          "month": 2,
+          "day": 29,
+          "hour": 12,
+          "minute": 0,
+          "second": 0,
+          "weekday": 4
+        },
+        "derivation": "BCD bytes: seconds=0x00=0, minutes=0x00=0, hours=0x12=12, day=0x04=4, date=0x29=29, month=0x02=2, year=0x24=36 -> year+2000=2024"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.258,
+  "prompt_chars": 44671,
+  "raw_response": "{\"driver_header\": \"#ifndef DS3231_H\\n#define DS3231_H\\n\\n#include <stdint.h>\\n\\nstruct ds3231_time {\\n    uint8_t seconds;\\n    uint8_t minutes;\\n    uint8_t hours;\\n    uint8_t day;\\n    uint8_t date;\\n    uint8_t month;\\n    uint8_t year;\\n};\\n\\nstruct ds3231_device {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint ds3231_init(struct ds3231_device *dev, void *bus_handle);\\nint ds3231_get_time(struct ds3231_device *dev, struct ds3231_time *t);\\nint ds3231_set_time(struct ds3231_device *dev, const struct ds3231_time *t);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"ds3231.h\\\"\\n#include \\\"ch.h\\\"\\n#include \\\"hal.h\\\"\\n#include \\\"chibios.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define DS3231_I2C_ADDR 0x68\\n#define DS3231_I2C_TIMEOUT MS2ST(100)\\n\\nstatic int ds3231_write_then_read(struct ds3231_device *dev, uint8_t reg, uint8_t *buf, size_t len)\\n{\\n    i2cAcquireBus((I2CDriver *)dev->bus_handle);\\n    msg_t ret = i2cMasterTransmitTimeout((I2CDriver *)dev->bus_handle, DS3231_I2C_ADDR, &reg, 1, buf, len, DS3231_I2C_TIMEOUT);\\n    i2cReleaseBus((I2CDriver *)dev->bus_handle);\\n    return (ret == MSG_OK) ? 0 : -1;\\n}\\n\\nstatic int ds3231_write(struct ds3231_device *dev, uint8_t reg, const uint8_t *data, size_t len)\\n{\\n    uint8_t txbuf[1 + len];\\n    txbuf[0] = reg;\\n    memcpy(txbuf + 1, data, len);\\n    i2cAcquireBus((I2CDriver *)dev->bus_handle);\\n    msg_t ret = i2cMasterTransmitTimeout((I2CDriver *)dev->bus_handle, DS3231_I2C_ADDR, txbuf, 1 + len, NULL, 0, DS3231_I2C_TIMEOUT);\\n    i2cReleaseBus((I2CDriver *)dev->bus_handle);\\n    return (ret == MSG_OK) ? 0 : -1;\\n}\\n\\nint ds3231_init(struct ds3231_device *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = DS3231_I2C_ADDR;\\n    return 0;\\n}\\n\\nint ds3231_get_time(struct ds3231_device *dev, struct ds3231_time *t)\\n{\\n    uint8_t buf[7];\\n    if (ds3231_write_then_read(dev, 0x00, buf, 7) != 0)\\n        return -1;\\n    t->seconds = ((buf[0] >> 4) * 10) + (buf[0] & 0x0F);\\n    t->minutes = ((buf[1] >> 4) * 10) + (buf[1] & 0x0F);\\n    t->hours = ((buf[2] >> 4) * 10) + (buf[2] & 0x0F);\\n    t->day = buf[3];\\n    t->date = ((buf[4] >> 4) * 10) + (buf[4] & 0x0F);\\n    t->month = ((buf[5] >> 4) * 10) + (buf[5] & 0x0F);\\n    t->year = ((buf[6] >> 4) * 10) + (buf[6] & 0x0F);\\n    return 0;\\n}\\n\\nint ds3231_set_time(struct ds3231_device *dev, const struct ds3231_time *t)\\n{\\n    uint8_t data[7];\\n    data[0] = ((t->seconds / 10) << 4) | (t->seconds % 10);\\n    data[1] = ((t->minutes / 10) << 4) | (t->minutes % 10);\\n    data[2] = ((t->hours / 10) << 4) | (t->hours % 10);\\n    data[3] = t->day;\\n    data[4] = ((t->date / 10) << 4) | (t->date % 10);\\n    data[5] = ((t->month / 10) << 4) | (t->month % 10);\\n    data[6] = ((t->year / 10) << 4) | (t->year % 10);\\n    return ds3231_write(dev, 0x00, data, 7);\\n}\\n\"}",
+  "plan_hash": "c0417d531bf18871"
+}

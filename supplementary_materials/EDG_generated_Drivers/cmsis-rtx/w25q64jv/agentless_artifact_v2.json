@@ -1,0 +1,2768 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "cmsis-rtx",
+    "board": "stm32f103rb",
+    "mcu_family": "stm32f1",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+    "bus_intent": {
+      "canonical_bus": "spi",
+      "connection_type": "spi",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL SPI with CMSIS-RTOS2 timing",
+      "address_mode": "chip-select",
+      "bus_instance": "spi1"
+    },
+    "device_id": "w25q64jv",
+    "device_ir_hash": "4b329527524e094c",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+      "path": "<PROJECT_ROOT>/data/rtos/cmsis-rtx",
+      "roles": [
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "cmsis-rtx",
+      "sha": "2eff12a"
+    },
+    {
+      "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+      "path": "<PROJECT_ROOT>/data/rtos/freertos-stm32f103-project/STM32CubeF1",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "cmsis-rtx",
+      "sha": "5f2bc59"
+    }
+  ],
+  "slots": {
+    "spi.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "HAL_SPI_Init"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "spi.addressing": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "macro",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "address_rule",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "spi.addressing",
+        "fulfillment_kind": "context_binding",
+        "source": "device_ir.address_rule+task_context.device_attachment",
+        "confidence": 0.9,
+        "value": {
+          "type": "address_pins",
+          "addressing_form": "24-bit",
+          "addresses": [
+            {
+              "address": "0x000000",
+              "description": "Read Manufacturer/Device ID address must be all zeros.",
+              "is_default": true
+            },
+            {
+              "address": "0x000000",
+              "description": "Generic 24-bit memory, erase, program, security register, and read addressing.",
+              "is_default": false
+            },
+            {
+              "address": "0x001000",
+              "description": "Security register #1 address pattern in standard SPI.",
+              "is_default": false
+            },
+            {
+              "address": "0x002000",
+              "description": "Security register #2 address pattern in standard SPI.",
+              "is_default": false
+            },
+            {
+              "address": "0x003000",
+              "description": "Security register #3 address pattern in standard SPI.",
+              "is_default": false
+            }
+          ]
+        },
+        "fields": {
+          "address_rule": {
+            "type": "address_pins",
+            "addressing_form": "24-bit",
+            "addresses": [
+              {
+                "address": "0x000000",
+                "description": "Read Manufacturer/Device ID address must be all zeros.",
+                "is_default": true
+              },
+              {
+                "address": "0x000000",
+                "description": "Generic 24-bit memory, erase, program, security register, and read addressing.",
+                "is_default": false
+              },
+              {
+                "address": "0x001000",
+                "description": "Security register #1 address pattern in standard SPI.",
+                "is_default": false
+              },
+              {
+                "address": "0x002000",
+                "description": "Security register #2 address pattern in standard SPI.",
+                "is_default": false
+              },
+              {
+                "address": "0x003000",
+                "description": "Security register #3 address pattern in standard SPI.",
+                "is_default": false
+              }
+            ]
+          },
+          "addressing": {
+            "default": "spi1",
+            "selection_rule": "SPI CS# selected by board wiring."
+          },
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+        ]
+      },
+      "confidence": 0.9
+    },
+    "spi.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "SPI_HandleTypeDef"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "spi.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "HAL_StatusTypeDef",
+            "kind": "type_ref",
+            "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+            "source_slot": "spi.acquire_or_bind",
+            "source_symbol": "HAL_SPI_Init",
+            "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          },
+          {
+            "symbol": "SPI_HandleTypeDef",
+            "kind": "type_ref",
+            "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+            "source_slot": "spi.acquire_or_bind",
+            "source_symbol": "HAL_SPI_Init",
+            "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.6833333333333333
+    },
+    "spi.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "HAL_SPI_TransmitReceive"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "HAL_Delay"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "HAL_StatusTypeDef"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.8,
+        "symbols": [
+          {
+            "symbol": "HAL_StatusTypeDef",
+            "kind": "type_ref",
+            "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+            "source_slot": "spi.acquire_or_bind",
+            "source_symbol": "HAL_SPI_Init",
+            "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error evidence is derived from return/status types used by bound APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "spi1",
+        "fields": {
+          "bus_instance": "spi1",
+          "bus_symbol": "hspi1",
+          "backend": "STM32CubeF1 HAL SPI with CMSIS-RTOS2 timing",
+          "mode": "polling",
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.pin_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "fixed_attachment",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "chip_select": "board_configured_gpio",
+          "cs_handling": "driver_or_board_specific"
+        },
+        "fields": {
+          "fixed_attachment": {
+            "chip_select": "board_configured_gpio",
+            "cs_handling": "driver_or_board_specific"
+          },
+          "required_attachment": {
+            "signals": [
+              "CS",
+              "CLK",
+              "MOSI",
+              "MISO"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "spi.cs_control": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "driver_framework"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "SPI_NSS_HARD_OUTPUT"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    },
+    "spi.transaction_begin": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "spi.transaction_end": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "HAL_SPI_Abort"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    },
+    "spi.transfer_registers": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    }
+  },
+  "symbols": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "symbol": "SPI_HandleTypeDef",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "struct __SPI_HandleTypeDef { SPI_TypeDef *Instance; /*!< SPI registers base address */ SPI_InitTypeD",
+      "signature_source": "parser",
+      "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.6833333333333333,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+          "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0"
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void HAL_Delay(uint32_t Delay)",
+      "signature_source": "parser",
+      "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "implemented_in": null,
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+          "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=2+4.0",
+        "root-role+3.0"
+      ]
+    },
+    "spi.acquire_or_bind": {
+      "slot_id": "spi.acquire_or_bind",
+      "symbol": "HAL_SPI_Init",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+      "signature_source": "parser",
+      "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+          "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=4+8.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:HAL_SPI_Init is the top-scoring candidate with a name and signature matching the slot's intent to acquire/bind an SPI de"
+      ]
+    },
+    "spi.transfer": {
+      "slot_id": "spi.transfer",
+      "symbol": "HAL_SPI_TransmitReceive",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, const uint8_t *pTxData, uint8_t *pRxData, uint16_t Size, uint32_t Timeout)",
+      "signature_source": "parser",
+      "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+          "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=3+9.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:HAL_SPI_TransmitReceive is the best match for spi.transfer, with exact name tokens and file path under stm32f1xx HAL, ma"
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "symbol": "HAL_StatusTypeDef",
+      "kind": "typedef",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "enum { HAL_OK = 0x00U, HAL_ERROR = 0x01U, HAL_BUSY = 0x02U, HAL_TIMEOUT = 0x03U }",
+      "signature_source": "parser",
+      "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "implemented_in": null,
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+          "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=2+4.0",
+        "root-role+3.0",
+        "llm_bound:HAL_StatusTypeDef is a canonical status type from the STM32F1 HAL, matching the slot's intent for error/status values an"
+      ]
+    },
+    "spi.cs_control": {
+      "slot_id": "spi.cs_control",
+      "symbol": "SPI_NSS_HARD_OUTPUT",
+      "kind": "macro",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "(SPI_CR2_SSOE << 16U)",
+      "signature_source": "parser",
+      "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+          "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=1+2.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:SPI_NSS_HARD_OUTPUT is a macro from the STM32F1 HAL SPI header that directly relates to chip select control, matching th"
+      ]
+    },
+    "spi.transaction_end": {
+      "slot_id": "spi.transaction_end",
+      "symbol": "HAL_SPI_Abort",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "HAL_StatusTypeDef HAL_SPI_Abort(SPI_HandleTypeDef *hspi)",
+      "signature_source": "parser",
+      "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+          "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=1+2.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:HAL_SPI_Abort is the only candidate that matches the slot's intent to end an SPI transaction, and its file path aligns w"
+      ]
+    }
+  },
+  "_symbol_index": {
+    "SPI_HandleTypeDef": [
+      "spi.key_types"
+    ],
+    "HAL_Delay": [
+      "runtime.delay_ms"
+    ],
+    "HAL_SPI_Init": [
+      "spi.acquire_or_bind"
+    ],
+    "HAL_SPI_TransmitReceive": [
+      "spi.transfer"
+    ],
+    "HAL_StatusTypeDef": [
+      "runtime.error_status"
+    ],
+    "SPI_NSS_HARD_OUTPUT": [
+      "spi.cs_control"
+    ],
+    "HAL_SPI_Abort": [
+      "spi.transaction_end"
+    ]
+  },
+  "slot_fulfillments": {
+    "spi.addressing": {
+      "slot_id": "spi.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "24-bit",
+        "addresses": [
+          {
+            "address": "0x000000",
+            "description": "Read Manufacturer/Device ID address must be all zeros.",
+            "is_default": true
+          },
+          {
+            "address": "0x000000",
+            "description": "Generic 24-bit memory, erase, program, security register, and read addressing.",
+            "is_default": false
+          },
+          {
+            "address": "0x001000",
+            "description": "Security register #1 address pattern in standard SPI.",
+            "is_default": false
+          },
+          {
+            "address": "0x002000",
+            "description": "Security register #2 address pattern in standard SPI.",
+            "is_default": false
+          },
+          {
+            "address": "0x003000",
+            "description": "Security register #3 address pattern in standard SPI.",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "24-bit",
+          "addresses": [
+            {
+              "address": "0x000000",
+              "description": "Read Manufacturer/Device ID address must be all zeros.",
+              "is_default": true
+            },
+            {
+              "address": "0x000000",
+              "description": "Generic 24-bit memory, erase, program, security register, and read addressing.",
+              "is_default": false
+            },
+            {
+              "address": "0x001000",
+              "description": "Security register #1 address pattern in standard SPI.",
+              "is_default": false
+            },
+            {
+              "address": "0x002000",
+              "description": "Security register #2 address pattern in standard SPI.",
+              "is_default": false
+            },
+            {
+              "address": "0x003000",
+              "description": "Security register #3 address pattern in standard SPI.",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "spi1",
+          "selection_rule": "SPI CS# selected by board wiring."
+        },
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "HAL_SPI_Init",
+          "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "SPI_HandleTypeDef",
+          "kind": "type_ref",
+          "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "HAL_SPI_Init",
+          "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "HAL_SPI_Init",
+          "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "spi1",
+      "fields": {
+        "bus_instance": "spi1",
+        "bus_symbol": "hspi1",
+        "backend": "STM32CubeF1 HAL SPI with CMSIS-RTOS2 timing",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "chip_select": "board_configured_gpio",
+        "cs_handling": "driver_or_board_specific"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "chip_select": "board_configured_gpio",
+          "cs_handling": "driver_or_board_specific"
+        },
+        "required_attachment": {
+          "signals": [
+            "CS",
+            "CLK",
+            "MOSI",
+            "MISO"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "spi.addressing": {
+      "slot_id": "spi.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "address_pins",
+        "addressing_form": "24-bit",
+        "addresses": [
+          {
+            "address": "0x000000",
+            "description": "Read Manufacturer/Device ID address must be all zeros.",
+            "is_default": true
+          },
+          {
+            "address": "0x000000",
+            "description": "Generic 24-bit memory, erase, program, security register, and read addressing.",
+            "is_default": false
+          },
+          {
+            "address": "0x001000",
+            "description": "Security register #1 address pattern in standard SPI.",
+            "is_default": false
+          },
+          {
+            "address": "0x002000",
+            "description": "Security register #2 address pattern in standard SPI.",
+            "is_default": false
+          },
+          {
+            "address": "0x003000",
+            "description": "Security register #3 address pattern in standard SPI.",
+            "is_default": false
+          }
+        ]
+      },
+      "fields": {
+        "address_rule": {
+          "type": "address_pins",
+          "addressing_form": "24-bit",
+          "addresses": [
+            {
+              "address": "0x000000",
+              "description": "Read Manufacturer/Device ID address must be all zeros.",
+              "is_default": true
+            },
+            {
+              "address": "0x000000",
+              "description": "Generic 24-bit memory, erase, program, security register, and read addressing.",
+              "is_default": false
+            },
+            {
+              "address": "0x001000",
+              "description": "Security register #1 address pattern in standard SPI.",
+              "is_default": false
+            },
+            {
+              "address": "0x002000",
+              "description": "Security register #2 address pattern in standard SPI.",
+              "is_default": false
+            },
+            {
+              "address": "0x003000",
+              "description": "Security register #3 address pattern in standard SPI.",
+              "is_default": false
+            }
+          ]
+        },
+        "addressing": {
+          "default": "spi1",
+          "selection_rule": "SPI CS# selected by board wiring."
+        },
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "spi1",
+      "fields": {
+        "bus_instance": "spi1",
+        "bus_symbol": "hspi1",
+        "backend": "STM32CubeF1 HAL SPI with CMSIS-RTOS2 timing",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "chip_select": "board_configured_gpio",
+        "cs_handling": "driver_or_board_specific"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "chip_select": "board_configured_gpio",
+          "cs_handling": "driver_or_board_specific"
+        },
+        "required_attachment": {
+          "signals": [
+            "CS",
+            "CLK",
+            "MOSI",
+            "MISO"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "HAL_SPI_Init",
+          "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "SPI_HandleTypeDef",
+          "kind": "type_ref",
+          "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "HAL_SPI_Init",
+          "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "HAL_StatusTypeDef",
+          "kind": "type_ref",
+          "declared_in": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "HAL_SPI_Init",
+          "signature": "HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "spi1",
+    "bus_symbol": "hspi1",
+    "backend": "STM32CubeF1 HAL SPI with CMSIS-RTOS2 timing",
+    "mode": "polling",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "board_configured_gpio",
+      "cs_handling": "driver_or_board_specific"
+    },
+    "device_attachment": {
+      "device_id": "w25q64jv",
+      "attachment_type": "spi_flash",
+      "required_bus_type": "spi",
+      "spi_proto": "memory",
+      "spi_mode": 0,
+      "spi_max_hz": 80000000,
+      "memory_size_bytes": 8388608,
+      "memory_page_bytes": 256,
+      "addressing": {
+        "default": "spi1",
+        "selection_rule": "SPI CS# selected by board wiring."
+      },
+      "required_attachment": {
+        "signals": [
+          "CS",
+          "CLK",
+          "MOSI",
+          "MISO"
+        ],
+        "notes": [
+          "Standard SPI quad-pin connection."
+        ]
+      },
+      "default_overrides": {
+        "bus_instance": "spi1",
+        "irq": "absent",
+        "dma": "absent"
+      },
+      "notes": [
+        "64M-bit SPI NOR Flash. Read 0x03, Page Program 0x02, Sector Erase 0x20."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/w25q64jv/W25Q64JV.pdf",
+        "DriverGen/data/references/w25q64jv/*/*_ref.h"
+      ]
+    },
+    "include_headers": [
+      "CMSIS_device_header",
+      "Config/RTX_Config.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_ex_legacy.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_legacy.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32_assert_template.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cec.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_conf_template.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dac.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_eth.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_hcd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2s.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_irda.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_mmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nand.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sd.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_smartcard.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sram.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_exti.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_fsmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_rcc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_sdmmc.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_spi.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_tim.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h",
+      "EventRecorder.h",
+      "EventRecorderConf.h",
+      "Include/rtx_def.h",
+      "Include/rtx_evr.h",
+      "Include/rtx_os.h",
+      "Legacy/stm32_hal_legacy.h",
+      "Legacy/stm32f1xx_hal_can_legacy.h",
+      "RTE_Components.h",
+      "RTE_RTX_CONFIG_H",
+      "RTX_Config.h",
+      "Source/rtx_core_c.h",
+      "Source/rtx_lib.h",
+      "cmsis_compiler.h",
+      "cmsis_os2.h",
+      "os_tick.h",
+      "rtx_core_c.h",
+      "rtx_core_ca.h",
+      "rtx_core_cm.h",
+      "rtx_def.h",
+      "rtx_evr.h",
+      "rtx_lib.h",
+      "rtx_os.h",
+      "stddef.h",
+      "stdint.h",
+      "stm32_assert.h",
+      "stm32f1xx.h",
+      "stm32f1xx_hal.h",
+      "stm32f1xx_hal_adc.h",
+      "stm32f1xx_hal_adc_ex.h",
+      "stm32f1xx_hal_can.h",
+      "stm32f1xx_hal_can_ex_legacy.h",
+      "stm32f1xx_hal_cec.h",
+      "stm32f1xx_hal_conf.h",
+      "stm32f1xx_hal_cortex.h",
+      "stm32f1xx_hal_crc.h",
+      "stm32f1xx_hal_dac.h",
+      "stm32f1xx_hal_def.h",
+      "stm32f1xx_hal_dma.h",
+      "stm32f1xx_hal_dma_ex.h",
+      "stm32f1xx_hal_eth.h",
+      "stm32f1xx_hal_exti.h",
+      "stm32f1xx_hal_flash.h",
+      "stm32f1xx_hal_flash_ex.h",
+      "stm32f1xx_hal_gpio.h",
+      "stm32f1xx_hal_gpio_ex.h",
+      "stm32f1xx_hal_hcd.h",
+      "stm32f1xx_hal_i2c.h",
+      "stm32f1xx_hal_i2s.h",
+      "stm32f1xx_hal_irda.h",
+      "stm32f1xx_hal_iwdg.h",
+      "stm32f1xx_hal_mmc.h",
+      "stm32f1xx_hal_nand.h",
+      "stm32f1xx_hal_nor.h",
+      "stm32f1xx_hal_pccard.h",
+      "stm32f1xx_hal_pcd.h",
+      "stm32f1xx_hal_pwr.h",
+      "stm32f1xx_hal_rcc.h",
+      "stm32f1xx_hal_rcc_ex.h",
+      "stm32f1xx_hal_rtc.h",
+      "stm32f1xx_hal_sd.h",
+      "stm32f1xx_hal_smartcard.h",
+      "stm32f1xx_hal_spi.h",
+      "stm32f1xx_hal_sram.h",
+      "stm32f1xx_hal_tim.h",
+      "stm32f1xx_hal_uart.h",
+      "stm32f1xx_hal_usart.h",
+      "stm32f1xx_hal_wwdg.h",
+      "stm32f1xx_ll_bus.h",
+      "stm32f1xx_ll_rcc.h",
+      "stm32f1xx_ll_spi.h",
+      "string.h",
+      "tz_context.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.addressing",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 32,
+        "n_macros": 78,
+        "n_typedefs": 5,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_spi.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.addressing",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 108,
+        "n_macros": 80,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transaction_begin",
+          "spi.transaction_end"
+        ],
+        "n_functions": 15,
+        "n_macros": 62,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2s.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.acquire_or_bind",
+          "spi.transfer"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.acquire_or_bind",
+          "spi.transaction_begin"
+        ],
+        "n_functions": 25,
+        "n_macros": 48,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.acquire_or_bind"
+        ],
+        "n_functions": 30,
+        "n_macros": 163,
+        "n_typedefs": 6,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.acquire_or_bind",
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cec.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.acquire_or_bind",
+          "spi.transaction_begin",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 18,
+        "n_macros": 61,
+        "n_typedefs": 6,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind"
+        ],
+        "n_functions": 7,
+        "n_macros": 5,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dac.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.acquire_or_bind"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_eth.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_irda.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_smartcard.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 28,
+        "n_macros": 104,
+        "n_typedefs": 5,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.cs_control",
+          "spi.transaction_end",
+          "spi.transfer"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 49,
+        "n_macros": 99,
+        "n_typedefs": 8,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_tim.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 190,
+        "n_macros": 201,
+        "n_typedefs": 6,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Source/rtx_lib.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 61,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 6,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_conf_template.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 1,
+        "n_macros": 111,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 25,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transaction_end"
+        ],
+        "n_functions": 79,
+        "n_macros": 81,
+        "n_typedefs": 18,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Include/rtx_os.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 76,
+        "n_typedefs": 14,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "Include/rtx_evr.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 186,
+        "n_macros": 220,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Config/RTX_Config.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 72,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_legacy.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.transaction_begin"
+        ],
+        "n_functions": 17,
+        "n_macros": 149,
+        "n_typedefs": 5,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 12,
+        "n_macros": 71,
+        "n_typedefs": 5,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 13,
+        "n_macros": 22,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32_assert_template.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 1,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control",
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 2888,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 9,
+        "n_macros": 55,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_exti.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 19,
+        "n_macros": 45,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 136,
+        "n_macros": 81,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 3,
+        "n_macros": 113,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_begin"
+        ],
+        "n_functions": 13,
+        "n_macros": 97,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_end"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_fsmc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_end"
+        ],
+        "n_functions": 18,
+        "n_macros": 127,
+        "n_typedefs": 5,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_sdmmc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_end"
+        ],
+        "n_functions": 45,
+        "n_macros": 307,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_hcd.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_mmc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nand.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Include/rtx_def.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Source/rtx_core_c.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_ex_legacy.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status",
+          "spi.transaction_begin"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 20,
+        "n_macros": 82,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 13,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 169,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 8,
+        "n_macros": 48,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 2,
+        "n_macros": 18,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 17,
+        "n_macros": 48,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 14,
+        "n_macros": 277,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sd.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sram.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 30,
+        "n_macros": 78,
+        "n_typedefs": 5,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_rcc.h",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 110,
+        "n_macros": 204,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_spi.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 7,
+        "n_macros": 22,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2s.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 39,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Source/rtx_delay.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 4,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Source/rtx_thread.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 29,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 13,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_nor.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.cs_control"
+        ],
+        "n_functions": 20,
+        "n_macros": 47,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_sd.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_end"
+        ],
+        "n_functions": 59,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_sdmmc.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_end"
+        ],
+        "n_functions": 47,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Config/RTX_Config.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "Source/rtx_lib.c",
+        "root_id": "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 32,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": []
+  },
+  "transaction_templates": [
+    {
+      "template_id": "w25q64jv_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (4 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "w25q64jv_read_sequence",
+      "steps": [
+        {
+          "op": "spi_write_then_read",
+          "args": {
+            "bytes": [
+              "0x03",
+              null,
+              null,
+              null
+            ],
+            "length": "DATA",
+            "pointer_target": null,
+            "notes": "Read Data opcode plus 24-bit address."
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "HAL_SPI_TransmitReceive",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.5,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "slot_coverage",
+      "symbol_existence",
+      "root_role",
+      "mcu_affinity",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [],
+    "warnings": [],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'cmsis-rtx' is integrated; n_roots=2 (no minimum)",
+        "evidence": {
+          "rtos_id": "cmsis-rtx",
+          "n_roots": 2
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "all required slots covered",
+        "evidence": {
+          "missing_required": [],
+          "non_symbol_fulfillments": [
+            "integration.bus_instance_binding",
+            "integration.pin_binding",
+            "runtime.error_status",
+            "spi.addressing",
+            "spi.key_types"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": true,
+        "severity": "info",
+        "message": "7 manifest binding(s) declared in a path mentioning mcu_family=stm32f1 (other manifest bindings live in family-agnostic source: 0)",
+        "evidence": {
+          "matching_paths_sample": [
+            "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+            "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+            "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+            "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h"
+          ],
+          "other_paths_sample": []
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [
+          "spi.key_types",
+          "runtime.delay_ms"
+        ],
+        "missing_slots": [
+          "spi.acquire_or_bind",
+          "spi.addressing",
+          "spi.transfer",
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer_registers"
+        ],
+        "new_files_added": [
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_spi.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_spi.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2s.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_can.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cec.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_crc.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dac.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2s.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_eth.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_irda.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_smartcard.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Source/rtx_delay.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_tim.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Source/rtx_thread.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Source/rtx_lib.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_utils.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_conf_template.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Include/rtx_os.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Include/rtx_evr.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Config/RTX_Config.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_legacy.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32_assert_template.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_exti.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_exti.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_gpio.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_nor.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_fsmc.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_sdmmc.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_sd.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_ll_sdmmc.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_hcd.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_mmc.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nand.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Config/RTX_Config.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Include/rtx_def.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Source/rtx_core_c.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-core:0::Source/rtx_lib.c",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/Legacy/stm32f1xx_hal_can_ex_legacy.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_iwdg.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pccard.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rtc.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sd.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_sram.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_usart.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_wwdg.h",
+          "cmsis-rtx-stm32f103-project:cmsis-rtx-stm32cubef1:1::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_rcc.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 37715,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "spi.acquire_or_bind",
+          "spi.transfer",
+          "runtime.error_status",
+          "spi.cs_control",
+          "spi.transaction_end"
+        ],
+        "missing_slots": [
+          "spi.addressing",
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "spi.transaction_begin",
+          "spi.transfer_registers"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 8
+        },
+        "token_usage": {
+          "input_tokens_delta": 22116,
+          "output_tokens_delta": 5600,
+          "input_tokens_total": 59831,
+          "output_tokens_total": 14000
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 12,
+    "n_bound": 7,
+    "n_fulfilled": 10,
+    "n_non_symbol_fulfillments": 5,
+    "n_required": 8,
+    "n_required_bound": 8,
+    "n_required_fulfilled": 8,
+    "n_required_symbol_bound": 5,
+    "provenance": {
+      "manifest_repo": 7,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 0.99,
+      "dir_router_llm": 11995.41,
+      "file_selector": 117.92,
+      "file_selector_llm": 56860.54,
+      "exact_symbol_file_backfill": 13.72,
+      "deep_parse": 453.38,
+      "include_expand": 115.39,
+      "symbol_rank": 2154.58,
+      "binder_deterministic": 3.41,
+      "binder_llm": 12084.21,
+      "gap_diagnoser_llm": 8474.82,
+      "source_kind_classifier": 0.03
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 8,
+        "gap_diagnoser": 5
+      },
+      "input_tokens_total": 64486,
+      "output_tokens_total": 16500,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

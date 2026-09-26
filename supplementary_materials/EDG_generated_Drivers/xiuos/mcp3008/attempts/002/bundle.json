@@ -1,0 +1,120 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "xiuos",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MCP3008_H\n#define MCP3008_H\n\n#include <stdint.h>\n\nstruct mcp3008_device {\n    void *bus_handle;\n};\n\nint mcp3008_init(struct mcp3008_device *dev, void *bus_handle);\nint mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *value);\n\n#endif",
+  "driver_source": "#include \"mcp3008.h\"\n#include \"transform.h\"\n#include <stdint.h>\n#include <string.h>\n\n#define SPI_DEVICE_PATH \"/dev/spi0\"\n\nint mcp3008_init(struct mcp3008_device *dev, void *bus_handle) {\n    dev->bus_handle = bus_handle;\n    return 0;\n}\n\nint mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *value) {\n    uint8_t tx_buf[3];\n    uint8_t rx_buf[3];\n    int ret;\n\n    tx_buf[0] = 0x01;\n    tx_buf[1] = 0x80 | (channel << 4);\n    tx_buf[2] = 0x00;\n\n    ret = SpiTransferBytes(dev->bus_handle, tx_buf, rx_buf, 3);\n    if (ret != 0) {\n        return ret;\n    }\n\n    *value = ((uint16_t)(rx_buf[1] & 0x03) << 8) | rx_buf[2];\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "dev_struct_type": "struct mcp3008_device",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x7F",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 511
+        },
+        "derivation": "stream bytes: [0x00, 0x7F, 0xFF]; high_byte=0x7F, low_byte=0xFF; raw = ((0x7F & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023; but expected 511? That's full scale. high_byte bits [1:0]=0x01, low_byte=0xFF; so stream = [0x00, 0x7F, 0xFF] gives high_byte=0x7F, low_byte=0xFF -> raw=1023. To get 511, need high_byte=0x01, low_byte=0xFF; stream = [0x00, 0x01, 0xFF]. Correcting mock_preload."
+      },
+      {
+        "name": "ch0_mid_scale_corrected",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x01",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 511
+        },
+        "derivation": "stream bytes: [0x00, 0x01, 0xFF]; high_byte=0x01, low_byte=0xFF; raw = ((0x01 & 0x03) << 8) | 0xFF = (0x01 << 8) | 0xFF = 0x1FF = 511."
+      },
+      {
+        "name": "ch1_zero",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch1": 0
+        },
+        "derivation": "stream bytes: [0x00, 0x00, 0x00]; high_byte=0x00, low_byte=0x00; raw = ((0x00 & 0x03) << 8) | 0x00 = 0."
+      },
+      {
+        "name": "ch0_full_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x03",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 1023
+        },
+        "derivation": "stream bytes: [0x00, 0x03, 0xFF]; high_byte=0x03, low_byte=0xFF; raw = ((0x03 & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023."
+      }
+    ]
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "command",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 3.417,
+  "prompt_chars": 34157,
+  "raw_response": "{\"driver_header\": \"#ifndef MCP3008_H\\n#define MCP3008_H\\n\\n#include <stdint.h>\\n\\nstruct mcp3008_device {\\n    void *bus_handle;\\n};\\n\\nint mcp3008_init(struct mcp3008_device *dev, void *bus_handle);\\nint mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *value);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"mcp3008.h\\\"\\n#include \\\"transform.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define SPI_DEVICE_PATH \\\"/dev/spi0\\\"\\n\\nint mcp3008_init(struct mcp3008_device *dev, void *bus_handle) {\\n    dev->bus_handle = bus_handle;\\n    return 0;\\n}\\n\\nint mcp3008_read_channel(struct mcp3008_device *dev, uint8_t channel, uint16_t *value) {\\n    uint8_t tx_buf[3];\\n    uint8_t rx_buf[3];\\n    int ret;\\n\\n    tx_buf[0] = 0x01;\\n    tx_buf[1] = 0x80 | (channel << 4);\\n    tx_buf[2] = 0x00;\\n\\n    ret = SpiTransferBytes(dev->bus_handle, tx_buf, rx_buf, 3);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n\\n    *value = ((uint16_t)(rx_buf[1] & 0x03) << 8) | rx_buf[2];\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "3805d9aa8bfd787d"
+}

@@ -1,0 +1,638 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "bme280",
+  "scope": "Temperature, pressure, and humidity configuration, reading, and physical-value compensation over I2C.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "i2c_selection",
+        "pointer_read",
+        "i2c_modes"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "chip_id",
+        "reset",
+        "control_map",
+        "data_map",
+        "calib_ranges",
+        "status",
+        "mode_codes",
+        "oversampling_fields",
+        "oversampling_codes",
+        "filter_fields"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "burst",
+        "wait_nvm",
+        "measurement_completion",
+        "humidity_latch",
+        "config_sleep"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "startup",
+        "standby_table",
+        "conversion_time",
+        "hs_tlow",
+        "spi_clock"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "raw_pt",
+        "raw_h",
+        "calib_tp_layout",
+        "calib_h_layout",
+        "compensation_dependencies",
+        "formula_0",
+        "formula_1",
+        "formula_2"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "mode_behaviour",
+        "filter_reset"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "BME280.pdf",
+      "pages": 60,
+      "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "SDO low/high selects 7-bit address 76/77, respectively.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "i2c_selection",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Hold CSB high to select I2C; pulling it low locks SPI until power cycling.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer_read",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Write an 8-bit register address, then read after a repeated START or STOP; sequential reads increment the address.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "chip_id",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "D0=60。",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Write B6 to E0 to reset.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "control_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "F2/F3/F4/F5 are ctrl_hum/status/ctrl_meas/config, respectively.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "data_map",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "F7..F9 contain pressure, FA..FC temperature, and FD..FE humidity.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw_pt",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Pressure and temperature are big-endian 20-bit values; assemble three bytes and shift right by 4.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw_h",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Humidity is an unsigned big-endian 16-bit value.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "burst",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Read 8 bytes from F7 in one transfer to keep data from the same measurement cycle.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "calib_ranges",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Read calibration data from 88..A1 and E1..E7.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "calib_tp_layout",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Assemble dig_T/P in little-endian order according to Table 16; T1/P1 are unsigned and the others signed.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "calib_h_layout",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "H1/H3 are unsigned 8-bit; H2 is signed 16-bit; H4/H5 are signed 12-bit values spanning the nibbles of E5; H6 is signed 8-bit.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "compensation_dependencies",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Temperature/pressure/humidity compensation uses T1..3/P1..9/H1..6, respectively; pressure and humidity use the temperature intermediate t_fine.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 49,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "formula_0",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Temperature and t_fine compensation require evaluable mathematical rules or equivalent textual formulas.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 49,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "formula_1",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Pressure compensation requires evaluable mathematical rules or equivalent textual formulas.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 49,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "formula_2",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Humidity compensation requires evaluable mathematical rules or equivalent textual formulas.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 49,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "F3 bit3 measuring indicates conversion; bit0 im_update indicates NVM copying.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wait_nvm",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Wait for im_update to clear before using calibration values.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "measurement_completion",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "When polling shows measuring cleared, results have been transferred to the data registers.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "startup",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "The first communication is available within 2 ms after power-up voltage requirements are met.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mode_behaviour",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Sleep is the default; forced mode returns to sleep after one measurement; normal mode alternates measurement and standby.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mode_codes",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Mode bits1:0: 00 sleep, 01/10 forced, 11 normal.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "oversampling_fields",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "osrs_h occupies bits2:0, osrs_t bits7:5, and osrs_p bits4:2.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "oversampling_codes",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "osrs code 0 skips the channel; 1/2/3/4/5..7 correspond to x1/x2/x4/x8/x16.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "humidity_latch",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Write ctrl_hum first, then ctrl_meas to apply the humidity setting.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        },
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config_sleep",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Writes to config may be ignored in normal mode; configure in sleep mode.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "standby_table",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "t_sb codes0..7 correspond to 0.5/62.5/125/250/500/1000/10/20 ms.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_time",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Conversion time depends on oversampling; the maximum uses 1.25 ms, 2.3 ms times each channel's oversampling factor, and 0.575 ms terms for pressure/humidity.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 51,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "filter_fields",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "In config, t_sb occupies bits7:5, filter bits4:2, and spi3w_en bit0.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "filter_reset",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "Writing the filter configuration resets filter history.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 18,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "hs_tlow",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "For I2C HS with load <=100 pF, SCK low time is at least 160 ns at 1.62 V and 210 ns at 1.2 V.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_clock",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SPI supports up to 10 MHz.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "i2c_modes",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "I2C supports standard, fast, and high-speed modes.",
+      "evidence": [
+        {
+          "document": "BME280.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/bme280/BME280.pages.json"
+        }
+      ]
+    }
+  ]
+}

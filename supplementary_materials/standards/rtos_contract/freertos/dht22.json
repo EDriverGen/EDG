@@ -1,0 +1,129 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "freertos__dht22",
+  "device_id": "dht22",
+  "rtos_id": "freertos",
+  "bus": "gpio_timing",
+  "scope": "FreeRTOS with STM32CubeF1 HAL; a fixed GPIO polling task for dht22. Check GPIO input/output, caller-provided microsecond timing hooks, and the millisecond waits actually used.",
+  "api_contract": {
+    "headers": [
+      "stm32f1xx_hal.h",
+      "FreeRTOS.h",
+      "task.h"
+    ],
+    "types": {
+      "bus_or_device": "GPIO_TypeDef",
+      "status": "HAL_StatusTypeDef"
+    },
+    "task_binding": {
+      "bus": "gpio_timing",
+      "instance": "default_gpio_slot",
+      "symbol": "GPIOA/GPIO_PIN_0 + GPIOA/GPIO_PIN_1",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL GPIO + board microsecond timing hooks"
+    },
+    "operations": [
+      {
+        "name": "HAL_GPIO_Init",
+        "signature": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init)",
+        "semantics": "Configure GPIO direction/mode and pull-up as required by sensor protocol."
+      },
+      {
+        "name": "HAL_GPIO_ReadPin",
+        "signature": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)",
+        "semantics": "Poll data line state."
+      },
+      {
+        "name": "HAL_GPIO_WritePin",
+        "signature": "void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)",
+        "semantics": "Drive start and bit-slot levels."
+      },
+      {
+        "name": "dht22_delay_us",
+        "signature": "void dht22_delay_us(uint32_t us)",
+        "semantics": "Board-supplied microsecond delay; HAL_Delay has millisecond units."
+      }
+    ],
+    "preconditions": "Caller provides the task-configured and initialized peripheral handle; helper APIs have the RTOS/HAL context documented in the baseline pack."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Retain the fixed FreeRTOS task's gpio_timing handle/device type and prebound context; the caller supplies the bus instance configured according to task_requirements.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 26,
+          "line_end": 26
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/task_requirements.json",
+          "line_start": 33,
+          "line_end": 39
+        }
+      ]
+    },
+    {
+      "id": "gpio_io",
+      "category": "gpio_io",
+      "requirement": "Provide HAL GPIO configuration, reads, and writes, allowing the data pin to switch between open-drain/push-pull output and input with pull-up.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 8,
+          "line_end": 19
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 37,
+          "line_end": 52
+        }
+      ]
+    },
+    {
+      "id": "microsecond_delay",
+      "category": "microsecond_timing",
+      "requirement": "The caller/board provides dht22_delay_us(uint32_t us) for microsecond delays between protocol pulses; HAL_Delay serves only the reference's millisecond waits.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 29,
+          "line_end": 30
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 22,
+          "line_end": 29
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/freertos/stubs_gpio.c",
+          "line_start": 189,
+          "line_end": 189
+        }
+      ]
+    },
+    {
+      "id": "millisecond_wait",
+      "category": "millisecond_delay",
+      "requirement": "Provide HAL_Delay(uint32_t) in milliseconds for the DHT22 2 ms start-low interval.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 49,
+          "line_end": 49
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtthread__emc1413",
+  "device_id": "emc1413",
+  "rtos_id": "rtthread",
+  "bus": "i2c",
+  "scope": "rtthread fixed task for emc1413, bus=i2c, board=stm32f103rb; only APIs and preconditions needed by copied reference driver plus fixed task configuration.",
+  "api_contract": {
+    "headers": [
+      "rtthread.h",
+      "rtdevice.h",
+      "drivers/dev_i2c.h"
+    ],
+    "types": {
+      "status": "rt_err_t / actual transfer count",
+      "bus_or_pin": "RT-Thread typed device handle or fixed GPIO pin"
+    },
+    "task_binding": {
+      "bus": "i2c",
+      "instance": "i2c1",
+      "mode": "polling",
+      "backend": "rt-thread i2c bus device / local bsp implementation",
+      "fixed_attachment": {}
+    },
+    "operations": [
+      {
+        "name": "rt_device_find",
+        "signature": "rt_device_t rt_device_find(const char *name)"
+      },
+      {
+        "name": "rt_i2c_transfer",
+        "signature": "rt_ssize_t rt_i2c_transfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)",
+        "message_fields": [
+          "addr",
+          "flags",
+          "len",
+          "buf"
+        ],
+        "success": "returned message count equals requested count"
+      }
+    ],
+    "preconditions": "Use the task_requirements fixed bus/pin, passed device handle, and caller-provided bus initialization/configuration; sample_ref application cadence is outside scope."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Use the fixed RT-Thread I2C polling instance i2c1; the caller/adapter finds and passes a struct rt_i2c_bus_device * handle and uses 7-bit addressing. The platform initializes the bus.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__emc1413/inputs/reference_drivers/emc1413_ref.h",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__emc1413/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__emc1413/inputs/reference_drivers/emc1413_ref.c",
+          "line_start": 140,
+          "line_end": 140
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 357,
+          "line_end": 375
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 228,
+          "line_end": 232
+        }
+      ]
+    },
+    {
+      "id": "i2c_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain rt_i2c_transfer(bus,msgs,num) for polling transfers with multiple messages. struct rt_i2c_msg must express addr, read/write flags, len, and buf. Success requires the transferred message count to match the requested count; propagate failures.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__emc1413/inputs/reference_drivers/emc1413_ref.c",
+          "line_start": 40,
+          "line_end": 40
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__emc1413/inputs/reference_drivers/emc1413_ref.c",
+          "line_start": 68,
+          "line_end": 68
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 221,
+          "line_end": 229
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/i2c/pack.md",
+          "line_start": 366,
+          "line_end": 377
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 228,
+          "line_end": 232
+        }
+      ]
+    }
+  ]
+}

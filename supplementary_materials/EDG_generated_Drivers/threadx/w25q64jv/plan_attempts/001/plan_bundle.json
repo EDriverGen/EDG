@@ -1,0 +1,133 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "threadx",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "w25q64jv_dev_t",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include \"stm32f1xx_hal.h\"\n#include \"tx_api.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: JEDEC ID command"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: read 3 JEDEC ID bytes"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: READ_DATA command + 3-byte address"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: data bytes"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: WRITE_ENABLE"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: PAGE_PROGRAM command + 3-byte address + data"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "plan_hash": "f258ea85541c3d9d",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 72.934,
+  "prompt_chars": 54771,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"memory\", \"init_call\": \"w25q64jv_init(&g_eval_dev, bus_handle)\", \"mem_read_call\": \"w25q64jv_read(&g_eval_dev, addr, buf, len)\", \"mem_write_call\": \"w25q64jv_write(&g_eval_dev, addr, buf, len)\", \"memory_size_bytes\": 8388608, \"memory_page_bytes\": 256, \"dev_struct_type\": \"w25q64jv_dev_t\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"preamble_c\": \"#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"tx_api.h\\\"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x00\", \"write_prefix_any_of\": [[\"0x9F\"]], \"note\": \"init: JEDEC ID command\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x00\", \"read_any\": true, \"note\": \"init: read 3 JEDEC ID bytes\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x00\", \"write_prefix_any_of\": [[\"0x03\"]], \"note\": \"read_memory: READ_DATA command + 3-byte address\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x00\", \"read_any\": true, \"note\": \"read_memory: data bytes\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"spi1\", \"write_prefix_any_of\": [[\"0x06\"]], \"note\": \"write_page: WRITE_ENABLE\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"spi1\", \"write_prefix_any_of\": [[\"0x02\"]], \"note\": \"write_page: PAGE_PROGRAM command + 3-byte address + data\"}], \"test_stimuli\": [{\"name\": \"jedec_id_init\", \"mock_preload\": {\"0x9F\": [239, 64, 23]}, \"expected_mem_bytes\": \"ef4017\", \"derivation\": \"JEDEC ID read returns 0xEF 0x40 0x17 for W25Q64JV; bytes are passed through unchanged.\"}, {\"name\": \"read_memory_page0\", \"mock_preload\": {\"0x03\": [0, 0, 0, 222, 173, 190, 239]}, \"expected_mem_bytes\": \"deadbeef\", \"derivation\": \"READ_DATA at address 0x000000 returns the stored payload bytes 0xDE 0xAD 0xBE 0xEF unchanged.\"}, {\"name\": \"read_memory_alt_pattern\", \"mock_preload\": {\"0x03\": [0, 0, 16, 1, 35, 69, 103]}, \"expected_mem_bytes\": \"01234567\", \"derivation\": \"READ_DATA at address 0x000010 returns the stored payload bytes 0x01 0x23 0x45 0x67 unchanged.\"}]}}"
+}

@@ -1,0 +1,756 @@
+{
+  "device_id": "tmp421",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x4C",
+        "description": "A1=0, A0=0",
+        "is_default": false
+      },
+      {
+        "address": "0x4D",
+        "description": "A1=0, A0=1",
+        "is_default": false
+      },
+      {
+        "address": "0x4E",
+        "description": "A1=1, A0=0",
+        "is_default": false
+      },
+      {
+        "address": "0x4F",
+        "description": "A1=1, A0=1",
+        "is_default": false
+      },
+      {
+        "address": "0x1C",
+        "description": "A1=Float, A0=0",
+        "is_default": false
+      },
+      {
+        "address": "0x1D",
+        "description": "A1=Float, A0=1",
+        "is_default": false
+      },
+      {
+        "address": "0x1E",
+        "description": "A1=0, A0=Float",
+        "is_default": false
+      },
+      {
+        "address": "0x1F",
+        "description": "A1=1, A0=Float",
+        "is_default": false
+      },
+      {
+        "address": "0x2A",
+        "description": "A1=Float, A0=Float",
+        "is_default": true
+      }
+    ],
+    "default_address_resolution": {
+      "method": "strap-pin-float-over-weak-low-default",
+      "confidence": "medium",
+      "matched_index": 8,
+      "warning": "A stronger all-floating/open address-pin row was preferred over a weak all-low default label generated without factory-default wording."
+    }
+  },
+  "register_map": {
+    "total_size_bytes": 256,
+    "addressing": "pointer",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "8-bit pointer register selects internal registers; pointer is set by write command before read."
+  },
+  "read_channels": [
+    {
+      "id": "local",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_temperature_local",
+      "source_bytes": [
+        "local_temp_high",
+        "local_temp_low"
+      ],
+      "source_signal": null,
+      "formula_id": "temp_standard",
+      "notes": "Local die temperature sensor."
+    },
+    {
+      "id": "remote1",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_temperature_remote1",
+      "source_bytes": [
+        "remote1_temp_high",
+        "remote1_temp_low"
+      ],
+      "source_signal": null,
+      "formula_id": "temp_standard",
+      "notes": "Remote temperature sensor channel 1."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "Pointer register (8-bit) must be written before read; supports two-byte read for temperature registers."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "probe_identity",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xFE"
+            ],
+            "length": 1,
+            "pointer_target": "Manufacturer ID"
+          },
+          "notes": "Write pointer 0xFE, then read Manufacturer ID (expected 0x55)."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xFF"
+            ],
+            "length": 1,
+            "pointer_target": "Device ID"
+          },
+          "notes": "Write pointer 0xFF, then read Device ID (TMP421=0x21)."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Read Manufacturer ID and Device ID to identify device variant. Canonicalized: removed non-read_channel outputs device_id, manufacturer_id; keep them as probe/status notes rather than public measurement outputs."
+    },
+    {
+      "flow_id": "read_temperature_local",
+      "kind": "read",
+      "channels": [
+        "local"
+      ],
+      "preconditions": [
+        "Device is not in shutdown mode (SD=0) or one-shot triggered."
+      ],
+      "steps": [
+        {
+          "op": "poll_until",
+          "register": "Status Register",
+          "mask": "0x80",
+          "value": "0x00",
+          "condition": "BUSY bit = 0",
+          "timeout_ms": 130,
+          "interval_ms": 10,
+          "notes": "Poll BUSY bit (bit 7 of Status Register, pointer 0x08) until conversion completes. Max conversion time 130 ms per channel."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x00"
+            ],
+            "length": 1,
+            "pointer_target": "Local Temperature High Byte"
+          },
+          "notes": "Write pointer 0x00, then read 2 bytes (high byte then low byte) from local temperature registers. Two-byte read returns both bytes from same conversion. Canonicalized from a multi-byte pointer read because output byte 'local_temp_high' maps to non-contiguous register Local Temperature High Byte."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x10"
+            ],
+            "length": 1,
+            "pointer_target": "Local Temperature Low Byte",
+            "notes": "Canonicalized separate pointer read for non-contiguous output byte 'local_temp_low'."
+          },
+          "notes": "Read non-contiguous byte 'local_temp_low' from Local Temperature Low Byte (0x10)."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "local",
+          "byte_source": "local_temp_high:8 || local_temp_low:8",
+          "formula_id": "temp_standard",
+          "unit": "milli_degC",
+          "notes": "High byte (1°C resolution) and low byte (0.0625°C resolution) combined."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Read local temperature high and low bytes via two-byte read from pointer 0x00. Added poll BUSY step before read."
+    },
+    {
+      "flow_id": "read_temperature_remote1",
+      "kind": "read",
+      "channels": [
+        "remote1"
+      ],
+      "preconditions": [
+        "Device is not in shutdown mode (SD=0) or one-shot triggered.",
+        "Remote channel 1 enabled (REN=1)."
+      ],
+      "steps": [
+        {
+          "op": "poll_until",
+          "register": "Status Register",
+          "mask": "0x80",
+          "value": "0x00",
+          "condition": "BUSY bit = 0",
+          "timeout_ms": 130,
+          "interval_ms": 10,
+          "notes": "Poll BUSY bit (bit 7 of Status Register, pointer 0x08) until conversion completes. Max conversion time 130 ms per channel."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x01"
+            ],
+            "length": 1,
+            "pointer_target": "Remote Temperature 1 High Byte"
+          },
+          "notes": "Write pointer 0x01, then read 2 bytes (high byte then low byte) from remote temperature 1 registers. Two-byte read returns both bytes from same conversion. Canonicalized from a multi-byte pointer read because output byte 'remote1_temp_high' maps to non-contiguous register Remote Temperature 1 High Byte."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x11"
+            ],
+            "length": 1,
+            "pointer_target": "Remote Temperature 1 Low Byte",
+            "notes": "Canonicalized separate pointer read for non-contiguous output byte 'remote1_temp_low'."
+          },
+          "notes": "Read non-contiguous byte 'remote1_temp_low' from Remote Temperature 1 Low Byte (0x11)."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "remote1",
+          "byte_source": "remote1_temp_high:8 || remote1_temp_low:8",
+          "formula_id": "temp_standard",
+          "unit": "milli_degC",
+          "notes": "High byte (1°C resolution) and low byte (0.0625°C resolution) combined."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Read remote temperature 1 high and low bytes via two-byte read from pointer 0x01. Added poll BUSY step before read."
+    },
+    {
+      "flow_id": "one_shot_conversion",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Device in shutdown mode (SD=1)."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x0F",
+              0
+            ],
+            "pointer_target": "One-Shot Start"
+          },
+          "notes": "Write any value to pointer 0x0F to trigger one-shot conversion."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 130,
+          "notes": "Wait for conversion to complete (max conversion time per channel)."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Trigger a single conversion in shutdown mode."
+    },
+    {
+      "flow_id": "software_reset",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xFC",
+              0
+            ],
+            "pointer_target": "Software Reset"
+          },
+          "notes": "Write any value to pointer 0xFC to reset device."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Reset device via software reset register."
+    },
+    {
+      "flow_id": "general_call_reset",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              0,
+              6
+            ],
+            "notes": "General call address 0x00, second byte 0x06"
+          },
+          "notes": "Send general call address 0x00, then second byte 0x06 to reset."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Reset via general call address."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 12,
+    "signed": true,
+    "right_shift": 4,
+    "sign_extend_from_bit": 11,
+    "notes": "Temperature data: high byte (8 bits, 1°C resolution) and low byte (upper nibble, 0.0625°C resolution). Combined as 12-bit signed value in standard range; extended range is unsigned with offset."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Local Temperature High Byte",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Local temperature high byte (1°C resolution)."
+    },
+    {
+      "name": "Remote Temperature 1 High Byte",
+      "value": "0x01",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Remote temperature 1 high byte (1°C resolution)."
+    },
+    {
+      "name": "Status Register",
+      "value": "0x08",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Status register, bit 7 = BUSY."
+    },
+    {
+      "name": "Configuration Register 1",
+      "value": "0x09",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Configuration register 1: SD (bit6), RANGE (bit2)."
+    },
+    {
+      "name": "Configuration Register 2",
+      "value": "0x0A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Configuration register 2: channel enables and resistance correction."
+    },
+    {
+      "name": "Conversion Rate Register",
+      "value": "0x0B",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Conversion rate register (POR = 07h)."
+    },
+    {
+      "name": "One-Shot Start",
+      "value": "0x0F",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "One-shot start register (write any value to start conversion)."
+    },
+    {
+      "name": "Local Temperature Low Byte",
+      "value": "0x10",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Local temperature low byte (0.0625°C resolution)."
+    },
+    {
+      "name": "Remote Temperature 1 Low Byte",
+      "value": "0x11",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Remote temperature 1 low byte."
+    },
+    {
+      "name": "N Correction 1",
+      "value": "0x21",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "η-factor correction for remote channel 1."
+    },
+    {
+      "name": "Software Reset",
+      "value": "0xFC",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Software reset register (write any value to reset)."
+    },
+    {
+      "name": "Manufacturer ID",
+      "value": "0xFE",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Manufacturer ID register (returns 55h)."
+    },
+    {
+      "name": "Device ID",
+      "value": "0xFF",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Device ID register (returns 21h for TMP421)."
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Status Register",
+      "name": "BUSY",
+      "bits": 7,
+      "access": "ro",
+      "description": "1 when ADC is converting, 0 otherwise."
+    },
+    {
+      "register": "Configuration Register 1",
+      "name": "SD",
+      "bits": 6,
+      "access": "rw",
+      "description": "Shutdown mode: 0=Run, 1=Shut Down."
+    },
+    {
+      "register": "Configuration Register 1",
+      "name": "RANGE",
+      "bits": 2,
+      "access": "rw",
+      "description": "Temperature range: 0=-40°C to +127°C, 1=-55°C to +150°C."
+    },
+    {
+      "register": "Configuration Register 2",
+      "name": "REN3",
+      "bits": 6,
+      "access": "rw",
+      "description": "External channel 3 enable (TMP423 only)."
+    },
+    {
+      "register": "Configuration Register 2",
+      "name": "REN2",
+      "bits": 5,
+      "access": "rw",
+      "description": "External channel 2 enable (TMP422/423)."
+    },
+    {
+      "register": "Configuration Register 2",
+      "name": "REN",
+      "bits": 4,
+      "access": "rw",
+      "description": "External channel 1 enable."
+    },
+    {
+      "register": "Configuration Register 2",
+      "name": "LEN",
+      "bits": 3,
+      "access": "rw",
+      "description": "Local channel enable."
+    },
+    {
+      "register": "Configuration Register 2",
+      "name": "RC",
+      "bits": 2,
+      "access": "rw",
+      "description": "Resistance correction enable."
+    },
+    {
+      "register": "Conversion Rate Register",
+      "name": "R[2:0]",
+      "bits": "2:0",
+      "access": "rw",
+      "description": "Conversion rate select bits."
+    },
+    {
+      "register": "Local Temperature Low Byte",
+      "name": "LT[3:0]",
+      "bits": "7:4",
+      "access": "ro",
+      "description": "Fractional part of local temperature (0.0625°C per count)."
+    },
+    {
+      "register": "Remote Temperature 1 Low Byte",
+      "name": "RT[3:0]",
+      "bits": "7:4",
+      "access": "ro",
+      "description": "Fractional part of remote temperature 1."
+    },
+    {
+      "register": "Remote Temperature 1 Low Byte",
+      "name": "OPEN",
+      "bits": 0,
+      "access": "ro",
+      "description": "Open circuit fault flag for remote channel 1."
+    },
+    {
+      "register": "Remote Temperature 1 Low Byte",
+      "name": "PVLD",
+      "bits": 1,
+      "access": "ro",
+      "description": "Power valid flag for remote channel 1."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up defaults: Configuration Register 1 = 0x00 (continuous conversion, standard range), Configuration Register 2 = 0x1C (all channels enabled, RC enabled), Conversion Rate = 0x07 (8 conversions/sec). No explicit init required."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait for first conversion: BUSY bit asserts within 100 μs (TMP421) after power-up; conversion time per channel is 115 ms typical. Allow 130 ms per channel before reading."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 2,
+        "pointer_target": "Local Temperature High Byte"
+      },
+      "notes": "Set pointer to 0x00 (Local Temperature High Byte), then read 2 bytes (high byte then low byte)."
+    },
+    {
+      "transaction": null,
+      "notes": "Combine high byte (8 bits, 1°C resolution) and low byte upper nibble (4 bits, 0.0625°C resolution) into 12-bit signed value."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "conversion_time_per_channel",
+      "value": 115,
+      "unit": "ms",
+      "condition": "typical",
+      "notes": "Conversion time per channel."
+    },
+    {
+      "name": "scl_frequency_fast_mode",
+      "value": 0.4,
+      "unit": "MHz",
+      "condition": "Fast mode",
+      "notes": "SCL operating frequency (Fast mode)."
+    },
+    {
+      "name": "scl_frequency_high_speed_mode",
+      "value": 3.4,
+      "unit": "MHz",
+      "condition": "High-speed mode",
+      "notes": "SCL operating frequency (High-speed mode)."
+    },
+    {
+      "name": "smbus_timeout",
+      "value": 30,
+      "unit": "ms",
+      "condition": "typical",
+      "notes": "SMBus timeout."
+    },
+    {
+      "name": "busy_assertion_after_power_up",
+      "value": 100,
+      "unit": "us",
+      "condition": "TMP421",
+      "notes": "BUSY bit assertion after power-up (TMP421)."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temp_standard",
+      "formula": "T = high_byte + (low_byte >> 4) * 0.0625, where high_byte is signed 8-bit two's complement, low_byte upper nibble is unsigned fractional part.",
+      "integer_approximation_expression": {
+        "expression": "((high_byte << 4) + (low_byte >> 4)) * 625 // 10",
+        "inputs": [
+          {
+            "name": "high_byte",
+            "byte_source": "temp_high_byte:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Signed 8-bit integer part (1°C resolution)."
+          },
+          {
+            "name": "low_byte",
+            "byte_source": "temp_low_byte:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Low byte; upper nibble is fractional part (0.0625°C per count)."
+          }
+        ],
+        "output": {
+          "name": "temp_milli_degC",
+          "unit": "milli_degC"
+        }
+      }
+    },
+    {
+      "name": "temp_extended",
+      "formula": "T = (high_byte - 64) + (low_byte >> 4) * 0.0625, where high_byte is unsigned with -64°C offset.",
+      "integer_approximation_expression": null,
+      "executable_expression_status": "complex_compensation_algorithm",
+      "notes": "Canonicalized: exact compensation is preserved in formula/inputs, but the single-line integer expression was marked non-executable because it is too complex or not accepted by the safe expression evaluator."
+    },
+    {
+      "name": "eta_correction",
+      "formula": "η_effective = 1.008 * (1 + n_correction / 128)",
+      "integer_approximation_expression": null,
+      "notes": "Complex compensation algorithm; driver must implement vendor algorithm."
+    },
+    {
+      "name": "eta_error",
+      "formula": "TERR = (η / 1.008 - 1) * (T + 273.15)",
+      "integer_approximation_expression": null,
+      "notes": "Complex compensation algorithm; driver must implement vendor algorithm."
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "I2C NACK during address or data transfer",
+      "detection": "Bus error; SDA not pulled low during acknowledge clock pulse.",
+      "driver_action": "Abort transaction and report -EIO."
+    },
+    {
+      "condition": "Open circuit fault on remote channel",
+      "detection": "OPEN bit (bit 0) in remote temperature low byte set to 1.",
+      "driver_action": "Ignore temperature data for that channel; report fault."
+    },
+    {
+      "condition": "Power supply invalid",
+      "detection": "PVLD bit (bit 1) in temperature low byte set to 1.",
+      "driver_action": "Ignore temperature data; report power fault."
+    },
+    {
+      "condition": "Measurement timeout",
+      "detection": "BUSY bit remains high longer than expected conversion time (130 ms per channel).",
+      "driver_action": "Retry read; if persistent, report timeout."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "continuous_conversion",
+      "description": "Normal operation; device converts continuously at rate set by Conversion Rate Register.",
+      "condition": "SD bit = 0"
+    },
+    {
+      "name": "shutdown",
+      "description": "Low-power mode; all circuitry except serial interface disabled.",
+      "condition": "SD bit = 1",
+      "typical_current_uA": 3
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "tmp421",
+      "page": 18,
+      "snippet": "The TMP421 supports nine slave device addresses"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 18,
+      "snippet": "1001 100"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 13,
+      "snippet": "Local Temperature (High Byte)"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 14,
+      "snippet": "SD (bit 6) enables or disables the temperature measurement circuitry"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 14,
+      "snippet": "RANGE bit (bit 2) of the Configuration Register"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 15,
+      "snippet": "Conversion Rate Register (pointer address 0Bh)"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 16,
+      "snippet": "One-Shot Start Register, pointer address 0Fh"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 12,
+      "snippet": "Resolution is 0.0625°C/count"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 12,
+      "snippet": "Negative numbers are represented in two's complement format"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 3,
+      "snippet": "Conversion Time (per channel) 115 ms"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 17,
+      "snippet": "Manufacturer ID is obtained by reading from pointer address FEh"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 17,
+      "snippet": "Device ID is obtained by reading from pointer address FFh"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 17,
+      "snippet": "Software Reset Register (pointer address FCh)"
+    },
+    {
+      "source_id": "tmp421",
+      "page": 13,
+      "snippet": "the temperature registers may be read as a 16-bit register by using a single two-byte read command from address 00h"
+    }
+  ],
+  "requires_human": [
+    "TMP422 address detection via transistor polarity at power-on requires careful PCB design to avoid incorrect address detection when remote transistors are on other ICs with lower supply voltage.",
+    "TMP423 has factory-preset addresses (A or B) that must be ordered correctly; no user address pins.",
+    "Conversion rate register values affect number of conversions per second differently depending on number of enabled channels; see notes in Table 7."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

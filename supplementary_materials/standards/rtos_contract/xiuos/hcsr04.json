@@ -1,0 +1,291 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "xiuos__hcsr04",
+  "device_id": "hcsr04",
+  "rtos_id": "xiuos",
+  "bus": "gpio_timing",
+  "scope": "xiuos gpio_timing RTOS/BSP API minimum contract for xiuos__hcsr04; based on copied reference implementation and configuration, existing gpio_timing API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "xiuos",
+    "bus": "gpio_timing",
+    "task_binding": {
+      "connection_type": "gpio_timing",
+      "mode": "polling",
+      "bus_instance": "default_gpio_slot",
+      "bus_symbol": "/dev/gpio_trig,/dev/gpio_echo",
+      "backend": "XiUOS transform layer GPIO device paths",
+      "address_mode": null
+    },
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "hcsr04_ref.h",
+      "xiuos.h",
+      "stdio.h",
+      "transform.h",
+      "stdint.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "PrivClose",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 19,
+            "text": "if (dev->echo_fd < 0) { PrivClose(dev->trig_fd); return -1; }"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 28,
+            "text": "if (dev->trig_fd >= 0) { PrivClose(dev->trig_fd); dev->trig_fd = -1; }"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 29,
+            "text": "if (dev->echo_fd >= 0) { PrivClose(dev->echo_fd); dev->echo_fd = -1; }"
+          }
+        ],
+        "available_declaration": "int PrivClose(int fd);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/xiuos/xiuos.h",
+          "line_start": 29,
+          "line_end": 30
+        }
+      },
+      {
+        "symbol": "PrivOpen",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 15,
+            "text": "dev->trig_fd = PrivOpen(trig_dev_path, O_RDWR);"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 18,
+            "text": "dev->echo_fd = PrivOpen(echo_dev_path, O_RDWR);"
+          }
+        ],
+        "available_declaration": "int PrivOpen(const char *path, int flags, ...);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/xiuos/gpio_timing/pack.md",
+          "line_start": 394,
+          "line_end": 396
+        }
+      },
+      {
+        "symbol": "PrivRead",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 51,
+            "text": "PrivRead(dev->echo_fd, &val, 1);"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 60,
+            "text": "PrivRead(dev->echo_fd, &val, 1);"
+          }
+        ],
+        "available_declaration": "int PrivRead(int fd, void *buf, size_t nbytes);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/xiuos/xiuos.h",
+          "line_start": 30,
+          "line_end": 32
+        }
+      },
+      {
+        "symbol": "PrivTaskDelay",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_sample_ref.c",
+            "line": 32,
+            "text": "PrivTaskDelay(500);"
+          }
+        ],
+        "available_declaration": "void PrivTaskDelay(int32_t ms);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/xiuos/xiuos.h",
+          "line_start": 36,
+          "line_end": 37
+        }
+      },
+      {
+        "symbol": "PrivWrite",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 43,
+            "text": "PrivWrite(dev->trig_fd, &val, 1);"
+          },
+          {
+            "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+            "line": 46,
+            "text": "PrivWrite(dev->trig_fd, &val, 1);"
+          }
+        ],
+        "available_declaration": "int PrivWrite(int fd, const void *buf, size_t nbytes);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/xiuos/xiuos.h",
+          "line_start": 32,
+          "line_end": 34
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/xiuos/gpio_timing/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's gpio_timing connection context (default_gpio_slot; XiUOS transform layer GPIO device paths) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: PrivOpen.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 18,
+          "line_end": 18
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: PrivRead, PrivWrite. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 51,
+          "line_end": 51
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 51,
+          "line_end": 51
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        }
+      ]
+    },
+    {
+      "id": "gpio_or_chip_select",
+      "category": "gpio",
+      "requirement": "Provide the GPIO input/output and chip-select control used by the reference; for GPIO-timed tasks this includes switching the pin direction/level and sampling input as needed.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 51,
+          "line_end": 51
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "Provide the task-used wait/delay primitive with the reference time unit and blocking behavior: PrivTaskDelay.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_sample_ref.c",
+          "line_start": 32,
+          "line_end": 32
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 9,
+          "line_end": 33
+        },
+        {
+          "file": "evidence/rtos/tasks/xiuos__hcsr04/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

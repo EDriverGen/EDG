@@ -1,0 +1,263 @@
+{
+  "source": "flow_risk_repair",
+  "cache_hit": true,
+  "cache_key": "879245ae857c756c",
+  "audit_findings": [
+    {
+      "flow_id": "read_temperature",
+      "summary": "Audit of continuous conversion read flow for temperature channel.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Power-up/reset: Configuration Register all bits 0, SD=0 continuous conversion mode.",
+          "action": "No trigger needed; device converts continuously by default."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Datasheet states conversion time 220ms typ for 12-bit resolution (Table 8). After power-up or reset, Temperature Register reads 0°C until first conversion complete.",
+          "action": "Added delay step after power-up or after last conversion to ensure data ready."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Flow includes write_then_read to Temperature Register (pointer 0x00, read 2 bytes).",
+          "action": "Result read is present."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack required for continuous conversion read.",
+          "action": "Not required."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Default 12-bit resolution (R1,R0=11) is used; no configuration write needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Outputs specify byte_source 'temp_msb:8 || temp_lsb:8'.",
+          "action": "Byte source is correctly bound."
+        }
+      ]
+    },
+    {
+      "flow_id": "one_shot_conversion",
+      "summary": "Audit of one-shot conversion flow for temperature channel.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Step writes Configuration Register with OS=1 (0x21) to start single conversion.",
+          "action": "Trigger is present."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Delay of 220ms added for 12-bit conversion time.",
+          "action": "Wait is present."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Step reads Temperature Register after delay.",
+          "action": "Result read is present."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack required; device returns to shutdown after conversion.",
+          "action": "Not required."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Assumes default 12-bit resolution; no additional config needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Outputs specify byte_source 'temp_msb:8 || temp_lsb:8'.",
+          "action": "Byte source is correctly bound."
+        }
+      ]
+    },
+    {
+      "flow_id": "write_configuration",
+      "summary": "Audit of write configuration flow.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "This is a write-only flow; no trigger needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed for register write.",
+          "action": "Not required."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No read back required.",
+          "action": "Not required."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "This flow itself writes configuration.",
+          "action": "Not required."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output channel.",
+          "action": "Not required."
+        }
+      ]
+    },
+    {
+      "flow_id": "write_thigh",
+      "summary": "Audit of write THIGH flow.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Write-only flow.",
+          "action": "Not required."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No read back.",
+          "action": "Not required."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack.",
+          "action": "Not required."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "This flow writes limit register.",
+          "action": "Not required."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output channel.",
+          "action": "Not required."
+        }
+      ]
+    },
+    {
+      "flow_id": "write_tlow",
+      "summary": "Audit of write TLOW flow.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Write-only flow.",
+          "action": "Not required."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No read back.",
+          "action": "Not required."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack.",
+          "action": "Not required."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "This flow writes limit register.",
+          "action": "Not required."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output channel.",
+          "action": "Not required."
+        }
+      ]
+    },
+    {
+      "flow_id": "general_call_reset",
+      "summary": "Audit of general call reset flow.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Reset command; no trigger needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Datasheet states reset causes internal registers to power-up values; no explicit wait time given but device may need time to reset. Typical timeout is 54ms; adding a small delay for safety.",
+          "action": "Added delay of 1ms after reset to allow device to settle."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No result read needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear/ack needed.",
+          "action": "Not required."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Reset restores defaults.",
+          "action": "Not required."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output channel.",
+          "action": "Not required."
+        }
+      ]
+    }
+  ],
+  "previous_audit_cache_key": "eee72351d0df519a",
+  "applied": true,
+  "updated_by": "flow_risk_repair",
+  "changed_fields": []
+}

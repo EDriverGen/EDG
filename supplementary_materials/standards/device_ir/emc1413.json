@@ -1,0 +1,597 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "emc1413",
+  "scope": "Three temperature channels, default range and normal continuous reads/probe. Threshold, filter and correction register assertions additionally checked by semantic families; additional address aliases are not counted twice.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address_map",
+        "pointer",
+        "interlock"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "local_regs",
+        "remote1_regs",
+        "remote2_regs",
+        "config",
+        "probe",
+        "revision",
+        "status_bits",
+        "alert_controls",
+        "range",
+        "apdd_variant",
+        "limits",
+        "therm_limits",
+        "mask_bits",
+        "consecutive",
+        "beta",
+        "ideality",
+        "limit_status",
+        "filter",
+        "oneshot"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "powerup",
+        "sck_max",
+        "smb_timeout",
+        "rate"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "encoding",
+        "conversion"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "therm_address_start",
+        "clamp",
+        "run_stop",
+        "fault"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "EMC1413_EMC1414_datasheet.pdf",
+      "pages": 54,
+      "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address_map",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "THERM4.7k/6.8k/10k/15k/22k/33k ->7C/5C/4C/6C/1C/3C",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "SMBus byte read/write with8-bit retained pointer, no increment",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 16,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "powerup",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "May not respond for first15ms after power-up",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "therm_address_start",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "THERM must not be pulledLOW during15ms address decode",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "sck_max",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "I2C fastmode up to400kHz",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "smb_timeout",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Enabled TIMEOUT bit gives30ms clock-low reset",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "local_regs",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Internal high00 low29",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "remote1_regs",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Remote1 high01 low10",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "remote2_regs",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Remote2 high23 low24",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interlock",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Read high before low; high read latches correspondinglow",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Unsigned11-bit high8 pluslowupper3, lower5zero",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Default millidegrees=high*1000+((low>>5)&7)*125",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "clamp",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Default readings below0 andabove127.875 saturate atlimits",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Config03/09 reset00, bit6runstop bit2range",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "run_stop",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Run0converts allchannels;stop1keepsSMBusactive",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "rate",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Rate04/0A reset06 ->4/sec,250ms period",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "probe",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "ProductFD=21 and manufacturerFE=5D",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 42,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "revision",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "RevisionFF=04",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fault",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Status02 bit2FAULT,1B bit1/2channel fault andclear onread",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 35,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "status_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "BUSY7,HIGH4,LOW3,FAULT2,THERM1",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "alert_controls",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Config7mask,5comparator,1averagingdisable",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "range",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "RANGEbit2 selectsdefault0..127 or extended-64..191",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "apdd_variant",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "APDDbit0 applies to EMC1414 only",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "limits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "High/low threshold register families05..08,0B..0E,13..18 mapto statedchannels",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 26,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "therm_limits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Thermlimit19/1A/20 andhysteresis21 mapcorrectly",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 28,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mask_bits",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Channelmask1F bit2ext2 bit1ext1 bit0internal",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 35,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "consecutive",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "22:TIMEOUT7 CTHRM6:4 CALRT3:1",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "beta",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "25/26beta:ENABLEbit3,BETA2:0",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "ideality",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "27/28idealitybits5:0",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "limit_status",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "35/36/37 high/low/therm bits2ext2,1ext1,0internal",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 40,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 41,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "filter",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "40filterbits1:0",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 42,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "oneshot",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "Write0F initiates one-shot in standby",
+      "evidence": [
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        },
+        {
+          "document": "EMC1413_EMC1414_datasheet.pdf",
+          "pdf_page": 27,
+          "page_text_file": "evidence/datasheets/emc1413/EMC1413_EMC1414_datasheet.pages.json"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+    "stimuli": [
+        {
+            "name": "ch0_half_scale",
+            "mock_preload": {
+                "stream": [
+                    0,
+                    2,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 512,
+                "channels": {
+                    "ch0": {"raw": 512, "tolerance": 2},
+                    "ch1": {"raw": 512, "tolerance": 2},
+                    "ch2": {"raw": 512, "tolerance": 2},
+                    "ch3": {"raw": 512, "tolerance": 2},
+                    "ch4": {"raw": 512, "tolerance": 2},
+                    "ch5": {"raw": 512, "tolerance": 2},
+                    "ch6": {"raw": 512, "tolerance": 2},
+                    "ch7": {"raw": 512, "tolerance": 2}
+                }
+            },
+            "note": "MCP3008 3-byte full-duplex frame: master sends 0x01 (start), 0x80|ch<<4 (sgl+ch), 0x00 (dummy). Slave replies rx[0]=garbage, rx[1] carries B9:B8 in [1:0], rx[2] carries B7:B0. stream=[0,2,0] places B9:B8=10 in rx[1] -> raw=(rx[1]&0x03)<<8|rx[2]=512=Vref/2. Stub is stream-proto with CS pulse (TXN_RESET) resetting idx each channel read, so all 8 channels see the same playback and return the same value."
+        },
+        {
+            "name": "quarter_scale_256",
+            "mock_preload": {
+                "stream": [
+                    0,
+                    1,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 256,
+                "channels": {
+                    "ch0": {"raw": 256, "tolerance": 2},
+                    "ch1": {"raw": 256, "tolerance": 2},
+                    "ch2": {"raw": 256, "tolerance": 2},
+                    "ch3": {"raw": 256, "tolerance": 2},
+                    "ch4": {"raw": 256, "tolerance": 2},
+                    "ch5": {"raw": 256, "tolerance": 2},
+                    "ch6": {"raw": 256, "tolerance": 2},
+                    "ch7": {"raw": 256, "tolerance": 2}
+                }
+            },
+            "note": "~Vref/4. rx[1]=0x01 (B9B8=01), rx[2]=0x00 -> raw=256."
+        },
+        {
+            "name": "full_scale_1023",
+            "mock_preload": {
+                "stream": [
+                    0,
+                    3,
+                    255
+                ]
+            },
+            "expected": {
+                "raw": 1023,
+                "channels": {
+                    "ch0": {"raw": 1023, "tolerance": 2},
+                    "ch1": {"raw": 1023, "tolerance": 2},
+                    "ch2": {"raw": 1023, "tolerance": 2},
+                    "ch3": {"raw": 1023, "tolerance": 2},
+                    "ch4": {"raw": 1023, "tolerance": 2},
+                    "ch5": {"raw": 1023, "tolerance": 2},
+                    "ch6": {"raw": 1023, "tolerance": 2},
+                    "ch7": {"raw": 1023, "tolerance": 2}
+                }
+            },
+            "note": "10-bit max. rx[1]=0x03, rx[2]=0xFF -> raw=0x3FF=1023."
+        },
+        {
+            "name": "ch0_zero",
+            "mock_preload": {
+                "stream": [
+                    0,
+                    0,
+                    0
+                ]
+            },
+            "expected": {
+                "raw": 0,
+                "channels": {
+                    "ch0": {"raw": 0, "tolerance": 2},
+                    "ch1": {"raw": 0, "tolerance": 2},
+                    "ch2": {"raw": 0, "tolerance": 2},
+                    "ch3": {"raw": 0, "tolerance": 2},
+                    "ch4": {"raw": 0, "tolerance": 2},
+                    "ch5": {"raw": 0, "tolerance": 2},
+                    "ch6": {"raw": 0, "tolerance": 2},
+                    "ch7": {"raw": 0, "tolerance": 2}
+                }
+            },
+            "note": "Grounded input. rx = all zero."
+        },
+        {
+            "name": "near_full_1000",
+            "mock_preload": {
+                "stream": [
+                    0,
+                    3,
+                    232
+                ]
+            },
+            "expected": {
+                "raw": 1000,
+                "channels": {
+                    "ch0": {"raw": 1000, "tolerance": 2},
+                    "ch1": {"raw": 1000, "tolerance": 2},
+                    "ch2": {"raw": 1000, "tolerance": 2},
+                    "ch3": {"raw": 1000, "tolerance": 2},
+                    "ch4": {"raw": 1000, "tolerance": 2},
+                    "ch5": {"raw": 1000, "tolerance": 2},
+                    "ch6": {"raw": 1000, "tolerance": 2},
+                    "ch7": {"raw": 1000, "tolerance": 2}
+                }
+            },
+            "note": "rx[1]=0x03, rx[2]=0xE8 -> raw=0x3E8=1000."
+        },
+        {
+            "name": "third_341",
+            "mock_preload": {
+                "stream": [
+                    0,
+                    1,
+                    85
+                ]
+            },
+            "expected": {
+                "raw": 341,
+                "channels": {
+                    "ch0": {"raw": 341, "tolerance": 2},
+                    "ch1": {"raw": 341, "tolerance": 2},
+                    "ch2": {"raw": 341, "tolerance": 2},
+                    "ch3": {"raw": 341, "tolerance": 2},
+                    "ch4": {"raw": 341, "tolerance": 2},
+                    "ch5": {"raw": 341, "tolerance": 2},
+                    "ch6": {"raw": 341, "tolerance": 2},
+                    "ch7": {"raw": 341, "tolerance": 2}
+                }
+            },
+            "note": "~Vref/3. rx[1]=0x01, rx[2]=0x55 -> raw=0x155=341. Non-power-of-2 check."
+        },
+        {
+            "name": "boundary_low_1",
+            "mock_preload": {
+                "stream": [
+                    0,
+                    0,
+                    1
+                ]
+            },
+            "expected": {
+                "raw": 1,
+                "channels": {
+                    "ch0": {"raw": 1, "tolerance": 2},
+                    "ch1": {"raw": 1, "tolerance": 2},
+                    "ch2": {"raw": 1, "tolerance": 2},
+                    "ch3": {"raw": 1, "tolerance": 2},
+                    "ch4": {"raw": 1, "tolerance": 2},
+                    "ch5": {"raw": 1, "tolerance": 2},
+                    "ch6": {"raw": 1, "tolerance": 2},
+                    "ch7": {"raw": 1, "tolerance": 2}
+                }
+            },
+            "note": "LSB+1. rx[1]=0x00, rx[2]=0x01 -> raw=1. Boundary near zero."
+        }
+    ]
+}

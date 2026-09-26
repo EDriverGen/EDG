@@ -1,0 +1,16 @@
+#ifndef MAX31855_H
+#define MAX31855_H
+
+#include <stdint.h>
+
+struct spi_dev_s;
+
+struct max31855_dev {
+    struct spi_dev_s *spi;
+    int devid;
+};
+
+int max31855_init(struct max31855_dev *dev, struct spi_dev_s *spi);
+int max31855_read_temperatures(struct max31855_dev *dev, int32_t *tc, int32_t *local);
+
+#endif /* MAX31855_H */

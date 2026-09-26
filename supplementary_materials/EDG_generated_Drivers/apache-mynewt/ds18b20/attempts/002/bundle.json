@@ -1,0 +1,82 @@
+{
+  "device_id": "ds18b20",
+  "rtos_id": "apache-mynewt",
+  "eval_class": "single_channel",
+  "bus_kind": "gpio",
+  "driver_header": "#ifndef DS18B20_H\n#define DS18B20_H\n\n#include <stdint.h>\n\n#include <hal/hal_gpio.h>\nstruct ds18b20_dev {\n    int data_pin;\n};\n\nint ds18b20_init(struct ds18b20_dev *dev, int pin);\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw);\n\n#endif\n",
+  "driver_source": "#include \"ds18b20.h\"\n#include <errno.h>\n#include <stdint.h>\n\n#include <hal/hal_gpio.h>\n#include \"apache_mynewt.h\"\n#include <os/os_time.h>\n#define DS18B20_CMD_CONVERT_T 0x44\n#define DS18B20_CMD_READ_SCRATCHPAD 0xBE\n#define DS18B20_CMD_SKIP_ROM 0xCC\n\n#define DS18B20_RESET_LOW_US 480\n#define DS18B20_PRESENCE_WAIT_US 480\n#define DS18B20_CONVERSION_DELAY_MS 750\n\nstatic int ds18b20_reset_pulse(struct ds18b20_dev *dev)\n{\n    hal_gpio_write(dev->data_pin, 0);\n    os_cputime_delay_usecs(DS18B20_RESET_LOW_US);\n    hal_gpio_write(dev->data_pin, 1);\n    os_cputime_delay_usecs(DS18B20_PRESENCE_WAIT_US);\n    int presence = hal_gpio_read(dev->data_pin);\n    if (presence != 0) {\n        return -ENODEV;\n    }\n    return 0;\n}\n\nstatic void ds18b20_write_byte(struct ds18b20_dev *dev, uint8_t byte)\n{\n    for (int i = 0; i < 8; i++) {\n        if (byte & 0x01) {\n            hal_gpio_write(dev->data_pin, 0);\n            os_cputime_delay_usecs(1);\n            hal_gpio_write(dev->data_pin, 1);\n            os_cputime_delay_usecs(60);\n        } else {\n            hal_gpio_write(dev->data_pin, 0);\n            os_cputime_delay_usecs(60);\n            hal_gpio_write(dev->data_pin, 1);\n            os_cputime_delay_usecs(1);\n        }\n        byte >>= 1;\n    }\n}\n\nstatic uint8_t ds18b20_read_byte(struct ds18b20_dev *dev)\n{\n    uint8_t byte = 0;\n    for (int i = 0; i < 8; i++) {\n        byte >>= 1;\n        hal_gpio_write(dev->data_pin, 0);\n        os_cputime_delay_usecs(1);\n        hal_gpio_write(dev->data_pin, 1);\n        os_cputime_delay_usecs(1);\n        if (hal_gpio_read(dev->data_pin)) {\n            byte |= 0x80;\n        }\n        os_cputime_delay_usecs(60);\n    }\n    return byte;\n}\n\nint ds18b20_init(struct ds18b20_dev *dev, int pin)\n{\n    dev->data_pin = pin;\n    hal_gpio_init_in(pin, HAL_GPIO_PULL_NONE);\n    hal_gpio_write(pin, 1);\n    int ret = ds18b20_reset_pulse(dev);\n    if (ret != 0) {\n        return ret;\n    }\n    ds18b20_write_byte(dev, DS18B20_CMD_SKIP_ROM);\n    return 0;\n}\n\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw)\n{\n    int ret = ds18b20_reset_pulse(dev);\n    if (ret != 0) {\n        return ret;\n    }\n    ds18b20_write_byte(dev, DS18B20_CMD_SKIP_ROM);\n    ds18b20_write_byte(dev, DS18B20_CMD_CONVERT_T);\n    os_time_delay(DS18B20_CONVERSION_DELAY_MS);\n    ret = ds18b20_reset_pulse(dev);\n    if (ret != 0) {\n        return ret;\n    }\n    ds18b20_write_byte(dev, DS18B20_CMD_SKIP_ROM);\n    ds18b20_write_byte(dev, DS18B20_CMD_READ_SCRATCHPAD);\n    uint8_t lsb = ds18b20_read_byte(dev);\n    uint8_t msb = ds18b20_read_byte(dev);\n    int16_t raw_temp = (int16_t)((msb << 8) | lsb);\n    *raw = (int32_t)raw_temp * 625 / 10;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "ds18b20_init(&g_eval_dev, PB5)",
+    "read_call": "ds18b20_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct ds18b20_dev",
+    "init_extra_setup_c": "int pin = PB5;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "write_prefix_any_of": [
+          [
+            "0x44"
+          ]
+        ],
+        "note": "convert_t: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "convert_t: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "positive_temperature_25C",
+        "mock_preload": {
+          "payload": [
+            "0x90",
+            "0x01"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "derivation": "raw = 0x0190 = 400; temperature_milliC = 400 * 0.0625 * 1000 = 25000"
+      },
+      {
+        "name": "zero_temperature",
+        "mock_preload": {
+          "payload": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "raw = 0x0000 = 0; temperature_milliC = 0 * 0.0625 * 1000 = 0"
+      },
+      {
+        "name": "negative_temperature_minus10C",
+        "mock_preload": {
+          "payload": [
+            "0x60",
+            "0xFF"
+          ]
+        },
+        "expected_read_raw": -10000,
+        "derivation": "raw = 0xFF60 = -160 (signed 16-bit); temperature_milliC = -160 * 0.0625 * 1000 = -10000"
+      }
+    ]
+  },
+  "runtime_path": "renode_gpio_pulse",
+  "slave_kind": "gpio_pulse_injector",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.926,
+  "prompt_chars": 39867,
+  "raw_response": "{\"driver_header\": \"#ifndef DS18B20_H\\n#define DS18B20_H\\n\\n#include <stdint.h>\\n\\nstruct ds18b20_dev {\\n    int data_pin;\\n};\\n\\nint ds18b20_init(struct ds18b20_dev *dev, int pin);\\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"ds18b20.h\\\"\\n#include \\\"apache_mynewt.h\\\"\\n#include <errno.h>\\n#include <hal/hal_gpio.h>\\n#include <os/os_time.h>\\n#include <stdint.h>\\n\\n#define DS18B20_CMD_CONVERT_T 0x44\\n#define DS18B20_CMD_READ_SCRATCHPAD 0xBE\\n#define DS18B20_CMD_SKIP_ROM 0xCC\\n\\n#define DS18B20_RESET_LOW_US 480\\n#define DS18B20_PRESENCE_WAIT_US 480\\n#define DS18B20_CONVERSION_DELAY_MS 750\\n\\nstatic int ds18b20_reset_pulse(struct ds18b20_dev *dev)\\n{\\n    hal_gpio_write(dev->data_pin, 0);\\n    os_cputime_delay_usecs(DS18B20_RESET_LOW_US);\\n    hal_gpio_write(dev->data_pin, 1);\\n    os_cputime_delay_usecs(DS18B20_PRESENCE_WAIT_US);\\n    int presence = hal_gpio_read(dev->data_pin);\\n    if (presence != 0) {\\n        return -ENODEV;\\n    }\\n    return 0;\\n}\\n\\nstatic void ds18b20_write_byte(struct ds18b20_dev *dev, uint8_t byte)\\n{\\n    for (int i = 0; i < 8; i++) {\\n        if (byte & 0x01) {\\n            hal_gpio_write(dev->data_pin, 0);\\n            os_cputime_delay_usecs(1);\\n            hal_gpio_write(dev->data_pin, 1);\\n            os_cputime_delay_usecs(60);\\n        } else {\\n            hal_gpio_write(dev->data_pin, 0);\\n            os_cputime_delay_usecs(60);\\n            hal_gpio_write(dev->data_pin, 1);\\n            os_cputime_delay_usecs(1);\\n        }\\n        byte >>= 1;\\n    }\\n}\\n\\nstatic uint8_t ds18b20_read_byte(struct ds18b20_dev *dev)\\n{\\n    uint8_t byte = 0;\\n    for (int i = 0; i < 8; i++) {\\n        byte >>= 1;\\n        hal_gpio_write(dev->data_pin, 0);\\n        os_cputime_delay_usecs(1);\\n        hal_gpio_write(dev->data_pin, 1);\\n        os_cputime_delay_usecs(1);\\n        if (hal_gpio_read(dev->data_pin)) {\\n            byte |= 0x80;\\n        }\\n        os_cputime_delay_usecs(60);\\n    }\\n    return byte;\\n}\\n\\nint ds18b20_init(struct ds18b20_dev *dev, int pin)\\n{\\n    dev->data_pin = pin;\\n    hal_gpio_init_in(pin, HAL_GPIO_PULL_NONE);\\n    hal_gpio_write(pin, 1);\\n    int ret = ds18b20_reset_pulse(dev);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n    ds18b20_write_byte(dev, DS18B20_CMD_SKIP_ROM);\\n    return 0;\\n}\\n\\nint ds18b20_read_temperature(struct ds18b20_dev *dev, int32_t *raw)\\n{\\n    int ret = ds18b20_reset_pulse(dev);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n    ds18b20_write_byte(dev, DS18B20_CMD_SKIP_ROM);\\n    ds18b20_write_byte(dev, DS18B20_CMD_CONVERT_T);\\n    os_time_delay(DS18B20_CONVERSION_DELAY_MS);\\n    ret = ds18b20_reset_pulse(dev);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n    ds18b20_write_byte(dev, DS18B20_CMD_SKIP_ROM);\\n    ds18b20_write_byte(dev, DS18B20_CMD_READ_SCRATCHPAD);\\n    uint8_t lsb = ds18b20_read_byte(dev);\\n    uint8_t msb = ds18b20_read_byte(dev);\\n    int16_t raw_temp = (int16_t)((msb << 8) | lsb);\\n    *raw = (int32_t)raw_temp * 625 / 10;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "340c66e4f1724265"
+}

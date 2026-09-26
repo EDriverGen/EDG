@@ -1,0 +1,1482 @@
+{
+  "device_id": "adxl345",
+  "bus_type": "spi",
+  "address_rule": {
+    "type": "none",
+    "addressing_form": "none",
+    "addresses": []
+  },
+  "register_map": {
+    "total_size_bytes": 58,
+    "addressing": "1-byte",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "SPI uses 1-byte register addressing with multi-byte bit for burst."
+  },
+  "read_channels": [
+    {
+      "id": "x",
+      "raw_type": "int16",
+      "physical_unit": "g",
+      "flow_id": "read_acceleration",
+      "source_bytes": [
+        "DATAX0",
+        "DATAX1"
+      ],
+      "source_signal": null,
+      "formula_id": "accel_conversion",
+      "notes": "X-axis acceleration data."
+    },
+    {
+      "id": "y",
+      "raw_type": "int16",
+      "physical_unit": "g",
+      "flow_id": "read_acceleration",
+      "source_bytes": [
+        "DATAY0",
+        "DATAY1"
+      ],
+      "source_signal": null,
+      "formula_id": "accel_conversion",
+      "notes": "Y-axis acceleration data."
+    },
+    {
+      "id": "z",
+      "raw_type": "int16",
+      "physical_unit": "g",
+      "flow_id": "read_acceleration",
+      "source_bytes": [
+        "DATAZ0",
+        "DATAZ1"
+      ],
+      "source_signal": null,
+      "formula_id": "accel_conversion",
+      "notes": "Z-axis acceleration data."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "SPI: first byte contains R/W bit, MB bit, and 6-bit register address. Data follows."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "probe_device",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [
+        "Device powered and CS high"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x0E",
+              null
+            ],
+            "length": 1,
+            "pointer_target": "DEVID",
+            "notes": "SPI read command: R/W=0, MB=0, address=0x00. Read 1 byte."
+          },
+          "notes": "Read DEVID register (0x00). Expected value 0xE5."
+        }
+      ],
+      "outputs": [],
+      "notes": "Verify device identity."
+    },
+    {
+      "flow_id": "init_measurement",
+      "kind": "init",
+      "channels": [
+        "x",
+        "y",
+        "z"
+      ],
+      "preconditions": [
+        "Device in standby mode (measure bit = 0)"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x2D",
+              "0x00"
+            ],
+            "pointer_target": "POWER_CTL",
+            "notes": "Write POWER_CTL: clear measure bit to ensure standby."
+          },
+          "notes": "Ensure standby mode."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x31",
+              "0x0B"
+            ],
+            "pointer_target": "DATA_FORMAT",
+            "notes": "Write DATA_FORMAT: full resolution, ±16g range (FULL_RES=1, Range=11)."
+          },
+          "notes": "Set data format: full resolution, ±16g range."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x2C",
+              "0x0A"
+            ],
+            "pointer_target": "BW_RATE",
+            "notes": "Write BW_RATE: rate code 0x0A = 100 Hz, normal power."
+          },
+          "notes": "Set output data rate to 100 Hz."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x2D",
+              "0x08"
+            ],
+            "pointer_target": "POWER_CTL",
+            "notes": "Write POWER_CTL: set measure bit (D3) to enter measurement mode."
+          },
+          "notes": "Enter measurement mode."
+        },
+        {
+          "op": "delay",
+          "transaction": null,
+          "delay_ms": 11.1,
+          "notes": "Wait for first data at 100 Hz ODR: turn-on time ~11.1 ms."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "x",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "notes": "Measurement mode enabled."
+        },
+        {
+          "channel": "y",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "notes": "Measurement mode enabled."
+        },
+        {
+          "channel": "z",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "notes": "Measurement mode enabled."
+        }
+      ],
+      "notes": "Configure device for acceleration measurement."
+    },
+    {
+      "flow_id": "read_acceleration",
+      "kind": "read",
+      "channels": [
+        "x",
+        "y",
+        "z"
+      ],
+      "preconditions": [
+        "Measurement mode active"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xF2",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": "SPI read command: R/W=1, MB=1, address=0x32. Read 6 bytes (X0, X1, Y0, Y1, Z0, Z1)."
+          },
+          "notes": "Burst read all six data registers."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "x",
+          "byte_source": "DATAX0:8 || DATAX1:8",
+          "source_signal": null,
+          "formula_id": "accel_conversion",
+          "unit": "g",
+          "notes": "X-axis raw data."
+        },
+        {
+          "channel": "y",
+          "byte_source": "DATAY0:8 || DATAY1:8",
+          "source_signal": null,
+          "formula_id": "accel_conversion",
+          "unit": "g",
+          "notes": "Y-axis raw data."
+        },
+        {
+          "channel": "z",
+          "byte_source": "DATAZ0:8 || DATAZ1:8",
+          "source_signal": null,
+          "formula_id": "accel_conversion",
+          "unit": "g",
+          "notes": "Z-axis raw data."
+        }
+      ],
+      "notes": "Read acceleration data via burst read."
+    },
+    {
+      "flow_id": "fifo_read",
+      "kind": "read",
+      "channels": [
+        "x",
+        "y",
+        "z"
+      ],
+      "preconditions": [
+        "FIFO mode enabled and FIFO not empty"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xF2",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": "Burst read 6 bytes to pop one FIFO sample."
+          },
+          "notes": "Read one FIFO sample."
+        },
+        {
+          "op": "delay",
+          "transaction": null,
+          "delay_ms": 0.005,
+          "notes": "Wait at least 5 µs between FIFO reads for SPI >1.6 MHz."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "x",
+          "byte_source": "DATAX0:8 || DATAX1:8",
+          "source_signal": null,
+          "formula_id": "accel_conversion",
+          "unit": "g",
+          "notes": "X-axis from FIFO."
+        },
+        {
+          "channel": "y",
+          "byte_source": "DATAY0:8 || DATAY1:8",
+          "source_signal": null,
+          "formula_id": "accel_conversion",
+          "unit": "g",
+          "notes": "Y-axis from FIFO."
+        },
+        {
+          "channel": "z",
+          "byte_source": "DATAZ0:8 || DATAZ1:8",
+          "source_signal": null,
+          "formula_id": "accel_conversion",
+          "unit": "g",
+          "notes": "Z-axis from FIFO."
+        }
+      ],
+      "notes": "Read FIFO data one sample at a time."
+    },
+    {
+      "flow_id": "self_test",
+      "kind": "calibration",
+      "channels": [
+        "x",
+        "y",
+        "z"
+      ],
+      "preconditions": [
+        "Measurement mode active, data rate 100-800 Hz or 3200 Hz, normal power"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x31",
+              "0x0B"
+            ],
+            "pointer_target": "DATA_FORMAT",
+            "notes": "Set full-resolution, 16g mode, SELF_TEST=0."
+          },
+          "notes": "Configure for self-test: full-res, 16g, self-test off."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xF2",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": "Read and average several samples (e.g., 10) with self-test off."
+          },
+          "notes": "Measure baseline (self-test off)."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x31",
+              "0x8B"
+            ],
+            "pointer_target": "DATA_FORMAT",
+            "notes": "Set SELF_TEST bit (D7) to enable self-test."
+          },
+          "notes": "Enable self-test."
+        },
+        {
+          "op": "delay",
+          "transaction": null,
+          "delay_ms": 40,
+          "notes": "Wait for output to settle (about 4 samples at 100 Hz = 40 ms)."
+        },
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xF2",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": "Read and average several samples with self-test on."
+          },
+          "notes": "Measure with self-test enabled."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x31",
+              "0x0B"
+            ],
+            "pointer_target": "DATA_FORMAT",
+            "notes": "Clear SELF_TEST bit to disable self-test."
+          },
+          "notes": "Disable self-test."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "x",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": "self_test_change",
+          "unit": "g",
+          "notes": "Self-test change for X-axis."
+        },
+        {
+          "channel": "y",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": "self_test_change",
+          "unit": "g",
+          "notes": "Self-test change for Y-axis."
+        },
+        {
+          "channel": "z",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": "self_test_change",
+          "unit": "g",
+          "notes": "Self-test change for Z-axis."
+        }
+      ],
+      "notes": "Perform self-test measurement."
+    },
+    {
+      "flow_id": "offset_calibration",
+      "kind": "calibration",
+      "channels": [
+        "x",
+        "y",
+        "z"
+      ],
+      "preconditions": [
+        "Measurement mode active, device oriented in known position (e.g., z-axis vertical)"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xF2",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": "Read and average samples to get X0g, Y0g, Z+1g."
+          },
+          "notes": "Measure offset data."
+        },
+        {
+          "op": "postprocess",
+          "transaction": null,
+          "notes": "Compute offset register values: XOFFSET = -Round(X0g/4), etc."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x1E",
+              null
+            ],
+            "pointer_target": "OFSX",
+            "notes": "Write computed offset for X-axis."
+          },
+          "notes": "Set X offset."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x1F",
+              null
+            ],
+            "pointer_target": "OFSY",
+            "notes": "Write computed offset for Y-axis."
+          },
+          "notes": "Set Y offset."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x20",
+              null
+            ],
+            "pointer_target": "OFSZ",
+            "notes": "Write computed offset for Z-axis."
+          },
+          "notes": "Set Z offset."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "x",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": "offset_calculation",
+          "unit": "LSB",
+          "notes": "Offset value for X-axis."
+        },
+        {
+          "channel": "y",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": "offset_calculation",
+          "unit": "LSB",
+          "notes": "Offset value for Y-axis."
+        },
+        {
+          "channel": "z",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": "offset_calculation",
+          "unit": "LSB",
+          "notes": "Offset value for Z-axis."
+        }
+      ],
+      "notes": "Single-point offset calibration using offset registers."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "little_endian",
+    "bit_width": 16,
+    "effective_bits": 13,
+    "signed": true,
+    "right_shift": 0,
+    "sign_extend_from_bit": 12,
+    "notes": "Data registers are 16-bit twos complement, LSB first. In full resolution, scale factor is 4 mg/LSB regardless of range."
+  },
+  "registers_or_commands": [
+    {
+      "name": "DEVID",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Device ID register, fixed value 0xE5"
+    },
+    {
+      "name": "THRESH_TAP",
+      "value": "0x1D",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Tap threshold, unsigned, scale factor 62.5 mg/LSB"
+    },
+    {
+      "name": "OFSX",
+      "value": "0x1E",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "X-axis offset adjustment, twos complement, scale factor 15.6 mg/LSB"
+    },
+    {
+      "name": "OFSY",
+      "value": "0x1F",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Y-axis offset adjustment, twos complement, scale factor 15.6 mg/LSB"
+    },
+    {
+      "name": "OFSZ",
+      "value": "0x20",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Z-axis offset adjustment, twos complement, scale factor 15.6 mg/LSB"
+    },
+    {
+      "name": "DUR",
+      "value": "0x21",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Tap duration, unsigned, scale factor 625 µs/LSB"
+    },
+    {
+      "name": "Latent",
+      "value": "0x22",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Tap latency, unsigned, scale factor 1.25 ms/LSB"
+    },
+    {
+      "name": "Window",
+      "value": "0x23",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Tap window, unsigned, scale factor 1.25 ms/LSB"
+    },
+    {
+      "name": "THRESH_ACT",
+      "value": "0x24",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Activity threshold, unsigned, scale factor 62.5 mg/LSB"
+    },
+    {
+      "name": "THRESH_INACT",
+      "value": "0x25",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Inactivity threshold, unsigned, scale factor 62.5 mg/LSB"
+    },
+    {
+      "name": "TIME_INACT",
+      "value": "0x26",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Inactivity time, unsigned, scale factor 1 sec/LSB"
+    },
+    {
+      "name": "ACT_INACT_CTL",
+      "value": "0x27",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Axis enable control for activity and inactivity detection"
+    },
+    {
+      "name": "THRESH_FF",
+      "value": "0x28",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Free-fall threshold, unsigned, scale factor 62.5 mg/LSB"
+    },
+    {
+      "name": "TIME_FF",
+      "value": "0x29",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Free-fall time, unsigned, scale factor 5 ms/LSB"
+    },
+    {
+      "name": "TAP_AXES",
+      "value": "0x2A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Axis control for single tap/double tap"
+    },
+    {
+      "name": "ACT_TAP_STATUS",
+      "value": "0x2B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Source of single tap/double tap and activity"
+    },
+    {
+      "name": "BW_RATE",
+      "value": "0x2C",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Data rate and power mode control, default 100 Hz"
+    },
+    {
+      "name": "POWER_CTL",
+      "value": "0x2D",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Power-saving features control"
+    },
+    {
+      "name": "INT_ENABLE",
+      "value": "0x2E",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt enable control"
+    },
+    {
+      "name": "INT_MAP",
+      "value": "0x2F",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt mapping control"
+    },
+    {
+      "name": "INT_SOURCE",
+      "value": "0x30",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Source of interrupts, read clears some bits"
+    },
+    {
+      "name": "DATA_FORMAT",
+      "value": "0x31",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Data format control"
+    },
+    {
+      "name": "DATAX0",
+      "value": "0x32",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "X-Axis Data 0 (LSB)"
+    },
+    {
+      "name": "DATAX1",
+      "value": "0x33",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "X-Axis Data 1 (MSB)"
+    },
+    {
+      "name": "DATAY0",
+      "value": "0x34",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Y-Axis Data 0 (LSB)"
+    },
+    {
+      "name": "DATAY1",
+      "value": "0x35",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Y-Axis Data 1 (MSB)"
+    },
+    {
+      "name": "DATAZ0",
+      "value": "0x36",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Z-Axis Data 0 (LSB)"
+    },
+    {
+      "name": "DATAZ1",
+      "value": "0x37",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Z-Axis Data 1 (MSB)"
+    },
+    {
+      "name": "FIFO_CTL",
+      "value": "0x38",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "FIFO control"
+    },
+    {
+      "name": "FIFO_STATUS",
+      "value": "0x39",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "FIFO status"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "ACT ac/dc",
+      "bits": "D7",
+      "description": "0 = dc-coupled, 1 = ac-coupled for activity detection"
+    },
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "ACT_X enable",
+      "bits": "D6",
+      "description": "Enable x-axis for activity detection"
+    },
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "ACT_Y enable",
+      "bits": "D5",
+      "description": "Enable y-axis for activity detection"
+    },
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "ACT_Z enable",
+      "bits": "D4",
+      "description": "Enable z-axis for activity detection"
+    },
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "INACT ac/dc",
+      "bits": "D3",
+      "description": "0 = dc-coupled, 1 = ac-coupled for inactivity detection"
+    },
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "INACT_X enable",
+      "bits": "D2",
+      "description": "Enable x-axis for inactivity detection"
+    },
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "INACT_Y enable",
+      "bits": "D1",
+      "description": "Enable y-axis for inactivity detection"
+    },
+    {
+      "register": "ACT_INACT_CTL",
+      "name": "INACT_Z enable",
+      "bits": "D0",
+      "description": "Enable z-axis for inactivity detection"
+    },
+    {
+      "register": "TAP_AXES",
+      "name": "Suppress",
+      "bits": "D3",
+      "description": "Suppress double tap detection if acceleration above THRESH_TAP between taps"
+    },
+    {
+      "register": "TAP_AXES",
+      "name": "TAP_X enable",
+      "bits": "D2",
+      "description": "Enable x-axis for tap detection"
+    },
+    {
+      "register": "TAP_AXES",
+      "name": "TAP_Y enable",
+      "bits": "D1",
+      "description": "Enable y-axis for tap detection"
+    },
+    {
+      "register": "TAP_AXES",
+      "name": "TAP_Z enable",
+      "bits": "D0",
+      "description": "Enable z-axis for tap detection"
+    },
+    {
+      "register": "ACT_TAP_STATUS",
+      "name": "ACT_X source",
+      "bits": "D6",
+      "description": "Indicates x-axis involved in activity event"
+    },
+    {
+      "register": "ACT_TAP_STATUS",
+      "name": "ACT_Y source",
+      "bits": "D5",
+      "description": "Indicates y-axis involved in activity event"
+    },
+    {
+      "register": "ACT_TAP_STATUS",
+      "name": "ACT_Z source",
+      "bits": "D4",
+      "description": "Indicates z-axis involved in activity event"
+    },
+    {
+      "register": "ACT_TAP_STATUS",
+      "name": "Asleep",
+      "bits": "D3",
+      "description": "Indicates part is asleep (only if auto sleep configured)"
+    },
+    {
+      "register": "ACT_TAP_STATUS",
+      "name": "TAP_X source",
+      "bits": "D2",
+      "description": "Indicates x-axis involved in tap event"
+    },
+    {
+      "register": "ACT_TAP_STATUS",
+      "name": "TAP_Y source",
+      "bits": "D1",
+      "description": "Indicates y-axis involved in tap event"
+    },
+    {
+      "register": "ACT_TAP_STATUS",
+      "name": "TAP_Z source",
+      "bits": "D0",
+      "description": "Indicates z-axis involved in tap event"
+    },
+    {
+      "register": "BW_RATE",
+      "name": "LOW_POWER",
+      "bits": "D4",
+      "description": "0 = normal power, 1 = low power mode"
+    },
+    {
+      "register": "BW_RATE",
+      "name": "Rate",
+      "bits": "D3:D0",
+      "description": "Output data rate code (see Table 7 and Table 8)"
+    },
+    {
+      "register": "POWER_CTL",
+      "name": "Link",
+      "bits": "D5",
+      "description": "Link activity and inactivity functions"
+    },
+    {
+      "register": "POWER_CTL",
+      "name": "AUTO_SLEEP",
+      "bits": "D4",
+      "description": "Enable auto sleep mode (requires link bit set)"
+    },
+    {
+      "register": "POWER_CTL",
+      "name": "Measure",
+      "bits": "D3",
+      "description": "0 = standby, 1 = measurement mode"
+    },
+    {
+      "register": "POWER_CTL",
+      "name": "Sleep",
+      "bits": "D2",
+      "description": "0 = normal, 1 = sleep mode"
+    },
+    {
+      "register": "POWER_CTL",
+      "name": "Wakeup",
+      "bits": "D1:D0",
+      "description": "Frequency of readings in sleep mode: 00=8Hz, 01=4Hz, 10=2Hz, 11=1Hz"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "DATA_READY",
+      "bits": "D7",
+      "description": "Enable DATA_READY interrupt"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "SINGLE_TAP",
+      "bits": "D6",
+      "description": "Enable single tap interrupt"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "DOUBLE_TAP",
+      "bits": "D5",
+      "description": "Enable double tap interrupt"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "Activity",
+      "bits": "D4",
+      "description": "Enable activity interrupt"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "Inactivity",
+      "bits": "D3",
+      "description": "Enable inactivity interrupt"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "FREE_FALL",
+      "bits": "D2",
+      "description": "Enable free-fall interrupt"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "Watermark",
+      "bits": "D1",
+      "description": "Enable watermark interrupt"
+    },
+    {
+      "register": "INT_ENABLE",
+      "name": "Overrun",
+      "bits": "D0",
+      "description": "Enable overrun interrupt"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "DATA_READY",
+      "bits": "D7",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "SINGLE_TAP",
+      "bits": "D6",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "DOUBLE_TAP",
+      "bits": "D5",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "Activity",
+      "bits": "D4",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "Inactivity",
+      "bits": "D3",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "FREE_FALL",
+      "bits": "D2",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "Watermark",
+      "bits": "D1",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_MAP",
+      "name": "Overrun",
+      "bits": "D0",
+      "description": "0 = INT1, 1 = INT2"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "DATA_READY",
+      "bits": "D7",
+      "description": "Set when new data available"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "SINGLE_TAP",
+      "bits": "D6",
+      "description": "Set when single tap detected"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "DOUBLE_TAP",
+      "bits": "D5",
+      "description": "Set when double tap detected"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "Activity",
+      "bits": "D4",
+      "description": "Set when activity detected"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "Inactivity",
+      "bits": "D3",
+      "description": "Set when inactivity detected"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "FREE_FALL",
+      "bits": "D2",
+      "description": "Set when free-fall detected"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "Watermark",
+      "bits": "D1",
+      "description": "Set when FIFO entries equal samples bits"
+    },
+    {
+      "register": "INT_SOURCE",
+      "name": "Overrun",
+      "bits": "D0",
+      "description": "Set when new data replaces unread data"
+    },
+    {
+      "register": "DATA_FORMAT",
+      "name": "SELF_TEST",
+      "bits": "D7",
+      "description": "1 = apply self-test force"
+    },
+    {
+      "register": "DATA_FORMAT",
+      "name": "SPI",
+      "bits": "D6",
+      "description": "1 = 3-wire SPI, 0 = 4-wire SPI"
+    },
+    {
+      "register": "DATA_FORMAT",
+      "name": "INT_INVERT",
+      "bits": "D5",
+      "description": "0 = active high, 1 = active low"
+    },
+    {
+      "register": "DATA_FORMAT",
+      "name": "FULL_RES",
+      "bits": "D3",
+      "description": "1 = full resolution (4 mg/LSB), 0 = 10-bit mode"
+    },
+    {
+      "register": "DATA_FORMAT",
+      "name": "Justify",
+      "bits": "D2",
+      "description": "1 = left-justified (MSB), 0 = right-justified with sign extension"
+    },
+    {
+      "register": "DATA_FORMAT",
+      "name": "Range",
+      "bits": "D1:D0",
+      "description": "00=±2g, 01=±4g, 10=±8g, 11=±16g"
+    },
+    {
+      "register": "FIFO_CTL",
+      "name": "FIFO_MODE",
+      "bits": "D7:D6",
+      "description": "00=bypass, 01=FIFO, 10=stream, 11=trigger"
+    },
+    {
+      "register": "FIFO_CTL",
+      "name": "Trigger",
+      "bits": "D5",
+      "description": "0 = trigger event on INT1, 1 = on INT2"
+    },
+    {
+      "register": "FIFO_CTL",
+      "name": "Samples",
+      "bits": "D4:D0",
+      "description": "Number of FIFO samples for watermark interrupt or trigger retention"
+    },
+    {
+      "register": "FIFO_STATUS",
+      "name": "FIFO_TRIG",
+      "bits": "D7",
+      "description": "1 = trigger event occurred"
+    },
+    {
+      "register": "FIFO_STATUS",
+      "name": "Entries",
+      "bits": "D5:D0",
+      "description": "Number of data values stored in FIFO"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up: device enters standby mode. All registers at reset values."
+    },
+    {
+      "transaction": null,
+      "notes": "It is recommended to configure the device in standby mode before enabling measurement."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xF2",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "length": 6,
+        "pointer_target": "DATAX0",
+        "notes": "SPI read command: R/W=1, MB=1, address=0x32. Read 6 bytes (X0, X1, Y0, Y1, Z0, Z1)."
+      },
+      "notes": "Burst read all six data registers for X, Y, Z acceleration."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "f_SCLK",
+      "value": 5,
+      "unit": "MHz",
+      "condition": "SPI clock frequency",
+      "notes": "Maximum SPI clock frequency"
+    },
+    {
+      "name": "t_DELAY",
+      "value": 5,
+      "unit": "ns",
+      "condition": "CS falling edge to SCLK falling edge",
+      "notes": "CS to SCLK setup time"
+    },
+    {
+      "name": "t_QUIET",
+      "value": 5,
+      "unit": "ns",
+      "condition": "SCLK rising edge to CS rising edge",
+      "notes": "SCLK to CS hold time"
+    },
+    {
+      "name": "t_CS_DIS",
+      "value": 150,
+      "unit": "ns",
+      "condition": "CS deassertion between SPI communications",
+      "notes": "Minimum CS high time between transactions"
+    },
+    {
+      "name": "t_SETUP",
+      "value": 5,
+      "unit": "ns",
+      "condition": "SDI valid before SCLK rising edge",
+      "notes": "Data input setup time"
+    },
+    {
+      "name": "t_HOLD",
+      "value": 5,
+      "unit": "ns",
+      "condition": "SDI valid after SCLK rising edge",
+      "notes": "Data input hold time"
+    },
+    {
+      "name": "t_SDO",
+      "value": 40,
+      "unit": "ns",
+      "condition": "SCLK falling edge to SDO/SDIO output transition",
+      "notes": "Data output valid time"
+    },
+    {
+      "name": "fifo_pop_delay",
+      "value": 5,
+      "unit": "µs",
+      "condition": "Between end of FIFO data read and next FIFO read or FIFO_STATUS read",
+      "notes": "Minimum delay for FIFO to pop completely"
+    },
+    {
+      "name": "turn_on_time",
+      "value": 1.4,
+      "unit": "ms",
+      "condition": "ODR = 3200 Hz",
+      "notes": "Turn-on and wake-up time at 3200 Hz ODR"
+    },
+    {
+      "name": "turn_on_time_100hz",
+      "value": 11.1,
+      "unit": "ms",
+      "condition": "ODR = 100 Hz",
+      "notes": "Turn-on and wake-up time at 100 Hz ODR: τ + 1.1 ms, τ = 10 ms"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "accel_conversion",
+      "formula": "accel_g = (raw * scale_factor) / 1000, where scale_factor depends on mode. In full resolution (FULL_RES=1), scale_factor = 4 mg/LSB. In 10-bit mode, scale_factor = 3.9 mg/LSB for ±2g, 7.8 for ±4g, 15.6 for ±8g, 31.2 for ±16g.",
+      "integer_approximation_expression": {
+        "expression": "(raw * 4) // 1000",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "DATAX0:8 || DATAX1:8",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "16-bit twos complement raw value from data registers (LSB first)."
+          }
+        ],
+        "output": {
+          "name": "accel_g",
+          "unit": "g"
+        }
+      }
+    },
+    {
+      "name": "self_test_change",
+      "formula": "X_ST = X_ST_ON - X_ST_OFF (in LSB). Convert to g by multiplying by scale factor.",
+      "integer_approximation_expression": {
+        "expression": "(X_ST_ON - X_ST_OFF) * 4 // 1000",
+        "inputs": [
+          {
+            "name": "X_ST_ON",
+            "byte_source": null,
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Average X-axis output with self-test enabled (LSB)."
+          },
+          {
+            "name": "X_ST_OFF",
+            "byte_source": null,
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Average X-axis output with self-test disabled (LSB)."
+          }
+        ],
+        "output": {
+          "name": "X_ST_g",
+          "unit": "g"
+        }
+      }
+    },
+    {
+      "name": "offset_calculation",
+      "formula": "XOFFSET = -Round(X0g / 4). Offset register scale factor is 15.6 mg/LSB, independent of g-range.",
+      "integer_approximation_expression": null,
+      "executable_expression_status": "complex_compensation_algorithm",
+      "notes": "Canonicalized: exact compensation is preserved in formula/inputs, but the single-line integer expression was marked non-executable because it is too complex or not accepted by the safe expression evaluator."
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "SPI communication failure (NACK or timeout)",
+      "detection": "Bus transaction returns error or no response",
+      "driver_action": "return -EIO"
+    },
+    {
+      "condition": "FIFO overrun",
+      "detection": "INT_SOURCE.Overrun bit set",
+      "driver_action": "Read FIFO_STATUS to clear, discard old data, report overrun"
+    },
+    {
+      "condition": "Measurement timeout",
+      "detection": "DATA_READY interrupt not asserted within expected period",
+      "driver_action": "return -ETIMEDOUT"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "standby",
+      "description": "Standby mode, measure bit = 0. Current ~0.1 µA. No measurements."
+    },
+    {
+      "name": "measurement",
+      "description": "Measurement mode, measure bit = 1. Normal operation."
+    },
+    {
+      "name": "sleep",
+      "description": "Sleep mode, sleep bit = 1. Low power, reduced data rate (1-8 Hz). Only activity function works."
+    },
+    {
+      "name": "low_power",
+      "description": "Low power mode, LOW_POWER bit = 1. Reduced power at certain data rates (12.5-400 Hz)."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "adxl345",
+      "page": 23,
+      "snippet": "Table 19. Register Map"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The DEVID register holds a fixed device ID code of 0xE5 (345 octal)."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The THRESH_TAP register is eight bits and holds the threshold value for tap interrupts. The scale factor is 62.5 mg/LSB"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The OFSX, OFSY, and OFSZ registers are each eight bits and offer user-set offset adjustments in twos complement format with a scale factor of 15.6 mg/LSB"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The DUR register is eight bits and contains an unsigned time value... The scale factor is 625 µs/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The latent register is eight bits and contains an unsigned time value... The scale factor is 1.25 ms/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The window register is eight bits and contains an unsigned time value... The scale factor is 1.25 ms/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The THRESH_ACT register is eight bits and holds the threshold value for detecting activity. The scale factor is 62.5 mg/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The THRESH_INACT register is eight bits and holds the threshold value for detecting inactivity. The scale factor is 62.5 mg/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 24,
+      "snippet": "The TIME_INACT register is eight bits and contains an unsigned time value... The scale factor is 1 sec/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 25,
+      "snippet": "The THRESH_FF register is eight bits and holds the threshold value... The scale factor is 62.5 mg/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 25,
+      "snippet": "The TIME_FF register is eight bits and stores an unsigned time value... The scale factor is 5 ms/LSB."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 25,
+      "snippet": "Table 25. Register 0x2C... LOW_POWER bit (D4)... Rate bits (D3:D0)"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 26,
+      "snippet": "Table 26. Register 0x2D... Link, AUTO_SLEEP, Measure, Sleep, Wakeup"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 26,
+      "snippet": "Table 28. Register 0x2E... DATA_READY, SINGLE_TAP, DOUBLE_TAP, Activity, Inactivity, FREE_FALL, Watermark, Overrun"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 26,
+      "snippet": "Table 30. Register 0x2F... DATA_READY, SINGLE_TAP, DOUBLE_TAP, Activity, Inactivity, FREE_FALL, Watermark, Overrun"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 27,
+      "snippet": "Table 32. Register 0x30... DATA_READY, SINGLE_TAP, DOUBLE_TAP, Activity, Inactivity, FREE_FALL, Watermark, Overrun"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 27,
+      "snippet": "Table 34. Register 0x31... SELF_TEST, SPI, INT_INVERT, FULL_RES, Justify, Range"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 27,
+      "snippet": "These six bytes (Register 0x32 to Register 0x37) are eight bits each and hold the output data for each axis."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 27,
+      "snippet": "Table 36. Register 0x38... FIFO_MODE, Trigger, Samples"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 28,
+      "snippet": "Table 39. Register 0x39... FIFO_TRIG, Entries"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 14,
+      "snippet": "The maximum SPI clock speed is 5 MHz with 100 pF maximum loading"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 14,
+      "snippet": "the timing scheme follows clock polarity (CPOL) = 1 and clock phase (CPHA) = 1"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 16,
+      "snippet": "Table 10. SPI Timing... f SCLK: 5 MHz max"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 16,
+      "snippet": "t DELAY: 5 ns min, t QUIET: 5 ns min, t CS,DIS: 150 ns min"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 21,
+      "snippet": "there must be at least 5 µs between the end of reading the data registers and the start of a new read of the FIFO"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 12,
+      "snippet": "After V S is applied, the device enters standby mode... It is recommended to configure the device in standby mode and then to enable measurement mode."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 3,
+      "snippet": "Turn-On and Wake-Up Time 7: ODR = 3200 Hz, typ 1.4 ms"
+    },
+    {
+      "source_id": "adxl345",
+      "page": 3,
+      "snippet": "At a 100 Hz data rate, the turn-on and wake-up times are each approximately 11.1 ms."
+    },
+    {
+      "source_id": "adxl345",
+      "page": 27,
+      "snippet": "The output data is twos complement, with DATAx0 as the least significant byte and DATAx1 as the most significant byte"
+    }
+  ],
+  "requires_human": [],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

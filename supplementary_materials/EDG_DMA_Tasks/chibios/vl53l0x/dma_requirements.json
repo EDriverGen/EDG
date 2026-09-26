@@ -1,0 +1,57 @@
+{
+  "task_package_id": "chibios_generic_hal__vl53l0x__i2c1_dma",
+  "mode": "dma",
+  "physical_bus": "i2c",
+  "backend": "ChibiOS STM32F1 I2Cv1 HAL DMA",
+  "access_pattern": "rtos_bus_dma",
+  "candidate_transfer_apis": [
+    "i2cMasterTransmitTimeout",
+    "i2cMasterReceiveTimeout"
+  ],
+  "dma_channels": {
+    "controller": "DMA1",
+    "tx": 6,
+    "rx": 7
+  },
+  "minimum_core_payload_bytes": 1,
+  "configuration_requirements": [
+    "Use the original ST_NUCLEO64_F103RB board and I2CD1.",
+    "Enable the selected STM32 HAL peripheral, its existing DMA channel configuration, and IRQ/completion support.",
+    "Use the HAL completion and timeout conventions before exposing the returned buffer."
+  ],
+  "generation_requirements": [
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use I2C DMA for ranging/status register transfers, preserving the measurement sequence."
+  ],
+  "device_scenarios": [
+    "Treat measurement readiness and DMA completion as distinct events.",
+    "Retain range/status validity checks."
+  ],
+  "validation_requirements": [
+    {
+      "id": "dma_payload",
+      "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+    },
+    {
+      "id": "completion_order",
+      "requirement": "Consume receive data and reuse buffers only after the required completion event."
+    },
+    {
+      "id": "error_and_timeout",
+      "requirement": "Return the specified error and release transfer state after failure or timeout."
+    },
+    {
+      "id": "repeat_operation",
+      "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+    }
+  ],
+  "source_evidence": [
+    "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/I2Cv1/hal_i2c_lld.c"
+  ]
+}

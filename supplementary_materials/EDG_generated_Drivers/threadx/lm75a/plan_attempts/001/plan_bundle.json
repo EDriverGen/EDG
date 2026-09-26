@@ -1,0 +1,85 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "threadx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, bus_handle)",
+    "read_call": "lm75a_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int16_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "lm75a_device_t",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "write_config: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "write_tos_thyst: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temp: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "positive_temperature_25C",
+        "mock_preload": {
+          "0x00": [
+            "0x19",
+            "0x20"
+          ]
+        },
+        "expected_read_raw": 201,
+        "derivation": "single_channel raw-primary normalization: bytes [0x19 0x20], raw_count = ((((0x19 << 8) | 0x20) >> 5) & 0x7FF) = 201. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      },
+      {
+        "name": "negative_temperature_minus_10C",
+        "mock_preload": {
+          "0x00": [
+            "0xE6",
+            "0x60"
+          ]
+        },
+        "expected_read_raw": -205,
+        "derivation": "single_channel raw-primary normalization: bytes [0xE6 0x60], raw_count = (((((0xE6 << 8) | 0x60) >> 5) & 0x7FF) - 2048) = -205. Physical conversion formula is not applied to drivergen_eval_read_raw_i32.",
+        "raw_tolerance": 0
+      }
+    ],
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "c92a319e7c4cc929",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 15.815,
+  "prompt_chars": 40881,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"lm75a_init(&g_eval_dev, bus_handle)\", \"read_call\": \"lm75a_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int16_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"lm75a_device_t\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"write_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x01\"]], \"note\": \"write_config: write\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x03\"]], \"note\": \"write_tos_thyst: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"read_any\": true, \"note\": \"read_temp: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x19\", \"0x20\"]}, \"expected_read_raw\": 25000, \"derivation\": \"Raw register bytes 0x19, 0x20 => 16-bit big-endian = 0x1920 = 6432. Right-shift by 5 => 6432 >> 5 = 201. Sign-extend from bit 10: bit 10 of 201 is 0 (since 201 < 1024), so signed value = 201. Multiply by 0.125 degC per LSB => 201 * 125 = 25125 milli_degC. Round to 25000? Wait, 201 * 125 = 25125. But expected_read_raw is 25000. Let's recalc: 0x1920 = 0b0001100100100000. Bits D10..D0 = 0b00110010010 = 0x192 >> 5? Actually shift right 5: 0x1920 >> 5 = 0xC9 = 201. 201 * 125 = 25125. To get 25000, we need raw value such that raw_signed_11bit * 125 = 25000 => raw_signed_11bit = 200. So raw register should be 200 << 5 = 6400 = 0x1900. So bytes should be [0x19, 0x00]. Correcting: mock_preload bytes [0x19, 0x00] => raw = 0x1900 = 6400, shift right 5 => 200, sign extend? 200 < 1024, positive, so 200 * 125 = 25000 milli_degC.\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xE6\", \"0x60\"]}, \"expected_read_raw\": -10000, \"derivation\": \"Raw register bytes 0xE6, 0x60 => 16-bit big-endian = 0xE660 = 58976. Right-shift by 5 => 58976 >> 5 = 1843. Sign-extend from bit 10: bit 10 of 1843 is 1 (since 1843 >= 1024), so signed value = 1843 - 2048 = -205. Multiply by 125 => -205 * 125 = -25625 milli_degC. That's -25.625°C, not -10°C. To get -10000, we need raw_signed_11bit = -80. -80 in 11-bit two's complement is 2048 - 80 = 1968. 1968 << 5 = 62976 = 0xF600. So bytes [0xF6, 0x00] => raw = 0xF600 = 62976, shift right 5 => 1968, sign extend: 1968 - 2048 = -80, *125 = -10000. Correcting: mock_preload bytes [0xF6, 0x00].\"}]}}"
+}

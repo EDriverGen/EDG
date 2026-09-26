@@ -1,0 +1,130 @@
+{
+  "task_package_id": "riot_generic_periph__ds3231__i2c1_polling",
+  "rtos": "riot",
+  "device": "ds3231",
+  "bus": "i2c",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/ds3231/riot",
+  "task_package": {
+    "package_id": "riot_generic_periph__ds3231__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/riot_generic_periph.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/riot_generic_periph_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/ds3231.json",
+    "reference_driver_root": "DriverGen/data/references/ds3231/riot",
+    "fixed_task_context": {},
+    "notes": [
+      "Manual task package completing the fixed-context RTOS/device matrix; fixed_task_context is resolved from the referenced layers."
+    ],
+    "evidence": [
+      "DriverGen/data/references/ds3231/riot",
+      "DriverGen/data/raw/ds3231"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "riot_generic_periph",
+    "board": "nucleo-f103rb",
+    "board_alias": "riot_f103rb",
+    "rtos": "riot",
+    "rtos_bundle": "riot",
+    "integration": "riot_periph_driver_api",
+    "integration_style": "riot_periph_plus_ztimer",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "I2C_DEV(0)"
+        ],
+        "spi": [
+          "SPI_DEV(0)"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "UART_DEV(1)"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform targets RIOT's nucleo-f103rb board while using the portable periph/i2c.h, periph/spi.h, and periph/gpio.h APIs.",
+      "I2C uses integer i2c_t with acquire/release bus locking and read_regs/write_regs register access.",
+      "SPI uses periph/spi.h with spi_t, spi_cs_t, spi_acquire/spi_release and spi_transfer_bytes.",
+      "UART fixed-frame sensors use periph/uart.h with UART_DEV(1).",
+      "Delays use ztimer_sleep(ZTIMER_MSEC, ms) (preferred over legacy xtimer)."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/riot/drivers/include/periph/i2c.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/spi.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/uart.h",
+      "DriverGen/data/rtos/riot/drivers/include/periph/gpio.h",
+      "DriverGen/data/rtos/riot/drivers/bh1750fvi/bh1750fvi.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "riot_generic_periph_i2c1_polling",
+    "platform_id": "riot_generic_periph",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "I2C_DEV(0)",
+    "bus_instance_kind": "periph_device_macro",
+    "bus_symbol": "I2C_DEV(0)",
+    "backend": "RIOT periph I2C driver",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Default RIOT I2C binding uses I2C_DEV(0) with acquire/release locking."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/riot/drivers/include/periph/i2c.h",
+      "DriverGen/data/rtos/riot/drivers/bh1750fvi/bh1750fvi.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "ds3231",
+    "attachment_type": "i2c_rtc",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x68",
+      "alternates": [],
+      "selection_rule": "Fixed device address for the RTC function."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Only the shared I2C bus is required for time and temperature reads."
+      ]
+    },
+    "optional_attachment": {
+      "sqw_int_pin": "optional",
+      "32khz_pin": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "The minimal reference driver only uses the RTC register block and the on-chip temperature registers."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/ds3231",
+      "DriverGen/data/references/ds3231/*/*_ref.h"
+    ]
+  }
+}

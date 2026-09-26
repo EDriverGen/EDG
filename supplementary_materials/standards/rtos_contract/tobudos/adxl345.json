@@ -1,0 +1,167 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "tobudos__adxl345",
+  "device_id": "adxl345",
+  "rtos_id": "tobudos",
+  "bus": "spi",
+  "scope": "Polling SPI driver contract for adxl345 on ToBudOS / STM32F1 HAL. Fixed device bus/handle bindings come from task_requirements; include only HAL/timing operations actually used by the reference implementation and waits inside the main driver.",
+  "api_contract": {
+    "profile": "spi",
+    "fixed_binding": {
+      "instance": "spi1",
+      "symbol": "hspi1",
+      "backend": "TencentOS Tiny STM32F1 HAL SPI",
+      "mode": "polling"
+    },
+    "operations": [
+      {
+        "name": "caller-supplied HAL handle binding",
+        "handle": "SPI_HandleTypeDef *"
+      },
+      {
+        "name": "HAL_SPI_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *, uint8_t *data, uint16_t size, uint32_t timeout)"
+      },
+      {
+        "name": "HAL_SPI_Receive",
+        "signature": "HAL_StatusTypeDef HAL_SPI_Receive(SPI_HandleTypeDef *, uint8_t *data, uint16_t size, uint32_t timeout)"
+      },
+      {
+        "name": "HAL_SPI_TransmitReceive",
+        "signature": "HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *, uint8_t *tx, uint8_t *rx, uint16_t size, uint32_t timeout)"
+      },
+      {
+        "name": "HAL_GPIO_WritePin",
+        "signature": "void HAL_GPIO_WritePin(GPIO_TypeDef *, uint16_t pin, GPIO_PinState)"
+      }
+    ],
+    "semantics": {
+      "polling": true,
+      "error_reporting": "HAL_StatusTypeDef / HAL_OK comparison at reference call sites",
+      "transfer_timeout_ms": "reference-specified per operation, normally 100 ms",
+      "addressing": "chip-select"
+    }
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Use the fixed ToBudOS spi polling instance spi1 (symbol hspi1), passing the corresponding HAL handle pointer to the reference driver; retain the task-configured bus type and addressing conventions.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.h",
+          "line_start": 35,
+          "line_end": 35
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/task_requirements.json",
+          "line_start": 76,
+          "line_end": 76
+        }
+      ]
+    },
+    {
+      "id": "spi_polling_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Provide the blocking HAL_SPI_Transmit, HAL_SPI_Receive, and/or HAL_SPI_TransmitReceive operations used by the reference, with SPI_HandleTypeDef *, buffers, uint16_t lengths, uint32_t timeouts, and HAL_StatusTypeDef returns for caller checks.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 11,
+          "line_end": 11
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 22,
+          "line_end": 22
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 48,
+          "line_end": 48
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/spi/pack.md",
+          "line_start": 955,
+          "line_end": 957
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_spi.c",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_spi.c",
+          "line_start": 29,
+          "line_end": 29
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_spi.c",
+          "line_start": 38,
+          "line_end": 38
+        }
+      ]
+    },
+    {
+      "id": "chip_select",
+      "category": "gpio_control",
+      "requirement": "Retain HAL_GPIO_WritePin control of CS around fixed SPI transactions; accept the GPIO port, uint16_t pin mask, and GPIO_PinState, and restore the correct chip-select state between transactions.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 21,
+          "line_end": 21
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 23,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 34,
+          "line_end": 34
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 47,
+          "line_end": 47
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__adxl345/inputs/reference_drivers/adxl345_ref.c",
+          "line_start": 49,
+          "line_end": 49
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/gpio_timing/pack.md",
+          "line_start": 437,
+          "line_end": 437
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/gpio_timing/pack.md",
+          "line_start": 447,
+          "line_end": 448
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_gpio.c",
+          "line_start": 64,
+          "line_end": 65
+        }
+      ]
+    }
+  ]
+}

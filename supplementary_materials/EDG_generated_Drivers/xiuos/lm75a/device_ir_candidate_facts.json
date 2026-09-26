@@ -1,0 +1,659 @@
+{
+  "device_id": "lm75a",
+  "bus_type": "I2C",
+  "candidate_addresses": [
+    {
+      "value": "1001xxx",
+      "addressing_form": "7-bit slave address",
+      "is_default": null,
+      "description": "Slave address: four MSB bits preset to '1001', three LSB bits from A2, A1, A0 pins",
+      "evidence": {
+        "page": 8,
+        "snippet": "The other four MSB bits of the address data are preset to '1001' by hard wiring inside the LM75A."
+      }
+    }
+  ],
+  "candidate_registers": [
+    {
+      "name": "Conf",
+      "value": "01H",
+      "access": "R/W",
+      "size_bits": 8,
+      "description": "Configuration Register. Contains a single 8-bit data byte. To set the device operating condition. Default = 0.",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Conf | 01H | R/W | 00H | Configuration Register . Contains a single 8-bit data byte. To set the device operating condition. Default = 0."
+      }
+    },
+    {
+      "name": "Temp",
+      "value": "00H",
+      "access": "Read only",
+      "size_bits": 16,
+      "description": "Temperature Register. Contains two 8-bit data bytes. To store the measured Temp data.",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Temp | 00H | Read only | N/A | Temperature Register . Contains two 8-bit data bytes. To store the measured Temp data."
+      }
+    },
+    {
+      "name": "Tos",
+      "value": "03H",
+      "access": "R/W",
+      "size_bits": 16,
+      "description": "Over-temp Shutdown threshold Register. Contains two 8-bit data bytes. To store the over-temp shut-down Tos limit. Default = 80 °C.",
+      "semantic_roles": [
+        "threshold",
+        "coefficient"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Tos | 03H | R/W | 50 00H | Over-temp Shutdown threshold Register . Contains two 8-bit data bytes. To store the over-temp shut-down Tos limit. Default = 80 ° C."
+      }
+    },
+    {
+      "name": "Thyst",
+      "value": "02H",
+      "access": "R/W",
+      "size_bits": 16,
+      "description": "Hysteresis Register. Contains two 8-bit data bytes. To store the hysteresis Thyst limit. Default = 75 °C.",
+      "semantic_roles": [
+        "threshold",
+        "coefficient"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Thyst | 02H | R/W | 4B 00H | Hysteresis Register . Contains two 8-bit data bytes. To store the hysteresis Thyst limit. Default = 75 ° C."
+      }
+    }
+  ],
+  "candidate_bitfields": [
+    {
+      "register": "Conf",
+      "name": "Reserved",
+      "bit_range": "7:5",
+      "reset_value": "000",
+      "description": "Reserved for manufacturer use.",
+      "semantic_roles": [
+        "other"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "B7-B5 | Reserved | R/W | 000 | Reserved for the manufacterer use."
+      }
+    },
+    {
+      "register": "Conf",
+      "name": "OS Fault queue",
+      "bit_range": "4:3",
+      "reset_value": "00",
+      "description": "For OS Fault Queue programming. Programmable queue data = 0, 1, 2, 3 for queue value = 1, 2, 4, 6 respectively. Default = 0.",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "B4-B3 | OS Fault queue | R/W | 00 | For OS Fault Queue programming. Programmable queue data = 0, 1 ,2, 3 for queue value = 1, 2, 4, 6 respectively. Default = 0."
+      }
+    },
+    {
+      "register": "Conf",
+      "name": "OS Polarity",
+      "bit_range": "2",
+      "reset_value": "0",
+      "description": "For OS Polarity selection. 1 = OS active HIGH, 0 = OS active LOW (default).",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "B2 | OS Polarity | R/W | 0 | For OS Polarity selection. 1 = OS active HIGH, 0 = OS active LOW (default)."
+      }
+    },
+    {
+      "register": "Conf",
+      "name": "OS Comp/Interrupt",
+      "bit_range": "1",
+      "reset_value": "0",
+      "description": "For OS operation Mode selection. 1 = OS interrupt, 0 = OS comparator (default).",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "B1 | OS Comp/Interrupt | R/W | 0 | For OS operation Mode selection. 1 = OS interrupt, 0 = OS comparator (default)."
+      }
+    },
+    {
+      "register": "Conf",
+      "name": "Shut-down",
+      "bit_range": "0",
+      "reset_value": "0",
+      "description": "For Device Operation Mode selection. 1 = Shut-down, 0 = Normal (default).",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "B0 | Shut-down | R/W | 0 | For Device Operation Mode selection. 1 = Shut-down, 0 = Normal (default)."
+      }
+    },
+    {
+      "register": "Temp",
+      "name": "Temp data (11 bits)",
+      "bit_range": "15:5",
+      "reset_value": null,
+      "description": "11-bit 2's complement temperature data. MSB D10, LSB D0. Bits 4:0 are not used (zero).",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Temp data (11 bits) | Temp data (11 bits) | ... | D10 ... D0 | X X X X X"
+      }
+    },
+    {
+      "register": "Tos",
+      "name": "Tos data (9 bits)",
+      "bit_range": "15:7",
+      "reset_value": null,
+      "description": "9-bit 2's complement over-temp shutdown threshold data. MSB D8, LSB D0. Bits 6:0 are not used (zero).",
+      "semantic_roles": [
+        "threshold",
+        "coefficient"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "Tos data (9 bits) | Tos data (9 bits) | ... | D8 ... D0 | X X X X X X X"
+      }
+    },
+    {
+      "register": "Thyst",
+      "name": "Thyst data (9 bits)",
+      "bit_range": "15:7",
+      "reset_value": null,
+      "description": "9-bit 2's complement hysteresis data. MSB D8, LSB D0. Bits 6:0 are not used (zero).",
+      "semantic_roles": [
+        "threshold",
+        "coefficient"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "Thyst data (9 bits) | Thyst data (9 bits) | ... | D8 ... D0 | X X X X X X X"
+      }
+    }
+  ],
+  "candidate_operations": [
+    {
+      "flow_id": "write_conf",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write configuration register (1-byte data). Must include pointer byte.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Conf",
+          "details": "Write pointer byte 01H followed by configuration data byte.",
+          "evidence": {
+            "page": 13,
+            "snippet": "Figure 6. Write configuration register (1-byte data)."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 13,
+        "snippet": "Figure 6. Write configuration register (1-byte data)."
+      }
+    },
+    {
+      "flow_id": "read_conf_with_pointer",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read configuration register including pointer byte.",
+      "steps": [
+        {
+          "op": "write_then_read",
+          "target": "Conf",
+          "details": "Write pointer byte 01H, then read configuration data byte.",
+          "evidence": {
+            "page": 13,
+            "snippet": "Figure 7. Read configuration register including Pointer byte (1-byte data)."
+          }
+        }
+      ],
+      "outputs": [
+        "Conf data byte"
+      ],
+      "evidence": {
+        "page": 13,
+        "snippet": "Figure 7. Read configuration register including Pointer byte (1-byte data)."
+      }
+    },
+    {
+      "flow_id": "read_conf_preset_pointer",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read configuration register with preset pointer (no pointer byte needed).",
+      "steps": [
+        {
+          "op": "read",
+          "target": "Conf",
+          "details": "Read configuration data byte directly if pointer already set to 01H.",
+          "evidence": {
+            "page": 13,
+            "snippet": "Figure 8. Read configuration register with preset Pointer (1-byte data)."
+          }
+        }
+      ],
+      "outputs": [
+        "Conf data byte"
+      ],
+      "evidence": {
+        "page": 13,
+        "snippet": "Figure 8. Read configuration register with preset Pointer (1-byte data)."
+      }
+    },
+    {
+      "flow_id": "write_tos_thyst",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write Tos or Thyst register (2-byte data). Must include pointer byte.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Tos or Thyst",
+          "details": "Write pointer byte (03H for Tos, 02H for Thyst) followed by MS byte then LS byte.",
+          "evidence": {
+            "page": 14,
+            "snippet": "Figure 9. Write Tos or Thyst register (2-byte data)."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 14,
+        "snippet": "Figure 9. Write Tos or Thyst register (2-byte data)."
+      }
+    },
+    {
+      "flow_id": "read_temp_tos_thyst_with_pointer",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read Temp, Tos, or Thyst register including pointer byte (2-byte data).",
+      "steps": [
+        {
+          "op": "write_then_read",
+          "target": "Temp/Tos/Thyst",
+          "details": "Write pointer byte (00H for Temp, 03H for Tos, 02H for Thyst), then read MS byte then LS byte.",
+          "evidence": {
+            "page": 14,
+            "snippet": "Figure 10. Read Temp or Tos or Thyst register including Pointer byte (2-byte data)."
+          }
+        }
+      ],
+      "outputs": [
+        "MS byte",
+        "LS byte"
+      ],
+      "evidence": {
+        "page": 14,
+        "snippet": "Figure 10. Read Temp or Tos or Thyst register including Pointer byte (2-byte data)."
+      }
+    },
+    {
+      "flow_id": "read_temp_tos_thyst_preset_pointer",
+      "kind": "read",
+      "channels": [],
+      "summary": "Read Temp, Tos, or Thyst register with preset pointer (no pointer byte needed).",
+      "steps": [
+        {
+          "op": "read",
+          "target": "Temp/Tos/Thyst",
+          "details": "Read MS byte then LS byte directly if pointer already set to desired register.",
+          "evidence": {
+            "page": 14,
+            "snippet": "Figure 11. Read Temp or Tos or Thyst register with preset Pointer (2-byte data)."
+          }
+        }
+      ],
+      "outputs": [
+        "MS byte",
+        "LS byte"
+      ],
+      "evidence": {
+        "page": 14,
+        "snippet": "Figure 11. Read Temp or Tos or Thyst register with preset Pointer (2-byte data)."
+      }
+    },
+    {
+      "flow_id": "power_up_default",
+      "kind": "init",
+      "channels": [],
+      "summary": "Power-up default state: normal mode, OS comparator, Tos=80°C, Thyst=75°C, OS active LOW, pointer=0.",
+      "steps": [
+        {
+          "op": "other",
+          "target": null,
+          "details": "Device powers up in default state. No user action required for basic operation.",
+          "evidence": {
+            "page": 11,
+            "snippet": "The LM75A always powers-up in its default state with: Normal operation mode, OS comparator mode, Tos = 80 ° C, Thyst = 75 ° C, OS output active state = LOW, Pointer value = 0."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 11,
+        "snippet": "The LM75A always powers-up in its default state with: Normal operation mode, OS comparator mode, Tos = 80 ° C, Thyst = 75 ° C, OS output active state = LOW, Pointer value = 0."
+      }
+    },
+    {
+      "flow_id": "first_conversion_wait",
+      "kind": "other",
+      "channels": [],
+      "summary": "Wait for first conversion after power-up or return to normal mode.",
+      "steps": [
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait about 100 ms for first conversion to complete before reading temperature.",
+          "evidence": {
+            "page": 7,
+            "snippet": "The temp reading data is not available until the first conversion is completed in about 100 ms."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 7,
+        "snippet": "The temp reading data is not available until the first conversion is completed in about 100 ms."
+      }
+    }
+  ],
+  "candidate_channels": [
+    {
+      "id": "temperature",
+      "description": "Ambient temperature measurement in degrees Celsius.",
+      "source": "Temp register 11-bit data",
+      "formula_id": "temp_conversion",
+      "evidence": {
+        "page": 9,
+        "snippet": "If the Temp data MSB bit D10 = 0 then the temperature is positive and Temp value ( ° C) = + (Temp data) * 0.125 ° C"
+      }
+    }
+  ],
+  "candidate_formulae": [
+    {
+      "name": "temp_conversion",
+      "formula": "If D10=0: Temp_C = + (Temp_data) * 0.125; If D10=1: Temp_C = - (2's complement of Temp_data) * 0.125",
+      "inputs": [
+        "Temp_data (11-bit 2's complement)"
+      ],
+      "output": "Temperature in °C",
+      "evidence": {
+        "page": 9,
+        "snippet": "If the Temp data MSB bit D10 = 0 then the temperature is positive and Temp value ( ° C) = + (Temp data) * 0.125 ° C. If the Temp data MSB bit D10 = 1 then the temperature is negative and Temp value ( ° C) = - (2's complement of Temp data) * 0.125 ° C"
+      }
+    },
+    {
+      "name": "limit_conversion",
+      "formula": "If D8=0: Limit_C = + (Limit_data) * 0.5; If D8=1: Limit_C = - (2's complement of Limit_data) * 0.5",
+      "inputs": [
+        "Limit_data (9-bit 2's complement)"
+      ],
+      "output": "Limit temperature in °C",
+      "evidence": {
+        "page": 10,
+        "snippet": "The Tos and Thyst table (Table 10) shows examples of the limit data and value."
+      }
+    }
+  ],
+  "candidate_timing_constraints": [
+    {
+      "name": "Conversion time",
+      "value": 100,
+      "unit": "ms",
+      "condition": "Normal mode",
+      "evidence": {
+        "page": 5,
+        "snippet": "T CON | Temperature conversion | Normal mode | - | 100 | - | ms"
+      }
+    },
+    {
+      "name": "SCL clock period",
+      "value": 2.5,
+      "unit": "µs",
+      "condition": "I2C communication",
+      "evidence": {
+        "page": 6,
+        "snippet": "t CLK | SCL clock period | See timing diagram (Figure 4) | 2.5 | - | - | m s"
+      }
+    },
+    {
+      "name": "SCL HIGH pulse width",
+      "value": 0.6,
+      "unit": "µs",
+      "condition": "I2C communication",
+      "evidence": {
+        "page": 6,
+        "snippet": "t HIGH | SCL HIGH pulse width | | 0.6 | - | - | m s"
+      }
+    },
+    {
+      "name": "SCL LOW pulse width",
+      "value": 1.3,
+      "unit": "µs",
+      "condition": "I2C communication",
+      "evidence": {
+        "page": 6,
+        "snippet": "t LOW | SCL LOW pulse width | | 1.3 | - | - | m s"
+      }
+    },
+    {
+      "name": "Start hold time",
+      "value": 100,
+      "unit": "ns",
+      "condition": "I2C communication",
+      "evidence": {
+        "page": 6,
+        "snippet": "t HD:STA | Start Hold time | | 100 | - | - | ns"
+      }
+    },
+    {
+      "name": "Data set-up time",
+      "value": 100,
+      "unit": "ns",
+      "condition": "I2C communication",
+      "evidence": {
+        "page": 6,
+        "snippet": "t SU:DAT | Data set-up time | | 100 | - | - | ns"
+      }
+    },
+    {
+      "name": "Data hold time",
+      "value": 0,
+      "unit": "ns",
+      "condition": "I2C communication",
+      "evidence": {
+        "page": 6,
+        "snippet": "t HD;DAT | Data hold time | | 0 | - | - | ns"
+      }
+    },
+    {
+      "name": "Stop set-up time",
+      "value": 100,
+      "unit": "ns",
+      "condition": "I2C communication",
+      "evidence": {
+        "page": 6,
+        "snippet": "t SU;STO | Stop set-up time | | 100 | - | - | ns"
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 8,
+      "snippet": "The LM75A slave address on the I 2 C-bus is partially defined by the logic applied to the device address pins A2, A1 and A0. Each of them is typically connected either to GND for logic 0, or to V CC for logic 1. These pins represent the three LSB bits of the device 7-bit address. The other four MSB bits of the address data are preset to '1001' by hard wiring inside the LM75A."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 8,
+      "snippet": "Conf | 01H | R/W | 00H | Configuration Register . Contains a single 8-bit data byte. To set the device operating condition. Default = 0."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 8,
+      "snippet": "Temp | 00H | Read only | N/A | Temperature Register . Contains two 8-bit data bytes. To store the measured Temp data."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 8,
+      "snippet": "Tos | 03H | R/W | 50 00H | Over-temp Shutdown threshold Register . Contains two 8-bit data bytes. To store the over-temp shut-down Tos limit. Default = 80 ° C."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 8,
+      "snippet": "Thyst | 02H | R/W | 4B 00H | Hysteresis Register . Contains two 8-bit data bytes. To store the hysteresis Thyst limit. Default = 75 ° C."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 9,
+      "snippet": "B7-B5 | Reserved | R/W | 000 | Reserved for the manufacterer use."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 9,
+      "snippet": "B4-B3 | OS Fault queue | R/W | 00 | For OS Fault Queue programming. Programmable queue data = 0, 1 ,2, 3 for queue value = 1, 2, 4, 6 respectively. Default = 0."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 9,
+      "snippet": "B2 | OS Polarity | R/W | 0 | For OS Polarity selection. 1 = OS active HIGH, 0 = OS active LOW (default)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 9,
+      "snippet": "B1 | OS Comp/Interrupt | R/W | 0 | For OS operation Mode selection. 1 = OS interrupt, 0 = OS comparator (default)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 9,
+      "snippet": "B0 | Shut-down | R/W | 0 | For Device Operation Mode selection. 1 = Shut-down, 0 = Normal (default)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 9,
+      "snippet": "Temp data (11 bits) | ... | D10 ... D0 | X X X X X"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 10,
+      "snippet": "Tos data (9 bits) | ... | D8 ... D0 | X X X X X X X"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 10,
+      "snippet": "Thyst data (9 bits) | ... | D8 ... D0 | X X X X X X X"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 9,
+      "snippet": "If the Temp data MSB bit D10 = 0 then the temperature is positive and Temp value ( ° C) = + (Temp data) * 0.125 ° C. If the Temp data MSB bit D10 = 1 then the temperature is negative and Temp value ( ° C) = - (2's complement of Temp data) * 0.125 ° C"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 5,
+      "snippet": "T CON | Temperature conversion | Normal mode | - | 100 | - | ms"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 6,
+      "snippet": "t CLK | SCL clock period | See timing diagram (Figure 4) | 2.5 | - | - | m s"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 6,
+      "snippet": "t HIGH | SCL HIGH pulse width | | 0.6 | - | - | m s"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 6,
+      "snippet": "t LOW | SCL LOW pulse width | | 1.3 | - | - | m s"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 6,
+      "snippet": "t HD:STA | Start Hold time | | 100 | - | - | ns"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 6,
+      "snippet": "t SU:DAT | Data set-up time | | 100 | - | - | ns"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 6,
+      "snippet": "t HD;DAT | Data hold time | | 0 | - | - | ns"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 6,
+      "snippet": "t SU;STO | Stop set-up time | | 100 | - | - | ns"
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 13,
+      "snippet": "Figure 6. Write configuration register (1-byte data)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 13,
+      "snippet": "Figure 7. Read configuration register including Pointer byte (1-byte data)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 13,
+      "snippet": "Figure 8. Read configuration register with preset Pointer (1-byte data)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 14,
+      "snippet": "Figure 9. Write Tos or Thyst register (2-byte data)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 14,
+      "snippet": "Figure 10. Read Temp or Tos or Thyst register including Pointer byte (2-byte data)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 14,
+      "snippet": "Figure 11. Read Temp or Tos or Thyst register with preset Pointer (2-byte data)."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 11,
+      "snippet": "The LM75A always powers-up in its default state with: Normal operation mode, OS comparator mode, Tos = 80 ° C, Thyst = 75 ° C, OS output active state = LOW, Pointer value = 0."
+    },
+    {
+      "source_id": "lm75a_datasheet",
+      "page": 7,
+      "snippet": "The temp reading data is not available until the first conversion is completed in about 100 ms."
+    }
+  ],
+  "requires_human": [
+    "OS pin is optional; external pull-up resistor needed if used.",
+    "Address pins A2-A0 must not be left floating; they should be tied to GND or VCC.",
+    "Tos must be greater than Thyst for defined OS output behavior."
+  ]
+}

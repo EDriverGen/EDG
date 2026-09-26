@@ -1,0 +1,127 @@
+{
+  "task_package_id": "nuttx_generic_devfs__mpu6050__i2c1_polling",
+  "rtos": "nuttx",
+  "device": "mpu6050",
+  "bus": "i2c",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/mpu6050/nuttx",
+  "task_package": {
+    "package_id": "nuttx_generic_devfs__mpu6050__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/nuttx_generic_devfs.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/nuttx_generic_devfs_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mpu6050.json",
+    "reference_driver_root": "DriverGen/data/references/mpu6050/nuttx",
+    "fixed_task_context": {},
+    "notes": [
+      "Manual task package completing the fixed-context RTOS/device matrix; fixed_task_context is resolved from the referenced layers."
+    ],
+    "evidence": [
+      "DriverGen/data/references/mpu6050/nuttx",
+      "DriverGen/data/raw/mpu6050"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "nuttx_generic_devfs",
+    "board": "nucleo-f103rb",
+    "board_alias": "nuttx_f103rb",
+    "rtos": "nuttx",
+    "rtos_bundle": "nuttx",
+    "integration": "public_i2c_master_and_gpio_char_driver",
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "1"
+        ],
+        "spi": [
+          "0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "/dev/ttyS1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "optional"
+    },
+    "notes": [
+      "This platform targets the NuttX nucleo-f103rb board while using i2c_master lower-half devices and GPIO character devices.",
+      "Task packages follow NuttX reference drivers: board_i2cbus_initialize for I2C, stm32_spibus_initialize for SPI, /dev/ttyS1 for UART, /dev/gpio* for GPIO."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/i2c/i2c_master.h",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/spi/spi.h",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/ioexpander/gpio.h",
+      "DriverGen/data/rtos/nuttx-project/apps/system/i2c/i2c_main.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "nuttx_generic_devfs_i2c1_polling",
+    "platform_id": "nuttx_generic_devfs",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "1",
+    "backend": "NuttX i2c_master lower-half",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "I2C bus 1 on STM32F1. The RTOS contract provides stm32_i2cbus_initialize as the correct binding."
+    ],
+    "evidence": [
+      "DriverGen/data/references/bh1750/nuttx/bh1750_sample_ref.c",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/i2c/i2c_master.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "mpu6050",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x68",
+      "alternates": [
+        "0x69"
+      ],
+      "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver only needs I2C access to power management and sensor data registers."
+      ]
+    },
+    "optional_attachment": {
+      "ad0_pin": "optional",
+      "int_pin": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers wake the part from sleep and switch to PLL clocking before data reads."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mpu6050/MPU6050.pdf",
+      "DriverGen/data/raw/mpu6050/MPU6050_RegisterMap.pdf",
+      "DriverGen/data/references/mpu6050/*/*_ref.h"
+    ]
+  }
+}

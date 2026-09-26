@@ -1,0 +1,149 @@
+{
+  "source": "flow_risk_repair",
+  "cache_hit": true,
+  "cache_key": "e04a1a9430da896b",
+  "audit_findings": [
+    {
+      "flow_id": "read_internal_temperature",
+      "summary": "Read internal temperature channel: high byte (0x00) and low byte (0x29).",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Device is in active mode (init sets RUN/STOP=0); continuous conversion is running. No trigger needed.",
+          "action": "None."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Added poll_until step checking Status register (0x02) BUSY bit (bit 7) is 0 before reading temperature registers. Datasheet page 30: 'Bit 7 - BUSY - This bit indicates that the ADC is currently converting.'",
+          "action": "Added poll_until step."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Two write_then_read steps read high byte (0x00) and low byte (0x29).",
+          "action": "None."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or acknowledge needed for temperature data registers.",
+          "action": "None."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Configuration already set in init; no additional calibration needed for internal channel.",
+          "action": "None."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Outputs specify byte_source from high and low byte registers.",
+          "action": "None."
+        }
+      ]
+    },
+    {
+      "flow_id": "read_external_diode_1_temperature",
+      "summary": "Read external diode 1 temperature: high byte (0x01) and low byte (0x10).",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Device is in active mode; continuous conversion is running.",
+          "action": "None."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Added poll_until step checking Status register (0x02) BUSY bit is 0 before reading. Datasheet page 30: 'Bit 7 - BUSY - This bit indicates that the ADC is currently converting.'",
+          "action": "Added poll_until step."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Two write_then_read steps read high byte (0x01) and low byte (0x10).",
+          "action": "None."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or acknowledge needed.",
+          "action": "None."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Configuration already set; no additional calibration needed for default settings.",
+          "action": "None."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Outputs specify byte_source from high and low byte registers.",
+          "action": "None."
+        }
+      ]
+    },
+    {
+      "flow_id": "read_external_diode_2_temperature",
+      "summary": "Read external diode 2 temperature: high byte (0x23) and low byte (0x24).",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Device is in active mode; continuous conversion is running.",
+          "action": "None."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Added poll_until step checking Status register (0x02) BUSY bit is 0 before reading. Datasheet page 30: 'Bit 7 - BUSY - This bit indicates that the ADC is currently converting.'",
+          "action": "Added poll_until step."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Two write_then_read steps read high byte (0x23) and low byte (0x24).",
+          "action": "None."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or acknowledge needed.",
+          "action": "None."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Configuration already set; no additional calibration needed.",
+          "action": "None."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Outputs specify byte_source from high and low byte registers.",
+          "action": "None."
+        }
+      ]
+    },
+    {
+      "flow_id": "config_register_coverage",
+      "summary": "Writable setup/config/control/mode register(s) are listed but not covered by init/read operation flows and no explicit default-configuration note is present: Filter Control (0x40).",
+      "checks": [
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Filter Control register (0x40) default is 0x00 (filter disabled). Datasheet page 42: 'The Filter Configuration Register controls the digital filter on the External Diode 1 channel.' Default value 00h. Init flow writes Configuration and Conversion Rate registers with default values; Filter Control is left at default (disabled). Added note in init flow that Filter Control is left at default 0x00 (disabled).",
+          "action": "Added note in init flow that Filter Control register (0x40) is left at default 0x00 (filter disabled)."
+        }
+      ]
+    }
+  ],
+  "previous_audit_cache_key": "d0a76a76ddbb3064",
+  "applied": true,
+  "updated_by": "flow_risk_repair",
+  "changed_fields": []
+}

@@ -1,0 +1,97 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 37.103,
+  "plan_summary": {
+    "device_id": "max31855",
+    "rtos_id": "zephyr",
+    "eval_class": "multi_channel",
+    "bus_kind": "spi",
+    "plan_hash": "7028b5fe59fc0d74",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 4,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 37.025
+  },
+  "consistency": {
+    "overall": "mixed",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 1,
+    "consistent_count": 3,
+    "summary": "4 stim; 3 L1/L2; 1 llm_only",
+    "stimuli": [
+      {
+        "name": "mechanical_spi_stream_bitfield_1",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=thermocouple:derivation `(((1000 >> 13) & 1) * (-8192) + ((1000 & 0x1FFF) ^ ((1000 >> 13) & 1) * 0x2000)) * 250 // 1000` -> 250 == expected 250.0; ch=temp_local:derivation `(((1073 >> 11) & 1) * (-2048) + ((1073 & 0x7FF) ^ ((1073 >> 11) & 1) * 0x800)) * 625 // 10000` -> 67 == expected 67.0",
+        "warnings": []
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_2",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=thermocouple:derivation `(((1257 >> 13) & 1) * (-8192) + ((1257 & 0x1FFF) ^ ((1257 >> 13) & 1) * 0x2000)) * 250 // 1000` -> 314 == expected 314.0; ch=temp_local:derivation `(((1330 >> 11) & 1) * (-2048) + ((1330 & 0x7FF) ^ ((1330 >> 11) & 1) * 0x800)) * 625 // 10000` -> 83 == expected 83.0",
+        "warnings": []
+      },
+      {
+        "name": "mechanical_spi_stream_bitfield_signed_negative",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=thermocouple:derivation `(-48 * 1) // 4` -> -12 == expected -12.0; ch=temp_local:derivation `(-48 * 1) // 16` -> -3 == expected -3.0",
+        "warnings": []
+      },
+      {
+        "name": "mechanical_spi_stream_fault_status",
+        "verdict": "llm_only",
+        "layer": "L3",
+        "evidence": "multi_channel stim incomplete",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 1,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 1,
+    "summary": "1/1 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "write_prefix_any_of": [],
+          "note": "read_temperatures: direct read read",
+          "source": "operation_flows[0].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "spi1",
+          "note": "read_temperatures: direct read"
+        },
+        "reason": "read-any match (no prefixes required)",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "note": "read_temperatures: direct read"
+      }
+    ]
+  }
+}

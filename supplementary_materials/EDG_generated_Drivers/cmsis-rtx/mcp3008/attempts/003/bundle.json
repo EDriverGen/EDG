@@ -1,0 +1,112 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef MCP3008_H\n#define MCP3008_H\n\n#include <stdint.h>\n#include \"stm32f1xx_hal.h\"\n\n#include \"cmsis_rtx.h\"\nstruct mcp3008_dev {\n    SPI_HandleTypeDef *hspi;\n};\n\nvoid mcp3008_init(struct mcp3008_dev *dev, void *bus_handle);\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out);\n\n#endif\n",
+  "driver_source": "#include \"mcp3008.h\"\n#include <stdint.h>\n\n#include \"cmsis_rtx.h\"\nvoid mcp3008_init(struct mcp3008_dev *dev, void *bus_handle) {\n    dev->hspi = (SPI_HandleTypeDef *)bus_handle;\n}\n\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out) {\n    uint8_t tx[3];\n    uint8_t rx[3];\n    tx[0] = 0x01;\n    tx[1] = 0x80 | (channel << 4);\n    tx[2] = 0x00;\n    \n    if (HAL_SPI_TransmitReceive(dev->hspi, tx, rx, 3, 100) != HAL_OK) {\n        return -1;\n    }\n    \n    *out = ((uint16_t)(rx[1] & 0x03) << 8) | rx[2];\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "dev_struct_type": "struct mcp3008_dev",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel ch0: write command"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel ch0: read response"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x90",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel ch1: write command"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel ch1: read response"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x7F",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 1023,
+          "ch1": 0
+        },
+        "derivation": "ch0: high_byte=0x7F, low_byte=0xFF => ((0x7F & 0x03) << 8) | 0xFF = (0x03 << 8) | 0xFF = 0x3FF = 1023. ch1: not read in this stimulus, default 0."
+      },
+      {
+        "name": "ch1_quarter_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x40",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 0,
+          "ch1": 1024
+        },
+        "derivation": "ch1: high_byte=0x40, low_byte=0x00 => ((0x40 & 0x03) << 8) | 0x00 = (0x00 << 8) | 0x00 = 0. Wait, that gives 0. Let's recalc: For ch1, the command is 0x01 0x90 0x00, response bytes: dummy=0x00, high_byte=0x40, low_byte=0x00. high_byte & 0x03 = 0x00, so raw = 0. That is not quarter scale. Choose different bytes: high_byte=0x41, low_byte=0x00 => ((0x41 & 0x03) << 8) | 0x00 = (0x01 << 8) | 0x00 = 256. So mock_preload stream for ch1 should be [0x00, 0x41, 0x00]. But the stimulus is for ch1 only, so we set stream accordingly. However, the mock_preload is per stimulus, and the driver will send command for ch1 and read back these bytes. So set stream = [0x00, 0x41, 0x00]. Then expected_channels.ch1 = 256."
+      }
+    ]
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "command",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 2.637,
+  "prompt_chars": 35953,
+  "raw_response": "{\"driver_header\": \"#ifndef MCP3008_H\\n#define MCP3008_H\\n\\n#include <stdint.h>\\n#include \\\"stm32f1xx_hal.h\\\"\\n\\nstruct mcp3008_dev {\\n    SPI_HandleTypeDef *hspi;\\n};\\n\\nvoid mcp3008_init(struct mcp3008_dev *dev, void *bus_handle);\\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"mcp3008.h\\\"\\n#include \\\"cmsis_rtx.h\\\"\\n#include <stdint.h>\\n\\nvoid mcp3008_init(struct mcp3008_dev *dev, void *bus_handle) {\\n    dev->hspi = (SPI_HandleTypeDef *)bus_handle;\\n}\\n\\nint mcp3008_read_channel(struct mcp3008_dev *dev, uint8_t channel, uint16_t *out) {\\n    uint8_t tx[3];\\n    uint8_t rx[3];\\n    tx[0] = 0x01;\\n    tx[1] = 0x80 | (channel << 4);\\n    tx[2] = 0x00;\\n    \\n    if (HAL_SPI_TransmitReceive(dev->hspi, tx, rx, 3, 100) != HAL_OK) {\\n        return -1;\\n    }\\n    \\n    *out = ((uint16_t)(rx[1] & 0x03) << 8) | rx[2];\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "31b1a2715dd6205a"
+}

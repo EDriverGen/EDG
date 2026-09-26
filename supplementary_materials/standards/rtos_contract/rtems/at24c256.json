@@ -1,0 +1,169 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtems__at24c256",
+  "device_id": "at24c256",
+  "rtos_id": "rtems",
+  "bus": "i2c",
+  "scope": "rtems fixed task for at24c256; bus=i2c, board=generic_devfs; only APIs needed by copied reference driver and fixed task configuration.",
+  "api_contract": {
+    "headers": [
+      "fcntl.h",
+      "unistd.h",
+      "sys/ioctl.h"
+    ],
+    "types": {
+      "resource": "file descriptor / caller-provided GPIO pin",
+      "status": "int, ssize_t, or rtems_status_code according to operation"
+    },
+    "task_binding": {
+      "bus": "i2c",
+      "instance": "/dev/i2c-0 7-bit",
+      "mode": "polling",
+      "rtos": "rtems generic_devfs"
+    },
+    "operations": [
+      {
+        "name": "open",
+        "signature": "int open(const char *pathname, int flags, ...)"
+      },
+      {
+        "name": "ioctl",
+        "signature": "int ioctl(int fd, unsigned long request, ...)"
+      },
+      {
+        "name": "close",
+        "signature": "int close(int fd)"
+      },
+      {
+        "name": "I2C_RDWR",
+        "type": "struct i2c_rdwr_ioctl_data; struct i2c_msg"
+      },
+      {
+        "name": "rtems_task_wake_after",
+        "signature": "rtems_status_code rtems_task_wake_after(rtems_interval ticks)",
+        "time": "RTEMS_MILLISECONDS_TO_TICKS(ms)"
+      }
+    ],
+    "preconditions": "Use task_requirements fixed bus and copied reference-driver preconditions; the task owns only its assigned bus."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Provide the fixed RTEMS devfs I2C instance /dev/i2c-0 with 7-bit addressing; the reference device structure stores bus_path and address, and the driver does not reinitialize the controller.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.h",
+          "line_start": 4,
+          "line_end": 4
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 74,
+          "line_end": 74
+        }
+      ]
+    },
+    {
+      "id": "descriptor_lifecycle",
+      "category": "bus_binding",
+      "requirement": "Obtain a descriptor with open(path, O_RDWR) and close(fd) after I/O; retain the POSIX file interfaces needed to handle open, close, and error returns.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 74,
+          "line_end": 74
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 77,
+          "line_end": 77
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/fcntl.h",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/unistd.h",
+          "line_start": 1,
+          "line_end": 1
+        }
+      ]
+    },
+    {
+      "id": "i2c_transaction",
+      "category": "polling_transport_or_io",
+      "requirement": "Support ioctl(fd, I2C_RDWR, &rdwr), where rdwr is {struct i2c_msg *msgs; uint32_t nmsgs;}. Messages carry the 7-bit slave address, read/write flags, length, and data buffer; the ioctl result indicates success/failure.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 45,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 76,
+          "line_end": 76
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/i2c/pack.md",
+          "line_start": 761,
+          "line_end": 768
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/i2c/pack.md",
+          "line_start": 1041,
+          "line_end": 1044
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/linux/i2c-dev.h",
+          "line_start": 16,
+          "line_end": 19
+        }
+      ]
+    },
+    {
+      "id": "driver_wait",
+      "category": "driver_wait",
+      "requirement": "Retain rtems_task_wake_after(RTEMS_MILLISECONDS_TO_TICKS(ms)) and its millisecond-to-tick semantics for device waits inside the reference driver.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 48,
+          "line_end": 48
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/rtems.h",
+          "line_start": 27,
+          "line_end": 30
+        }
+      ]
+    }
+  ]
+}

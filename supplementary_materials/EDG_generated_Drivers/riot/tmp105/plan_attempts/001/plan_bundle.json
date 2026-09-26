@@ -1,0 +1,76 @@
+{
+  "device_id": "tmp105",
+  "rtos_id": "riot",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "tmp105_init(&g_eval_dev, I2C_DEV(0), 0x48)",
+    "read_call": "tmp105_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "tmp105_t",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x19",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x19 0x00 decode to raw=((((0x19 << 8) | 0x00) >> 4) & 0xFFF) = 400; public value in milli_degC is (400 * 125) // 2 = 25000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 4) & 0xFFF) = 0; public value in milli_degC is (0 * 125) // 2 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xE7",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -25000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xE7 0x00 decode to raw=(((((0xE7 << 8) | 0x00) >> 4) & 0xFFF) - 4096) = -400; public value in milli_degC is (-400 * 125) // 2 = -25000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "5af389716aa0b072",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.399,
+  "prompt_chars": 47842,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"tmp105_init(&g_eval_dev, I2C_DEV(0), 0x48)\", \"read_call\": \"tmp105_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"tmp105_t\", \"init_extra_setup_c\": \"\", \"preamble_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temperature: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x01\", \"0x90\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw = 0x0190 = 400; (((400 >> 4) & 0xFFF) * 625) // 10 = (25 * 625) // 10 = 15625 // 10 = 1562? Wait recalc: 400 >> 4 = 25; 25 * 625 = 15625; 15625 // 10 = 1562.5 -> integer 1562. But expected 25000? Let's recalc: 25°C * 1000 = 25000 milli_degC. The formula: (((raw >> 4) & 0xFFF) * 625) // 10. For raw=400: (25 * 625) // 10 = 15625 // 10 = 1562. That's 1562 milli_degC = 1.562°C, not 25°C. Need different raw. For 25°C: ADC_CODE = 25 / 0.0625 = 400. So raw = 400 << 4 = 6400 = 0x1900. So mock_preload bytes: [0x19, 0x00]. Then raw=6400; (6400 >> 4) & 0xFFF = 400; 400 * 625 = 250000; 250000 // 10 = 25000. Correct.\"}, {\"name\": \"zero_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw = 0x0000 = 0; (((0 >> 4) & 0xFFF) * 625) // 10 = 0\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xFF\", \"0x60\"]}, \"expected_read_raw\": -10000, \"derivation\": \"raw = 0xFF60 = -160 (signed 12-bit after shift? Actually raw is 16-bit signed, but effective 12-bit two's complement. raw = 0xFF60 = -160 as int16_t. Then raw >> 4 = -10; (-10 & 0xFFF) = 4086; 4086 * 625 = 2553750; 2553750 // 10 = 255375; but sign? Let's do properly: raw = 0xFF60 = -160 (int16_t). raw >> 4 = -10 (arithmetic shift). (-10) & 0xFFF = 4086 (unsigned). Then 4086 * 625 = 2553750; 2553750 // 10 = 255375; but that's positive. Need to handle sign. Better: use formula with sign extension: sign_extend_from_bit 11. raw = 0xFF60, bits 11-0 = 0xF60 = 3936 unsigned, but sign bit 11 is 1, so value = 3936 - 4096 = -160. Then (-160) * 625 // 10 = -10000. So expected_read_raw = -10000.\"}]}}"
+}

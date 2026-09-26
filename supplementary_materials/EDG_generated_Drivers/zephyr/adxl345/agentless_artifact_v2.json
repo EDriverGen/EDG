@@ -1,0 +1,3628 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "zephyr",
+    "board": "stm32f103_mini",
+    "mcu_family": "stm32f1",
+    "integration": "public_driver_api_and_devicetree",
+    "integration_style": "zephyr_core_plus_public_driver_headers",
+    "bus_intent": {
+      "canonical_bus": "spi",
+      "connection_type": "spi",
+      "mode": "polling",
+      "backend": "Zephyr public SPI device API",
+      "address_mode": "chip-select",
+      "bus_instance": "spi1"
+    },
+    "device_id": "adxl345",
+    "device_ir_hash": "8e16cada1d13796c",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "zephyr:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/zephyr",
+      "roles": [
+        "board_integration",
+        "driver_framework",
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "zephyr",
+      "sha": "56f8a30c"
+    }
+  ],
+  "slots": {
+    "spi.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "SPI_INIT"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "spi.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "spi_config"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "spi.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "spi_config",
+            "kind": "type_ref",
+            "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+            "source_slot": "spi.transaction_end",
+            "source_symbol": "spi_release",
+            "signature": "__syscall int spi_release(const struct device *dev, const struct spi_config *config)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "spi.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "spi_transceive_dt"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "HAL_Delay"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "multi_symbol_evidence",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_api_return_status_convention",
+        "confidence": 0.75,
+        "symbols": [
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+            "source_slot": "spi.transfer",
+            "source_symbol": "spi_transceive_dt",
+            "signature": "static inline int spi_transceive_dt(const struct spi_dt_spec *spec, const struct spi_buf_set *tx_bufs, const struct spi_buf_set *rx_bufs)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+            "source_slot": "spi.transaction_end",
+            "source_symbol": "spi_release",
+            "signature": "__syscall int spi_release(const struct device *dev, const struct spi_config *config)",
+            "score": 1.0,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+        ]
+      },
+      "confidence": 0.75
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "spi1",
+        "fields": {
+          "bus_instance": "spi1",
+          "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(spi1))",
+          "backend": "Zephyr public SPI device API",
+          "mode": "polling",
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "integration.pin_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "fixed_attachment",
+      "status": "covered",
+      "bindings": [
+        "gpio_dt_spec"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "spi.cs_control": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "driver_framework"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "_spi_context_cs_control"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.65
+    },
+    "spi.transaction_begin": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "spi.transaction_end": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "spi_release"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 1.0
+    },
+    "spi.transfer_registers": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "spi",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    }
+  },
+  "symbols": {
+    "spi.acquire_or_bind": {
+      "slot_id": "spi.acquire_or_bind",
+      "symbol": "SPI_INIT",
+      "kind": "macro",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": null,
+      "signature_source": "parser",
+      "declared_in": "zephyr:single:0::drivers/spi/spi_opentitan.c",
+      "implemented_in": null,
+      "required_headers": [],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "zephyr:single:0",
+          "path": "drivers/spi/spi_opentitan.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "path-tok=2+3.0",
+        "root-role+3.0",
+        "bus[spi]+2.0"
+      ]
+    },
+    "spi.transfer": {
+      "slot_id": "spi.transfer",
+      "symbol": "spi_transceive_dt",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "static inline int spi_transceive_dt(const struct spi_dt_spec *spec, const struct spi_buf_set *tx_bufs, const struct spi_buf_set *rx_bufs)",
+      "signature_source": "parser",
+      "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "include/zephyr/drivers/spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "zephyr:single:0",
+          "path": "include/zephyr/drivers/spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0"
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void HAL_Delay(__IO uint32_t Delay)",
+      "signature_source": "parser",
+      "declared_in": "zephyr:single:0::soc/st/stm32/common/stm32cube_hal.c",
+      "implemented_in": null,
+      "required_headers": [
+        "soc/st/stm32/common/stm32cube_hal.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "zephyr:single:0",
+          "path": "soc/st/stm32/common/stm32cube_hal.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=2+4.0",
+        "root-role+3.0",
+        "port-specific-source"
+      ]
+    },
+    "spi.transaction_end": {
+      "slot_id": "spi.transaction_end",
+      "symbol": "spi_release",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "__syscall int spi_release(const struct device *dev, const struct spi_config *config)",
+      "signature_source": "parser",
+      "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "include/zephyr/drivers/spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "zephyr:single:0",
+          "path": "include/zephyr/drivers/spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0"
+      ]
+    },
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "symbol": "spi_config",
+      "kind": "struct",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": null,
+      "signature_source": "parser",
+      "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+      "implemented_in": null,
+      "required_headers": [
+        "include/zephyr/drivers/spi.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "zephyr:single:0",
+          "path": "include/zephyr/drivers/spi.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:The candidate spi_config is a struct from the public Zephyr SPI header, matching the slot's expected kind and bus. It is"
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "symbol": "gpio_dt_spec",
+      "kind": "struct",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": null,
+      "signature_source": "parser",
+      "declared_in": "zephyr:single:0::include/zephyr/drivers/gpio.h",
+      "implemented_in": null,
+      "required_headers": [
+        "include/zephyr/drivers/gpio.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "zephyr:single:0",
+          "path": "include/zephyr/drivers/gpio.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "root-role+3.0",
+        "integration-prefers-task-context",
+        "llm_bound:The candidate matches the slot intent for a devicetree GPIO spec, is a struct from the Zephyr public GPIO header, and al"
+      ]
+    },
+    "spi.cs_control": {
+      "slot_id": "spi.cs_control",
+      "symbol": "_spi_context_cs_control",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "static inline void _spi_context_cs_control(struct spi_context *ctx, bool on, bool force_off)",
+      "signature_source": "parser",
+      "declared_in": "zephyr:single:0::drivers/spi/spi_context.h",
+      "implemented_in": null,
+      "required_headers": [
+        "drivers/spi/spi_context.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "zephyr:single:0",
+          "path": "drivers/spi/spi_context.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "bus[spi]+2.0",
+        "llm_bound:The function name directly matches the slot intent for chip select control, and it is a public API in Zephyr's SPI conte"
+      ]
+    }
+  },
+  "_symbol_index": {
+    "SPI_INIT": [
+      "spi.acquire_or_bind"
+    ],
+    "spi_transceive_dt": [
+      "spi.transfer"
+    ],
+    "HAL_Delay": [
+      "runtime.delay_ms"
+    ],
+    "spi_release": [
+      "spi.transaction_end"
+    ],
+    "spi_config": [
+      "spi.key_types"
+    ],
+    "gpio_dt_spec": [
+      "integration.pin_binding"
+    ],
+    "_spi_context_cs_control": [
+      "spi.cs_control"
+    ]
+  },
+  "slot_fulfillments": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "spi_config",
+          "kind": "type_ref",
+          "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+          "source_slot": "spi.transaction_end",
+          "source_symbol": "spi_release",
+          "signature": "__syscall int spi_release(const struct device *dev, const struct spi_config *config)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+          "source_slot": "spi.transfer",
+          "source_symbol": "spi_transceive_dt",
+          "signature": "static inline int spi_transceive_dt(const struct spi_dt_spec *spec, const struct spi_buf_set *tx_bufs, const struct spi_buf_set *rx_bufs)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+          "source_slot": "spi.transaction_end",
+          "source_symbol": "spi_release",
+          "signature": "__syscall int spi_release(const struct device *dev, const struct spi_config *config)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "spi1",
+      "fields": {
+        "bus_instance": "spi1",
+        "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(spi1))",
+        "backend": "Zephyr public SPI device API",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "spi1",
+      "fields": {
+        "bus_instance": "spi1",
+        "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(spi1))",
+        "backend": "Zephyr public SPI device API",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "spi_config",
+          "kind": "type_ref",
+          "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+          "source_slot": "spi.transaction_end",
+          "source_symbol": "spi_release",
+          "signature": "__syscall int spi_release(const struct device *dev, const struct spi_config *config)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+          "source_slot": "spi.transfer",
+          "source_symbol": "spi_transceive_dt",
+          "signature": "static inline int spi_transceive_dt(const struct spi_dt_spec *spec, const struct spi_buf_set *tx_bufs, const struct spi_buf_set *rx_bufs)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "zephyr:single:0::include/zephyr/drivers/spi.h",
+          "source_slot": "spi.transaction_end",
+          "source_symbol": "spi_release",
+          "signature": "__syscall int spi_release(const struct device *dev, const struct spi_config *config)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "spi1",
+    "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(spi1))",
+    "backend": "Zephyr public SPI device API",
+    "mode": "polling",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "gpio_dt_spec from devicetree"
+    },
+    "device_attachment": {
+      "device_id": "adxl345",
+      "attachment_type": "spi_accelerometer",
+      "required_bus_type": "spi",
+      "address_mode": "chip-select",
+      "addressing": null,
+      "required_attachment": {
+        "signals": [
+          "SCLK",
+          "MOSI",
+          "MISO",
+          "CS"
+        ],
+        "spi": {
+          "mode": "mode3",
+          "data_width_bits": 8,
+          "bit_order": "msb_first",
+          "max_hz": 5000000
+        },
+        "notes": [
+          "Use 4-wire SPI with chip select; register address byte encodes read/write and multi-byte burst bits."
+        ]
+      },
+      "optional_attachment": {
+        "interrupt_pins": [
+          "INT1",
+          "INT2"
+        ],
+        "alternate_bus": "i2c"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "protocol_hints": {
+        "spi_proto": "register",
+        "register_read_mask": "0x80",
+        "multi_byte_mask": "0x40",
+        "address_mask": "0x3F",
+        "read_when_set": true,
+        "primary_channels": [
+          "accel_x",
+          "accel_y",
+          "accel_z"
+        ]
+      },
+      "notes": [
+        "Reference drivers use register SPI, verify DEVID, configure DATA_FORMAT/BW_RATE/POWER_CTL, then burst-read DATAX0..DATAZ1.",
+        "Interrupt pins are not required for the minimal polling driver."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/adxl345/adxl345.pdf",
+        "DriverGen/evaluation/oracle/data/adxl345/meta.json",
+        "DriverGen/data/references/adxl345/*/*_ref.c"
+      ]
+    },
+    "include_headers": [
+      "../spi_context.h",
+      "Spi_Ip.h",
+      "arch/arm/core/cortex_m/vector_table.h",
+      "arch/arm/core/mpu/arm_core_mpu_dev.h",
+      "arch/arm/core/mpu/arm_mpu_v7_internal.h",
+      "arch/arm/core/mpu/arm_mpu_v8_internal.h",
+      "arch/arm/core/mpu/cortex_a_r/arm_mpu_internal.h",
+      "arch/arm/core/mpu/cortex_m/arm_mpu_internal.h",
+      "arch/arm/include/cortex_m/cmse.h",
+      "arch/arm/include/cortex_m/debug.h",
+      "arch/arm/include/cortex_m/kernel_arch_func.h",
+      "arch/arm/include/kernel_arch_data.h",
+      "arm_cmse.h",
+      "arm_mpu_internal.h",
+      "clock.h",
+      "cortex_a_r/exception.h",
+      "cortex_a_r/stack.h",
+      "cortex_m/cmse.h",
+      "cortex_m/exception.h",
+      "cortex_m/stack.h",
+      "ctype.h",
+      "cy_tcpwm.h",
+      "drivers/spi/spi_andes_atcspi200.h",
+      "drivers/spi/spi_context.h",
+      "drivers/spi/spi_dw.h",
+      "drivers/spi/spi_dw_regs.h",
+      "drivers/spi/spi_egis_et171.h",
+      "drivers/spi/spi_esp32_spim.h",
+      "drivers/spi/spi_nxp_lpspi/spi_nxp_lpspi_priv.h",
+      "drivers/spi/spi_nxp_s32.h",
+      "drivers/spi/spi_oc_simple.h",
+      "drivers/spi/spi_pw.h",
+      "drivers/spi/spi_sifive.h",
+      "drivers/spi/spi_stm32.h",
+      "errno.h",
+      "esp_attr.h",
+      "esp_cache.h",
+      "esp_clk_tree.h",
+      "esp_memory_utils.h",
+      "hal/gdma_hal.h",
+      "hal/spi_hal.h",
+      "hal/spi_ll.h",
+      "include/zephyr/arch/arm/arm-m-switch.h",
+      "include/zephyr/arch/cpu.h",
+      "include/zephyr/cache.h",
+      "include/zephyr/device.h",
+      "include/zephyr/devicetree.h",
+      "include/zephyr/devicetree/can.h",
+      "include/zephyr/devicetree/clocks.h",
+      "include/zephyr/devicetree/display.h",
+      "include/zephyr/devicetree/dma.h",
+      "include/zephyr/devicetree/fixed-partitions.h",
+      "include/zephyr/devicetree/gpio.h",
+      "include/zephyr/devicetree/hwspinlock.h",
+      "include/zephyr/devicetree/mapped-partition.h",
+      "include/zephyr/devicetree/nvmem.h",
+      "include/zephyr/devicetree/partitions.h",
+      "include/zephyr/devicetree/spi.h",
+      "include/zephyr/drivers/clock_control.h",
+      "include/zephyr/drivers/clock_control/adi_max32_clock_control.h",
+      "include/zephyr/drivers/clock_control/mchp_clock_control.h",
+      "include/zephyr/drivers/clock_control/renesas_ra_cgc.h",
+      "include/zephyr/drivers/clock_control/stm32_clock_control.h",
+      "include/zephyr/drivers/dma.h",
+      "include/zephyr/drivers/dma/dma_esp32.h",
+      "include/zephyr/drivers/dma/dma_intel_lpss.h",
+      "include/zephyr/drivers/dma/dma_stm32.h",
+      "include/zephyr/drivers/gpio.h",
+      "include/zephyr/drivers/gpio/gpio_utils.h",
+      "include/zephyr/drivers/interrupt_controller/intc_esp32.h",
+      "include/zephyr/drivers/interrupt_controller/ioapic.h",
+      "include/zephyr/drivers/pinctrl.h",
+      "include/zephyr/drivers/sensor.h",
+      "include/zephyr/drivers/sensor_data_types.h",
+      "include/zephyr/drivers/spi.h",
+      "include/zephyr/drivers/spi/rtio.h",
+      "include/zephyr/drivers/timer/arm_arch_timer.h",
+      "include/zephyr/drivers/timer/ifx_tcpwm.h",
+      "include/zephyr/drivers/timer/nrf_grtc_timer.h",
+      "include/zephyr/drivers/timer/nrf_rtc_timer.h",
+      "include/zephyr/drivers/timer/nxp_os_timer.h",
+      "include/zephyr/drivers/timer/system_timer.h",
+      "include/zephyr/drivers/timer/system_timer_lpm.h",
+      "include/zephyr/dt-bindings/gpio/gpio.h",
+      "include/zephyr/dt-bindings/interrupt-controller/arm-gic.h",
+      "include/zephyr/dt-bindings/memory-attr/memory-attr-arm.h",
+      "include/zephyr/dt-bindings/memory-attr/memory-attr.h",
+      "include/zephyr/dt-bindings/spi/spi.h",
+      "include/zephyr/init.h",
+      "include/zephyr/internal/syscall_handler.h",
+      "include/zephyr/irq.h",
+      "include/zephyr/kernel.h",
+      "include/zephyr/kernel/smp.h",
+      "include/zephyr/kernel_structs.h",
+      "include/zephyr/mem_mgmt/mem_attr.h",
+      "include/zephyr/spinlock.h",
+      "include/zephyr/sys/__assert.h",
+      "include/zephyr/sys/atomic.h",
+      "include/zephyr/sys/barrier.h",
+      "include/zephyr/sys/byteorder.h",
+      "include/zephyr/sys/clock.h",
+      "include/zephyr/sys/iterable_sections.h",
+      "include/zephyr/sys/math_extras.h",
+      "include/zephyr/sys/printk.h",
+      "include/zephyr/sys/slist.h",
+      "include/zephyr/sys/sys_io.h",
+      "include/zephyr/sys/util.h",
+      "include/zephyr/sys/util_macro.h",
+      "include/zephyr/sys_clock.h",
+      "include/zephyr/toolchain.h",
+      "include/zephyr/types.h",
+      "instances/r_dtc.h",
+      "instances/r_spi.h",
+      "instances/r_spi_b.h",
+      "inttypes.h",
+      "kernel/include/kernel_internal.h",
+      "kernel/include/ksched.h",
+      "kernel/include/kswap.h",
+      "kernel/include/kthread.h",
+      "kernel/include/priority_q.h",
+      "kernel/include/timeout_q.h",
+      "kernel/include/wait_q.h",
+      "kernel_arch_data.h",
+      "kernel_arch_func.h",
+      "kernel_arch_interface.h",
+      "kernel_internal.h",
+      "ksched.h",
+      "kswap.h",
+      "kthread.h",
+      "list_gen.h",
+      "mchp_dt_helper.h",
+      "pinctrl_soc.h",
+      "priority_q.h",
+      "sedi_driver_spi.h",
+      "soc.h",
+      "soc/lldesc.h",
+      "soc/st/stm32/common/stm32_bitops.h",
+      "soc/st/stm32/common/stm32_cache.h",
+      "soc/st/stm32/common/stm32cube_hal.h",
+      "soc/st/stm32/stm32f1x/soc.h",
+      "soc_cache.h",
+      "spi.c",
+      "spi_andes_atcspi200.h",
+      "spi_context.h",
+      "spi_dw.h",
+      "spi_dw_regs.h",
+      "spi_egis_et171.h",
+      "spi_esp32_spim.h",
+      "spi_nxp_s32.h",
+      "spi_oc_simple.h",
+      "spi_pw.h",
+      "spi_sifive.h",
+      "spi_stm32.h",
+      "stdarg.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdlib.h",
+      "stm32_bitops.h",
+      "stm32_cache.h",
+      "stm32_hal.h",
+      "stm32_ll_spi.h",
+      "stm32f1xx.h",
+      "string.h",
+      "timeout_q.h",
+      "toolchain/other.h",
+      "wait_q.h",
+      "wrap_max32_spi.h",
+      "wrap_max32_sys.h",
+      "xmc_spi.h",
+      "xmc_usic.h",
+      "zephyr/arch/arc/arch.h",
+      "zephyr/arch/arch_interface.h",
+      "zephyr/arch/arm/arch.h",
+      "zephyr/arch/arm/arm-m-switch.h",
+      "zephyr/arch/arm/barrier.h",
+      "zephyr/arch/arm64/arch.h",
+      "zephyr/arch/arm64/barrier.h",
+      "zephyr/arch/cache.h",
+      "zephyr/arch/cpu.h",
+      "zephyr/arch/mips/arch.h",
+      "zephyr/arch/openrisc/arch.h",
+      "zephyr/arch/posix/arch.h",
+      "zephyr/arch/riscv/arch.h",
+      "zephyr/arch/rx/arch.h",
+      "zephyr/arch/sparc/arch.h",
+      "zephyr/arch/x86/arch.h",
+      "zephyr/arch/xtensa/arch.h",
+      "zephyr/arch/xtensa/atomic_xtensa.h",
+      "zephyr/cache.h",
+      "zephyr/debug/sparse.h",
+      "zephyr/device.h",
+      "zephyr/devicetree.h",
+      "zephyr/devicetree/can.h",
+      "zephyr/devicetree/clocks.h",
+      "zephyr/devicetree/display.h",
+      "zephyr/devicetree/dma.h",
+      "zephyr/devicetree/fixed-partitions.h",
+      "zephyr/devicetree/gpio.h",
+      "zephyr/devicetree/hwspinlock.h",
+      "zephyr/devicetree/io-channels.h",
+      "zephyr/devicetree/map.h",
+      "zephyr/devicetree/mapped-partition.h",
+      "zephyr/devicetree/mbox.h",
+      "zephyr/devicetree/ordinals.h",
+      "zephyr/devicetree/partitions.h",
+      "zephyr/devicetree/pinctrl.h",
+      "zephyr/devicetree/port-endpoint.h",
+      "zephyr/devicetree/pwms.h",
+      "zephyr/devicetree/reset.h",
+      "zephyr/devicetree/spi.h",
+      "zephyr/devicetree/wuc.h",
+      "zephyr/devicetree_generated.h",
+      "zephyr/driver-validation.h",
+      "zephyr/drivers/cache.h",
+      "zephyr/drivers/clock_control.h",
+      "zephyr/drivers/clock_control/adi_max32_clock_control.h",
+      "zephyr/drivers/clock_control/mchp_clock_control.h",
+      "zephyr/drivers/clock_control/mchp_clock_pic32cm_jh.h",
+      "zephyr/drivers/clock_control/mchp_clock_pic32cm_pl.h",
+      "zephyr/drivers/clock_control/mchp_clock_pic32cz_ca.h",
+      "zephyr/drivers/clock_control/mchp_clock_sam_d5x_e5x.h",
+      "zephyr/drivers/clock_control/renesas_ra_cgc.h",
+      "zephyr/drivers/clock_control/stm32_clock_control.h",
+      "zephyr/drivers/dma.h",
+      "zephyr/drivers/dma/dma_esp32.h",
+      "zephyr/drivers/dma/dma_intel_lpss.h",
+      "zephyr/drivers/dma/dma_stm32.h",
+      "zephyr/drivers/gpio.h",
+      "zephyr/drivers/gpio/gpio_utils.h",
+      "zephyr/drivers/interrupt_controller/intc_esp32.h",
+      "zephyr/drivers/interrupt_controller/ioapic.h",
+      "zephyr/drivers/mfd/nxp_lp_flexcomm.h",
+      "zephyr/drivers/pcie/pcie.h",
+      "zephyr/drivers/pinctrl.h",
+      "zephyr/drivers/sensor_data_types.h",
+      "zephyr/drivers/spi.h",
+      "zephyr/drivers/spi/rtio.h",
+      "zephyr/dsp/print_format.h",
+      "zephyr/dsp/types.h",
+      "zephyr/dt-bindings/clock/adi_max32_clock.h",
+      "zephyr/dt-bindings/clock/ra_clock.h",
+      "zephyr/dt-bindings/clock/stm32_clock.h",
+      "zephyr/dt-bindings/clock/stm32c0_clock.h",
+      "zephyr/dt-bindings/clock/stm32c5_clock.h",
+      "zephyr/dt-bindings/clock/stm32f0_clock.h",
+      "zephyr/dt-bindings/clock/stm32f10x_clock.h",
+      "zephyr/dt-bindings/clock/stm32f1_clock.h",
+      "zephyr/dt-bindings/clock/stm32f3_clock.h",
+      "zephyr/dt-bindings/clock/stm32f410_clock.h",
+      "zephyr/dt-bindings/clock/stm32f4_clock.h",
+      "zephyr/dt-bindings/clock/stm32f7_clock.h",
+      "zephyr/dt-bindings/clock/stm32g0_clock.h",
+      "zephyr/dt-bindings/clock/stm32g4_clock.h",
+      "zephyr/dt-bindings/clock/stm32h5_clock.h",
+      "zephyr/dt-bindings/clock/stm32h7_clock.h",
+      "zephyr/dt-bindings/clock/stm32h7rs_clock.h",
+      "zephyr/dt-bindings/clock/stm32l0_clock.h",
+      "zephyr/dt-bindings/clock/stm32l1_clock.h",
+      "zephyr/dt-bindings/clock/stm32l4_clock.h",
+      "zephyr/dt-bindings/clock/stm32l5_clock.h",
+      "zephyr/dt-bindings/clock/stm32mp13_clock.h",
+      "zephyr/dt-bindings/clock/stm32mp2_clock.h",
+      "zephyr/dt-bindings/clock/stm32n6_clock.h",
+      "zephyr/dt-bindings/clock/stm32u0_clock.h",
+      "zephyr/dt-bindings/clock/stm32u3_clock.h",
+      "zephyr/dt-bindings/clock/stm32u5_clock.h",
+      "zephyr/dt-bindings/clock/stm32wb0_clock.h",
+      "zephyr/dt-bindings/clock/stm32wb_clock.h",
+      "zephyr/dt-bindings/clock/stm32wba_clock.h",
+      "zephyr/dt-bindings/clock/stm32wl_clock.h",
+      "zephyr/dt-bindings/dt-util.h",
+      "zephyr/dt-bindings/gpio/gpio.h",
+      "zephyr/dt-bindings/interrupt-controller/arm-gic.h",
+      "zephyr/dt-bindings/memory-attr/memory-attr-arm.h",
+      "zephyr/dt-bindings/memory-attr/memory-attr.h",
+      "zephyr/dt-bindings/spi/spi.h",
+      "zephyr/init.h",
+      "zephyr/internal/syscall_handler.h",
+      "zephyr/irq.h",
+      "zephyr/irq_multilevel.h",
+      "zephyr/kernel.h",
+      "zephyr/kernel/smp.h",
+      "zephyr/kernel/thread.h",
+      "zephyr/kernel_structs.h",
+      "zephyr/linker/linker-defs.h",
+      "zephyr/linker/sections.h",
+      "zephyr/llext/symbol.h",
+      "zephyr/logging/log.h",
+      "zephyr/mem_mgmt/mem_attr.h",
+      "zephyr/platform/hooks.h",
+      "zephyr/pm/device.h",
+      "zephyr/pm/device_runtime.h",
+      "zephyr/pm/policy.h",
+      "zephyr/pm/state.h",
+      "zephyr/rtio/rtio.h",
+      "zephyr/shell/shell.h",
+      "zephyr/spinlock.h",
+      "zephyr/stats/stats.h",
+      "zephyr/sys/__assert.h",
+      "zephyr/sys/atomic.h",
+      "zephyr/sys/atomic_arch.h",
+      "zephyr/sys/atomic_builtin.h",
+      "zephyr/sys/atomic_c.h",
+      "zephyr/sys/atomic_types.h",
+      "zephyr/sys/barrier.h",
+      "zephyr/sys/barrier_builtin.h",
+      "zephyr/sys/byteorder.h",
+      "zephyr/sys/clock.h",
+      "zephyr/sys/device_mmio.h",
+      "zephyr/sys/dlist.h",
+      "zephyr/sys/iterable_sections.h",
+      "zephyr/sys/math_extras.h",
+      "zephyr/sys/math_extras_impl.h",
+      "zephyr/sys/printk.h",
+      "zephyr/sys/rb.h",
+      "zephyr/sys/slist.h",
+      "zephyr/sys/sys_io.h",
+      "zephyr/sys/time_units.h",
+      "zephyr/sys/util.h",
+      "zephyr/sys/util_internal.h",
+      "zephyr/sys/util_macro.h",
+      "zephyr/sys_clock.h",
+      "zephyr/syscalls/atomic_add_mrsh.c",
+      "zephyr/syscalls/atomic_and_mrsh.c",
+      "zephyr/syscalls/atomic_cas_mrsh.c",
+      "zephyr/syscalls/atomic_nand_mrsh.c",
+      "zephyr/syscalls/atomic_or_mrsh.c",
+      "zephyr/syscalls/atomic_ptr_cas_mrsh.c",
+      "zephyr/syscalls/atomic_ptr_set_mrsh.c",
+      "zephyr/syscalls/atomic_set_mrsh.c",
+      "zephyr/syscalls/atomic_sub_mrsh.c",
+      "zephyr/syscalls/atomic_xor_mrsh.c",
+      "zephyr/syscalls/cache.h",
+      "zephyr/syscalls/clock.h",
+      "zephyr/syscalls/device.h",
+      "zephyr/syscalls/gpio.h",
+      "zephyr/syscalls/sensor.h",
+      "zephyr/syscalls/spi.h",
+      "zephyr/syscalls/spi_release_mrsh.c",
+      "zephyr/syscalls/spi_transceive_mrsh.c",
+      "zephyr/toolchain.h",
+      "zephyr/toolchain/armclang.h",
+      "zephyr/toolchain/gcc.h",
+      "zephyr/toolchain/iar.h",
+      "zephyr/toolchain/llvm.h",
+      "zephyr/toolchain/mwdt.h",
+      "zephyr/toolchain/xcc.h",
+      "zephyr/tracing/tracing.h",
+      "zephyr/types.h",
+      "zephyr/version.h",
+      "zephyr_custom_assert.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "include/zephyr/devicetree/spi.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 11,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/hwspinlock.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_stm32.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_end",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 13,
+        "n_macros": 9,
+        "n_typedefs": 1,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_context.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 31,
+        "n_macros": 10,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 1
+      },
+      {
+        "path": "drivers/spi/spi_andes_atcspi200.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 70,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_egis_et171.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 74,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_pw.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 126,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 2
+      },
+      {
+        "path": "drivers/spi/spi_nxp_s32.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_dw.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 10,
+        "n_macros": 65,
+        "n_typedefs": 6,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_nxp_lpspi/spi_nxp_lpspi_priv.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 6,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_sifive.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 34,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/dt-bindings/spi/spi.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/spi.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transaction_end",
+          "spi.transfer"
+        ],
+        "n_functions": 22,
+        "n_macros": 56,
+        "n_typedefs": 7,
+        "n_structs": 7,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/timer/arm_arch_timer.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 15,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/timer/ifx_tcpwm.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 81,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/timer/nrf_grtc_timer.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 20,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/timer/nrf_rtc_timer.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 14,
+        "n_macros": 2,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/timer/nxp_os_timer.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 1,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/timer/system_timer.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 8,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/timer/system_timer_lpm.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/include/timeout_q.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 13,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/include/ksched.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 42,
+        "n_macros": 7,
+        "n_typedefs": 2,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/include/cortex_m/debug.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/include/cortex_m/kernel_arch_func.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 12,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/mem_mgmt/mem_attr.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 3,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/include/kthread.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 32,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/core/cortex_m/vector_table.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/core/mpu/arm_core_mpu_dev.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 11,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/core/mpu/arm_mpu_v7_internal.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 13,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/core/mpu/arm_mpu_v8_internal.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 44,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/core/mpu/cortex_a_r/arm_mpu_internal.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 15,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/core/mpu/cortex_m/arm_mpu_internal.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 8,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_dw_regs.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 28,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_esp32_spim.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 11,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_oc_simple.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 10,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/fixed-partitions.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/mapped-partition.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/partitions.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/gpio.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 47,
+        "n_macros": 46,
+        "n_typedefs": 6,
+        "n_structs": 5,
+        "n_enums": 2
+      },
+      {
+        "path": "include/zephyr/drivers/gpio/gpio_utils.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 2,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/nvmem.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/sensor.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 41,
+        "n_macros": 23,
+        "n_typedefs": 9,
+        "n_structs": 11,
+        "n_enums": 4
+      },
+      {
+        "path": "include/zephyr/devicetree/can.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/clocks.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 19,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/display.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/dma.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 16,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree/gpio.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/include/cortex_m/cmse.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 13,
+        "n_macros": 10,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/include/kernel_arch_data.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/arch/arm/arm-m-switch.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 9,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/arch/cpu.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/cache.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 27,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/device.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "runtime.delay_ms",
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 14,
+        "n_macros": 65,
+        "n_typedefs": 3,
+        "n_structs": 9,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/devicetree.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.pin_binding",
+          "runtime.delay_ms",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 283,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/clock_control.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 7,
+        "n_macros": 2,
+        "n_typedefs": 9,
+        "n_structs": 0,
+        "n_enums": 2
+      },
+      {
+        "path": "include/zephyr/drivers/clock_control/adi_max32_clock_control.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 34,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/clock_control/mchp_clock_control.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/clock_control/renesas_ra_cgc.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 86,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/clock_control/stm32_clock_control.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 2,
+        "n_macros": 388,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/dma.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/dma/dma_esp32.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 1
+      },
+      {
+        "path": "include/zephyr/drivers/dma/dma_intel_lpss.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 3,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/dma/dma_stm32.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 29,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/interrupt_controller/intc_esp32.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 12,
+        "n_macros": 23,
+        "n_typedefs": 4,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/interrupt_controller/ioapic.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 5,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/pinctrl.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 6,
+        "n_macros": 27,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/sensor_data_types.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 13,
+        "n_typedefs": 0,
+        "n_structs": 7,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/drivers/spi/rtio.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 6,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/dt-bindings/gpio/gpio.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 13,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/dt-bindings/interrupt-controller/arm-gic.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 13,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/dt-bindings/memory-attr/memory-attr-arm.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 23,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/dt-bindings/memory-attr/memory-attr.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 17,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/init.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.acquire_or_bind",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/internal/syscall_handler.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.acquire_or_bind"
+        ],
+        "n_functions": 18,
+        "n_macros": 17,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 1
+      },
+      {
+        "path": "include/zephyr/irq.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 4,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/kernel.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.key_types",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/kernel/smp.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/kernel_structs.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/spinlock.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 5,
+        "n_typedefs": 1,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/__assert.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 2,
+        "n_macros": 27,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/atomic.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 22,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/barrier.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 4,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/byteorder.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 34,
+        "n_macros": 61,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/clock.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types",
+          "spi.transfer"
+        ],
+        "n_functions": 15,
+        "n_macros": 43,
+        "n_typedefs": 5,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/iterable_sections.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 23,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/math_extras.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 12,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/printk.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 3,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/slist.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 21,
+        "n_macros": 11,
+        "n_typedefs": 2,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/sys_io.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.acquire_or_bind",
+          "spi.key_types",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/util.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 25,
+        "n_macros": 85,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys/util_macro.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.pin_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 44,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/sys_clock.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/toolchain.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 33,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/zephyr/types.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "integration.pin_binding",
+          "runtime.delay_ms",
+          "runtime.error_status",
+          "spi.transaction_end",
+          "spi.transfer"
+        ],
+        "n_functions": 1,
+        "n_macros": 5,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/include/kernel_internal.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 37,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/include/kswap.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/include/priority_q.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 19,
+        "n_macros": 27,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/include/wait_q.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 4,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "soc/st/stm32/common/stm32_bitops.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 6,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "soc/st/stm32/common/stm32_cache.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "soc/st/stm32/common/stm32cube_hal.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "soc/st/stm32/stm32f1x/soc.h",
+        "root_id": "zephyr:single:0",
+        "file_kind": "header",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms",
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "drivers/spi/spi_opentitan.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind"
+        ],
+        "n_functions": 7,
+        "n_macros": 37,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_handlers.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind"
+        ],
+        "n_functions": 4,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_dw.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 13,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_max32.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 9,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_pw.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 40,
+        "n_macros": 14,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_stm32.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transaction_end",
+          "spi.transfer",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 51,
+        "n_macros": 34,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_mchp_sercom_g1.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 83,
+        "n_macros": 22,
+        "n_typedefs": 0,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_renesas_ra.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 20,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_xmc4xxx.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.acquire_or_bind",
+          "spi.transfer_registers"
+        ],
+        "n_functions": 14,
+        "n_macros": 20,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/gpio/gpio_pcal9722.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 15,
+        "n_macros": 20,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_egis_et171.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 20,
+        "n_macros": 10,
+        "n_typedefs": 1,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_andes_atcspi200.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 21,
+        "n_macros": 23,
+        "n_typedefs": 1,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_b91.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer"
+        ],
+        "n_functions": 12,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/work.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 52,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/banner.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 1,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/smp.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 12,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/atomic_c.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 15,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "kernel/boot_args.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "soc/st/stm32/common/stm32cube_hal.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 3,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_b_renesas_ra8.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 21,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_sedi.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 11,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_shell.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 10,
+        "n_macros": 20,
+        "n_typedefs": 0,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_esp32_spim.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "spi.transfer_registers"
+        ],
+        "n_functions": 18,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_nxp_s32.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 13,
+        "n_macros": 18,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_oc_simple.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 5,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "drivers/spi/spi_sifive.c",
+        "root_id": "zephyr:single:0",
+        "file_kind": "source",
+        "role_hint": "driver_framework",
+        "slot_ids": [
+          "integration.bus_instance_binding",
+          "spi.key_types"
+        ],
+        "n_functions": 9,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": []
+  },
+  "transaction_templates": [
+    {
+      "template_id": "adxl345_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "spi_write",
+          "args": {
+            "bytes": [
+              "0x2D",
+              "0x00"
+            ],
+            "length": null,
+            "pointer_target": "POWER_CTL",
+            "notes": null
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "spi_transceive_dt",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "spi_write",
+          "args": {
+            "bytes": [
+              "0x2D",
+              "0x08"
+            ],
+            "length": null,
+            "pointer_target": "POWER_CTL",
+            "notes": null
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "spi_transceive_dt",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.42,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (5 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "adxl345_read_sequence",
+      "steps": [
+        {
+          "op": "spi_write_then_read",
+          "args": {
+            "bytes": [
+              "0xF2"
+            ],
+            "length": 6,
+            "pointer_target": "DATAX0",
+            "notes": null
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "spi_transceive_dt",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.5,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "slot_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'zephyr' is integrated; n_roots=1 (no minimum)",
+        "evidence": {
+          "rtos_id": "zephyr",
+          "n_roots": 1
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "all required slots covered",
+        "evidence": {
+          "missing_required": [],
+          "non_symbol_fulfillments": [
+            "integration.bus_instance_binding",
+            "runtime.error_status",
+            "spi.key_types"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (7 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "zephyr:single:0::drivers/spi/spi_opentitan.c",
+            "zephyr:single:0::include/zephyr/drivers/spi.h",
+            "zephyr:single:0::soc/st/stm32/common/stm32cube_hal.c",
+            "zephyr:single:0::include/zephyr/drivers/spi.h",
+            "zephyr:single:0::include/zephyr/drivers/spi.h",
+            "zephyr:single:0::include/zephyr/drivers/gpio.h",
+            "zephyr:single:0::drivers/spi/spi_context.h"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [
+          "spi.acquire_or_bind",
+          "spi.transfer",
+          "runtime.delay_ms",
+          "spi.transaction_end"
+        ],
+        "missing_slots": [
+          "spi.key_types",
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "integration.pin_binding",
+          "spi.cs_control",
+          "spi.transaction_begin",
+          "spi.transfer_registers"
+        ],
+        "new_files_added": [
+          "zephyr:single:0::drivers/spi/spi_opentitan.c",
+          "zephyr:single:0::include/zephyr/devicetree/spi.h",
+          "zephyr:single:0::drivers/spi/spi_handlers.c",
+          "zephyr:single:0::include/zephyr/devicetree/hwspinlock.h",
+          "zephyr:single:0::drivers/spi/spi_dw.c",
+          "zephyr:single:0::drivers/spi/spi_max32.c",
+          "zephyr:single:0::drivers/spi/spi_pw.c",
+          "zephyr:single:0::drivers/spi/spi_stm32.c",
+          "zephyr:single:0::drivers/spi/spi_stm32.h",
+          "zephyr:single:0::drivers/spi/spi_mchp_sercom_g1.c",
+          "zephyr:single:0::drivers/spi/spi_renesas_ra.c",
+          "zephyr:single:0::drivers/spi/spi_xmc4xxx.c",
+          "zephyr:single:0::drivers/spi/spi_context.h",
+          "zephyr:single:0::drivers/spi/spi_andes_atcspi200.h",
+          "zephyr:single:0::drivers/spi/spi_egis_et171.h",
+          "zephyr:single:0::drivers/spi/spi_pw.h",
+          "zephyr:single:0::drivers/spi/spi_nxp_s32.h",
+          "zephyr:single:0::drivers/spi/spi_dw.h",
+          "zephyr:single:0::drivers/spi/spi_nxp_lpspi/spi_nxp_lpspi_priv.h",
+          "zephyr:single:0::drivers/spi/spi_sifive.h",
+          "zephyr:single:0::include/zephyr/dt-bindings/spi/spi.h",
+          "zephyr:single:0::include/zephyr/drivers/spi.h",
+          "zephyr:single:0::drivers/gpio/gpio_pcal9722.c",
+          "zephyr:single:0::drivers/spi/spi_egis_et171.c",
+          "zephyr:single:0::drivers/spi/spi_andes_atcspi200.c",
+          "zephyr:single:0::drivers/spi/spi_b91.c",
+          "zephyr:single:0::kernel/work.c",
+          "zephyr:single:0::kernel/banner.c",
+          "zephyr:single:0::kernel/smp.c",
+          "zephyr:single:0::include/zephyr/drivers/timer/arm_arch_timer.h",
+          "zephyr:single:0::include/zephyr/drivers/timer/ifx_tcpwm.h",
+          "zephyr:single:0::include/zephyr/drivers/timer/nrf_grtc_timer.h",
+          "zephyr:single:0::include/zephyr/drivers/timer/nrf_rtc_timer.h",
+          "zephyr:single:0::include/zephyr/drivers/timer/nxp_os_timer.h",
+          "zephyr:single:0::include/zephyr/drivers/timer/system_timer.h",
+          "zephyr:single:0::include/zephyr/drivers/timer/system_timer_lpm.h",
+          "zephyr:single:0::kernel/atomic_c.c",
+          "zephyr:single:0::kernel/boot_args.c",
+          "zephyr:single:0::soc/st/stm32/common/stm32cube_hal.c",
+          "zephyr:single:0::kernel/include/timeout_q.h",
+          "zephyr:single:0::kernel/include/ksched.h",
+          "zephyr:single:0::arch/arm/include/cortex_m/debug.h",
+          "zephyr:single:0::arch/arm/include/cortex_m/kernel_arch_func.h",
+          "zephyr:single:0::include/zephyr/mem_mgmt/mem_attr.h",
+          "zephyr:single:0::kernel/include/kthread.h",
+          "zephyr:single:0::arch/arm/core/cortex_m/vector_table.h",
+          "zephyr:single:0::arch/arm/core/mpu/arm_core_mpu_dev.h",
+          "zephyr:single:0::arch/arm/core/mpu/arm_mpu_v7_internal.h",
+          "zephyr:single:0::arch/arm/core/mpu/arm_mpu_v8_internal.h",
+          "zephyr:single:0::arch/arm/core/mpu/cortex_a_r/arm_mpu_internal.h",
+          "zephyr:single:0::arch/arm/core/mpu/cortex_m/arm_mpu_internal.h",
+          "zephyr:single:0::drivers/spi/spi_dw_regs.h",
+          "zephyr:single:0::drivers/spi/spi_esp32_spim.h",
+          "zephyr:single:0::drivers/spi/spi_oc_simple.h",
+          "zephyr:single:0::include/zephyr/devicetree/fixed-partitions.h",
+          "zephyr:single:0::include/zephyr/devicetree/mapped-partition.h",
+          "zephyr:single:0::include/zephyr/devicetree/partitions.h",
+          "zephyr:single:0::include/zephyr/drivers/gpio.h",
+          "zephyr:single:0::include/zephyr/drivers/gpio/gpio_utils.h",
+          "zephyr:single:0::include/zephyr/devicetree/nvmem.h",
+          "zephyr:single:0::include/zephyr/drivers/sensor.h",
+          "zephyr:single:0::include/zephyr/devicetree/can.h",
+          "zephyr:single:0::include/zephyr/devicetree/clocks.h",
+          "zephyr:single:0::include/zephyr/devicetree/display.h",
+          "zephyr:single:0::include/zephyr/devicetree/dma.h",
+          "zephyr:single:0::include/zephyr/devicetree/gpio.h",
+          "zephyr:single:0::drivers/spi/spi_b_renesas_ra8.c",
+          "zephyr:single:0::drivers/spi/spi_sedi.c",
+          "zephyr:single:0::drivers/spi/spi_shell.c",
+          "zephyr:single:0::drivers/spi/spi_esp32_spim.c",
+          "zephyr:single:0::arch/arm/include/cortex_m/cmse.h",
+          "zephyr:single:0::arch/arm/include/kernel_arch_data.h",
+          "zephyr:single:0::drivers/spi/spi_nxp_s32.c",
+          "zephyr:single:0::drivers/spi/spi_oc_simple.c",
+          "zephyr:single:0::drivers/spi/spi_sifive.c",
+          "zephyr:single:0::include/zephyr/arch/arm/arm-m-switch.h",
+          "zephyr:single:0::include/zephyr/arch/cpu.h",
+          "zephyr:single:0::include/zephyr/cache.h",
+          "zephyr:single:0::include/zephyr/device.h",
+          "zephyr:single:0::include/zephyr/devicetree.h",
+          "zephyr:single:0::include/zephyr/drivers/clock_control.h",
+          "zephyr:single:0::include/zephyr/drivers/clock_control/adi_max32_clock_control.h",
+          "zephyr:single:0::include/zephyr/drivers/clock_control/mchp_clock_control.h",
+          "zephyr:single:0::include/zephyr/drivers/clock_control/renesas_ra_cgc.h",
+          "zephyr:single:0::include/zephyr/drivers/clock_control/stm32_clock_control.h",
+          "zephyr:single:0::include/zephyr/drivers/dma.h",
+          "zephyr:single:0::include/zephyr/drivers/dma/dma_esp32.h",
+          "zephyr:single:0::include/zephyr/drivers/dma/dma_intel_lpss.h",
+          "zephyr:single:0::include/zephyr/drivers/dma/dma_stm32.h",
+          "zephyr:single:0::include/zephyr/drivers/interrupt_controller/intc_esp32.h",
+          "zephyr:single:0::include/zephyr/drivers/interrupt_controller/ioapic.h",
+          "zephyr:single:0::include/zephyr/drivers/pinctrl.h",
+          "zephyr:single:0::include/zephyr/drivers/sensor_data_types.h",
+          "zephyr:single:0::include/zephyr/drivers/spi/rtio.h",
+          "zephyr:single:0::include/zephyr/dt-bindings/gpio/gpio.h",
+          "zephyr:single:0::include/zephyr/dt-bindings/interrupt-controller/arm-gic.h",
+          "zephyr:single:0::include/zephyr/dt-bindings/memory-attr/memory-attr-arm.h",
+          "zephyr:single:0::include/zephyr/dt-bindings/memory-attr/memory-attr.h",
+          "zephyr:single:0::include/zephyr/init.h",
+          "zephyr:single:0::include/zephyr/internal/syscall_handler.h",
+          "zephyr:single:0::include/zephyr/irq.h",
+          "zephyr:single:0::include/zephyr/kernel.h",
+          "zephyr:single:0::include/zephyr/kernel/smp.h",
+          "zephyr:single:0::include/zephyr/kernel_structs.h",
+          "zephyr:single:0::include/zephyr/spinlock.h",
+          "zephyr:single:0::include/zephyr/sys/__assert.h",
+          "zephyr:single:0::include/zephyr/sys/atomic.h",
+          "zephyr:single:0::include/zephyr/sys/barrier.h",
+          "zephyr:single:0::include/zephyr/sys/byteorder.h",
+          "zephyr:single:0::include/zephyr/sys/clock.h",
+          "zephyr:single:0::include/zephyr/sys/iterable_sections.h",
+          "zephyr:single:0::include/zephyr/sys/math_extras.h",
+          "zephyr:single:0::include/zephyr/sys/printk.h",
+          "zephyr:single:0::include/zephyr/sys/slist.h",
+          "zephyr:single:0::include/zephyr/sys/sys_io.h",
+          "zephyr:single:0::include/zephyr/sys/util.h",
+          "zephyr:single:0::include/zephyr/sys/util_macro.h",
+          "zephyr:single:0::include/zephyr/sys_clock.h",
+          "zephyr:single:0::include/zephyr/toolchain.h",
+          "zephyr:single:0::include/zephyr/types.h",
+          "zephyr:single:0::kernel/include/kernel_internal.h",
+          "zephyr:single:0::kernel/include/kswap.h",
+          "zephyr:single:0::kernel/include/priority_q.h",
+          "zephyr:single:0::kernel/include/wait_q.h",
+          "zephyr:single:0::soc/st/stm32/common/stm32_bitops.h",
+          "zephyr:single:0::soc/st/stm32/common/stm32_cache.h",
+          "zephyr:single:0::soc/st/stm32/common/stm32cube_hal.h",
+          "zephyr:single:0::soc/st/stm32/stm32f1x/soc.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 71017,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "spi.key_types",
+          "integration.pin_binding",
+          "spi.cs_control"
+        ],
+        "missing_slots": [
+          "runtime.error_status",
+          "integration.bus_instance_binding",
+          "spi.transaction_begin",
+          "spi.transfer_registers"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 6
+        },
+        "token_usage": {
+          "input_tokens_delta": 14955,
+          "output_tokens_delta": 4200,
+          "input_tokens_total": 85972,
+          "output_tokens_total": 12600
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 11,
+    "n_bound": 7,
+    "n_fulfilled": 9,
+    "n_non_symbol_fulfillments": 3,
+    "n_required": 7,
+    "n_required_bound": 7,
+    "n_required_fulfilled": 7,
+    "n_required_symbol_bound": 5,
+    "provenance": {
+      "manifest_repo": 7,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 6.63,
+      "dir_router_llm": 52257.99,
+      "file_selector": 83.86,
+      "file_selector_llm": 128715.5,
+      "exact_symbol_file_backfill": 60.41,
+      "deep_parse": 366.71,
+      "include_expand": 422.17,
+      "symbol_rank": 948.93,
+      "binder_deterministic": 3.12,
+      "binder_llm": 10014.16,
+      "gap_diagnoser_llm": 7336.17,
+      "source_kind_classifier": 0.03
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 6,
+        "gap_diagnoser": 4
+      },
+      "input_tokens_total": 89515,
+      "output_tokens_total": 14600,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

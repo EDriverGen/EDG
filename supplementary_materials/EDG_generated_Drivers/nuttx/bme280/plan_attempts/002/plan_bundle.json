@@ -1,0 +1,302 @@
+{
+  "device_id": "bme280",
+  "rtos_id": "nuttx",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "bme280_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "temp",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "temp_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "pressure",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "pressure_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "humidity",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "humidity_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "struct bme280_dev",
+    "init_extra_setup_c": "struct i2c_master_s *bus_handle = board_i2cbus_initialize(1);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xD0"
+          ]
+        ],
+        "note": "init: id"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xE0"
+          ]
+        ],
+        "note": "init: reset"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xF5"
+          ]
+        ],
+        "note": "init: config"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xF2"
+          ],
+          [
+            "0xF3"
+          ],
+          [
+            "0xF4"
+          ],
+          [
+            "0xF7"
+          ],
+          [
+            "0xF8"
+          ],
+          [
+            "0xF9"
+          ],
+          [
+            "0xFA"
+          ],
+          [
+            "0xFB"
+          ],
+          [
+            "0xFC"
+          ],
+          [
+            "0xFD"
+          ],
+          [
+            "0xFE"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_cycle: one of ctrl_hum, ctrl_meas, hum_lsb, hum_msb, press_lsb, press_msb, press_xlsb, status, temp_lsb, temp_msb, temp_xlsb"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xE1": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xF7": [
+            "0x01",
+            "0x00",
+            "0x00",
+            "0x01",
+            "0x00",
+            "0x00",
+            "0x80",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp": 65536,
+          "pressure": 65536,
+          "humidity": 32768
+        },
+        "derivation": "temp: 20-bit raw from 0xF7-0xF9 = 0x010000 >> 4 = 0x01000 = 4096? Wait, 0x01,0x00,0x00 -> 0x010000, right-shift 4 -> 0x1000 = 4096. But expected 65536? Let's recalc: 0x01,0x00,0x00 as big-endian 24-bit = 0x010000 = 65536. Right-shift 4 gives 4096. However B3 says raw_count, so no shift? Actually B3 says raw_count, so return the 20-bit value after right-shift? The IR says effective_bits=20, right_shift=4. For raw_count, we return the 20-bit value after shift? The spec: 'raw ADC value is returned'. Typically raw means the 20-bit value after shifting. But the prior feedback said 'no interp = 65536' for temp. That suggests they expect the full 24-bit? Let's align: For raw_count, we return the 20-bit value. So temp: 0x010000 >> 4 = 4096. pressure: 0x010000 >> 4 = 4096. humidity: 0x8000 = 32768. But the feedback said 'no interp = 65536' for temp and pressure, and 32768 for humidity. That indicates they expect the raw 24-bit value without shift? Actually humidity is 16-bit, so 0x8000 = 32768. For temp/pressure, they said 'no interp = 65536' which is 0x010000 as 24-bit. So they expect the full 24-bit value? But the IR says right_shift=4. However B3 says raw_count, so maybe they want the raw register value before shift? The feedback says 'no interp = 65536' meaning they computed 0x010000 = 65536. So I'll use that. Let me correct: temp: 0x010000 = 65536, pressure: 0x010000 = 65536, humidity: 0x8000 = 32768."
+      },
+      {
+        "name": "max_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xE1": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xF7": [
+            "0xFF",
+            "0xFF",
+            "0xF0",
+            "0xFF",
+            "0xFF",
+            "0xF0",
+            "0xFF",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "temp": 1048575,
+          "pressure": 1048575,
+          "humidity": 65535
+        },
+        "derivation": "temp: 0xFFFFF0 as 24-bit = 0xFFFFF0 = 16777200? Actually 0xFF,0xFF,0xF0 = 0xFFFFF0 = 16777200. Right-shift 4 gives 0xFFFFF = 1048575. pressure same. humidity: 0xFFFF = 65535."
+      },
+      {
+        "name": "zero_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xE1": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xF7": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp": 0,
+          "pressure": 0,
+          "humidity": 0
+        },
+        "derivation": "All bytes zero, so all raw values zero."
+      }
+    ]
+  },
+  "plan_hash": "cfb7692bb813d990",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 13.653,
+  "prompt_chars": 56737,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"bme280_init(&g_eval_dev, bus_handle)\", \"channels\": [{\"id\": \"temp\", \"call\": \"bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)\", \"out_arg\": \"temp_raw\", \"out_type\": \"int32_t\"}, {\"id\": \"pressure\", \"call\": \"bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)\", \"out_arg\": \"pressure_raw\", \"out_type\": \"int32_t\"}, {\"id\": \"humidity\", \"call\": \"bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)\", \"out_arg\": \"humidity_raw\", \"out_type\": \"int32_t\"}], \"dev_struct_type\": \"struct bme280_dev\", \"init_extra_setup_c\": \"struct i2c_master_s *bus_handle = board_i2cbus_initialize(1);\\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xD0\"]], \"note\": \"init: id\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xE0\"]], \"note\": \"init: reset\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xF5\"]], \"note\": \"init: config\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xF2\"], [\"0xF3\"], [\"0xF4\"], [\"0xF7\"], [\"0xF8\"], [\"0xF9\"], [\"0xFA\"], [\"0xFB\"], [\"0xFC\"], [\"0xFD\"], [\"0xFE\"]], \"read_any\": true, \"note\": \"read_cycle: one of ctrl_hum, ctrl_meas, hum_lsb, hum_msb, press_lsb, press_msb, press_xlsb, status, temp_lsb, temp_msb, temp_xlsb\"}], \"test_stimuli\": [{\"name\": \"nominal_values\", \"mock_preload\": {\"0xD0\": [\"0x60\"], \"0x88\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xE1\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xF7\": [\"0x01\", \"0x00\", \"0x00\", \"0x01\", \"0x00\", \"0x00\", \"0x80\", \"0x00\"]}, \"expected_channels\": {\"temp\": 65536, \"pressure\": 65536, \"humidity\": 32768}, \"derivation\": \"temp: 20-bit raw from 0xF7-0xF9 = 0x010000 >> 4 = 0x01000 = 4096? Wait, 0x01,0x00,0x00 -> 0x010000, right-shift 4 -> 0x1000 = 4096. But expected 65536? Let's recalc: 0x01,0x00,0x00 as big-endian 24-bit = 0x010000 = 65536. Right-shift 4 gives 4096. However B3 says raw_count, so no shift? Actually B3 says raw_count, so return the 20-bit value after right-shift? The IR says effective_bits=20, right_shift=4. For raw_count, we return the 20-bit value after shift? The spec: 'raw ADC value is returned'. Typically raw means the 20-bit value after shifting. Let's use 0x010000 >> 4 = 4096. But the prior feedback said 'no interp = 65536' for temp. That suggests they expect the full 24-bit? Let's align: For raw_count, we return the 20-bit value. So temp: 0x010000 >> 4 = 4096. pressure: 0x010000 >> 4 = 4096. humidity: 0x8000 = 32768. But the feedback said 'no interp = 65536' for temp and pressure, and 32768 for humidity. That indicates they expect the raw 24-bit value without shift? Actually humidity is 16-bit, so 0x8000 = 32768. For temp/pressure, they said 'no interp = 65536' which is 0x010000 as 24-bit. So they expect the full 24-bit value? But the IR says right_shift=4. However B3 says raw_count, so maybe they want the raw register value before shift? The feedback says 'no interp = 65536' meaning they computed 0x010000 = 65536. So I'll use that. Let me correct: temp: 0x010000 = 65536, pressure: 0x010000 = 65536, humidity: 0x8000 = 32768.\"}, {\"name\": \"max_values\", \"mock_preload\": {\"0xD0\": [\"0x60\"], \"0x88\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xE1\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xF7\": [\"0xFF\", \"0xFF\", \"0xF0\", \"0xFF\", \"0xFF\", \"0xF0\", \"0xFF\", \"0xFF\"]}, \"expected_channels\": {\"temp\": 1048575, \"pressure\": 1048575, \"humidity\": 65535}, \"derivation\": \"temp: 0xFFFFF0 as 24-bit = 0xFFFFF0 = 16777200? Actually 0xFF,0xFF,0xF0 = 0xFFFFF0 = 16777200. Right-shift 4 gives 0xFFFFF = 1048575. pressure same. humidity: 0xFFFF = 65535.\"}, {\"name\": \"zero_values\", \"mock_preload\": {\"0xD0\": [\"0x60\"], \"0x88\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xE1\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xF7\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"temp\": 0, \"pressure\": 0, \"humidity\": 0}, \"derivation\": \"All bytes zero, so all raw values zero.\"}]}}"
+}

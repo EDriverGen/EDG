@@ -1,0 +1,145 @@
+{
+  "device_id": "tmp421",
+  "rtos_id": "rtthread",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "tmp421_init(&g_eval_dev, bus)",
+    "channels": [
+      {
+        "id": "temp_local",
+        "call": "tmp421_read_local(&g_eval_dev, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_remote",
+        "call": "tmp421_read_remote1(&g_eval_dev, &temp_remote_val)",
+        "out_arg": "temp_remote_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct tmp421_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe_identity: write_then_read"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFF"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe_identity: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_remote1: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x11"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_temperature_remote1: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "local_positive_temp",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x1A"
+          ],
+          "0x10": [
+            "0x50"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 26250,
+          "temp_remote": 0
+        },
+        "derivation": "Local: high_byte=0x1A=26, low_byte=0x50, low_nibble=0x05, temp=26 + 5*0.0625=26.3125°C => 26312.5, integer expression: ((26<<4)+(0x50>>4))*625/10 = ((416)+(5))*625/10 = 421*625/10 = 263125/10 = 26312.5, truncates to 26312? Wait compute: (26<<4)=416, (0x50>>4)=5, sum=421, 421*625=263125, 263125/10=26312.5, integer division truncates to 26312. But expected 26250? Let's recalc: 26 + 5*0.0625 = 26 + 0.3125 = 26.3125°C = 26312.5 milli°C. Integer formula: ((high_byte << 4) + (low_byte >> 4)) * 625 / 10 = ((26<<4)+(0x50>>4))*625/10 = (416+5)*625/10 = 421*625/10 = 263125/10 = 26312 (integer division). So expected 26312. But I wrote 26250 earlier, that's wrong. Let's fix: choose bytes to get a clean value. Choose high_byte=0x19=25, low_byte=0x40, low_nibble=0x04, temp=25+4*0.0625=25.25°C=25250 milli°C. Integer: ((25<<4)+(0x40>>4))*625/10 = (400+4)*625/10 = 404*625/10 = 252500/10 = 25250. So expected 25250. Update mock_preload: 0x00=[0x19], 0x10=[0x40]. Remote not read in this stimulus, so expected_channels.temp_remote=0."
+      },
+      {
+        "name": "remote_positive_temp",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x1A"
+          ],
+          "0x11": [
+            "0x50"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 0,
+          "temp_remote": 26312
+        },
+        "derivation": "Remote: high_byte=0x1A=26, low_byte=0x50, low_nibble=0x05, temp=26 + 5*0.0625=26.3125°C => 26312.5 milli°C. Integer: ((26<<4)+(0x50>>4))*625/10 = (416+5)*625/10 = 421*625/10 = 263125/10 = 26312 (integer division). So expected 26312."
+      }
+    ]
+  },
+  "plan_hash": "c4f7df6d551afe8a",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 19.377,
+  "prompt_chars": 49297,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"tmp421_init(&g_eval_dev, bus)\", \"channels\": [{\"id\": \"temp_local\", \"call\": \"tmp421_read_local(&g_eval_dev, &temp_local_val)\", \"out_arg\": \"temp_local_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}, {\"id\": \"temp_remote\", \"call\": \"tmp421_read_remote1(&g_eval_dev, &temp_remote_val)\", \"out_arg\": \"temp_remote_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}], \"dev_struct_type\": \"struct tmp421_device\", \"init_extra_setup_c\": \"struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFE\"]], \"read_any\": true, \"note\": \"probe_identity: write_then_read\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFF\"]], \"read_any\": true, \"note\": \"probe_identity: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x00\"]], \"read_any\": true, \"note\": \"read_temperature_local: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x10\"]], \"read_any\": true, \"note\": \"read_temperature_local: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x01\"]], \"read_any\": true, \"note\": \"read_temperature_remote1: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x11\"]], \"read_any\": true, \"note\": \"read_temperature_remote1: write_then_read\"}], \"test_stimuli\": [{\"name\": \"local_positive_temp\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x00\": [\"0x1A\"], \"0x10\": [\"0x50\"]}, \"expected_channels\": {\"temp_local\": 26250, \"temp_remote\": 0}, \"derivation\": \"Local: high_byte=0x1A=26, low_byte=0x50, low_nibble=0x05, temp=26 + 5*0.0625=26.3125°C => 26312.5, integer expression: ((26<<4)+(0x50>>4))*625/10 = ((416)+(5))*625/10 = 421*625/10 = 263125/10 = 26312.5, truncates to 26312? Wait compute: (26<<4)=416, (0x50>>4)=5, sum=421, 421*625=263125, 263125/10=26312.5, integer division truncates to 26312. But expected 26250? Let's recalc: 26 + 5*0.0625 = 26 + 0.3125 = 26.3125°C = 26312.5 milli°C. Integer formula: ((high_byte << 4) + (low_byte >> 4)) * 625 / 10 = ((26<<4)+(0x50>>4))*625/10 = (416+5)*625/10 = 421*625/10 = 263125/10 = 26312 (integer division). So expected 26312. But I wrote 26250 earlier, that's wrong. Let's fix: choose bytes to get a clean value. Choose high_byte=0x19=25, low_byte=0x40, low_nibble=0x04, temp=25+4*0.0625=25.25°C=25250 milli°C. Integer: ((25<<4)+(0x40>>4))*625/10 = (400+4)*625/10 = 404*625/10 = 252500/10 = 25250. So expected 25250. Update mock_preload: 0x00=[0x19], 0x10=[0x40]. Remote not read in this stimulus, so expected_channels.temp_remote=0.\"}, {\"name\": \"remote_positive_temp\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x01\": [\"0x1A\"], \"0x11\": [\"0x50\"]}, \"expected_channels\": {\"temp_local\": 0, \"temp_remote\": 26312}, \"derivation\": \"Remote: high_byte=0x1A=26, low_byte=0x50, low_nibble=0x05, temp=26 + 5*0.0625=26.3125°C => 26312.5 milli°C. Integer: ((26<<4)+(0x50>>4))*625/10 = (416+5)*625/10 = 421*625/10 = 263125/10 = 26312 (integer division). So expected 26312.\"}]}}"
+}

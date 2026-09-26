@@ -1,0 +1,270 @@
+{
+  "applied": false,
+  "changed_fields": [],
+  "violations_before_count": 2,
+  "violations_after_count": 2,
+  "violations_before": [
+    "conversion_formulae[1]: missing required key 'integer_approximation_expression'",
+    "conversion_formulae[2]: missing required key 'integer_approximation_expression'"
+  ],
+  "violations_after": [
+    "conversion_formulae[1]: missing required key 'integer_approximation_expression'",
+    "conversion_formulae[2]: missing required key 'integer_approximation_expression'"
+  ],
+  "audit_findings": [
+    {
+      "flow_id": "read_co2",
+      "summary": "Read CO2 concentration flow",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Datasheet page 7: '0x86 Read CO2 concentration' command table shows sending command with bytes FF 01 86 00 00 00 00 00 79.",
+          "action": "Write step sends the command bytes."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "Datasheet does not specify any required delay or polling after sending the read command before reading response.",
+          "action": "No wait step added."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Datasheet page 7: 'Return value' table shows 9-byte response including concentration bytes.",
+          "action": "Read step reads 9 bytes."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "Datasheet does not specify any clear or acknowledge step after reading.",
+          "action": "No clear step added."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Read flow does not require configuration or calibration before each read; preconditions mention preheat.",
+          "action": "No config step in read flow."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Datasheet page 7: 'Concentration (High 8 Byte)' and 'Concentration (Low 8 Byte)' at response bytes 2 and 3.",
+          "action": "byte_source set to response_byte2:8 and response_byte3:8."
+        }
+      ]
+    },
+    {
+      "flow_id": "calibrate_zero",
+      "summary": "Zero point calibration via command",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Datasheet page 9: '0X87-ZEROPOINTCALIBRATION' command table shows sending command FF 01 87 00 00 00 00 00 78.",
+          "action": "Write step sends the command."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "Datasheet states 'Send command-no return value' and does not specify any delay or polling after command.",
+          "action": "No wait step added."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "Datasheet states 'Send command-no return value'.",
+          "action": "No read step."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack specified.",
+          "action": "No clear step."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow is calibration itself.",
+          "action": "Calibration flow present."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No byte source."
+        }
+      ]
+    },
+    {
+      "flow_id": "calibrate_span",
+      "summary": "Span point calibration via command",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Datasheet page 9: 'OX88-SPANPOINTCALIBRATION' command table shows sending command with span value bytes.",
+          "action": "Write step sends the command."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "Datasheet states 'Send command-no return value' and no delay specified.",
+          "action": "No wait step."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No return value.",
+          "action": "No read step."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack specified.",
+          "action": "No clear step."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow is calibration itself.",
+          "action": "Calibration flow present."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No byte source."
+        }
+      ]
+    },
+    {
+      "flow_id": "set_self_calibration",
+      "summary": "Enable/disable self-calibration",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Datasheet page 7: '0x79 ON/OFF Self-calibration function for zero point' command table.",
+          "action": "Write step sends command."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "Datasheet states 'Send command-No return value' and no delay specified.",
+          "action": "No wait step."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No return value.",
+          "action": "No read step."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack specified.",
+          "action": "No clear step."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow configures self-calibration setting.",
+          "action": "Config flow present."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No byte source."
+        }
+      ]
+    },
+    {
+      "flow_id": "set_detection_range",
+      "summary": "Set detection range",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Datasheet page 7: '0x99 Detection range setting' command table.",
+          "action": "Write step sends command."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "Datasheet states 'Send command-No return value' and no delay specified.",
+          "action": "No wait step."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No return value.",
+          "action": "No read step."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack specified.",
+          "action": "No clear step."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow configures detection range.",
+          "action": "Config flow present."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No byte source."
+        }
+      ]
+    },
+    {
+      "flow_id": "hand_zero_calibration",
+      "summary": "Zero calibration via HD pin",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "present",
+          "evidence": "Datasheet page 8: 'Connect module's HD pin to low level(0V), lasting for 7 seconds at least.'",
+          "action": "set_signal and delay steps present."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Delay of 7 seconds as specified.",
+          "action": "Delay step present."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No read required.",
+          "action": "No read step."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "present",
+          "evidence": "Release HD pin after calibration.",
+          "action": "set_signal to release HD pin."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow is calibration itself.",
+          "action": "Calibration flow present."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No byte source."
+        }
+      ]
+    }
+  ],
+  "cache_hit": true,
+  "cache_key": "2026562f2f874aee"
+}

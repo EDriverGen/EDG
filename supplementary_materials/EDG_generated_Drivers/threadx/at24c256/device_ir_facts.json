@@ -1,0 +1,670 @@
+{
+  "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+  "source": "device_ir_projection_v1",
+  "device_id": "at24c256",
+  "bus_type": "i2c",
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "addresses": [
+    {
+      "index": 0,
+      "address": "0x50",
+      "addressing_form": "7-bit",
+      "is_default": true,
+      "description": "A1=A0=GND (default when pins floating or tied low)",
+      "raw_record": {
+        "address": "0x50",
+        "description": "A1=A0=GND (default when pins floating or tied low)",
+        "is_default": true
+      }
+    },
+    {
+      "index": 1,
+      "address": "0x51",
+      "addressing_form": "7-bit",
+      "is_default": false,
+      "description": "A1=GND, A0=VCC",
+      "raw_record": {
+        "address": "0x51",
+        "description": "A1=GND, A0=VCC",
+        "is_default": false
+      }
+    },
+    {
+      "index": 2,
+      "address": "0x52",
+      "addressing_form": "7-bit",
+      "is_default": false,
+      "description": "A1=VCC, A0=GND",
+      "raw_record": {
+        "address": "0x52",
+        "description": "A1=VCC, A0=GND",
+        "is_default": false
+      }
+    },
+    {
+      "index": 3,
+      "address": "0x53",
+      "addressing_form": "7-bit",
+      "is_default": false,
+      "description": "A1=VCC, A0=VCC",
+      "raw_record": {
+        "address": "0x53",
+        "description": "A1=VCC, A0=VCC",
+        "is_default": false
+      }
+    }
+  ],
+  "registers": [
+    {
+      "index": 0,
+      "name": "Memory Array",
+      "address": null,
+      "access": "rw",
+      "size_bits": 262144,
+      "description": "32,768 words of 8 bits each, organized as 512 pages of 64 bytes each.",
+      "semantic_roles": [],
+      "byte_part": null,
+      "raw_record": {
+        "name": "Memory Array",
+        "value": null,
+        "access": "rw",
+        "size_bits": 262144,
+        "description": "32,768 words of 8 bits each, organized as 512 pages of 64 bytes each."
+      }
+    }
+  ],
+  "bitfields": [
+    {
+      "index": 0,
+      "name": "Device Address Byte.Device Type Identifier",
+      "register": null,
+      "bit_range": "7:3",
+      "reset_value": null,
+      "description": "First five bits: 10100 for AT24C256.",
+      "semantic_roles": [],
+      "raw_record": {
+        "name": "Device Address Byte.Device Type Identifier",
+        "bits": "7:3",
+        "description": "First five bits: 10100 for AT24C256."
+      }
+    },
+    {
+      "index": 1,
+      "name": "Device Address Byte.A1",
+      "register": null,
+      "bit_range": "2",
+      "reset_value": null,
+      "description": "Device address bit A1, compared to hardwired pin.",
+      "semantic_roles": [],
+      "raw_record": {
+        "name": "Device Address Byte.A1",
+        "bits": "2",
+        "description": "Device address bit A1, compared to hardwired pin."
+      }
+    },
+    {
+      "index": 2,
+      "name": "Device Address Byte.A0",
+      "register": null,
+      "bit_range": "1",
+      "reset_value": null,
+      "description": "Device address bit A0, compared to hardwired pin.",
+      "semantic_roles": [],
+      "raw_record": {
+        "name": "Device Address Byte.A0",
+        "bits": "1",
+        "description": "Device address bit A0, compared to hardwired pin."
+      }
+    },
+    {
+      "index": 3,
+      "name": "Device Address Byte.R/W",
+      "register": null,
+      "bit_range": "0",
+      "reset_value": null,
+      "description": "Read/Write select bit: 1 for read, 0 for write.",
+      "semantic_roles": [],
+      "raw_record": {
+        "name": "Device Address Byte.R/W",
+        "bits": "0",
+        "description": "Read/Write select bit: 1 for read, 0 for write."
+      }
+    }
+  ],
+  "operation_steps": [
+    {
+      "source": "operation_flows",
+      "flow_id": "byte_write",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": "send device address + word address + data",
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          null,
+          "DATA"
+        ],
+        "notes": "Start condition, device address (R/W=0), two address bytes (MSB first), data byte, stop condition."
+      },
+      "length": null,
+      "notes": "Device address byte: 1010 A1 A0 0. Address bytes: high byte then low byte. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes.",
+      "semantic_roles": [
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": "send device address + word address + data",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            null,
+            "DATA"
+          ],
+          "notes": "Start condition, device address (R/W=0), two address bytes (MSB first), data byte, stop condition."
+        },
+        "notes": "Device address byte: 1010 A1 A0 0. Address bytes: high byte then low byte. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "byte_write",
+      "flow_kind": "write",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait for internal write cycle tWR (5 ms for 'B' version, 10 ms otherwise).",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 5,
+        "notes": "Wait for internal write cycle tWR (5 ms for 'B' version, 10 ms otherwise)."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "page_write",
+      "flow_kind": "write",
+      "step_index": 0,
+      "op": "write",
+      "role": "send device address + word address + up to 64 data bytes",
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          null,
+          "DATA"
+        ],
+        "notes": "Start condition, device address (R/W=0), two address bytes, then up to 64 data bytes, stop condition."
+      },
+      "length": null,
+      "notes": "Address lower 6 bits auto-increment within page; rollover overwrites beginning of page. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes.",
+      "semantic_roles": [
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": "send device address + word address + up to 64 data bytes",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            null,
+            "DATA"
+          ],
+          "notes": "Start condition, device address (R/W=0), two address bytes, then up to 64 data bytes, stop condition."
+        },
+        "notes": "Address lower 6 bits auto-increment within page; rollover overwrites beginning of page. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "page_write",
+      "flow_kind": "write",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait for internal write cycle tWR.",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 5,
+        "notes": "Wait for internal write cycle tWR."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "current_address_read",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "postprocess",
+      "role": "send device address with R/W=1",
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Device address byte: 1010 A1 A0 1. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection.",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "postprocess",
+        "role": "send device address with R/W=1",
+        "transaction": null,
+        "notes": "Device address byte: 1010 A1 A0 1. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "current_address_read",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "read",
+      "role": "read one byte",
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 1,
+        "notes": "Read one byte, then NACK and stop."
+      },
+      "length": 1,
+      "notes": "Data from current address counter.",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "read",
+        "role": "read one byte",
+        "transaction": {
+          "kind": "read",
+          "length": 1,
+          "notes": "Read one byte, then NACK and stop."
+        },
+        "notes": "Data from current address counter."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "random_read",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": "dummy write to set address",
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          null,
+          null
+        ],
+        "notes": "Start condition, device address (R/W=0), two address bytes, stop condition."
+      },
+      "length": null,
+      "notes": "Device address byte: 1010 A1 A0 0. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes.",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "role": "dummy write to set address",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            null,
+            null
+          ],
+          "notes": "Start condition, device address (R/W=0), two address bytes, stop condition."
+        },
+        "notes": "Device address byte: 1010 A1 A0 0. Canonicalized: removed leading I2C device-address placeholder; transaction.bytes now starts with runtime memory word-address bytes."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "random_read",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "postprocess",
+      "role": "repeated start with read",
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Device address byte: 1010 A1 A0 1. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection.",
+      "semantic_roles": [
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "postprocess",
+        "role": "repeated start with read",
+        "transaction": null,
+        "notes": "Device address byte: 1010 A1 A0 1. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "random_read",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": "read one byte",
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 1,
+        "notes": "Read one byte, then NACK and stop."
+      },
+      "length": 1,
+      "notes": "Data from specified address.",
+      "semantic_roles": [
+        "data"
+      ],
+      "raw_record": {
+        "op": "read",
+        "role": "read one byte",
+        "transaction": {
+          "kind": "read",
+          "length": 1,
+          "notes": "Read one byte, then NACK and stop."
+        },
+        "notes": "Data from specified address."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "sequential_read",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "postprocess",
+      "role": "initiate read (current or random)",
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "See current_address_read or random_read for full initiation. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection.",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "postprocess",
+        "role": "initiate read (current or random)",
+        "transaction": null,
+        "notes": "See current_address_read or random_read for full initiation. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "sequential_read",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "read",
+      "role": "read multiple bytes with ACK",
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": "DATA",
+        "notes": "Read data bytes; after each byte send ACK to continue, NACK to stop."
+      },
+      "length": "DATA",
+      "notes": "Address auto-increments; rollover from last byte to first byte.",
+      "semantic_roles": [
+        "data",
+        "clear"
+      ],
+      "raw_record": {
+        "op": "read",
+        "role": "read multiple bytes with ACK",
+        "transaction": {
+          "kind": "read",
+          "length": "DATA",
+          "notes": "Read data bytes; after each byte send ACK to continue, NACK to stop."
+        },
+        "notes": "Address auto-increments; rollover from last byte to first byte."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "acknowledge_polling",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "postprocess",
+      "role": "send device address",
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "If device ACKs (zero), write cycle complete; if NACK, cycle still in progress. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection.",
+      "semantic_roles": [
+        "status",
+        "clear"
+      ],
+      "raw_record": {
+        "op": "postprocess",
+        "role": "send device address",
+        "transaction": null,
+        "notes": "If device ACKs (zero), write cycle complete; if NACK, cycle still in progress. Canonicalized: removed an I2C device-address-only pseudo step; the bus API handles slave address and R/W phase selection."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "memory_reset",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Clock up to 9 cycles on SCL.",
+      "semantic_roles": [],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "SCL",
+        "notes": "Clock up to 9 cycles on SCL."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "memory_reset",
+      "flow_kind": "other",
+      "step_index": 1,
+      "op": "set_signal",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Create a start condition while SDA is high.",
+      "semantic_roles": [
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "set_signal",
+        "signal": "SDA",
+        "notes": "Create a start condition while SDA is high."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power-up default: device enters standby mode. No explicit initialization required.",
+      "semantic_roles": [
+        "config",
+        "control"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Power-up default: device enters standby mode. No explicit initialization required."
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Use one of the read flows: current_address_read, random_read, or sequential_read.",
+      "semantic_roles": [],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Use one of the read flows: current_address_read, random_read, or sequential_read."
+      }
+    }
+  ],
+  "channels": [
+    {
+      "index": 0,
+      "id": "memory",
+      "raw_type": "bytes",
+      "physical_unit": "byte",
+      "flow_id": "sequential_read",
+      "source_bytes": null,
+      "source_signal": null,
+      "formula_id": null,
+      "notes": "EEPROM memory array accessible via I2C read operations.",
+      "raw_record": {
+        "id": "memory",
+        "raw_type": "bytes",
+        "physical_unit": "byte",
+        "read_call_hint": "sequential_read",
+        "flow_id": "sequential_read",
+        "source_bytes": null,
+        "source_signal": null,
+        "formula_id": null,
+        "notes": "EEPROM memory array accessible via I2C read operations."
+      }
+    }
+  ],
+  "formula_inputs": [],
+  "evidence_spans": [
+    {
+      "source_id": "at24c256",
+      "page": 3,
+      "snippet": "The A1 and A0 pins are device address inputs that are hardwired or left not connected for hardware compatibility with other AT24CXX devices."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The device address word consists of a mandatory one, zero sequence for the first five most significant bits as shown."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The 128K/256K uses the two device address bits A1, A0 to allow as many as four devices on the same bus."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The eighth bit of the device address is the read/write operation select bit."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "A write operation requires two 8-bit data word addresses following the device address word and acknowledgment."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 10,
+      "snippet": "The 128K/256K EEPROM is capable of 64-byte page writes."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 11,
+      "snippet": "Once the device address with the read/write select bit set to one is clocked in and acknowledged by the EEPROM, the current address data word is serially clocked out."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 11,
+      "snippet": "A random read requires a 'dummy' byte write sequence to load in the data word address."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 12,
+      "snippet": "Sequential reads are initiated by either a current address read or a random address read."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 5,
+      "snippet": "The Write Cycle Time of 5 ms only applies to the AT24C128/256 devices bearing the process letter 'B' on the package."
+    },
+    {
+      "source_id": "at24c256",
+      "page": 7,
+      "snippet": "After an interruption in protocol, power loss or system reset, any two-wire part can be reset by following these steps: (a) Clock up to 9 cycles, (b) look for SDA high in each cycle while SCL is high and then (c) create a start condition as SDA is high."
+    }
+  ],
+  "coverage_hints": {
+    "identity_registers": [],
+    "identity_registers_not_referenced_by_flows": [],
+    "config_registers": [],
+    "config_registers_not_referenced_by_flows": [],
+    "result_registers": [],
+    "result_registers_not_referenced_by_flows": [],
+    "coefficient_registers": [],
+    "channels_without_source_bytes": [
+      {
+        "id": "memory",
+        "flow_id": "sequential_read",
+        "formula_id": null,
+        "raw_type": "bytes",
+        "physical_unit": "byte",
+        "source_signal": null
+      }
+    ],
+    "formula_inputs_without_byte_source": [],
+    "non_contiguous_result_hints": [],
+    "default_only_init": [
+      {
+        "source": "init_sequence",
+        "flow_id": "init_sequence",
+        "reason": "default_or_no_bus_init_note"
+      }
+    ]
+  },
+  "coverage_issues": [
+    {
+      "level": "warning",
+      "check_id": "device_ir.fact_bank.channel_missing_source_bytes",
+      "message": "Read channel lacks source_bytes/source_signal binding: memory."
+    }
+  ],
+  "summary": {
+    "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+    "address_count": 4,
+    "register_count": 1,
+    "bitfield_count": 4,
+    "operation_step_count": 16,
+    "channel_count": 1,
+    "formula_input_count": 0,
+    "evidence_span_count": 11,
+    "coverage_issue_count": 1,
+    "coverage_warning_count": 1,
+    "coverage_error_count": 0
+  }
+}

@@ -1,0 +1,513 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "lm75a",
+  "rtos": "threadx",
+  "board": "stm32f103rb",
+  "bus_type": "i2c",
+  "connection": {
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_symbol": "board-supplied i2c1 ops",
+    "address_mode": "7-bit",
+    "backend": "board/BSP supplied ops table"
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "HAL_Delay"
+    ],
+    "error_symbols": [
+      "HAL_NOR_StatusTypeDef"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "HAL_I2C_Init",
+      "I2C_ADDRESSINGMODE_7BIT",
+      "HAL_I2C_Master_Receive",
+      "HAL_I2C_Mem_Read",
+      "HAL_I2C_Master_Transmit"
+    ],
+    "bus_api_signatures": {
+      "HAL_I2C_Init": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+      "I2C_ADDRESSINGMODE_7BIT": "0x00004000U",
+      "HAL_I2C_Master_Receive": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_Mem_Read": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "HAL_I2C_Master_Transmit": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)"
+    },
+    "bus_helper_types": [
+      "I2C_HandleTypeDef"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "stm32_mw_threadx_plus_board_bsp",
+    "integration_style": "rtos_core_plus_board_supplied_ops",
+    "bus_instance": "i2c1",
+    "bus_symbol": "board-supplied i2c1 ops",
+    "include_headers": [
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "common/inc/tx_api.h"
+    ],
+    "fixed_attachment": {},
+    "required_helpers": [
+      "tx_thread_sleep"
+    ],
+    "runtime_provision_required_for": [],
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "lm75a",
+    "required_bus_type": "i2c",
+    "addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B",
+        "0x4C",
+        "0x4D",
+        "0x4E",
+        "0x4F"
+      ],
+      "selection_rule": "A2/A1/A0 define the lower address bits."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver only requires I2C power, ground, SDA, and SCL."
+      ]
+    },
+    "optional_attachment": {
+      "os_pin": "optional",
+      "address_select_pins": [
+        "A0",
+        "A1",
+        "A2"
+      ]
+    }
+  },
+  "api_bindings": {
+    "i2c.acquire_or_bind": {
+      "symbol": "HAL_I2C_Init",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.addressing": {
+      "symbol": "I2C_ADDRESSINGMODE_7BIT",
+      "kind": "macro",
+      "signature": "0x00004000U",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.66,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.key_types": {
+      "symbol": "I2C_HandleTypeDef",
+      "kind": "typedef",
+      "signature": "struct #endif /* USE_HAL_I2C_REGISTER_CALLBACKS */ { I2C_TypeDef *Instance; /*!< I2C registers base ",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.97,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.read": {
+      "symbol": "HAL_I2C_Master_Receive",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.transfer": {
+      "symbol": "HAL_I2C_Mem_Read",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "i2c.write": {
+      "symbol": "HAL_I2C_Master_Transmit",
+      "kind": "function",
+      "signature": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t *pData, uint16_t Size, uint32_t Timeout)",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "signature": "void HAL_Delay(__IO uint32_t Delay)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/BSP/Adafruit_Shield/stm32_adafruit_sd.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.error_status": {
+      "symbol": "HAL_NOR_StatusTypeDef",
+      "kind": "typedef",
+      "signature": "enum { HAL_NOR_STATUS_SUCCESS = 0U, HAL_NOR_STATUS_ONGOING, HAL_NOR_STATUS_ERROR, HAL_NOR_STATUS_TIM",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.62,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "integration.bus_instance_binding": {
+      "symbol": "LL_APB1_GRP1_PERIPH_I2C1",
+      "kind": "macro",
+      "signature": "RCC_APB1ENR_I2C1EN",
+      "required_headers": [
+        "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.66,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.tx_thread_sleep": {
+      "symbol": "tx_thread_sleep",
+      "kind": "macro",
+      "signature": "_tx_thread_sleep",
+      "required_headers": [
+        "common/inc/tx_api.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "threadx-stm32f103-project:threadx-core:0::common/inc/tx_api.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "allowed_symbols": [
+    "HAL_I2C_Init",
+    "HAL_I2C_Master_Receive",
+    "HAL_I2C_Mem_Read",
+    "HAL_I2C_Master_Transmit",
+    "HAL_Delay",
+    "tx_thread_sleep",
+    "I2C_ADDRESSINGMODE_7BIT",
+    "I2C_HandleTypeDef",
+    "HAL_NOR_StatusTypeDef",
+    "LL_APB1_GRP1_PERIPH_I2C1"
+  ],
+  "allowed_symbol_provenance": {
+    "HAL_I2C_Init": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Master_Receive": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Mem_Read": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_I2C_Master_Transmit": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_Delay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/BSP/Adafruit_Shield/stm32_adafruit_sd.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "tx_thread_sleep": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-core:0::common/inc/tx_api.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "I2C_ADDRESSINGMODE_7BIT": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "I2C_HandleTypeDef": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_NOR_StatusTypeDef": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "LL_APB1_GRP1_PERIPH_I2C1": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "threadx-stm32f103-project:threadx-stm32cubef1:2::Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "lm75a_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (3 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "lm75a_read_sequence",
+      "steps": [
+        {
+          "op": "i2c_write_then_read",
+          "args": {
+            "bytes": [
+              "0x00"
+            ],
+            "length": 2,
+            "pointer_target": "Temp",
+            "notes": null
+          },
+          "slot_id": "i2c.transfer",
+          "bound_symbol": "HAL_I2C_Mem_Read",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.5,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 10/10 required slots bound.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Init",
+      "slot_id": "i2c.acquire_or_bind"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Master_Receive",
+      "slot_id": "i2c.read"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Mem_Read",
+      "slot_id": "i2c.transfer"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_I2C_Master_Transmit",
+      "slot_id": "i2c.write"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/BSP/Adafruit_Shield/stm32_adafruit_sd.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_Delay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-core:0",
+      "path": "common/inc/tx_api.h",
+      "kind": "declaration",
+      "for_symbol": "tx_thread_sleep",
+      "slot_id": "task_helper.tx_thread_sleep"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "I2C_ADDRESSINGMODE_7BIT",
+      "slot_id": "i2c.addressing"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+      "kind": "declaration",
+      "for_symbol": "I2C_HandleTypeDef",
+      "slot_id": "i2c.key_types"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_nor.h",
+      "kind": "declaration",
+      "for_symbol": "HAL_NOR_StatusTypeDef",
+      "slot_id": "runtime.error_status"
+    },
+    {
+      "root_id": "threadx-stm32f103-project:threadx-stm32cubef1:2",
+      "path": "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_bus.h",
+      "kind": "declaration",
+      "for_symbol": "LL_APB1_GRP1_PERIPH_I2C1",
+      "slot_id": "integration.bus_instance_binding"
+    }
+  ],
+  "requires_human": []
+}

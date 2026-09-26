@@ -1,0 +1,610 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "max31855",
+  "rtos": "rtthread",
+  "board": "stm32f103rb",
+  "bus_type": "spi",
+  "connection": {
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "spi10",
+    "bus_symbol": "spi10",
+    "address_mode": "chip-select",
+    "backend": "RT-Thread SPI device framework"
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "rt_thread_mdelay"
+    ],
+    "error_symbols": [
+      "rt_err_t"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "rt_spi_bus_device_init",
+      "rt_spi_send_then_recv",
+      "rt_spi_bus_attach_device_cspin"
+    ],
+    "bus_api_signatures": {
+      "rt_spi_bus_device_init": "extern rt_err_t rt_spi_bus_device_init(struct rt_spi_bus *bus, const char *name)",
+      "rt_spi_send_then_recv": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+      "rt_spi_bus_attach_device_cspin": "rt_err_t rt_spi_bus_attach_device_cspin(struct rt_spi_device *device, const char *name, const char *bus_name, rt_base_t cs_pin, void *user_data)"
+    },
+    "bus_helper_types": [
+      "struct stm32_spi_config",
+      "rt_err_t",
+      "rt_size_t",
+      "rt_base_t"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "bus_instance": "spi10",
+    "bus_symbol": "spi10",
+    "include_headers": [],
+    "fixed_attachment": {
+      "device_name": "spi10",
+      "chip_select": "configured_by_bsp_spi_device"
+    },
+    "required_helpers": [
+      "rt_thread_mdelay"
+    ],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "spi10",
+        "fields": {
+          "bus_instance": "spi10",
+          "bus_symbol": "spi10",
+          "backend": "RT-Thread SPI device framework",
+          "mode": "polling",
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "integration.pin_binding": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "device_name": "spi10",
+          "chip_select": "configured_by_bsp_spi_device"
+        },
+        "fields": {
+          "fixed_attachment": {
+            "device_name": "spi10",
+            "chip_select": "configured_by_bsp_spi_device"
+          },
+          "required_attachment": {
+            "signals": [
+              "SCK",
+              "MISO",
+              "CS"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "max31855",
+    "required_bus_type": "spi",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCK",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 5000000
+      },
+      "notes": [
+        "Read-only 32-bit SPI stream; MOSI command bytes are not required."
+      ]
+    },
+    "optional_attachment": {
+      "mosi": "not_required",
+      "thermocouple_type": "device_variant_dependent"
+    }
+  },
+  "api_bindings": {
+    "spi.acquire_or_bind": {
+      "symbol": "rt_spi_bus_device_init",
+      "kind": "function",
+      "signature": "extern rt_err_t rt_spi_bus_device_init(struct rt_spi_bus *bus, const char *name)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.key_types": {
+      "symbol": "stm32_spi_config",
+      "kind": "struct",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drivers/drv_spi.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.transfer": {
+      "symbol": "rt_spi_send_then_recv",
+      "kind": "function",
+      "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "rt_thread_mdelay",
+      "kind": "function",
+      "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_thread_mdelay": {
+      "symbol": "rt_thread_mdelay",
+      "kind": "function",
+      "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.cs_control": {
+      "symbol": "rt_spi_bus_attach_device_cspin",
+      "kind": "function",
+      "signature": "rt_err_t rt_spi_bus_attach_device_cspin(struct rt_spi_device *device, const char *name, const char *bus_name, rt_base_t cs_pin, void *user_data)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.transfer",
+          "source_symbol": "rt_spi_send_then_recv",
+          "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "rt_size_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.transfer",
+          "source_symbol": "rt_spi_send_then_recv",
+          "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "rt_base_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "rt_spi_bus_attach_device_cspin",
+          "signature": "rt_err_t rt_spi_bus_attach_device_cspin(struct rt_spi_device *device, const char *name, const char *bus_name, rt_base_t cs_pin, void *user_data)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.transfer",
+          "source_symbol": "rt_spi_send_then_recv",
+          "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "spi10",
+      "fields": {
+        "bus_instance": "spi10",
+        "bus_symbol": "spi10",
+        "backend": "RT-Thread SPI device framework",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "device_name": "spi10",
+        "chip_select": "configured_by_bsp_spi_device"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "device_name": "spi10",
+          "chip_select": "configured_by_bsp_spi_device"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCK",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "spi10",
+      "fields": {
+        "bus_instance": "spi10",
+        "bus_symbol": "spi10",
+        "backend": "RT-Thread SPI device framework",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "device_name": "spi10",
+        "chip_select": "configured_by_bsp_spi_device"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "device_name": "spi10",
+          "chip_select": "configured_by_bsp_spi_device"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCK",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.transfer",
+          "source_symbol": "rt_spi_send_then_recv",
+          "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "rt_size_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.transfer",
+          "source_symbol": "rt_spi_send_then_recv",
+          "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "rt_base_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "rt_spi_bus_attach_device_cspin",
+          "signature": "rt_err_t rt_spi_bus_attach_device_cspin(struct rt_spi_device *device, const char *name, const char *bus_name, rt_base_t cs_pin, void *user_data)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.8,
+      "symbols": [
+        {
+          "symbol": "rt_err_t",
+          "kind": "type_ref",
+          "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+          "source_slot": "spi.transfer",
+          "source_symbol": "rt_spi_send_then_recv",
+          "signature": "rt_err_t rt_spi_send_then_recv(struct rt_spi_device *device, const void *send_buf, rt_size_t send_length, void *recv_buf, rt_size_t recv_length)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error evidence is derived from return/status types used by bound APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "rt_spi_send_then_recv",
+    "rt_thread_mdelay",
+    "rt_spi_bus_device_init",
+    "stm32_spi_config",
+    "rt_spi_bus_attach_device_cspin"
+  ],
+  "allowed_symbol_provenance": {
+    "rt_spi_send_then_recv": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_thread_mdelay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_spi_bus_device_init": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "stm32_spi_config": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drivers/drv_spi.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_spi_bus_attach_device_cspin": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::components/drivers/spi/dev_spi_core.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "max31855_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "max31855_read_sequence",
+      "steps": [
+        {
+          "op": "spi_read",
+          "args": {
+            "bytes": [],
+            "length": 32,
+            "pointer_target": null,
+            "notes": "Drive CS low, clock 32 SCK cycles, read 32 bits on SO."
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "rt_spi_send_then_recv",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.9,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 8/8 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/spi/dev_spi_core.c",
+      "kind": "declaration",
+      "for_symbol": "rt_spi_send_then_recv",
+      "slot_id": "spi.transfer"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "src/thread.c",
+      "kind": "declaration",
+      "for_symbol": "rt_thread_mdelay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "src/thread.c",
+      "kind": "declaration",
+      "for_symbol": "rt_thread_mdelay",
+      "slot_id": "task_helper.rt_thread_mdelay"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/spi/dev_spi_core.c",
+      "kind": "declaration",
+      "for_symbol": "rt_spi_bus_device_init",
+      "slot_id": "spi.acquire_or_bind"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_spi.h",
+      "kind": "declaration",
+      "for_symbol": "stm32_spi_config",
+      "slot_id": "spi.key_types"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "components/drivers/spi/dev_spi_core.c",
+      "kind": "declaration",
+      "for_symbol": "rt_spi_bus_attach_device_cspin",
+      "slot_id": "spi.cs_control"
+    }
+  ],
+  "requires_human": []
+}

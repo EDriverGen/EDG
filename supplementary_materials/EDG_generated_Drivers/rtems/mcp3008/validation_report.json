@@ -1,0 +1,314 @@
+{
+  "job_id": "rtems_generic_devfs__mcp3008__spi0_polling__deepseek_deepseek-v4-flash",
+  "device_id": "mcp3008",
+  "rtos_id": "rtems",
+  "provider": "deepseek",
+  "run_dir": "<RUN_DIR>",
+  "pipeline_version": "trace-rtos-v4",
+  "context_mode": "v2-mrse",
+  "reusable_inputs": null,
+  "checks": {
+    "rtos_evidence_validation": {
+      "passed_gates": [
+        "root_coverage",
+        "symbol_existence",
+        "root_role",
+        "example_consistency",
+        "no_stub_authority",
+        "cache_provenance"
+      ],
+      "failed_gates": [
+        "slot_coverage"
+      ],
+      "warnings": [
+        "mcu_affinity"
+      ],
+      "gate_results": [
+        {
+          "gate_id": "root_coverage",
+          "passed": true,
+          "severity": "info",
+          "message": "rtos 'rtems' is integrated; n_roots=1 (no minimum)",
+          "evidence": {
+            "rtos_id": "rtems",
+            "n_roots": 1
+          }
+        },
+        {
+          "gate_id": "slot_coverage",
+          "passed": false,
+          "severity": "error",
+          "message": "2 required slot(s) uncovered: ['spi.transfer', 'runtime.delay_ms']",
+          "evidence": {
+            "missing_required": [
+              "spi.transfer",
+              "runtime.delay_ms"
+            ],
+            "non_symbol_fulfillments": [
+              "integration.bus_instance_binding",
+              "integration.pin_binding",
+              "runtime.error_status",
+              "spi.key_types"
+            ]
+          }
+        },
+        {
+          "gate_id": "symbol_existence",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings traced to parsed source",
+          "evidence": {
+            "missing": []
+          }
+        },
+        {
+          "gate_id": "root_role",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings come from authoritative roles",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "mcu_affinity",
+          "passed": false,
+          "severity": "warning",
+          "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (4 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+          "evidence": {
+            "other_paths_sample": [
+              "rtems:single:0::cpukit/dev/spi/spi-bus.c",
+              "rtems:single:0::cpukit/include/dev/spi/spi.h",
+              "rtems:single:0::cpukit/include/rtems/rtems/status.h",
+              "rtems:single:0::cpukit/include/dev/spi/spi.h"
+            ]
+          }
+        },
+        {
+          "gate_id": "example_consistency",
+          "passed": true,
+          "severity": "info",
+          "message": "no exemplar files referenced; gate skipped",
+          "evidence": {}
+        },
+        {
+          "gate_id": "no_stub_authority",
+          "passed": true,
+          "severity": "info",
+          "message": "no stub source_kind in current bindings (or all marked link-only)",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "cache_provenance",
+          "passed": true,
+          "severity": "info",
+          "message": "all cache-provenance fields present",
+          "evidence": {
+            "missing": []
+          }
+        }
+      ]
+    },
+    "ir": {
+      "ok": false,
+      "issues": [
+        {
+          "level": "error",
+          "check_id": "device_ir.register_map",
+          "message": "register_map must be a mapping or null, got list."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.read_channels",
+          "message": "read_channels must be a non-empty list (at least one physical output)."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.access_model.kind",
+          "message": "kind must be one of ['command_then_direct_read', 'gpio_timing', 'memory', 'packet', 'register_auto_increment', 'register_pointer', 'stream', 'unknown'], got 'spi_stream'."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.conversion_formulae[0].integer_approximation_expression",
+          "message": "output must have a string 'name'"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.operation_flows[0].steps[0].transaction",
+          "message": "transaction object has unknown keys ['address']; allowed: kind|bytes|length|pointer_target|notes."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.operation_flows[0].steps[1].transaction",
+          "message": "transaction object has unknown keys ['address']; allowed: kind|bytes|length|pointer_target|notes."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.operation_flows[0].outputs",
+          "message": "outputs must be a list."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_5",
+          "message": "Evidence snippet not found: mcp3008 page 20 -> Table 5-2: Configure Bits for the MCP3008"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_17",
+          "message": "Evidence snippet not found: mcp3008 page 17 -> Digital Output Code = (V_IN / V_REF) * 1024"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_18",
+          "message": "Evidence snippet not found: mcp3008 page 17 -> LSB = V_REF / 1024"
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    },
+    "ir_flow_risk": {
+      "ok": true,
+      "issues": [
+        {
+          "level": "warning",
+          "check_id": "device_ir.flow_risk.audit_missing",
+          "message": "No device_ir_flow_audit.json receipt found; flow readiness is not fully audited."
+        },
+        {
+          "level": "warning",
+          "check_id": "device_ir.flow_risk.formula_input_binding.10-bit ADC raw count.high_byte",
+          "message": "formula input has no byte_source, source_signal, default_value, or config_source binding; downstream codegen may not know how to supply this value."
+        },
+        {
+          "level": "warning",
+          "check_id": "device_ir.flow_risk.formula_input_binding.10-bit ADC raw count.low_byte",
+          "message": "formula input has no byte_source, source_signal, default_value, or config_source binding; downstream codegen may not know how to supply this value."
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    }
+  },
+  "all_checks_passed": false,
+  "codegen": {
+    "version": "v2",
+    "success": false,
+    "total_time_s": 16.299,
+    "final_attempt": 3,
+    "eval_class": "multi_channel",
+    "bus_kind": "spi",
+    "runtime_path": "renode_spi",
+    "slave_kind": "spi_generic_slave",
+    "spi_sub_mode": "command",
+    "layer_failed": "syntax",
+    "final_elf_path": null,
+    "files_written": {
+      "mcp3008.h": 303,
+      "mcp3008.c": 759
+    },
+    "probe": {
+      "total": 0,
+      "pass": 0,
+      "fail": 0,
+      "error": 0
+    },
+    "invariants_count": 0,
+    "attempts": [
+      {
+        "attempt": 1,
+        "layer_failed": "syntax",
+        "success": false,
+        "total_time_s": 3.825,
+        "bundle_summary": {
+          "device_id": "mcp3008",
+          "rtos_id": "rtems",
+          "eval_class": "multi_channel",
+          "bus_kind": "spi",
+          "header_chars": 303,
+          "source_chars": 759,
+          "plan_hash": "3eb47c5e28f59f7c",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 3.631
+        },
+        "syntax": {
+          "success": false,
+          "errors": 4,
+          "warnings": 0
+        },
+        "feedback_chars": 867
+      },
+      {
+        "attempt": 2,
+        "layer_failed": "syntax",
+        "success": false,
+        "total_time_s": 3.513,
+        "bundle_summary": {
+          "device_id": "mcp3008",
+          "rtos_id": "rtems",
+          "eval_class": "multi_channel",
+          "bus_kind": "spi",
+          "header_chars": 303,
+          "source_chars": 592,
+          "plan_hash": "3eb47c5e28f59f7c",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 3.338
+        },
+        "syntax": {
+          "success": false,
+          "errors": 4,
+          "warnings": 0
+        },
+        "feedback_chars": 867
+      },
+      {
+        "attempt": 3,
+        "layer_failed": "syntax",
+        "success": false,
+        "total_time_s": 3.133,
+        "bundle_summary": {
+          "device_id": "mcp3008",
+          "rtos_id": "rtems",
+          "eval_class": "multi_channel",
+          "bus_kind": "spi",
+          "header_chars": 303,
+          "source_chars": 548,
+          "plan_hash": "3eb47c5e28f59f7c",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 2.977
+        },
+        "syntax": {
+          "success": false,
+          "errors": 4,
+          "warnings": 0
+        },
+        "feedback_chars": 866
+      }
+    ]
+  }
+}

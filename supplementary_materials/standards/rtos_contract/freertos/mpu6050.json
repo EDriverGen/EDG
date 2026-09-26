@@ -1,0 +1,108 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "freertos__mpu6050",
+  "device_id": "mpu6050",
+  "rtos_id": "freertos",
+  "bus": "i2c",
+  "scope": "freertos fixed task for mpu6050, bus=i2c, board=stm32f103rb; contract describes only APIs needed by the copied reference driver and task fixed binding.",
+  "api_contract": {
+    "headers": [
+      "stm32f1xx_hal.h",
+      "FreeRTOS.h",
+      "task.h"
+    ],
+    "types": {
+      "bus_or_device": "I2C_HandleTypeDef",
+      "status": "HAL_StatusTypeDef"
+    },
+    "task_binding": {
+      "bus": "i2c",
+      "instance": "i2c1",
+      "symbol": "hi2c1",
+      "mode": "polling",
+      "backend": "STM32CubeF1 HAL I2C"
+    },
+    "operations": [
+      {
+        "name": "HAL_I2C_Master_Transmit",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Master_Transmit(I2C_HandleTypeDef *, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "HAL_I2C_Master_Receive",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Master_Receive(I2C_HandleTypeDef *, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      },
+      {
+        "name": "HAL_I2C_Mem_Read",
+        "signature": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *, uint16_t, uint16_t, uint16_t, uint8_t *, uint16_t, uint32_t Timeout)",
+        "semantics": "polling API used directly by reference; honor parameters and return value."
+      }
+    ],
+    "preconditions": "Caller provides the task-configured and initialized peripheral handle; helper APIs have the RTOS/HAL context documented in the baseline pack."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Retain the fixed FreeRTOS task's i2c handle/device type and prebound context; the caller supplies the bus instance configured according to task_requirements.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.h",
+          "line_start": 14,
+          "line_end": 14
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.h",
+          "line_start": 18,
+          "line_end": 18
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/task_requirements.json",
+          "line_start": 23,
+          "line_end": 29
+        }
+      ]
+    },
+    {
+      "id": "bus_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Retain the polling operations actually used by the reference implementation: HAL_I2C_Master_Transmit, HAL_I2C_Master_Receive, HAL_I2C_Mem_Read. Parameter and return semantics must support the i2c access required by mpu6050.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 45,
+          "line_end": 45
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 19,
+          "line_end": 19
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 47,
+          "line_end": 47
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 33,
+          "line_end": 33
+        },
+        {
+          "file": "evidence/rtos/tasks/freertos__mpu6050/inputs/reference_drivers/mpu6050_ref.c",
+          "line_start": 40,
+          "line_end": 40
+        }
+      ]
+    }
+  ]
+}

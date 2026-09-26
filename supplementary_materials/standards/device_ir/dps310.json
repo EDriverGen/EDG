@@ -1,0 +1,763 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "dps310",
+  "scope": "Temperature/pressure configuration, raw reads, and compensation over I2C; additional represented FIFO/interrupt/SPI facts are included in accuracy statistics.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "i2c_selection",
+        "pointer",
+        "fifo_temperature_port",
+        "spi_wire_mode"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "raw_addresses",
+        "config_addresses",
+        "coefficient_addresses",
+        "measurement_rate",
+        "oversampling",
+        "temperature_source",
+        "mode_codes",
+        "ready_bits",
+        "id_layout",
+        "id_expected",
+        "interrupt_controls",
+        "interrupt_status",
+        "fifo_flags"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": [
+        "shift",
+        "temperature_source_match",
+        "read_ready",
+        "reset"
+      ]
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "i2c_clock",
+        "startup_waits",
+        "measurement_times",
+        "rate_budget",
+        "extra_timing_6",
+        "extra_timing_7",
+        "extra_timing_8",
+        "extra_timing_9",
+        "extra_timing_10",
+        "extra_timing_11",
+        "extra_timing_12",
+        "extra_timing_13",
+        "extra_timing_14",
+        "extra_timing_15"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "raw_signed",
+        "coefficient_unpack",
+        "scaling_table",
+        "pressure_formula",
+        "temperature_formula"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "mode_behaviour",
+        "fifo_capacity"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "DPS310_datasheet.pdf",
+      "pages": 41,
+      "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "address",
+      "required": true,
+      "expected": "SDO low selects 76; default or high selects 77.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "i2c_selection",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "CSB high selects I2C; pulling it low switches to SPI until power cycling.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "i2c_clock",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "I2C supports up to 3.4 MHz.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Sequential reads increment the address from the specified one-byte register pointer.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 19,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw_addresses",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Pressure is at 00..02; temperature at 03..05.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw_signed",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Raw pressure/temperature use big-endian 24-bit two's complement.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config_addresses",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "PRS_CFG/TMP_CFG/MEAS_CFG/CFG_REG are at 06/07/08/09.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 25,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "coefficient_addresses",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Calibration data occupy 18 bytes at 10..21.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "coefficient_unpack",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "c0/c1 are 12-bit, c00/c10 are 20-bit, and the remaining coefficients are 16-bit two's-complement values; assemble across bytes according to Table 18.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 37,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scaling_table",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "kP/kT for OSR1/2/4/8/16/32/64/128 are 524288/1572864/3670016/7864320/253952/516096/1040384/2088960.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pressure_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Psc=Praw/kP，Tsc=Traw/kT；P=c00+Psc*(c10+Psc*(c20+Psc*c30))+Tsc*c01+Tsc*Psc*(c11+Psc*c21)。",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "T=c0/2+c1*(Traw/kT), in degrees Celsius.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "measurement_rate",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Pressure/temperature rate fields occupy bits6:4; codes0..7 correspond to 1..128 measurements/second.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "oversampling",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "The PRC field occupies bits3:0; codes0..7 select OSR1/2/4/8/16/32/64/128, and encodings with the high bit set are reserved.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 29,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "shift",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "For OSR greater than 8, set CFG_REG P_SHIFT2/T_SHIFT3 to 1.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_source",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "TMP_CFG bit7 and COEF_SRCE bit7 identify the temperature measurement and calibration sources, respectively.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_source_match",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Select TMP_EXT according to COEF_SRCE bit7: 0 for internal ASIC, 1 for external MEMS.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 38,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mode_behaviour",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Standby is the default; command mode returns to standby after one measurement; background mode continues according to configuration.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "mode_codes",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "MEAS_CTRL=0 stops; 1 selects one pressure measurement, 2 one temperature measurement; 5/6/7 continuously measure pressure/temperature/both.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "ready_bits",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "MEAS_CFG COEF/SENSOR/TMP/PRS_RDY occupy bits7/6/5/4.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "startup_waits",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Sensor readiness takes at most 12 ms and coefficient readiness at most 40 ms; wait on the corresponding flags.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_ready",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Temperature/pressure new-data flags clear after reading their respective results.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 32,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "measurement_times",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Temperature OSR1 takes 3.6 ms; pressure low-power OSR2 takes 5.2 ms, standard16 takes 27.6 ms, and high64 takes 104.4 ms.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 31,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "rate_budget",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "For simultaneous temperature and pressure measurements, the sum of each rate times its measurement duration must be less than 1 second.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 30,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset",
+      "component": "O",
+      "category": "procedure",
+      "required": true,
+      "expected": "Write 1001 to the low 4 bits of 0C for a soft reset, which repeats the power-up sequence.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "id_layout",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "The high 4 bits of 0D are REV_ID; the low 4 bits are PROD_ID.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "id_expected",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Product ID is 0; the current manual specifies REV_ID=1, giving 10h.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interrupt_controls",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "CFG_REG contains INT_HL7 and FIFO/TMP/PRS interrupt enables at bits6/5/4.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interrupt_status",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "INT_STS=0A; FIFO/TMP/PRS status bits2/1/0 clear on read.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 34,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fifo_flags",
+      "component": "G",
+      "category": "register",
+      "required": false,
+      "expected": "FIFO_STS=0B, with full at bit1 and empty at bit0; CFG_REG bit1 enables FIFO, and RESET bit7 clears it.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 35,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 36,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fifo_capacity",
+      "component": "F",
+      "category": "state",
+      "required": false,
+      "expected": "FIFO holds 32 temperature/pressure results; reading an empty FIFO returns 800000.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        },
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "fifo_temperature_port",
+      "component": "B",
+      "category": "protocol",
+      "required": false,
+      "expected": "With FIFO enabled, both temperature and pressure results are read through pressure registers 00..02; temperature registers are not FIFO outputs.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "spi_wire_mode",
+      "component": "B",
+      "category": "protocol",
+      "required": false,
+      "expected": "CFG_REG bit0 selects four-wire SPI at 0 and three-wire SPI at 1.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 33,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_6",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2C standard/fast-mode data setup time is at least 20 ns.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_7",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2C high-speed data setup time is at least 5 ns.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_8",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2C data hold time is at least 0 ns.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_9",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2C standard/fast-mode duty cycle is at most 70%.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_10",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "I2C high-speed duty cycle is at most 55%.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 23,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_11",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SPI Mode11 supports up to 10 MHz.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_12",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SPI data setup time is at least 2 ns.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_13",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SPI data hold time is at least 2 ns.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_14",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SPI CS setup time is at least 15 ns.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "extra_timing_15",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SPI CS hold time is at least 15 ns.",
+      "evidence": [
+        {
+          "document": "DPS310_datasheet.pdf",
+          "pdf_page": 24,
+          "page_text_file": "evidence/datasheets/dps310/DPS310_datasheet.pages.json"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "device_id": "hcsr04",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "single_channel",
+  "bus_kind": "gpio",
+  "driver_header": "#ifndef HCSR04_H\n#define HCSR04_H\n\n#include <stdint.h>\n#include <stddef.h>\n#include \"stm32f1xx_hal.h\"\n#include \"stm32f1xx_hal_gpio.h\"\n\nstruct hcsr04_dev {\n    GPIO_TypeDef *trig_port;\n    uint16_t trig_pin;\n    GPIO_TypeDef *echo_port;\n    uint16_t echo_pin;\n};\n\nint hcsr04_init(struct hcsr04_dev *dev, GPIO_TypeDef *trig_port, uint16_t trig_pin, GPIO_TypeDef *echo_port, uint16_t echo_pin);\nint hcsr04_read_distance(struct hcsr04_dev *dev, int32_t *raw);\n\n#endif",
+  "driver_source": "#include \"hcsr04.h\"\n#include <stdint.h>\n#include <stddef.h>\n#include \"stm32f1xx_hal.h\"\n#include \"stm32f1xx_hal_gpio.h\"\n\n#define TRIG_PULSE_US 10\n#define TIMEOUT_US 60000\n#define SOUND_SPEED_NUM 343\n#define SOUND_SPEED_DEN 2000\n\nstatic uint32_t measure_pulse_us(GPIO_TypeDef *port, uint16_t pin) {\n    uint32_t count = 0;\n    uint32_t timeout = TIMEOUT_US;\n    while (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET) {\n        if (--timeout == 0) return 0;\n        HAL_Delay(0);\n    }\n    timeout = TIMEOUT_US;\n    while (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET) {\n        if (--timeout == 0) return 0;\n        count++;\n        HAL_Delay(0);\n    }\n    return count;\n}\n\nint hcsr04_init(struct hcsr04_dev *dev, GPIO_TypeDef *trig_port, uint16_t trig_pin, GPIO_TypeDef *echo_port, uint16_t echo_pin) {\n    if (!dev || !trig_port || !echo_port) return -1;\n    dev->trig_port = trig_port;\n    dev->trig_pin = trig_pin;\n    dev->echo_port = echo_port;\n    dev->echo_pin = echo_pin;\n\n    GPIO_InitTypeDef gpio_init = {0};\n    gpio_init.Pin = trig_pin;\n    gpio_init.Mode = GPIO_MODE_OUTPUT_PP;\n    gpio_init.Speed = GPIO_SPEED_FREQ_HIGH;\n    HAL_GPIO_Init(trig_port, &gpio_init);\n\n    gpio_init.Pin = echo_pin;\n    gpio_init.Mode = GPIO_MODE_INPUT;\n    gpio_init.Pull = GPIO_NOPULL;\n    HAL_GPIO_Init(echo_port, &gpio_init);\n\n    HAL_GPIO_WritePin(trig_port, trig_pin, GPIO_PIN_RESET);\n    return 0;\n}\n\nint hcsr04_read_distance(struct hcsr04_dev *dev, int32_t *raw) {\n    if (!dev || !raw) return -1;\n\n    HAL_GPIO_WritePin(dev->trig_port, dev->trig_pin, GPIO_PIN_SET);\n    HAL_Delay(0);\n    HAL_GPIO_WritePin(dev->trig_port, dev->trig_pin, GPIO_PIN_RESET);\n\n    uint32_t pulse_us = measure_pulse_us(dev->echo_port, dev->echo_pin);\n    if (pulse_us == 0) return -5;\n\n    *raw = (int32_t)((pulse_us * SOUND_SPEED_NUM) / SOUND_SPEED_DEN);\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "hcsr04_init(&g_eval_dev, PA0, PA1)",
+    "read_call": "hcsr04_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct hcsr04_dev",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "gpio1",
+        "note": "init: configure pin mode (output then input)"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "read_cycle: pulse / 1-wire handshake then sample bits"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_gpio_pulse_width_positive",
+        "mock_preload": {
+          "schedule": [
+            [
+              1,
+              400
+            ],
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        "expected_read_raw": 68,
+        "raw_tolerance": 3,
+        "derivation": "GPIO pulse schedule drives echo_pulse_width_us high for 400 us; formula input T=400; (400 * 343) // 2000 = 68."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.gpio_measure_pulse+conversion_formulae"
+  },
+  "runtime_path": "renode_gpio_pulse",
+  "slave_kind": "gpio_pulse_injector",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.614,
+  "prompt_chars": 33070,
+  "raw_response": "{\"driver_header\": \"#ifndef HCSR04_H\\n#define HCSR04_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"stm32f1xx_hal_gpio.h\\\"\\n\\nstruct hcsr04_dev {\\n    GPIO_TypeDef *trig_port;\\n    uint16_t trig_pin;\\n    GPIO_TypeDef *echo_port;\\n    uint16_t echo_pin;\\n};\\n\\nint hcsr04_init(struct hcsr04_dev *dev, GPIO_TypeDef *trig_port, uint16_t trig_pin, GPIO_TypeDef *echo_port, uint16_t echo_pin);\\nint hcsr04_read_distance(struct hcsr04_dev *dev, int32_t *raw);\\n\\n#endif\", \"driver_source\": \"#include \\\"hcsr04.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"stm32f1xx_hal_gpio.h\\\"\\n\\n#define TRIG_PULSE_US 10\\n#define TIMEOUT_US 60000\\n#define SOUND_SPEED_NUM 343\\n#define SOUND_SPEED_DEN 2000\\n\\nstatic uint32_t measure_pulse_us(GPIO_TypeDef *port, uint16_t pin) {\\n    uint32_t count = 0;\\n    uint32_t timeout = TIMEOUT_US;\\n    while (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_RESET) {\\n        if (--timeout == 0) return 0;\\n        HAL_Delay(0);\\n    }\\n    timeout = TIMEOUT_US;\\n    while (HAL_GPIO_ReadPin(port, pin) == GPIO_PIN_SET) {\\n        if (--timeout == 0) return 0;\\n        count++;\\n        HAL_Delay(0);\\n    }\\n    return count;\\n}\\n\\nint hcsr04_init(struct hcsr04_dev *dev, GPIO_TypeDef *trig_port, uint16_t trig_pin, GPIO_TypeDef *echo_port, uint16_t echo_pin) {\\n    if (!dev || !trig_port || !echo_port) return -1;\\n    dev->trig_port = trig_port;\\n    dev->trig_pin = trig_pin;\\n    dev->echo_port = echo_port;\\n    dev->echo_pin = echo_pin;\\n\\n    GPIO_InitTypeDef gpio_init = {0};\\n    gpio_init.Pin = trig_pin;\\n    gpio_init.Mode = GPIO_MODE_OUTPUT_PP;\\n    gpio_init.Speed = GPIO_SPEED_FREQ_HIGH;\\n    HAL_GPIO_Init(trig_port, &gpio_init);\\n\\n    gpio_init.Pin = echo_pin;\\n    gpio_init.Mode = GPIO_MODE_INPUT;\\n    gpio_init.Pull = GPIO_NOPULL;\\n    HAL_GPIO_Init(echo_port, &gpio_init);\\n\\n    HAL_GPIO_WritePin(trig_port, trig_pin, GPIO_PIN_RESET);\\n    return 0;\\n}\\n\\nint hcsr04_read_distance(struct hcsr04_dev *dev, int32_t *raw) {\\n    if (!dev || !raw) return -1;\\n\\n    HAL_GPIO_WritePin(dev->trig_port, dev->trig_pin, GPIO_PIN_SET);\\n    HAL_Delay(0);\\n    HAL_GPIO_WritePin(dev->trig_port, dev->trig_pin, GPIO_PIN_RESET);\\n\\n    uint32_t pulse_us = measure_pulse_us(dev->echo_port, dev->echo_pin);\\n    if (pulse_us == 0) return -5;\\n\\n    *raw = (int32_t)((pulse_us * SOUND_SPEED_NUM) / SOUND_SPEED_DEN);\\n    return 0;\\n}\"}",
+  "plan_hash": "249a77320be3842a"
+}

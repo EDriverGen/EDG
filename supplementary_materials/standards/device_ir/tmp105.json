@@ -1,0 +1,682 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "tmp105",
+  "scope": "Temperature reading and the configuration/threshold/one-shot operations represented in IR; general-call reset and SMBus alert arbitration are optional features outside these flows.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "pointer",
+        "read",
+        "pointer_retained"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "register_1",
+        "register_2",
+        "register_3",
+        "register_4",
+        "resolution_select",
+        "config_3",
+        "config_4",
+        "config_5"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "conversion_typ_11",
+        "conversion_typ_12",
+        "conversion_typ_13",
+        "conversion_typ_14",
+        "conversion_max",
+        "bus_max",
+        "bus_min",
+        "wire_timing_1",
+        "wire_timing_2",
+        "wire_timing_3",
+        "wire_timing_4",
+        "wire_timing_5",
+        "wire_timing_6",
+        "wire_timing_7",
+        "wire_timing_8",
+        "wire_timing_9",
+        "wire_timing_10"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "raw",
+        "formula",
+        "limits_encoding"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "reset_resolution",
+        "shutdown",
+        "oneshot",
+        "initial_result",
+        "limit_defaults",
+        "timeout"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "TMP105_datasheet.pdf",
+      "pages": 21,
+      "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "A0=0/1 gives7-bit48/49",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "One-byte pointer low2bits selects00..03",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "register_1",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Temperature00:16bits RO",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "register_2",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Configuration01:8bits RW",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "register_3",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Low limit02:16bits RW",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "register_4",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "High limit03:16bits RW",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Write pointer00 then read MSB and LSB",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "pointer_retained",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Pointer persists so repeated same-register reads may omit pointer write",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Temperature signed12 left-justified bits15:4, lowerbits0",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "Sign-extend12 then multiply62.5mdegC",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_resolution",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Reset resolution9bits, config allzero",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "resolution_select",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "R1:R0 bits6:5 select9,10,11,12bits",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "shutdown",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "SDbit0=1 completes ongoing conversion then shuts down",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "oneshot",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "OSbit7 in shutdown triggers one conversion and reads0",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_typ_11",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "27.5ms typical conversion time",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_typ_12",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "55ms typical conversion time",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_typ_13",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "110ms typical conversion time",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_typ_14",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "220ms typical conversion time",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_max",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Maximum conversion times37.5/75/150/300ms for9/10/11/12bits",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 3,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "initial_result",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Temperature reads0 until first conversion completes",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "limits_encoding",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "TLOW/THIGH same12-bit data format, all12bits used",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "limit_defaults",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Default low75C/high80C",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config_3",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Faultqueue bits4:3=1/2/4/6",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config_4",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Polarity bit2 active-low0 active-high1",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "config_5",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "TMbit1 comparator0 interrupt1",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_max",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Fast I2C clock maximum400kHz",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_min",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Clock at least1kHz to avoid timeout",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        },
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "timeout",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Serial timeout typ54ms",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_1",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Bus-free minimum600ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_2",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "START hold100ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_3",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "repeatedSTART setup100ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_4",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "STOP setup100ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_5",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "datahold0ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_6",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "datasetup100ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_7",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SCLLOW1300ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_8",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "SCLHIGH600ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_9",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "falltime maximum300ns",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wire_timing_10",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "risetime1000ns at<=100kHz",
+      "evidence": [
+        {
+          "document": "TMP105_datasheet.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/tmp105/TMP105_datasheet.pages.json"
+        }
+      ]
+    }
+  ]
+}

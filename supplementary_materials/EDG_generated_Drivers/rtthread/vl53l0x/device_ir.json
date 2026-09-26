@@ -1,0 +1,654 @@
+{
+  "device_id": "vl53l0x",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "fixed",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x29",
+        "description": "Default I2C device address (0x52 >> 1)",
+        "is_default": true
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 256,
+    "addressing": "1-byte",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Register map is accessed via I2C with 8-bit register addresses. Auto-increment supported for sequential reads/writes."
+  },
+  "read_channels": [
+    {
+      "id": "distance",
+      "raw_type": "uint16",
+      "physical_unit": "mm",
+      "read_call_hint": null,
+      "flow_id": "ranging_single",
+      "source_bytes": null,
+      "source_signal": null,
+      "formula_id": null,
+      "notes": "Distance measurement in millimeters. Raw value is computed by device firmware; no conversion formula needed."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "I2C register access: write register address, then read/write data. Auto-increment supported."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "power_up_xshut_controlled",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "AVDD",
+          "value": "2.8V",
+          "notes": "Apply AVDD supply (2.6V to 3.5V)."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 1.2,
+          "notes": "Wait for tBOOT (1.2 ms max) after XSHUT high."
+        },
+        {
+          "op": "set_signal",
+          "signal": "XSHUT",
+          "value": "high",
+          "notes": "Set XSHUT high to exit hardware standby."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Power-up sequence with XSHUT controlled by host."
+    },
+    {
+      "flow_id": "power_up_xshut_not_controlled",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "AVDD",
+          "value": "2.8V",
+          "notes": "Apply AVDD supply; XSHUT is pulled high automatically."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 1.2,
+          "notes": "Wait for tBOOT (1.2 ms max) for firmware boot."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Power-up sequence with XSHUT tied to AVDD."
+    },
+    {
+      "flow_id": "init_and_load_calibration",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Device powered up and out of reset."
+      ],
+      "steps": [
+        {
+          "op": "postprocess",
+          "notes": "Perform initialization and load calibration data (SPAD, temperature, offset, crosstalk). Details in API user manual UM2039. Canonicalized from a bus op because the step has no bus transaction and is described as API/abstract behavior."
+        }
+      ],
+      "outputs": [],
+      "requires_human": true,
+      "notes": "Initialization and load calibration data phase before first ranging or after reset."
+    },
+    {
+      "flow_id": "ranging_single",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "preconditions": [
+        "Device initialized and calibration loaded."
+      ],
+      "steps": [
+        {
+          "op": "postprocess",
+          "notes": "Call API function to start single ranging; system returns to SW standby automatically. Canonicalized from a bus op because the step has no bus transaction and is described as API/abstract behavior."
+        },
+        {
+          "op": "poll_until",
+          "condition": "measurement complete (API function returns ready)",
+          "interval_ms": 10,
+          "timeout_ms": 1000,
+          "register": "STATUS_REG",
+          "notes": "Poll API function to check if measurement is complete."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 2,
+            "notes": "Read distance result from device registers (address not specified in datasheet)."
+          },
+          "notes": "Read distance value from device."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "distance",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "mm",
+          "notes": "Distance value computed by device firmware."
+        }
+      ],
+      "requires_human": true,
+      "notes": "Single ranging mode: perform one range measurement then return to SW standby. Register-level trigger and result register address not specified in datasheet; API handles details."
+    },
+    {
+      "flow_id": "ranging_continuous",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "preconditions": [
+        "Device initialized and calibration loaded."
+      ],
+      "steps": [
+        {
+          "op": "postprocess",
+          "notes": "Call API function to start continuous ranging; measurements repeat until stop. Canonicalized from a bus op because the step has no bus transaction and is described as API/abstract behavior."
+        },
+        {
+          "op": "poll_until",
+          "condition": "measurement complete (API function returns ready)",
+          "interval_ms": 10,
+          "timeout_ms": 1000,
+          "register": "STATUS_REG",
+          "notes": "Poll API function to check if measurement is complete."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 2,
+            "notes": "Read distance result from device registers (address not specified in datasheet)."
+          },
+          "notes": "Read distance value from device."
+        },
+        {
+          "op": "postprocess",
+          "notes": "User must stop ranging to return to SW standby; last measurement completes before stopping. Canonicalized from a bus op because the step has no bus transaction and is described as API/abstract behavior."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "distance",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "mm",
+          "notes": "Distance value computed by device firmware."
+        }
+      ],
+      "requires_human": true,
+      "notes": "Continuous ranging mode: measurements repeat until stopped. Register-level trigger and result register address not specified in datasheet; API handles details."
+    },
+    {
+      "flow_id": "ranging_timed",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "preconditions": [
+        "Device initialized and calibration loaded."
+      ],
+      "steps": [
+        {
+          "op": "postprocess",
+          "notes": "Call API function to start timed ranging; inter-measurement period defined by user. Canonicalized from a bus op because the step has no bus transaction and is described as API/abstract behavior."
+        },
+        {
+          "op": "poll_until",
+          "condition": "measurement complete (API function returns ready)",
+          "interval_ms": 10,
+          "timeout_ms": 1000,
+          "register": "STATUS_REG",
+          "notes": "Poll API function to check if measurement is complete."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 2,
+            "notes": "Read distance result from device registers (address not specified in datasheet)."
+          },
+          "notes": "Read distance value from device."
+        },
+        {
+          "op": "postprocess",
+          "notes": "User must stop ranging to return to SW standby; if stop during measurement, measurement completes before stopping. Canonicalized from a bus op because the step has no bus transaction and is described as API/abstract behavior."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "distance",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "mm",
+          "notes": "Distance value computed by device firmware."
+        }
+      ],
+      "requires_human": true,
+      "notes": "Timed ranging mode: continuous ranging with user-defined inter-measurement delay. Register-level trigger and result register address not specified in datasheet; API handles details."
+    },
+    {
+      "flow_id": "polling_mode",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "preconditions": [
+        "Device initialized and calibration loaded.",
+        "Ranging has been started via API."
+      ],
+      "steps": [
+        {
+          "op": "poll_until",
+          "condition": "measurement complete (API function returns ready)",
+          "interval_ms": 10,
+          "timeout_ms": 1000,
+          "register": "STATUS_REG",
+          "notes": "Poll API function to check if measurement is complete."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 2,
+            "notes": "Read distance result from device registers (address not specified in datasheet)."
+          },
+          "notes": "Read distance value from device."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "distance",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "mm",
+          "notes": "Distance value computed by device firmware."
+        }
+      ],
+      "requires_human": true,
+      "notes": "Polling mode: check status of ongoing measurement by polling an API function. Result register address not specified in datasheet; API handles details."
+    },
+    {
+      "flow_id": "interrupt_mode",
+      "kind": "read",
+      "channels": [
+        "distance"
+      ],
+      "preconditions": [
+        "Device initialized and calibration loaded.",
+        "Ranging has been started via API."
+      ],
+      "steps": [
+        {
+          "op": "wait_signal",
+          "signal": "GPIO1",
+          "edge": "falling",
+          "timeout_ms": 1000,
+          "notes": "Wait for interrupt on GPIO1 indicating new measurement available."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 2,
+            "notes": "Read distance result from device registers (address not specified in datasheet)."
+          },
+          "notes": "Read distance value from device."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "distance",
+          "byte_source": null,
+          "source_signal": null,
+          "formula_id": null,
+          "unit": "mm",
+          "notes": "Distance value computed by device firmware."
+        }
+      ],
+      "requires_human": true,
+      "notes": "Interrupt mode: GPIO1 pin signals when new measurement is available. Result register address not specified in datasheet; API handles details."
+    }
+  ],
+  "raw_encoding": null,
+  "registers_or_commands": [
+    {
+      "name": "REFERENCE_REG_0xC0",
+      "value": "0xC0",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Reference register at address 0xC0 after fresh reset without API, value 0xEE."
+    },
+    {
+      "name": "REFERENCE_REG_0xC1",
+      "value": "0xC1",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Reference register at address 0xC1 after fresh reset without API, value 0xAA."
+    },
+    {
+      "name": "REFERENCE_REG_0xC2",
+      "value": "0xC2",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Reference register at address 0xC2 after fresh reset without API, value 0x10."
+    },
+    {
+      "name": "REFERENCE_REG_0x51",
+      "value": "0x51",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "Reference register at address 0x51 after fresh reset without API, value 0x0099."
+    },
+    {
+      "name": "REFERENCE_REG_0x61",
+      "value": "0x61",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "Reference register at address 0x61 after fresh reset without API, value 0x0000."
+    }
+  ],
+  "bitfields": [],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up sequence: apply AVDD, then set XSHUT high (or wait for boot if XSHUT tied high). Wait tBOOT (1.2 ms max)."
+    },
+    {
+      "transaction": null,
+      "notes": "Perform initialization and load calibration data (SPAD, temperature, offset, crosstalk). Details in API user manual UM2039."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "Ranging is initiated via API. The device firmware handles register access internally. No direct register read sequence is specified for obtaining distance data."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "tBOOT",
+      "value": 1.2,
+      "unit": "ms",
+      "condition": "after XSHUT high",
+      "notes": "Maximum boot time after XSHUT high."
+    },
+    {
+      "name": "timing_budget",
+      "value": 33,
+      "unit": "ms",
+      "condition": "default",
+      "notes": "Default timing budget for a range measurement."
+    },
+    {
+      "name": "min_range_period",
+      "value": 8,
+      "unit": "ms",
+      "condition": "minimum",
+      "notes": "Minimum range measurement period."
+    },
+    {
+      "name": "F_I2C",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "maximum",
+      "notes": "Maximum I2C operating frequency."
+    },
+    {
+      "name": "t_BUF",
+      "value": 1.3,
+      "unit": "ms",
+      "condition": "minimum",
+      "notes": "Bus free time between transmissions minimum."
+    },
+    {
+      "name": "t_HD_STA",
+      "value": 0.26,
+      "unit": "us",
+      "condition": "minimum",
+      "notes": "Start hold time minimum."
+    },
+    {
+      "name": "t_SU_STA",
+      "value": 0.26,
+      "unit": "us",
+      "condition": "minimum",
+      "notes": "Start setup time minimum."
+    },
+    {
+      "name": "t_HD_DAT",
+      "value": 0,
+      "unit": "us",
+      "condition": "minimum",
+      "notes": "Data in hold time minimum."
+    },
+    {
+      "name": "t_SU_DAT",
+      "value": 50,
+      "unit": "ns",
+      "condition": "minimum",
+      "notes": "Data in setup time minimum."
+    },
+    {
+      "name": "t_R",
+      "value": 120,
+      "unit": "ns",
+      "condition": "maximum",
+      "notes": "SCL/SDA rise time maximum."
+    },
+    {
+      "name": "t_F",
+      "value": 120,
+      "unit": "ns",
+      "condition": "maximum",
+      "notes": "SCL/SDA fall time maximum."
+    },
+    {
+      "name": "t_SU_STO",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "minimum",
+      "notes": "Stop setup time minimum."
+    }
+  ],
+  "conversion_formulae": [],
+  "error_conditions": [
+    {
+      "condition": "I2C NACK during register access",
+      "detection": "I2C bus NACK after address or data byte",
+      "driver_action": "abort transaction and report error"
+    },
+    {
+      "condition": "Measurement timeout",
+      "detection": "Polling or interrupt timeout exceeds expected measurement duration",
+      "driver_action": "return timeout error"
+    },
+    {
+      "condition": "Invalid measurement (weak signal, no target)",
+      "detection": "Device firmware returns error code for invalid ranging",
+      "driver_action": "report measurement error"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "HW STANDBY",
+      "description": "AVDD present, XSHUT low. No I2C communication. Current ~5 uA typical."
+    },
+    {
+      "name": "SW STANDBY",
+      "description": "After firmware boot, device ready for commands. Current ~6 uA typical."
+    },
+    {
+      "name": "RANGING",
+      "description": "Active ranging measurement. Current ~19 mA typical."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "vl53l0x",
+      "page": 15,
+      "snippet": "The first byte contains the device address (0x52) and also specifies the data direction."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 18,
+      "snippet": "Table 5. Reference registers"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 18,
+      "snippet": "0xC0      | 0xEE"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 18,
+      "snippet": "0xC1      | 0xAA"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 18,
+      "snippet": "0xC2      | 0x10"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 18,
+      "snippet": "0X51      | 0x0099"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 18,
+      "snippet": "0x61      | 0x0000"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 13,
+      "snippet": "tBOOT is 1.2 ms maximum."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 14,
+      "snippet": "The default value is 33 ms."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 11,
+      "snippet": "The minimum range measurement period is 8 ms."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "F I2C    | 0         | -         | 400 (1)   | kHz"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t LOW    | 1.6       | -         | -         | μs"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t HIGH   | 0.6       | -         | -         | μs"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t BUF    | 1.3       | -         | -         | ms"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t HD.STA | 0.26      | -         | -         | μs"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t SU.STA | 0.26      | -         | -         | μs"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t HD.DAT | 0         | -         | 0.9       | μs"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t SU.DAT | 50        | -         | -         | ns"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t R      | -         | -         | 120       | ns"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t F      | -         | -         | 120       | ns"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 17,
+      "snippet": "t SU.STO | 0.6       | -         | -         | μs"
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 10,
+      "snippet": "Single ranging Ranging is performed only once after the API function is called."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 10,
+      "snippet": "Continuous ranging. Ranging is performed in a continuous way after the API function is called."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 10,
+      "snippet": "Timed ranging. Ranging is performed in a continuous way after the API function is called."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 12,
+      "snippet": "The user can get the final data using a polling or an interrupt mechanism."
+    },
+    {
+      "source_id": "vl53l0x",
+      "page": 12,
+      "snippet": "An interrupt pin (GPIO1) sends an interrupt to the host when a new measurement is available."
+    }
+  ],
+  "requires_human": [
+    "Calibration data (SPAD, temperature, offset, crosstalk) must be loaded during init; details are in API user manual UM2039.",
+    "Ranging profiles (default, high accuracy, long range, high speed) are configured via API; register-level details not provided.",
+    "Interrupt and polling modes are described at API level; low-level register access for status checking not specified.",
+    "Temperature calibration must be repeated when temperature varies more than 8°C; exact procedure in API manual.",
+    "Register-level trigger for single ranging not specified in datasheet; API function call is used.",
+    "Register address for distance result not specified in datasheet; API handles it.",
+    "Register-level trigger for continuous ranging not specified in datasheet; API function call is used.",
+    "Register-level trigger for timed ranging not specified in datasheet; API function call is used."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

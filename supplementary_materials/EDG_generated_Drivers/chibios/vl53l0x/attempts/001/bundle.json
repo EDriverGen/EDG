@@ -1,0 +1,88 @@
+{
+  "device_id": "vl53l0x",
+  "rtos_id": "chibios",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef VL53L0X_H\n#define VL53L0X_H\n\n#include <stdint.h>\n#include <stddef.h>\n#include \"hal.h\"\n\n#include \"hal_i2c.h\"\nstruct vl53l0x_dev {\n    I2CDriver *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint32_t vl53l0x_init(struct vl53l0x_dev *dev, void *bus_handle);\nint32_t vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw);\n\n#endif /* VL53L0X_H */\n",
+  "driver_source": "#include \"vl53l0x.h\"\n#include <string.h>\n#include \"hal_i2c.h\"\n\n#define VL53L0X_I2C_ADDR 0x52\n#define VL53L0X_TIMEOUT MS2ST(100)\n\nstatic int32_t vl53l0x_read_reg(struct vl53l0x_dev *dev, uint8_t reg, uint8_t *buf, size_t len) {\n    msg_t msg;\n    i2cAcquireBus(dev->bus_handle);\n    msg = i2cMasterTransmitTimeout(dev->bus_handle, VL53L0X_I2C_ADDR, &reg, 1, buf, len, VL53L0X_TIMEOUT);\n    i2cReleaseBus(dev->bus_handle);\n    if (msg != MSG_OK) {\n        return -1;\n    }\n    return 0;\n}\n\nint32_t vl53l0x_init(struct vl53l0x_dev *dev, void *bus_handle) {\n    dev->bus_handle = (I2CDriver *)bus_handle;\n    dev->i2c_addr = VL53L0X_I2C_ADDR;\n    return 0;\n}\n\nint32_t vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw) {\n    uint8_t buf[2];\n    int32_t ret;\n    ret = vl53l0x_read_reg(dev, 0x51, buf, 2);\n    if (ret != 0) {\n        return ret;\n    }\n    *raw = ((int32_t)buf[0] << 8) | buf[1];\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "vl53l0x_init(&g_eval_dev, bus_handle)",
+    "read_call": "vl53l0x_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct vl53l0x_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x52",
+        "write_prefix_any_of": [
+          [
+            "0xC0"
+          ],
+          [
+            "0xC1"
+          ],
+          [
+            "0xC2"
+          ],
+          [
+            "0x51"
+          ],
+          [
+            "0x61"
+          ]
+        ],
+        "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "distance_1000mm",
+        "mock_preload": {
+          "0x51": [
+            "0x03",
+            "0xE8"
+          ]
+        },
+        "expected_read_raw": 1000,
+        "derivation": "0x03E8 = 1000, raw value is already in mm"
+      },
+      {
+        "name": "distance_0mm",
+        "mock_preload": {
+          "0x51": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "0x0000 = 0, raw value is already in mm"
+      },
+      {
+        "name": "distance_65535mm",
+        "mock_preload": {
+          "0x51": [
+            "0xFF",
+            "0xFF"
+          ]
+        },
+        "expected_read_raw": 65535,
+        "derivation": "0xFFFF = 65535, raw value is already in mm"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.242,
+  "prompt_chars": 31006,
+  "raw_response": "{\"driver_header\": \"#ifndef VL53L0X_H\\n#define VL53L0X_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n#include \\\"hal.h\\\"\\n\\nstruct vl53l0x_dev {\\n    I2CDriver *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint32_t vl53l0x_init(struct vl53l0x_dev *dev, void *bus_handle);\\nint32_t vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw);\\n\\n#endif /* VL53L0X_H */\", \"driver_source\": \"#include \\\"vl53l0x.h\\\"\\n#include <string.h>\\n#include \\\"hal_i2c.h\\\"\\n\\n#define VL53L0X_I2C_ADDR 0x52\\n#define VL53L0X_TIMEOUT MS2ST(100)\\n\\nstatic int32_t vl53l0x_read_reg(struct vl53l0x_dev *dev, uint8_t reg, uint8_t *buf, size_t len) {\\n    msg_t msg;\\n    i2cAcquireBus(dev->bus_handle);\\n    msg = i2cMasterTransmitTimeout(dev->bus_handle, VL53L0X_I2C_ADDR, &reg, 1, buf, len, VL53L0X_TIMEOUT);\\n    i2cReleaseBus(dev->bus_handle);\\n    if (msg != MSG_OK) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint32_t vl53l0x_init(struct vl53l0x_dev *dev, void *bus_handle) {\\n    dev->bus_handle = (I2CDriver *)bus_handle;\\n    dev->i2c_addr = VL53L0X_I2C_ADDR;\\n    return 0;\\n}\\n\\nint32_t vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw) {\\n    uint8_t buf[2];\\n    int32_t ret;\\n    ret = vl53l0x_read_reg(dev, 0x51, buf, 2);\\n    if (ret != 0) {\\n        return ret;\\n    }\\n    *raw = ((int32_t)buf[0] << 8) | buf[1];\\n    return 0;\\n}\"}",
+  "plan_hash": "1f2ace78e9d25e68"
+}

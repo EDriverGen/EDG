@@ -1,0 +1,202 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 7.752,
+  "plan_summary": {
+    "device_id": "sht30",
+    "rtos_id": "rtems",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "plan_hash": "788869bf529f94ae",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 2,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 7.671
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 2,
+    "summary": "2 stim; 2 L1/L2",
+    "stimuli": [
+      {
+        "name": "mechanical_packed_direct_read_1",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=temp:derivation `((((0x66 << 8) | 0x66) * 175000) // 65535) - 45000` -> 25000 == expected 25000.0; ch=humidity:derivation `((((0x80 << 8) | 0x00) * 100000) // 65535)` -> 50000 == expected 50000.0",
+        "warnings": []
+      },
+      {
+        "name": "mechanical_packed_direct_read_2",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=temp:derivation `((((0x80 << 8) | 0x00) * 175000) // 65535) - 45000` -> 42501 == expected 42501.0; ch=humidity:derivation `((0x00 << 8) | 0x00)` -> 0 == expected 0.0",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 4,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 4,
+    "summary": "4/4 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x44",
+          "write_prefix_any_of": [
+            [
+              "0x24",
+              "0x00"
+            ]
+          ],
+          "note": "single_shot_measurement_high_no_clock_stretching: write",
+          "source": "operation_flows[0].steps[0]"
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x44",
+          "write_prefix_any_of": [
+            [
+              "0x24",
+              "0x00"
+            ]
+          ],
+          "note": "single_shot_measurement_high_no_clock_stretching: write"
+        },
+        "reason": "prefix overlap: [('0x24', '0x00')] ∈ mechanical [('0x24', '0x00')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x44",
+          "write_prefix_any_of": [],
+          "note": "single_shot_measurement_high_no_clock_stretching: direct read read",
+          "source": "operation_flows[0].steps[2]",
+          "read_any": true,
+          "forbid_write_prefix": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x44",
+          "read_any": true,
+          "forbid_write_prefix": true,
+          "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+        },
+        "reason": "read-any match (no prefixes required)",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x44",
+          "write_prefix_any_of": [
+            [
+              "0x30",
+              "0xA2"
+            ]
+          ],
+          "note": "soft_reset: write",
+          "source": "operation_flows[5].steps[0]"
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x44",
+          "write_prefix_any_of": [
+            [
+              "0x30",
+              "0xA2"
+            ]
+          ],
+          "note": "soft_reset: write"
+        },
+        "reason": "prefix overlap: [('0x30', '0xA2')] ∈ mechanical [('0x30', '0xA2')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x44",
+          "write_prefix_any_of": [
+            [
+              "0x00",
+              "0x06"
+            ]
+          ],
+          "note": "general_call_reset: write",
+          "source": "operation_flows[6].steps[0]"
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x44",
+          "write_prefix_any_of": [
+            [
+              "0x00",
+              "0x06"
+            ]
+          ],
+          "note": "general_call_reset: write"
+        },
+        "reason": "prefix overlap: [('0x00', '0x06')] ∈ mechanical [('0x00', '0x06')]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x30",
+            "0xA2"
+          ]
+        ],
+        "note": "soft_reset: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x00",
+            "0x06"
+          ]
+        ],
+        "note": "general_call_reset: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x24",
+            "0x00"
+          ]
+        ],
+        "note": "single_shot_measurement_high_no_clock_stretching: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+      }
+    ]
+  }
+}

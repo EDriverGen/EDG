@@ -1,0 +1,911 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "mcp3008",
+  "rtos": "riot",
+  "board": "nucleo-f103rb",
+  "bus_type": "spi",
+  "connection": {
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "SPI_DEV(0)",
+    "bus_symbol": "SPI_DEV(0)",
+    "address_mode": "chip-select",
+    "backend": "RIOT periph SPI driver",
+    "helper_usage_patterns": []
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "ztimer_sleep"
+    ],
+    "error_symbols": [
+      "thread_status_t",
+      "int_status_return"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "soft_spi_init_cs",
+      "soft_spi_transfer_bytes",
+      "spi_init_cs",
+      "soft_spi_acquire",
+      "spi_release"
+    ],
+    "bus_api_signatures": {
+      "soft_spi_init_cs": "int soft_spi_init_cs(soft_spi_t bus, soft_spi_cs_t cs)",
+      "soft_spi_transfer_bytes": "void soft_spi_transfer_bytes(soft_spi_t bus, soft_spi_cs_t cs, bool cont, const void *out, void *in, size_t len)",
+      "spi_init_cs": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+      "soft_spi_acquire": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+      "spi_release": "void spi_release(spi_t bus)"
+    },
+    "bus_helper_types": [
+      "soft_spi_t",
+      "soft_spi_cs_t",
+      "soft_spi_mode_t",
+      "soft_spi_clk_t",
+      "spi_t",
+      "spi_cs_t"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "riot_periph_driver_api",
+    "integration_style": "riot_periph_plus_ztimer",
+    "bus_instance": "SPI_DEV(0)",
+    "bus_symbol": "SPI_DEV(0)",
+    "include_headers": [
+      "architecture.h",
+      "assert.h",
+      "at86rf2xx.h",
+      "at86rf2xx_aes.h",
+      "atomic_utils.h",
+      "atomic_utils_arch.h",
+      "bhp.h",
+      "board.h",
+      "busy_wait.h",
+      "byteorder.h",
+      "can/device.h",
+      "candev_mcp2515.h",
+      "checksum/crc16_ccitt.h",
+      "cib.h",
+      "clist.h",
+      "compiler_hints.h",
+      "container.h",
+      "core/include/mbox.h",
+      "core/include/msg.h",
+      "core/include/mutex.h",
+      "core/include/sched.h",
+      "core/include/stdio.h",
+      "core/include/thread.h",
+      "core/lib/include/assert.h",
+      "core/lib/include/debug.h",
+      "core/lib/include/irq.h",
+      "core/lib/include/kernel_defines.h",
+      "core/lib/include/log.h",
+      "core/lib/include/macros/math.h",
+      "core/lib/include/macros/utils.h",
+      "core/lib/include/modules.h",
+      "core/lib/include/rmutex.h",
+      "core_cm0plus.h",
+      "core_cm4.h",
+      "cpu.h",
+      "cpu/cortexm_common/include/cpu.h",
+      "cpu/kinetis/include/periph_cpu.h",
+      "cpu/kinetis/include/vendor/MK20D7.h",
+      "cpu/kinetis/include/vendor/SKEAZ1284.h",
+      "cpu/kinetis/include/vendor/system_SKEAZ1284.h",
+      "cpu/nrf52/include/nrf802154.h",
+      "cpu/nrf52/include/periph_cpu.h",
+      "cpu_conf.h",
+      "debug.h",
+      "div.h",
+      "drivers/at86rf2xx/include/at86rf2xx_aes.h",
+      "drivers/epd_bw_spi/include/epd_bw_spi_internal.h",
+      "drivers/epd_bw_spi/include/epd_bw_spi_params.h",
+      "drivers/kw2xrf/include/kw2xrf_getset.h",
+      "drivers/kw2xrf/include/kw2xrf_intern.h",
+      "drivers/kw2xrf/include/kw2xrf_netdev.h",
+      "drivers/kw2xrf/include/kw2xrf_params.h",
+      "drivers/kw2xrf/include/kw2xrf_reg.h",
+      "drivers/kw2xrf/include/kw2xrf_spi.h",
+      "drivers/kw2xrf/include/kw2xrf_tm.h",
+      "drivers/kw2xrf/include/overwrites.h",
+      "drivers/mcp2515/include/mcp2515_params.h",
+      "drivers/sdcard_spi/include/sdcard_spi_internal.h",
+      "drivers/sdcard_spi/include/sdcard_spi_params.h",
+      "drivers/soft_spi/include/soft_spi_params.h",
+      "endian.h",
+      "epd_bw_spi.h",
+      "epd_bw_spi_disp_dev.h",
+      "epd_bw_spi_internal.h",
+      "errno.h",
+      "event.h",
+      "inttypes.h",
+      "irq.h",
+      "irq_arch.h",
+      "kernel_defines.h",
+      "kw2xrf.h",
+      "kw2xrf_getset.h",
+      "kw2xrf_reg.h",
+      "limits.h",
+      "list.h",
+      "log_module.h",
+      "macros/math.h",
+      "macros/utils.h",
+      "mbox.h",
+      "modules.h",
+      "msg.h",
+      "mtd.h",
+      "mtd_spi_nor.h",
+      "mutex.h",
+      "net/ieee802154/radio.h",
+      "net/netopt.h",
+      "nvram-spi.h",
+      "nvram.h",
+      "periph/gpio.h",
+      "periph/spi.h",
+      "periph/timer.h",
+      "periph_conf.h",
+      "periph_cpu.h",
+      "periph_cpu_common.h",
+      "pm_layered.h",
+      "riot_version.h",
+      "rmutex.h",
+      "sched.h",
+      "sdcard_spi.h",
+      "sdcard_spi_internal.h",
+      "sdcard_spi_params.h",
+      "soft_spi.h",
+      "soft_spi_params.h",
+      "stdarg.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "stdlib.h",
+      "string.h",
+      "sys/include/atomic_utils.h",
+      "sys/include/base64.h",
+      "sys/include/bhp/event.h",
+      "sys/include/bhp/msg.h",
+      "sys/include/busy_wait.h",
+      "sys/include/byteorder.h",
+      "sys/include/div.h",
+      "sys/include/event/timeout.h",
+      "sys/include/pm_layered.h",
+      "sys/include/sched_round_robin.h",
+      "sys/include/sema_inv.h",
+      "sys/include/time_units.h",
+      "sys/include/timex.h",
+      "sys/include/tiny_strerror.h",
+      "sys/include/xtimer.h",
+      "sys/include/xtimer/implementation.h",
+      "sys/include/xtimer/tick_conversion.h",
+      "sys/include/ztimer.h",
+      "sys/include/ztimer/xtimer_compat.h",
+      "sys/include/ztimer64.h",
+      "sys/include/ztimer64/xtimer_compat.h",
+      "system_SKEAZ1284.h",
+      "thread.h",
+      "thread_arch.h",
+      "thread_config.h",
+      "thread_flags.h",
+      "time_units.h",
+      "timex.h",
+      "unaligned.h",
+      "xtimer.h",
+      "xtimer/implementation.h",
+      "xtimer/tick_conversion.h",
+      "ztimer.h",
+      "ztimer/xtimer_compat.h",
+      "ztimer64.h",
+      "ztimer64/xtimer_compat.h"
+    ],
+    "fixed_attachment": {
+      "cs_symbol": "SPI_HWCS(0)",
+      "chip_select": "SPI_HWCS(0)"
+    },
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "SPI_DEV(0)",
+        "fields": {
+          "bus_instance": "SPI_DEV(0)",
+          "bus_symbol": "SPI_DEV(0)",
+          "backend": "RIOT periph SPI driver",
+          "mode": "polling",
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "integration.pin_binding": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "cs_symbol": "SPI_HWCS(0)",
+          "chip_select": "SPI_HWCS(0)"
+        },
+        "fields": {
+          "fixed_attachment": {
+            "cs_symbol": "SPI_HWCS(0)",
+            "chip_select": "SPI_HWCS(0)"
+          },
+          "required_attachment": {
+            "signals": [
+              "SCLK",
+              "MOSI",
+              "MISO",
+              "CS"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "mcp3008",
+    "required_bus_type": "spi",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCLK",
+        "MOSI",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 3600000
+      },
+      "vref_mv": 3300,
+      "notes": [
+        "Use a 3-byte full-duplex command/response transfer; command byte selects single-ended or differential mode and channel."
+      ]
+    },
+    "optional_attachment": {
+      "differential_mode": "optional",
+      "vref_mv": "board_dependent"
+    }
+  },
+  "api_bindings": {
+    "spi.acquire_or_bind": {
+      "symbol": "soft_spi_init_cs",
+      "kind": "function",
+      "signature": "int soft_spi_init_cs(soft_spi_t bus, soft_spi_cs_t cs)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.transfer": {
+      "symbol": "soft_spi_transfer_bytes",
+      "kind": "function",
+      "signature": "void soft_spi_transfer_bytes(soft_spi_t bus, soft_spi_cs_t cs, bool cont, const void *out, void *in, size_t len)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "ztimer_sleep",
+      "kind": "function",
+      "signature": "void ztimer_sleep(ztimer_clock_t *clock, uint32_t duration)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "riot:single:0::sys/ztimer/util.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.error_status": {
+      "symbol": "thread_status_t",
+      "kind": "typedef",
+      "signature": "enum { STATUS_STOPPED, /**< has terminated */ STATUS_ZOMBIE, /**< has terminated & keeps thread's th",
+      "required_headers": [
+        "core/include/sched.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.85,
+      "declared_in": "riot:single:0::core/include/sched.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.cs_control": {
+      "symbol": "spi_init_cs",
+      "kind": "function",
+      "signature": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.transaction_begin": {
+      "symbol": "soft_spi_acquire",
+      "kind": "function",
+      "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.7833333333333333,
+      "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.transaction_end": {
+      "symbol": "spi_release",
+      "kind": "function",
+      "signature": "void spi_release(spi_t bus)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "soft_spi_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "soft_spi_cs_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "soft_spi_mode_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "soft_spi_clk_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "spi_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "spi_init_cs",
+          "signature": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "spi_cs_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "spi_init_cs",
+          "signature": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "soft_spi_init_cs",
+          "signature": "int soft_spi_init_cs(soft_spi_t bus, soft_spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "spi_init_cs",
+          "signature": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "SPI_DEV(0)",
+      "fields": {
+        "bus_instance": "SPI_DEV(0)",
+        "bus_symbol": "SPI_DEV(0)",
+        "backend": "RIOT periph SPI driver",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "cs_symbol": "SPI_HWCS(0)",
+        "chip_select": "SPI_HWCS(0)"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "cs_symbol": "SPI_HWCS(0)",
+          "chip_select": "SPI_HWCS(0)"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCLK",
+            "MOSI",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "SPI_DEV(0)",
+      "fields": {
+        "bus_instance": "SPI_DEV(0)",
+        "bus_symbol": "SPI_DEV(0)",
+        "backend": "RIOT periph SPI driver",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "cs_symbol": "SPI_HWCS(0)",
+        "chip_select": "SPI_HWCS(0)"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "cs_symbol": "SPI_HWCS(0)",
+          "chip_select": "SPI_HWCS(0)"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCLK",
+            "MOSI",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "soft_spi_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "soft_spi_cs_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "soft_spi_mode_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "soft_spi_clk_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.transaction_begin",
+          "source_symbol": "soft_spi_acquire",
+          "signature": "void soft_spi_acquire(soft_spi_t bus, soft_spi_cs_t cs, soft_spi_mode_t mode, soft_spi_clk_t clk)",
+          "score": 0.7833333333333333,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "spi_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "spi_init_cs",
+          "signature": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "spi_cs_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "spi_init_cs",
+          "signature": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "soft_spi_init_cs",
+          "signature": "int soft_spi_init_cs(soft_spi_t bus, soft_spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "spi_init_cs",
+          "signature": "int spi_init_cs(spi_t bus, spi_cs_t cs)",
+          "score": 0.65,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "ztimer_sleep",
+    "soft_spi_acquire",
+    "soft_spi_init_cs",
+    "soft_spi_transfer_bytes",
+    "thread_status_t",
+    "spi_init_cs",
+    "spi_release"
+  ],
+  "allowed_symbol_provenance": {
+    "ztimer_sleep": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::sys/ztimer/util.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "soft_spi_acquire": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "soft_spi_init_cs": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "soft_spi_transfer_bytes": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::drivers/soft_spi/soft_spi.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "thread_status_t": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::core/include/sched.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "spi_init_cs": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "spi_release": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::cpu/kinetis/periph/spi.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "mcp3008_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "mcp3008_read_sequence",
+      "steps": [
+        {
+          "op": "spi_write_then_read",
+          "args": {
+            "bytes": [
+              1,
+              "DATA",
+              "DATA",
+              "DATA"
+            ],
+            "length": 11,
+            "pointer_target": null,
+            "notes": "Send start bit (1), SGL/DIFF, D2, D1, D0; then read null bit + 10 data bits"
+          },
+          "slot_id": "spi.transfer",
+          "bound_symbol": "soft_spi_transfer_bytes",
+          "derivation": "structured",
+          "confidence": 0.9,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.9,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 7/7 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "riot:single:0",
+      "path": "sys/ztimer/util.c",
+      "kind": "declaration",
+      "for_symbol": "ztimer_sleep",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "drivers/soft_spi/soft_spi.c",
+      "kind": "declaration",
+      "for_symbol": "soft_spi_acquire",
+      "slot_id": "spi.transaction_begin"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "drivers/soft_spi/soft_spi.c",
+      "kind": "declaration",
+      "for_symbol": "soft_spi_init_cs",
+      "slot_id": "spi.acquire_or_bind"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "drivers/soft_spi/soft_spi.c",
+      "kind": "declaration",
+      "for_symbol": "soft_spi_transfer_bytes",
+      "slot_id": "spi.transfer"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "core/include/sched.h",
+      "kind": "declaration",
+      "for_symbol": "thread_status_t",
+      "slot_id": "runtime.error_status"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "cpu/kinetis/periph/spi.c",
+      "kind": "declaration",
+      "for_symbol": "spi_init_cs",
+      "slot_id": "spi.cs_control"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "cpu/kinetis/periph/spi.c",
+      "kind": "declaration",
+      "for_symbol": "spi_release",
+      "slot_id": "spi.transaction_end"
+    }
+  ],
+  "requires_human": []
+}

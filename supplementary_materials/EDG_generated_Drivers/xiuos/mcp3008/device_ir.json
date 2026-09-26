@@ -1,0 +1,322 @@
+{
+  "device_id": "mcp3008",
+  "bus_type": "spi",
+  "address_rule": null,
+  "register_map": [],
+  "read_channels": [],
+  "access_model": {
+    "kind": "spi_stream",
+    "address_bytes": 0,
+    "read_requires_pointer": false,
+    "direct_read_after_write": true,
+    "eval_class": "multi_channel",
+    "spi_mode": 0,
+    "frame_bytes": 3,
+    "notes": "SPI full-duplex 3-byte transaction per channel. TX: [0x01, start_sgl_diff|(ch<<4), 0x00]. RX: [0x00, data_high_2bits|zero, data_low_8bits]. Result = ((rx[1] & 0x03) << 8) | rx[2], range 0-1023."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "read_channel",
+      "kind": "read",
+      "channels": [],
+      "description": "SPI read of a single channel in single-ended mode",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "spi1",
+            "bytes": [
+              "0x01",
+              "0x80",
+              "0x00"
+            ],
+            "length": 3,
+            "notes": "TX frame: start bit + single-ended CH0 command + dummy byte"
+          },
+          "notes": "Control byte 0x80 = start(1) + SGL/DIFF(1 for single-ended) + D2(0) + D1(0) + D0(0) for CH0"
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "address": "spi1",
+            "bytes": [
+              "0x00",
+              "0x02",
+              "0x00"
+            ],
+            "length": 3,
+            "notes": "RX frame: [dummy, dataH|zeros, dataL]. 10-bit result = ((byte1 & 0x03) << 8) | byte2"
+          },
+          "notes": "First byte is zero (dummy), data in bytes 1 (top 2 bits) and 2 (low 8 bits)"
+        }
+      ]
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 10,
+    "effective_bits": 10,
+    "signed": false,
+    "right_shift": 0,
+    "sign_extend_from_bit": null,
+    "notes": "10-bit straight binary, MSB first"
+  },
+  "registers_or_commands": [
+    {
+      "name": "SPI_READ_COMMAND",
+      "description": "3-byte SPI frame: byte0=0x01 (start bit), byte1=0x80|(channel<<4) (SGL/DIFF+D2+D1+D0), byte2=0x00 (dummy). Returns 3 bytes: byte0=dummy, byte1[1:0]=ADC[9:8], byte2=ADC[7:0].",
+      "value": "0x01 0x8N 0x00 where N=channel",
+      "access": "write_then_read",
+      "size": 3
+    }
+  ],
+  "bitfields": [],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up: apply V_DD and V_REF. Ensure CS is high initially."
+    },
+    {
+      "transaction": null,
+      "notes": "If CS was low during power-up, bring CS high then low to initiate communication."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          1,
+          "DATA",
+          "DATA",
+          "DATA"
+        ],
+        "length": 11,
+        "pointer_target": null,
+        "notes": "Send start bit (1), SGL/DIFF, D2, D1, D0; then read null bit + 10 data bits"
+      },
+      "notes": "Total of 15 clocks: start bit, 4 config bits, null bit, 10 data bits. Data output on falling edge."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "spi_max_clock",
+      "value": 3600000,
+      "unit": "Hz",
+      "condition": "VDD=5V"
+    },
+    {
+      "name": "spi_max_clock",
+      "value": 1350000,
+      "unit": "Hz",
+      "condition": "VDD=2.7V"
+    },
+    {
+      "name": "conversion_time",
+      "value": 10,
+      "unit": "us",
+      "condition": "typical"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "formula_id": "digital_output_code",
+      "name": "10-bit ADC raw count",
+      "expression": "((rx[1] & 0x03) << 8) | rx[2]",
+      "input_variables": [
+        "rx[1]",
+        "rx[2]"
+      ],
+      "output_unit": "raw_count",
+      "range": [
+        0,
+        1023
+      ],
+      "integer_approximation_expression": {
+        "expression": "((high_byte & 0x03) * 256) + low_byte",
+        "inputs": [
+          {
+            "name": "high_byte",
+            "source_byte_index": 1,
+            "bitmask": 3
+          },
+          {
+            "name": "low_byte",
+            "source_byte_index": 2,
+            "bitmask": 255
+          }
+        ],
+        "output": "raw_count"
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "CS not held low during entire conversion",
+      "detection": "CS rising edge during conversion aborts conversion",
+      "driver_action": "Ensure CS remains low for entire 15-clock cycle conversion"
+    },
+    {
+      "condition": "Clock frequency below minimum",
+      "detection": "Effective clock rate below 10 kHz may cause charge loss on sample capacitor",
+      "driver_action": "Maintain clock frequency above 10 kHz"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "active",
+      "description": "CS low, conversion in progress",
+      "current_typ_uA": 425,
+      "current_max_uA": 550,
+      "condition": "V_DD = V_REF = 5V, D_OUT unloaded"
+    },
+    {
+      "name": "standby",
+      "description": "CS high, device in low-power standby",
+      "current_typ_uA": 0.005,
+      "current_max_uA": 2,
+      "condition": "CS = V_DD = 5.0V"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "mcp3008",
+      "page": 19,
+      "snippet": "The first clock received with CS low and D_IN high will constitute a start bit."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 19,
+      "snippet": "The SGL/DIFF bit follows the start bit and will determine if the conversion will be done using single-ended or differential input mode."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 19,
+      "snippet": "The next three bits (D0, D1 and D2) are used to select the input channel configuration."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 19,
+      "snippet": "On the falling edge of the next clock, the device will output a low null bit."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 19,
+      "snippet": "The next 10 clocks will output the result of the conversion with MSB first."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 20,
+      "snippet": "Table 5-2: Configure Bits for the MCP3008"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 3,
+      "snippet": "Conversion Time: 10 clock cycles"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 3,
+      "snippet": "Throughput Rate"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "Clock Frequency"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "Clock High Time: 125 ns (min)"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "Clock Low Time: 125 ns (min)"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "CS Fall To First Rising CLK Edge: 100 ns (min)"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "Data Input Setup Time: 50 ns (min)"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "Data Input Hold Time: 50 ns (min)"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "CLK Fall To Output Data Valid: 125 ns (V_DD = 5V, max)"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 4,
+      "snippet": "CS Disable Time: 270 ns (min)"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 22,
+      "snippet": "effective clock frequency of 10 kHz"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 17,
+      "snippet": "Digital Output Code = (V_IN / V_REF) * 1024"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 17,
+      "snippet": "LSB = V_REF / 1024"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 15,
+      "snippet": "CS/SHDN pin is used to initiate communication with the device when pulled low."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 15,
+      "snippet": "When pulled high, it will end a conversion and put the device in low-power standby."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 15,
+      "snippet": "The CS/SHDN pin must be pulled high between conversions."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 17,
+      "snippet": "The MCP3004/3008 A/D converters employ a conventional SAR architecture."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 17,
+      "snippet": "a sample is acquired on an internal sample/hold capacitor for 1.5 clock cycles"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 17,
+      "snippet": "The MCP3008 can be configured to provide four pseudo-differential input pairs or eight single-ended inputs."
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 5,
+      "snippet": "Operating Current"
+    },
+    {
+      "source_id": "mcp3008",
+      "page": 5,
+      "snippet": "Standby Current: 0.005 µA typ (CS = V_DD = 5.0V)"
+    }
+  ],
+  "requires_human": [],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

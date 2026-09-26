@@ -1,0 +1,162 @@
+{
+  "device_id": "pcf8574",
+  "rtos_id": "nuttx",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef PCF8574_H\n#define PCF8574_H\n\n#include <stdint.h>\n\nstruct i2c_master_s;\n\nstruct pcf8574_dev_s {\n    struct i2c_master_s *bus;\n    uint8_t addr;\n};\n\nint pcf8574_init(struct pcf8574_dev_s *dev, struct i2c_master_s *bus);\nint pcf8574_read_port(struct pcf8574_dev_s *dev, uint8_t *port_byte);\n\n#endif /* PCF8574_H */",
+  "driver_source": "#include \"pcf8574.h\"\n#include <nuttx/i2c/i2c_master.h>\n#include <errno.h>\n\n#define PCF8574_I2C_ADDR 0x20\n\nint pcf8574_init(struct pcf8574_dev_s *dev, struct i2c_master_s *bus)\n{\n    if (dev == NULL || bus == NULL) {\n        return -EINVAL;\n    }\n    dev->bus = bus;\n    dev->addr = PCF8574_I2C_ADDR;\n    return 0;\n}\n\nint pcf8574_read_port(struct pcf8574_dev_s *dev, uint8_t *port_byte)\n{\n    struct i2c_config_s config;\n    int ret;\n\n    if (dev == NULL || dev->bus == NULL || port_byte == NULL) {\n        return -EINVAL;\n    }\n\n    config.frequency = 100000;\n    config.address = dev->addr;\n    config.addrlen = 7;\n\n    ret = I2C_TRANSFER(dev->bus, &config, port_byte, 1);\n    if (ret < 0) {\n        return ret;\n    }\n\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "pcf8574_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "p0",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p1",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p2",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p3",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p4",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p5",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p6",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "p7",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "int",
+        "call": "pcf8574_read_port(&g_eval_dev, &port_byte)",
+        "out_arg": "port_byte",
+        "out_type": "uint8_t",
+        "physical_unit": "gpio_level"
+      }
+    ],
+    "dev_struct_type": "struct pcf8574_dev_s",
+    "init_extra_setup_c": "struct i2c_master_s *bus_handle = board_i2cbus_initialize(1);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"nuttx.h\"\n#include <nuttx/i2c/i2c_master.h>\n#include \"arch.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x20",
+        "write_prefix_any_of": [],
+        "note": "flow_read_write_1: direct read read_port"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "all_pins_high",
+        "mock_preload": {
+          "read_bytes": [
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "p0": 1,
+          "p1": 1,
+          "p2": 1,
+          "p3": 1,
+          "p4": 1,
+          "p5": 1,
+          "p6": 1,
+          "p7": 1,
+          "int": 1
+        },
+        "derivation": "Port byte 0xFF: bit0=1 => p0=1, bit1=1 => p1=1, bit2=1 => p2=1, bit3=1 => p3=1, bit4=1 => p4=1, bit5=1 => p5=1, bit6=1 => p6=1, bit7=1 => p7=1; int is bitwise OR of all bits = 1."
+      },
+      {
+        "name": "all_pins_low",
+        "mock_preload": {
+          "read_bytes": [
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "p0": 0,
+          "p1": 0,
+          "p2": 0,
+          "p3": 0,
+          "p4": 0,
+          "p5": 0,
+          "p6": 0,
+          "p7": 0,
+          "int": 0
+        },
+        "derivation": "Port byte 0x00: all bits 0 => all channels 0; int = 0."
+      },
+      {
+        "name": "mixed_pins",
+        "mock_preload": {
+          "read_bytes": [
+            "0x55"
+          ]
+        },
+        "expected_channels": {
+          "p0": 1,
+          "p1": 0,
+          "p2": 1,
+          "p3": 0,
+          "p4": 1,
+          "p5": 0,
+          "p6": 1,
+          "p7": 0,
+          "int": 1
+        },
+        "derivation": "Port byte 0x55 = 0b01010101: bit0=1 => p0=1, bit1=0 => p1=0, bit2=1 => p2=1, bit3=0 => p3=0, bit4=1 => p4=1, bit5=0 => p5=0, bit6=1 => p6=1, bit7=0 => p7=0; int = OR of all bits = 1."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 3.845,
+  "prompt_chars": 42083,
+  "raw_response": "{\"driver_header\": \"#ifndef PCF8574_H\\n#define PCF8574_H\\n\\n#include <stdint.h>\\n\\nstruct pcf8574_dev_s {\\n    struct i2c_master_s *bus;\\n    uint8_t addr;\\n};\\n\\nint pcf8574_init(struct pcf8574_dev_s *dev, struct i2c_master_s *bus);\\nint pcf8574_read_port(struct pcf8574_dev_s *dev, uint8_t *port_byte);\\n\\n#endif /* PCF8574_H */\", \"driver_source\": \"#include \\\"pcf8574.h\\\"\\n#include <nuttx/i2c/i2c_master.h>\\n#include <errno.h>\\n\\n#define PCF8574_I2C_ADDR 0x20\\n\\nint pcf8574_init(struct pcf8574_dev_s *dev, struct i2c_master_s *bus)\\n{\\n    if (dev == NULL || bus == NULL) {\\n        return -EINVAL;\\n    }\\n    dev->bus = bus;\\n    dev->addr = PCF8574_I2C_ADDR;\\n    return 0;\\n}\\n\\nint pcf8574_read_port(struct pcf8574_dev_s *dev, uint8_t *port_byte)\\n{\\n    struct i2c_config_s config;\\n    int ret;\\n\\n    if (dev == NULL || dev->bus == NULL || port_byte == NULL) {\\n        return -EINVAL;\\n    }\\n\\n    config.frequency = 100000;\\n    config.address = dev->addr;\\n    config.addrlen = 7;\\n\\n    ret = I2C_TRANSFER(dev->bus, &config, port_byte, 1);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    return 0;\\n}\"}",
+  "plan_hash": "753de035004eab6e"
+}

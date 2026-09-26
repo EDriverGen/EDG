@@ -1,0 +1,482 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "sht30",
+  "scope": "High-repeatability temperature/humidity atordinary>=2.4V supply,plusrepresentedperiodic/status/reset/heater flows. Lowervoltageboardoperation andoptionalARTnotrequired.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "address",
+        "command_width",
+        "no_stretch_command",
+        "stretch_command",
+        "crc",
+        "stretch_behavior",
+        "periodic_start",
+        "periodic_fetch",
+        "periodic_stop",
+        "soft_reset",
+        "general_reset",
+        "heater",
+        "status_read",
+        "status_clear",
+        "interface_reset"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "status_fields"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "powerup",
+        "high_wait",
+        "wait_2",
+        "wait_3",
+        "command_gap",
+        "bus_max"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "read_frame",
+        "raw",
+        "temp_formula",
+        "rh_formula"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "nack_busy"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "Datasheet_SHT3x_DIS.pdf",
+      "pages": 22,
+      "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "address",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "ADDRlow44/high45,7-bit",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "command_width",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "16-bit commandMSBfirst, then directI2Cread",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        },
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "no_stretch_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Highrepeatabilitywithoutstretch command2400",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "stretch_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Highrepeatabilitywithstretch command2C06",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_frame",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "6bytes:TH TL Tcrc RH RL RHcrc",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "raw",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Both channels unsigned16-bit MSBfirst",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temp_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "TemperatureC=-45+175*raw/65535",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "rh_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "RHpercent=100*raw/65535",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "crc",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "CRC8poly31 initFF no reflection xorout00 overeach2bytes",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "nack_busy",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "No-stretch readheaderNACK meansdatanotready",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        },
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "stretch_behavior",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "WhenreadheaderACKed,SCLheldLOWuntilmeasurementdone",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "powerup",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Powerup wait1ms atVDD>=2.4V",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "high_wait",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Highrepeatability wait15ms maxatVDD>=2.4V",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wait_2",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Lowrepeatability4msmax",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "wait_3",
+      "component": "T",
+      "category": "timing",
+      "required": false,
+      "expected": "Mediumrepeatability6msmax",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "command_gap",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Atleast1msbetweencommands",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "bus_max",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "I2Cmaximum1000kHz",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 9,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        },
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 14,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "periodic_start",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "2130starts1Hzhighrepeatability",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "periodic_fetch",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "E000fetcheslatestdataandclearsmemory",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "periodic_stop",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "3093abortsperiodicmode;wait1ms",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        },
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "soft_reset",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "30A2inidle;wait1.5ms",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 7,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        },
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "general_reset",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Generalcall00,06 resetsallcompliantdevices",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "heater",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "306Denables,3066disables;offafterreset",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        },
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "status_read",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "F32Dreads2statusbytes+CRC",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "status_clear",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "3041clearsflags15,11,10,4",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "status_fields",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Status15alert,13heater,11RH,10T,4reset,1command,0CRC",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 13,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "interface_reset",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "SDAhigh,toggleSCL>=9,thenSTART;statusretained",
+      "evidence": [
+        {
+          "document": "Datasheet_SHT3x_DIS.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/sht30/Datasheet_SHT3x_DIS.pages.json"
+        }
+      ]
+    }
+  ]
+}

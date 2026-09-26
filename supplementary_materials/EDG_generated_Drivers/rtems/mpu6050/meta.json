@@ -1,0 +1,77 @@
+{
+  "device_id": "mpu6050",
+  "rtos_id": "rtems",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "classify": {
+    "eval_class": "multi_channel",
+    "bus_type": "i2c",
+    "confidence": 1.0,
+    "rule_applied": "multi_channel_count=7",
+    "warnings": [],
+    "channel_count": 7,
+    "channel_roots": [
+      "accel_x",
+      "accel_y",
+      "accel_z",
+      "gyro_x",
+      "gyro_y",
+      "gyro_z",
+      "temperature"
+    ]
+  },
+  "routing": {
+    "runtime_path": "renode_i2c",
+    "slave_kind": "i2c_register_slave",
+    "spi_sub_mode": "",
+    "bus_kind": "i2c",
+    "confidence": 1.0,
+    "rule_applied": "i2c+multi_channel",
+    "warnings": []
+  },
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x68",
+      "write_prefix_any_of": [
+        [
+          "0x6B",
+          "0x00"
+        ]
+      ],
+      "read_any": false,
+      "forbid_write_prefix": false,
+      "note": "init: write"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x68",
+      "write_prefix_any_of": [
+        [
+          "0x75"
+        ]
+      ],
+      "read_any": true,
+      "forbid_write_prefix": false,
+      "note": "probe: write_then_read"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x68",
+      "write_prefix_any_of": [
+        [
+          "0x3B"
+        ]
+      ],
+      "read_any": true,
+      "forbid_write_prefix": false,
+      "note": "read_sensors: write_then_read"
+    }
+  ],
+  "max_attempts": 3,
+  "split_plan_enabled": true,
+  "plan_max_attempts": 3,
+  "skip_runtime": false,
+  "skip_probe": false,
+  "skip_syntax": false
+}

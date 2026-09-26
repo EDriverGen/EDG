@@ -1,0 +1,125 @@
+{
+  "device_id": "sht30",
+  "rtos_id": "threadx",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef SHT30_H\n#define SHT30_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct sht30_dev {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint sht30_init(struct sht30_dev *dev, void *bus_handle);\nint sht30_read_measurement(struct sht30_dev *dev, int32_t *temp_milliC, int32_t *humidity_milliPercent);\n\n#endif",
+  "driver_source": "#include \"sht30.h\"\n#include \"stm32f1xx_hal.h\"\n#include <stdint.h>\n#include <stddef.h>\n\n#include \"threadx.h\"\n#define SHT30_I2C_ADDR 0x44\n#define SHT30_CMD_SOFT_RESET 0x30A2\n#define SHT30_CMD_GENERAL_CALL_RESET 0x0006\n#define SHT30_CMD_SINGLE_SHOT_HIGH 0x2400\n#define SHT30_READ_LEN 6\n\nstatic uint8_t crc8(const uint8_t *data, size_t len) {\n    uint8_t crc = 0xFF;\n    for (size_t i = 0; i < len; i++) {\n        crc ^= data[i];\n        for (int j = 0; j < 8; j++) {\n            if (crc & 0x80)\n                crc = (crc << 1) ^ 0x31;\n            else\n                crc <<= 1;\n        }\n    }\n    return crc;\n}\n\nint sht30_init(struct sht30_dev *dev, void *bus_handle) {\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = SHT30_I2C_ADDR;\n\n    // General call reset to 0x00\n    uint8_t cmd[] = {0x00, 0x06};\n    if (HAL_I2C_Master_Transmit((I2C_HandleTypeDef *)dev->bus_handle, 0x00, cmd, 2, 100) != HAL_OK)\n        return -1;\n    HAL_Delay(2);\n\n    // Soft reset to device address\n    uint8_t cmd2[] = {0x30, 0xA2};\n    if (HAL_I2C_Master_Transmit((I2C_HandleTypeDef *)dev->bus_handle, dev->i2c_addr << 1, cmd2, 2, 100) != HAL_OK)\n        return -1;\n    HAL_Delay(2);\n\n    return 0;\n}\n\nint sht30_read_measurement(struct sht30_dev *dev, int32_t *temp_milliC, int32_t *humidity_milliPercent) {\n    uint8_t cmd[] = {0x24, 0x00};\n    if (HAL_I2C_Master_Transmit((I2C_HandleTypeDef *)dev->bus_handle, dev->i2c_addr << 1, cmd, 2, 100) != HAL_OK)\n        return -1;\n\n    HAL_Delay(15);\n\n    uint8_t buf[6];\n    if (HAL_I2C_Master_Receive((I2C_HandleTypeDef *)dev->bus_handle, dev->i2c_addr << 1, buf, 6, 100) != HAL_OK)\n        return -1;\n\n    // Verify CRC for temperature bytes\n    if (crc8(buf, 2) != buf[2])\n        return -1;\n    // Verify CRC for humidity bytes\n    if (crc8(buf + 3, 2) != buf[5])\n        return -1;\n\n    uint16_t st = ((uint16_t)buf[0] << 8) | buf[1];\n    uint16_t srh = ((uint16_t)buf[3] << 8) | buf[4];\n\n    int64_t temp_raw = (int64_t)st * 175000 / 65535 - 45000;\n    int64_t hum_raw = (int64_t)srh * 100000 / 65535;\n\n    *temp_milliC = (int32_t)temp_raw;\n    *humidity_milliPercent = (int32_t)hum_raw;\n\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "sht30_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "temp",
+        "call": "sht30_read_measurement(&g_eval_dev, &temp_milliC, &humidity_milliPercent)",
+        "out_arg": "temp_milliC",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "humidity",
+        "call": "sht30_read_measurement(&g_eval_dev, &temp_milliC, &humidity_milliPercent)",
+        "out_arg": "humidity_milliPercent",
+        "out_type": "int32_t",
+        "physical_unit": "milli_percent"
+      }
+    ],
+    "dev_struct_type": "struct sht30_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x30",
+            "0xA2"
+          ]
+        ],
+        "note": "soft_reset"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x00",
+            "0x06"
+          ]
+        ],
+        "note": "general_call_reset"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "write_prefix_any_of": [
+          [
+            "0x24",
+            "0x00"
+          ]
+        ],
+        "note": "single_shot_measurement_high_no_clock_stretching: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x44",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "single_shot_measurement_high_no_clock_stretching: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_packed_direct_read_1",
+        "mock_preload": {
+          "read_bytes": [
+            "0x66",
+            "0x66",
+            "0x93",
+            "0x80",
+            "0x00",
+            "0xA2"
+          ]
+        },
+        "expected_channels": {
+          "temp": 25000,
+          "humidity": 50000
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x66 << 8) | 0x66); ((((0x66 << 8) | 0x66) * 175000) // 65535) - 45000 = 25000; humidity: SRH=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 100000) // 65535) = 50000"
+      },
+      {
+        "name": "mechanical_packed_direct_read_2",
+        "mock_preload": {
+          "read_bytes": [
+            "0x80",
+            "0x00",
+            "0xA2",
+            "0x00",
+            "0x00",
+            "0x81"
+          ]
+        },
+        "expected_channels": {
+          "temp": 42501,
+          "humidity": 0
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp: ST=((0x80 << 8) | 0x00); ((((0x80 << 8) | 0x00) * 175000) // 65535) - 45000 = 42501; humidity: SRH=((0x00 << 8) | 0x00); ((((0x00 << 8) | 0x00) * 100000) // 65535) = 0"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 9.447,
+  "prompt_chars": 41884,
+  "raw_response": "{\"driver_header\": \"#ifndef SHT30_H\\n#define SHT30_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct sht30_dev {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint sht30_init(struct sht30_dev *dev, void *bus_handle);\\nint sht30_read_measurement(struct sht30_dev *dev, int32_t *temp_milliC, int32_t *humidity_milliPercent);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"sht30.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"threadx.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n\\n#define SHT30_I2C_ADDR 0x44\\n#define SHT30_CMD_SOFT_RESET 0x30A2\\n#define SHT30_CMD_GENERAL_CALL_RESET 0x0006\\n#define SHT30_CMD_SINGLE_SHOT_HIGH 0x2400\\n#define SHT30_READ_LEN 6\\n\\nstatic uint8_t crc8(const uint8_t *data, size_t len) {\\n    uint8_t crc = 0xFF;\\n    for (size_t i = 0; i < len; i++) {\\n        crc ^= data[i];\\n        for (int j = 0; j < 8; j++) {\\n            if (crc & 0x80)\\n                crc = (crc << 1) ^ 0x31;\\n            else\\n                crc <<= 1;\\n        }\\n    }\\n    return crc;\\n}\\n\\nint sht30_init(struct sht30_dev *dev, void *bus_handle) {\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = SHT30_I2C_ADDR;\\n\\n    // General call reset to 0x00\\n    uint8_t cmd[] = {0x00, 0x06};\\n    if (HAL_I2C_Master_Transmit((I2C_HandleTypeDef *)dev->bus_handle, 0x00, cmd, 2, 100) != HAL_OK)\\n        return -1;\\n    HAL_Delay(2);\\n\\n    // Soft reset to device address\\n    uint8_t cmd2[] = {0x30, 0xA2};\\n    if (HAL_I2C_Master_Transmit((I2C_HandleTypeDef *)dev->bus_handle, dev->i2c_addr << 1, cmd2, 2, 100) != HAL_OK)\\n        return -1;\\n    HAL_Delay(2);\\n\\n    return 0;\\n}\\n\\nint sht30_read_measurement(struct sht30_dev *dev, int32_t *temp_milliC, int32_t *humidity_milliPercent) {\\n    uint8_t cmd[] = {0x24, 0x00};\\n    if (HAL_I2C_Master_Transmit((I2C_HandleTypeDef *)dev->bus_handle, dev->i2c_addr << 1, cmd, 2, 100) != HAL_OK)\\n        return -1;\\n\\n    HAL_Delay(15);\\n\\n    uint8_t buf[6];\\n    if (HAL_I2C_Master_Receive((I2C_HandleTypeDef *)dev->bus_handle, dev->i2c_addr << 1, buf, 6, 100) != HAL_OK)\\n        return -1;\\n\\n    // Verify CRC for temperature bytes\\n    if (crc8(buf, 2) != buf[2])\\n        return -1;\\n    // Verify CRC for humidity bytes\\n    if (crc8(buf + 3, 2) != buf[5])\\n        return -1;\\n\\n    uint16_t st = ((uint16_t)buf[0] << 8) | buf[1];\\n    uint16_t srh = ((uint16_t)buf[3] << 8) | buf[4];\\n\\n    int64_t temp_raw = (int64_t)st * 175000 / 65535 - 45000;\\n    int64_t hum_raw = (int64_t)srh * 100000 / 65535;\\n\\n    *temp_milliC = (int32_t)temp_raw;\\n    *humidity_milliPercent = (int32_t)hum_raw;\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "e8114f919c158b68"
+}

@@ -1,0 +1,161 @@
+{
+  "task_package_id": "freertos_stm32f103rb__w25q64jv__spi1_polling",
+  "rtos": "freertos",
+  "device": "w25q64jv",
+  "bus": "spi",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/w25q64jv/freertos",
+  "task_package": {
+    "package_id": "freertos_stm32f103rb__w25q64jv__spi1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/freertos_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/freertos_stm32f103rb_spi1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/w25q64jv.json",
+    "reference_driver_root": "DriverGen/data/references/w25q64jv/freertos",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "freertos_stm32f103rb",
+        "rtos": "freertos",
+        "board": "stm32f103rb",
+        "integration": "stm32cubef1_hal",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "freertos_stm32f103rb_spi1_polling",
+        "connection_type": "spi",
+        "mode": "polling",
+        "bus_instance": "hi2c1",
+        "bus_symbol": "hi2c1",
+        "backend": "STM32CubeF1 HAL",
+        "address_mode": "spi_mode_0",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "w25q64jv",
+        "attachment_type": "spi_flash",
+        "required_bus_type": "spi"
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "w25q64jv + freertos + spi1_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/*.pdf",
+      "DriverGen/data/references/w25q64jv/freertos"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "freertos_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "freertos",
+    "rtos_bundle": "freertos-stm32f103-project",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Reference drivers use FreeRTOS for scheduling and STM32CubeF1 HAL for bus and GPIO access.",
+      "SPI devices use SPI_HandleTypeDef hspi1; fixed-frame UART sensors use UART_HandleTypeDef huart2.",
+      "Microsecond timing for gpio_timing devices is supplied by board helper hooks, not by the FreeRTOS kernel itself."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/README.md",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "DriverGen/data/references/*/freertos/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "freertos_stm32f103rb_spi1_polling",
+    "platform_id": "freertos_stm32f103rb",
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "spi1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hspi1",
+    "backend": "STM32CubeF1 HAL SPI with FreeRTOS timing",
+    "address_mode": "chip-select",
+    "fixed_attachment": {
+      "chip_select": "GPIOA:GPIO_PIN_4"
+    },
+    "notes": [
+      "Default FreeRTOS SPI polling binding follows the STM32CubeF1 HAL references that pass SPI_HandleTypeDef hspi1 and a GPIO chip-select."
+    ],
+    "evidence": [
+      "DriverGen/data/references/adxl345/freertos/adxl345_sample_ref.c",
+      "DriverGen/data/references/max31855/freertos/max31855_ref.h",
+      "DriverGen/data/references/mcp3008/freertos/mcp3008_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "w25q64jv",
+    "attachment_type": "spi_flash",
+    "required_bus_type": "spi",
+    "spi_proto": "memory",
+    "spi_mode": 0,
+    "spi_max_hz": 80000000,
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "addressing": {
+      "default": "spi1",
+      "selection_rule": "SPI CS# selected by board wiring."
+    },
+    "required_attachment": {
+      "signals": [
+        "CS",
+        "CLK",
+        "MOSI",
+        "MISO"
+      ],
+      "notes": [
+        "Standard SPI quad-pin connection."
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": "spi1",
+      "irq": "absent",
+      "dma": "absent"
+    },
+    "notes": [
+      "64M-bit SPI NOR Flash. Read 0x03, Page Program 0x02, Sector Erase 0x20."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/w25q64jv/W25Q64JV.pdf",
+      "DriverGen/data/references/w25q64jv/*/*_ref.h"
+    ]
+  }
+}

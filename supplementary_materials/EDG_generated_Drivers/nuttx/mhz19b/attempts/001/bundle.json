@@ -1,0 +1,137 @@
+{
+  "device_id": "mhz19b",
+  "rtos_id": "nuttx",
+  "eval_class": "single_channel",
+  "bus_kind": "uart",
+  "driver_header": "#ifndef MHZ19B_H\n#define MHZ19B_H\n\n#include <stdint.h>\n\nstruct mhz19b_dev {\n    int fd;\n};\n\nint mhz19b_init(struct mhz19b_dev *dev, const char *bus_name);\nint mhz19b_read_co2(struct mhz19b_dev *dev, int32_t *raw);\n\n#endif /* MHZ19B_H */",
+  "driver_source": "#include \"mhz19b.h\"\n#include <stdint.h>\n#include <stddef.h>\n#include <string.h>\n#include <errno.h>\n#include <unistd.h>\n#include <termios.h>\n#include \"arch.h\"\n\n#include \"nuttx.h\"\n#define MHZ19B_CMD_READ_CO2 0x86\n#define MHZ19B_RESPONSE_LENGTH 9\n\nstatic uint8_t mhz19b_checksum(const uint8_t *data, int len)\n{\n    uint8_t sum = 0;\n    for (int i = 0; i < len; i++) {\n        sum += data[i];\n    }\n    return ((~sum) + 1) & 0xFF;\n}\n\nint mhz19b_init(struct mhz19b_dev *dev, const char *bus_name)\n{\n    if (!dev || !bus_name) {\n        return -EINVAL;\n    }\n    int fd = open(bus_name, O_RDWR | O_NOCTTY);\n    if (fd < 0) {\n        return -errno;\n    }\n    struct termios tio;\n    memset(&tio, 0, sizeof(tio));\n    cfsetospeed(&tio, B9600);\n    cfsetispeed(&tio, B9600);\n    tio.c_cflag = CS8 | CLOCAL | CREAD;\n    tio.c_iflag = 0;\n    tio.c_oflag = 0;\n    tio.c_lflag = 0;\n    tio.c_cc[VMIN] = 9;\n    tio.c_cc[VTIME] = 10;\n    tcflush(fd, TCIOFLUSH);\n    tcsetattr(fd, TCSANOW, &tio);\n    dev->fd = fd;\n    return 0;\n}\n\nint mhz19b_read_co2(struct mhz19b_dev *dev, int32_t *raw)\n{\n    if (!dev || !raw) {\n        return -EINVAL;\n    }\n    uint8_t cmd[9] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79};\n    int ret = write(dev->fd, cmd, sizeof(cmd));\n    if (ret != sizeof(cmd)) {\n        return -EIO;\n    }\n    up_mdelay(100);\n    uint8_t resp[MHZ19B_RESPONSE_LENGTH];\n    ret = read(dev->fd, resp, MHZ19B_RESPONSE_LENGTH);\n    if (ret != MHZ19B_RESPONSE_LENGTH) {\n        return -EIO;\n    }\n    if (resp[0] != 0xFF) {\n        return -EIO;\n    }\n    if (resp[1] != 0x86) {\n        return -EIO;\n    }\n    uint8_t calc_cs = mhz19b_checksum(resp + 1, 7);\n    if (calc_cs != resp[8]) {\n        return -EIO;\n    }\n    *raw = (int32_t)((uint16_t)resp[2] * 256 + (uint16_t)resp[3]);\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "mhz19b_init(&g_eval_dev, bus_name)",
+    "read_call": "mhz19b_read_co2(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "ppm",
+    "dev_struct_type": "struct mhz19b_dev",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "uart1",
+        "write_prefix_any_of": [
+          [
+            "0xFF",
+            "0x01",
+            "0x86",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x79"
+          ]
+        ],
+        "note": "read_co2: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "uart1",
+        "read_any": true,
+        "note": "read_co2: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_uart_low_1",
+        "mock_preload": {
+          "req_FF0186000000000079": [
+            255,
+            134,
+            1,
+            244,
+            0,
+            0,
+            0,
+            0,
+            133
+          ],
+          "payload": [
+            1,
+            244
+          ]
+        },
+        "expected_read_raw": 500,
+        "expected_channels": {
+          "CO2": 500
+        },
+        "raw_tolerance": 5,
+        "derivation": "CO2: high_byte * 256 + low_byte with high_byte, low_byte=1, 244"
+      },
+      {
+        "name": "mechanical_uart_mid_2",
+        "mock_preload": {
+          "req_FF0186000000000079": [
+            255,
+            134,
+            7,
+            208,
+            0,
+            0,
+            0,
+            0,
+            163
+          ],
+          "payload": [
+            7,
+            208
+          ]
+        },
+        "expected_read_raw": 2000,
+        "expected_channels": {
+          "CO2": 2000
+        },
+        "raw_tolerance": 5,
+        "derivation": "CO2: high_byte * 256 + low_byte with high_byte, low_byte=7, 208"
+      },
+      {
+        "name": "mechanical_uart_high_3",
+        "mock_preload": {
+          "req_FF0186000000000079": [
+            255,
+            134,
+            19,
+            136,
+            0,
+            0,
+            0,
+            0,
+            223
+          ],
+          "payload": [
+            19,
+            136
+          ]
+        },
+        "expected_read_raw": 5000,
+        "expected_channels": {
+          "CO2": 5000
+        },
+        "raw_tolerance": 5,
+        "derivation": "CO2: high_byte * 256 + low_byte with high_byte, low_byte=19, 136"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+conversion_formulae+uart_checksum"
+  },
+  "runtime_path": "renode_uart",
+  "slave_kind": "uart_request_response_bot",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.674,
+  "prompt_chars": 37061,
+  "raw_response": "{\"driver_header\": \"#ifndef MHZ19B_H\\n#define MHZ19B_H\\n\\n#include <stdint.h>\\n\\nstruct mhz19b_dev {\\n    int fd;\\n};\\n\\nint mhz19b_init(struct mhz19b_dev *dev, const char *bus_name);\\nint mhz19b_read_co2(struct mhz19b_dev *dev, int32_t *raw);\\n\\n#endif /* MHZ19B_H */\", \"driver_source\": \"#include \\\"mhz19b.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <string.h>\\n#include <errno.h>\\n#include <unistd.h>\\n#include <fcntl.h>\\n#include <termios.h>\\n#include \\\"arch.h\\\"\\n\\n#define MHZ19B_CMD_READ_CO2 0x86\\n#define MHZ19B_RESPONSE_LENGTH 9\\n\\nstatic uint8_t mhz19b_checksum(const uint8_t *data, int len)\\n{\\n    uint8_t sum = 0;\\n    for (int i = 0; i < len; i++) {\\n        sum += data[i];\\n    }\\n    return ((~sum) + 1) & 0xFF;\\n}\\n\\nint mhz19b_init(struct mhz19b_dev *dev, const char *bus_name)\\n{\\n    if (!dev || !bus_name) {\\n        return -EINVAL;\\n    }\\n    int fd = open(bus_name, O_RDWR | O_NOCTTY);\\n    if (fd < 0) {\\n        return -errno;\\n    }\\n    struct termios tio;\\n    memset(&tio, 0, sizeof(tio));\\n    cfsetospeed(&tio, B9600);\\n    cfsetispeed(&tio, B9600);\\n    tio.c_cflag = CS8 | CLOCAL | CREAD;\\n    tio.c_iflag = 0;\\n    tio.c_oflag = 0;\\n    tio.c_lflag = 0;\\n    tio.c_cc[VMIN] = 9;\\n    tio.c_cc[VTIME] = 10;\\n    tcflush(fd, TCIOFLUSH);\\n    tcsetattr(fd, TCSANOW, &tio);\\n    dev->fd = fd;\\n    return 0;\\n}\\n\\nint mhz19b_read_co2(struct mhz19b_dev *dev, int32_t *raw)\\n{\\n    if (!dev || !raw) {\\n        return -EINVAL;\\n    }\\n    uint8_t cmd[9] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79};\\n    int ret = write(dev->fd, cmd, sizeof(cmd));\\n    if (ret != sizeof(cmd)) {\\n        return -EIO;\\n    }\\n    up_mdelay(100);\\n    uint8_t resp[MHZ19B_RESPONSE_LENGTH];\\n    ret = read(dev->fd, resp, MHZ19B_RESPONSE_LENGTH);\\n    if (ret != MHZ19B_RESPONSE_LENGTH) {\\n        return -EIO;\\n    }\\n    if (resp[0] != 0xFF) {\\n        return -EIO;\\n    }\\n    if (resp[1] != 0x86) {\\n        return -EIO;\\n    }\\n    uint8_t calc_cs = mhz19b_checksum(resp + 1, 7);\\n    if (calc_cs != resp[8]) {\\n        return -EIO;\\n    }\\n    *raw = (int32_t)((uint16_t)resp[2] * 256 + (uint16_t)resp[3]);\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "c095f656865a0cff"
+}

@@ -1,0 +1,290 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 12.026,
+  "plan_summary": {
+    "device_id": "tmp421",
+    "rtos_id": "chibios",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "plan_hash": "0a50387902b655d3",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 3,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 11.95
+  },
+  "consistency": {
+    "overall": "mixed",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 1,
+    "consistent_count": 2,
+    "summary": "3 stim; 2 L1/L2; 1 llm_only",
+    "stimuli": [
+      {
+        "name": "nominal_positive",
+        "verdict": "llm_only",
+        "layer": "L3",
+        "evidence": "no channel could be L1-verified",
+        "warnings": [
+          "ch=temp_local: bytes=[0x00, 0x19, 0x80, 0x50, 0x1A, 0x30, 0x40] no interp = 25625.0",
+          "ch=temp_remote: bytes=[0x00, 0x19, 0x80, 0x50, 0x1A, 0x30, 0x40] no interp = 26875.0"
+        ]
+      },
+      {
+        "name": "zero_near_zero",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "ch=temp_local:big_endian_u32=0; ch=temp_remote:big_endian_u32=0",
+        "warnings": []
+      },
+      {
+        "name": "negative_twos_complement",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=temp_local:derivation `-160*62.5` -> -10000.0 == expected -10000.0; ch=temp_remote:derivation `-160*62.5` -> -10000.0 == expected -10000.0",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 6,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 6,
+    "summary": "6/6 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFE"
+            ]
+          ],
+          "note": "probe_identity: write_then_read",
+          "source": "operation_flows[0].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFE"
+            ]
+          ],
+          "note": "probe_identity: write_then_read Manufacturer ID"
+        },
+        "reason": "prefix overlap: [('0xFE',)] ∈ mechanical [('0xFE',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFF"
+            ]
+          ],
+          "note": "probe_identity: write_then_read",
+          "source": "operation_flows[0].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0xFF"
+            ]
+          ],
+          "note": "probe_identity: write_then_read Device ID"
+        },
+        "reason": "prefix overlap: [('0xFF',)] ∈ mechanical [('0xFF',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read",
+          "source": "operation_flows[1].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read local high+low"
+        },
+        "reason": "prefix overlap: [('0x00',)] ∈ mechanical [('0x00',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x10"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read",
+          "source": "operation_flows[1].steps[2]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x10"
+            ]
+          ],
+          "note": "read_temperature_local: write_then_read local low byte"
+        },
+        "reason": "prefix overlap: [('0x10',)] ∈ mechanical [('0x10',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x01"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read",
+          "source": "operation_flows[2].steps[1]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x01"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read remote high+low"
+        },
+        "reason": "prefix overlap: [('0x01',)] ∈ mechanical [('0x01',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x11"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read",
+          "source": "operation_flows[2].steps[2]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x2A",
+          "write_prefix_any_of": [
+            [
+              "0x11"
+            ]
+          ],
+          "note": "read_temperature_remote1: write_then_read remote low byte"
+        },
+        "reason": "prefix overlap: [('0x11',)] ∈ mechanical [('0x11',)]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFF"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Device ID"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read local high+low"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read local low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read remote high+low"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x11"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read remote low byte"
+      }
+    ]
+  },
+  "validation_errors": [
+    "test_plan multi_channel stimulus 'nominal_positive' is only partially checkable: ch=temp_local: bytes=[0x00, 0x19, 0x80, 0x50, 0x1A, 0x30, 0x40] no interp = 25625.0; ch=temp_remote: bytes=[0x00, 0x19, 0x80, 0x50, 0x1A, 0x30, 0x40] no interp = 26875.0. Every expected_channels entry must have matching mock_preload data and an executable derivation for this same stimulus; do not declare placeholder channels as 0 or 'not read'."
+  ]
+}

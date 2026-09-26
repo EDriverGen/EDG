@@ -1,0 +1,134 @@
+{
+  "task_package_id": "cmsis_rtx_stm32f103rb__hcsr04__gpio_timing_default",
+  "rtos": "cmsis-rtx",
+  "device": "hcsr04",
+  "bus": "gpio_timing",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/hcsr04/cmsis-rtx",
+  "task_package": {
+    "package_id": "cmsis_rtx_stm32f103rb__hcsr04__gpio_timing_default",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/cmsis_rtx_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/cmsis_rtx_stm32f103rb_gpio_timing_default.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/hcsr04.json",
+    "reference_driver_root": "DriverGen/data/references/hcsr04/cmsis-rtx",
+    "fixed_task_context": {},
+    "notes": [
+      "CMSIS-RTX supplies CMSIS-RTOS2 runtime primitives; STM32CubeF1 HAL supplies GPIO access for this HC-SR04 timing task.",
+      "The resolver rebuilds fixed_task_context from the referenced platform, connection, and device layers."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/cmsis-rtx",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1",
+      "DriverGen/data/raw/hcsr04",
+      "DriverGen/data/references/hcsr04/cmsis-rtx"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "cmsis_rtx_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "cmsis-rtx",
+    "rtos_bundle": "cmsis-rtx-stm32f103-project",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "CMSIS-RTX provides CMSIS-RTOS2 runtime primitives; STM32CubeF1 provides the peripheral HAL used by device drivers.",
+      "The raw CMSIS-RTX repository has no I2C/SPI/UART/GPIO framework, so generated STM32F103 drivers should bind to STM32CubeF1 HAL for bus access and use CMSIS-RTOS2 for delays/synchronisation."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/cmsis-rtx/Include/rtx_os.h",
+      "DriverGen/data/rtos/cmsis-rtx/Source",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "DriverGen/data/references/*/cmsis-rtx/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "cmsis_rtx_stm32f103rb_gpio_timing_default",
+    "platform_id": "cmsis_rtx_stm32f103rb",
+    "connection_type": "gpio_timing",
+    "mode": "polling",
+    "bus_instance": "PA0:PA1",
+    "bus_instance_kind": "fixed_sample_pins",
+    "bus_symbol": "PA0:PA1",
+    "backend": "STM32CubeF1 HAL GPIO with CMSIS-RTOS2 delay",
+    "address_mode": null,
+    "fixed_attachment": {
+      "trig_pin": "PA0",
+      "echo_pin": "PA1",
+      "data_pin": "PB5"
+    },
+    "notes": [
+      "HC-SR04 uses a trig:echo pair such as PA0:PA1; single-wire devices such as DHT22 and DS18B20 use one data pin such as PB5.",
+      "Reference adapters parse textual pin labels into STM32 GPIO port/pin values."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h",
+      "DriverGen/data/references/hcsr04/cmsis-rtx/hcsr04_eval_adapter.c",
+      "DriverGen/data/references/dht22/cmsis-rtx/dht22_eval_adapter.c",
+      "DriverGen/data/references/ds18b20/cmsis-rtx/ds18b20_eval_adapter.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "hcsr04",
+    "attachment_type": "gpio_echo_sensor",
+    "required_bus_type": "gpio_timing",
+    "address_mode": null,
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "trig",
+        "echo"
+      ],
+      "notes": [
+        "TRIG must be a digital output. ECHO must be a digital input that can be polled or timestamped at microsecond scale."
+      ]
+    },
+    "optional_attachment": {
+      "power_enable": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers require microsecond delay and timestamp support from the board layer or RTOS adaptation layer."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/hcsr04",
+      "DriverGen/data/references/hcsr04/*/*_ref.h"
+    ]
+  }
+}

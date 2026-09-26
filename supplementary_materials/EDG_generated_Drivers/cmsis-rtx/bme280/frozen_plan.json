@@ -1,0 +1,302 @@
+{
+  "device_id": "bme280",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "bme280_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "temp",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "temp_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "pressure",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "pressure_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "humidity",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "humidity_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "struct bme280_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xD0"
+          ]
+        ],
+        "note": "init: id"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xE0"
+          ]
+        ],
+        "note": "init: reset"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xF5"
+          ]
+        ],
+        "note": "init: config"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xF2"
+          ],
+          [
+            "0xF3"
+          ],
+          [
+            "0xF4"
+          ],
+          [
+            "0xF7"
+          ],
+          [
+            "0xF8"
+          ],
+          [
+            "0xF9"
+          ],
+          [
+            "0xFA"
+          ],
+          [
+            "0xFB"
+          ],
+          [
+            "0xFC"
+          ],
+          [
+            "0xFD"
+          ],
+          [
+            "0xFE"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_cycle: one of ctrl_hum, ctrl_meas, hum_lsb, hum_msb, press_lsb, press_msb, press_xlsb, status, temp_lsb, temp_msb, temp_xlsb"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xE1": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xF7": [
+            "0x01",
+            "0x00",
+            "0x00",
+            "0x02",
+            "0x00",
+            "0x00",
+            "0x03",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp": 65536,
+          "pressure": 131072,
+          "humidity": 768
+        },
+        "derivation": "temp: 0x01<<12 | 0x00<<4 | 0x00>>4 = 4096; pressure: 0x02<<12 | 0x00<<4 | 0x00>>4 = 8192; humidity: 0x03<<8 | 0x00 = 768"
+      },
+      {
+        "name": "max_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xE1": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xF7": [
+            "0xFF",
+            "0xFF",
+            "0xF0",
+            "0xFF",
+            "0xFF",
+            "0xF0",
+            "0xFF",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "temp": 1048575,
+          "pressure": 1048575,
+          "humidity": 65535
+        },
+        "derivation": "temp: 0xFFFFF0>>4 = 0xFFFFF = 1048575; pressure: 0xFFFFF0>>4 = 0xFFFFF = 1048575; humidity: 0xFFFF = 65535"
+      },
+      {
+        "name": "zero_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xE1": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0xF7": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp": 0,
+          "pressure": 0,
+          "humidity": 0
+        },
+        "derivation": "temp: 0x000000>>4 = 0; pressure: 0x000000>>4 = 0; humidity: 0x0000 = 0"
+      }
+    ]
+  },
+  "plan_hash": "4c5a0f12f8df96a9",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 9.029,
+  "prompt_chars": 56834,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"bme280_init(&g_eval_dev, bus_handle)\", \"channels\": [{\"id\": \"temp\", \"call\": \"bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)\", \"out_arg\": \"temp_raw\", \"out_type\": \"int32_t\", \"physical_unit\": \"raw_count\"}, {\"id\": \"pressure\", \"call\": \"bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)\", \"out_arg\": \"pressure_raw\", \"out_type\": \"int32_t\", \"physical_unit\": \"raw_count\"}, {\"id\": \"humidity\", \"call\": \"bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)\", \"out_arg\": \"humidity_raw\", \"out_type\": \"int32_t\", \"physical_unit\": \"raw_count\"}], \"dev_struct_type\": \"struct bme280_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xD0\"]], \"note\": \"init: id\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xE0\"]], \"note\": \"init: reset\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xF5\"]], \"note\": \"init: config\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x76\", \"write_prefix_any_of\": [[\"0xF2\"], [\"0xF3\"], [\"0xF4\"], [\"0xF7\"], [\"0xF8\"], [\"0xF9\"], [\"0xFA\"], [\"0xFB\"], [\"0xFC\"], [\"0xFD\"], [\"0xFE\"]], \"read_any\": true, \"note\": \"read_cycle: one of ctrl_hum, ctrl_meas, hum_lsb, hum_msb, press_lsb, press_msb, press_xlsb, status, temp_lsb, temp_msb, temp_xlsb\"}], \"test_stimuli\": [{\"name\": \"nominal_values\", \"mock_preload\": {\"0xD0\": [\"0x60\"], \"0x88\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xE1\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xF7\": [\"0x01\", \"0x00\", \"0x00\", \"0x02\", \"0x00\", \"0x00\", \"0x03\", \"0x00\"]}, \"expected_channels\": {\"temp\": 65536, \"pressure\": 131072, \"humidity\": 768}, \"derivation\": \"temp: 0x01<<12 | 0x00<<4 | 0x00>>4 = 4096; pressure: 0x02<<12 | 0x00<<4 | 0x00>>4 = 8192; humidity: 0x03<<8 | 0x00 = 768\"}, {\"name\": \"max_values\", \"mock_preload\": {\"0xD0\": [\"0x60\"], \"0x88\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xE1\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xF7\": [\"0xFF\", \"0xFF\", \"0xF0\", \"0xFF\", \"0xFF\", \"0xF0\", \"0xFF\", \"0xFF\"]}, \"expected_channels\": {\"temp\": 1048575, \"pressure\": 1048575, \"humidity\": 65535}, \"derivation\": \"temp: 0xFFFFF0>>4 = 0xFFFFF = 1048575; pressure: 0xFFFFF0>>4 = 0xFFFFF = 1048575; humidity: 0xFFFF = 65535\"}, {\"name\": \"zero_values\", \"mock_preload\": {\"0xD0\": [\"0x60\"], \"0x88\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xE1\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"], \"0xF7\": [\"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\", \"0x00\"]}, \"expected_channels\": {\"temp\": 0, \"pressure\": 0, \"humidity\": 0}, \"derivation\": \"temp: 0x000000>>4 = 0; pressure: 0x000000>>4 = 0; humidity: 0x0000 = 0\"}]}}"
+}

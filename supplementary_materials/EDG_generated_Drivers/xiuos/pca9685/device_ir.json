@@ -1,0 +1,643 @@
+{
+  "device_id": "pca9685",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins_and_subaddresses",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x40",
+        "description": "6 hardware address pins A5:A0 all tied low; regular slave address",
+        "is_default": true
+      },
+      {
+        "address": "0x41",
+        "description": "A0 = high, remaining address pins low",
+        "is_default": false
+      },
+      {
+        "address": "0x42",
+        "description": "A1 = high, remaining address pins low",
+        "is_default": false
+      },
+      {
+        "address": "0x43",
+        "description": "A1:A0 = high, remaining address pins low",
+        "is_default": false
+      },
+      {
+        "address": "0x44",
+        "description": "A2 = high, remaining address pins low",
+        "is_default": false
+      },
+      {
+        "address": "0x45",
+        "description": "A2:A0 = high, remaining address pins low",
+        "is_default": false
+      },
+      {
+        "address": "0x46",
+        "description": "A2:A1 = high, remaining address pins low",
+        "is_default": false
+      },
+      {
+        "address": "0x47",
+        "description": "A2:A1:A0 = high, remaining address pins low",
+        "is_default": false
+      },
+      {
+        "address": "0x70",
+        "description": "LED All Call I2C address, default power-up value in ALLCALLADR register is E0h or 1110 000X",
+        "is_default": true
+      },
+      {
+        "address": "0x71",
+        "description": "LED All Call I2C address with R/W bit set for read; datasheet shows E0h or 1110 000X",
+        "is_default": false
+      },
+      {
+        "address": "0x72",
+        "description": "SUBADR1 default power-up value, E2h or 1110 001X",
+        "is_default": true
+      },
+      {
+        "address": "0x74",
+        "description": "SUBADR2 default power-up value, E4h or 1110 010X",
+        "is_default": true
+      },
+      {
+        "address": "0x78",
+        "description": "SUBADR3 default power-up value, E8h or 1110 100X",
+        "is_default": true
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 256,
+    "addressing": "pointer",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "8-bit register pointer; auto-increment wraps past LED15_OFF_H to MODE1 and also from 0xFE..0xFF to 0x00."
+  },
+  "read_channels": [],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "eval_class": "multi_channel",
+    "notes": "I2C register-pointer PWM controller. 16 channels, each with 12-bit ON/OFF counters."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "read_pwm_channel",
+      "kind": "read",
+      "channels": [],
+      "description": "Read LEDn OFF registers to get current PWM duty cycle",
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "address": "0x40",
+            "bytes": [
+              "0x08"
+            ],
+            "length": 1,
+            "notes": "Set register pointer to LED0_OFF_L (0x08) — then auto-increment reads through LEDn_OFF_H"
+          }
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "address": "0x40",
+            "length": 4,
+            "notes": "Read LEDn_OFF_L + LEDn_OFF_H + LEDn+1_ON_L + LEDn+1_ON_H (4 bytes for 2 channels with auto-increment)"
+          }
+        }
+      ]
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "little_endian",
+    "bit_width": 12,
+    "signed": false,
+    "notes": "PWM duty stored as OFF_L (low 8 bits) + OFF_H (high 4 bits in bits 3:0)"
+  },
+  "registers_or_commands": [
+    {
+      "name": "MODE1",
+      "value": "0x00",
+      "access": "read/write",
+      "size": 1,
+      "description": "Mode register 1: SLEEP, AI, etc."
+    },
+    {
+      "name": "MODE2",
+      "value": "0x01",
+      "access": "read/write",
+      "size": 1,
+      "description": "Mode register 2: OUTDRV, INVRT, etc."
+    },
+    {
+      "name": "PRE_SCALE",
+      "value": "0xFE",
+      "access": "read/write",
+      "size": 1,
+      "description": "Prescaler for PWM frequency (only writable in SLEEP mode)"
+    },
+    {
+      "name": "LED0_ON_L",
+      "value": "0x06",
+      "access": "read/write",
+      "size": 1,
+      "description": "LED0 ON count low byte"
+    },
+    {
+      "name": "LED0_OFF_L",
+      "value": "0x08",
+      "access": "read/write",
+      "size": 1,
+      "description": "LED0 OFF count low byte (duty = OFF - ON)"
+    },
+    {
+      "name": "ALL_LED_OFF_L",
+      "value": "0xFC",
+      "access": "read/write",
+      "size": 1,
+      "description": "All LEDs OFF count low byte"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "MODE1",
+      "bit": 7,
+      "name": "RESTART",
+      "access": "rw",
+      "default": 0,
+      "description": "Write 1 to clear; read shows restart state."
+    },
+    {
+      "register": "MODE1",
+      "bit": 6,
+      "name": "EXTCLK",
+      "access": "rw",
+      "default": 0,
+      "description": "Select external clock; sticky bit cleared only by power cycle or software reset."
+    },
+    {
+      "register": "MODE1",
+      "bit": 5,
+      "name": "AI",
+      "access": "rw",
+      "default": 0,
+      "description": "Register Auto-Increment enable."
+    },
+    {
+      "register": "MODE1",
+      "bit": 4,
+      "name": "SLEEP",
+      "access": "rw",
+      "default": 1,
+      "description": "Low power mode; oscillator off."
+    },
+    {
+      "register": "MODE1",
+      "bit": 3,
+      "name": "SUB1",
+      "access": "rw",
+      "default": 0,
+      "description": "Responds to I2C-bus subaddress 1."
+    },
+    {
+      "register": "MODE1",
+      "bit": 2,
+      "name": "SUB2",
+      "access": "rw",
+      "default": 0,
+      "description": "Responds to I2C-bus subaddress 2."
+    },
+    {
+      "register": "MODE1",
+      "bit": 1,
+      "name": "SUB3",
+      "access": "rw",
+      "default": 0,
+      "description": "Responds to I2C-bus subaddress 3."
+    },
+    {
+      "register": "MODE1",
+      "bit": 0,
+      "name": "ALLCALL",
+      "access": "rw",
+      "default": 1,
+      "description": "Responds to LED All Call address."
+    },
+    {
+      "register": "MODE2",
+      "bit": 4,
+      "name": "INVRT",
+      "access": "rw",
+      "default": 0,
+      "description": "Output logic state inverted/non-inverted; applicable when OE=0."
+    },
+    {
+      "register": "MODE2",
+      "bit": 3,
+      "name": "OCH",
+      "access": "rw",
+      "default": 0,
+      "description": "Outputs change on STOP when 0, on ACK when 1."
+    },
+    {
+      "register": "MODE2",
+      "bit": 2,
+      "name": "OUTDRV",
+      "access": "rw",
+      "default": 1,
+      "description": "LEDn outputs open-drain when 0, totem pole when 1."
+    },
+    {
+      "register": "MODE2",
+      "bit": 1,
+      "name": "OUTNE1",
+      "access": "rw",
+      "default": 0,
+      "description": "Output state when OE=1."
+    },
+    {
+      "register": "MODE2",
+      "bit": 0,
+      "name": "OUTNE0",
+      "access": "rw",
+      "default": 0,
+      "description": "Output state when OE=1."
+    },
+    {
+      "register": "LED0_ON_H",
+      "bit": 4,
+      "name": "LED0_ON_H[4]",
+      "access": "rw",
+      "default": 0,
+      "description": "LED0 full ON control."
+    },
+    {
+      "register": "LED0_OFF_H",
+      "bit": 4,
+      "name": "LED0_OFF_H[4]",
+      "access": "rw",
+      "default": 1,
+      "description": "LED0 full OFF control."
+    },
+    {
+      "register": "LED1_ON_H",
+      "bit": 4,
+      "name": "LED1_ON_H[4]",
+      "access": "rw",
+      "default": 0,
+      "description": "LED1 full ON control."
+    },
+    {
+      "register": "LED1_OFF_H",
+      "bit": 4,
+      "name": "LED1_OFF_H[4]",
+      "access": "rw",
+      "default": 1,
+      "description": "LED1 full OFF control."
+    },
+    {
+      "register": "ALL_LED_ON_H",
+      "bit": 4,
+      "name": "ALL_LED_ON_H[4]",
+      "access": "wo",
+      "default": 1,
+      "description": "All LED full ON."
+    },
+    {
+      "register": "ALL_LED_OFF_H",
+      "bit": 4,
+      "name": "ALL_LED_OFF_H[4]",
+      "access": "wo",
+      "default": 1,
+      "description": "All LED full OFF."
+    },
+    {
+      "register": "SUBADR1",
+      "bit": "7:1",
+      "name": "A1[7:1]",
+      "access": "rw",
+      "default": "1110001",
+      "description": "Programmable 7-bit subaddress; bit0 reserved read-only 0."
+    },
+    {
+      "register": "SUBADR2",
+      "bit": "7:1",
+      "name": "A2[7:1]",
+      "access": "rw",
+      "default": "1110010",
+      "description": "Programmable 7-bit subaddress; bit0 reserved read-only 0."
+    },
+    {
+      "register": "SUBADR3",
+      "bit": "7:1",
+      "name": "A3[7:1]",
+      "access": "rw",
+      "default": "1110100",
+      "description": "Programmable 7-bit subaddress; bit0 reserved read-only 0."
+    },
+    {
+      "register": "ALLCALLADR",
+      "bit": "7:1",
+      "name": "AC[7:1]",
+      "access": "rw",
+      "default": "1110000",
+      "description": "Programmable 7-bit all-call address; bit0 reserved read-only 0."
+    },
+    {
+      "register": "PRE_SCALE",
+      "bit": "7:0",
+      "name": "PRE_SCALE[7:0]",
+      "access": "rw",
+      "default": 30,
+      "description": "Prescaler to program the PWM output frequency; default is 200 Hz."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "After power-on reset, registers and I2C-bus state machine are initialized to default states."
+    },
+    {
+      "transaction": null,
+      "notes": "If using the internal oscillator, wait 500 us after clearing MODE1.SLEEP before accessing PWM control registers."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 1,
+        "pointer_target": "MODE1"
+      },
+      "notes": "Read MODE1 for restart/sleep state."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x01"
+        ],
+        "length": 1,
+        "pointer_target": "MODE2"
+      },
+      "notes": "Read MODE2 for output polarity, update timing, output driver type and output-enable behavior."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "oscillator_startup",
+      "value": 500,
+      "unit": "us",
+      "condition": "after clearing MODE1.SLEEP to 0",
+      "notes": "It takes 500 μs max. for the oscillator to be up and running once SLEEP bit has been set to logic 0."
+    },
+    {
+      "name": "bus_timeout",
+      "value": 25,
+      "unit": "ms",
+      "condition": "SDA or SCL held LOW",
+      "notes": "serial bus interface resets"
+    },
+    {
+      "name": "f_scl_standard_max",
+      "value": 100,
+      "unit": "kHz",
+      "condition": "Standard-mode I2C-bus",
+      "notes": "f SCL SCL clock frequency"
+    },
+    {
+      "name": "f_scl_fast_max",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Fast-mode I2C-bus",
+      "notes": "f SCL SCL clock frequency"
+    },
+    {
+      "name": "f_scl_fmplus_max",
+      "value": 1000,
+      "unit": "kHz",
+      "condition": "Fast-modePlus I2C-bus",
+      "notes": "f SCL SCL clock frequency"
+    },
+    {
+      "name": "tbuf_standard",
+      "value": 4.7,
+      "unit": "us",
+      "condition": "Standard-mode bus free time between STOP and START",
+      "notes": "t BUF bus free time between a STOP and START condition"
+    },
+    {
+      "name": "tbuf_fast",
+      "value": 1.3,
+      "unit": "us",
+      "condition": "Fast-mode bus free time between STOP and START",
+      "notes": "t BUF bus free time between a STOP and START condition"
+    },
+    {
+      "name": "tbuf_fmplus",
+      "value": 0.5,
+      "unit": "us",
+      "condition": "Fast-modePlus bus free time between STOP and START",
+      "notes": "t BUF bus free time between a STOP and START condition"
+    },
+    {
+      "name": "input_spike_filter",
+      "value": 50,
+      "unit": "ns",
+      "condition": "SDA/SCL input spike suppression",
+      "notes": "Input filters on the SDA and SCL inputs suppress noise spikes less than 50 ns."
+    },
+    {
+      "name": "extclk_max_frequency",
+      "value": 50,
+      "unit": "MHz",
+      "condition": "EXTCLK pin",
+      "notes": "EXTCLK range is DC to 50 MHz."
+    },
+    {
+      "name": "output_propagation_delay",
+      "value": 40,
+      "unit": "ns",
+      "condition": "OE to LEDn; OUTNE[1:0] = 10 or 11 in MODE2 register",
+      "notes": "LOW to OFF-state propagation delay"
+    },
+    {
+      "name": "pwm_refresh_default",
+      "value": 200,
+      "unit": "Hz",
+      "condition": "default frequency",
+      "notes": "default is 200 Hz"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "formula_id": "pwm_duty_cycle",
+      "name": "12-bit PWM duty cycle from OFF registers",
+      "expression": "((off_h & 0x0F) << 8) | off_l",
+      "input_variables": [
+        "off_h",
+        "off_l"
+      ],
+      "output_unit": "pwm_12bit",
+      "range": [
+        0,
+        4095
+      ],
+      "integer_approximation_expression": {
+        "expression": "((off_h & 0x0F) * 256) + off_l",
+        "inputs": [
+          {
+            "name": "off_h",
+            "source_register": "LEDn_OFF_H",
+            "bitmask": 15
+          },
+          {
+            "name": "off_l",
+            "source_register": "LEDn_OFF_L",
+            "bitmask": 255
+          }
+        ],
+        "output": "pwm_12bit"
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "I2C NACK on normal register access",
+      "detection": "Any address or data phase NACK during a regular transaction to the configured slave address.",
+      "driver_action": "abort transaction and report -EIO",
+      "notes": "Reserved addresses are not acknowledged."
+    },
+    {
+      "condition": "bus_timeout_reset",
+      "detection": "SDA or SCL held LOW for at least 25 ms.",
+      "driver_action": "retry once then surface error",
+      "notes": "Serial bus interface resets."
+    },
+    {
+      "condition": "pre_scale_written_while_awake",
+      "detection": "Driver attempts a PRE_SCALE write while MODE1.SLEEP = 0.",
+      "driver_action": "abort transaction and report -EIO",
+      "notes": "Writes to PRE_SCALE are blocked when SLEEP bit is logic 0."
+    },
+    {
+      "condition": "software_reset_abort",
+      "detection": "SWRST General Call sequence receives NACK at any stage or byte 0x06 is not acknowledged.",
+      "driver_action": "abort transaction and report -EIO",
+      "notes": "Treat as SWRST Call Abort; device does not reset."
+    },
+    {
+      "condition": "reserved_testmode_access",
+      "detection": "Driver writes to TestMode register 0xFF in normal operation.",
+      "driver_action": "abort transaction and report -EIO",
+      "notes": "Reserved; writes may cause unpredictable results."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "power_up_reset",
+      "description": "Internal POR holds the PCA9685 in reset until VDD reaches VPOR; registers and I2C state machine initialize to default states.",
+      "entry_condition": "VDD applied",
+      "exit_condition": "VDD above VPOR",
+      "notes": "VDD must be lowered below 0.2 V to reset the device."
+    },
+    {
+      "name": "normal_mode",
+      "description": "MODE1.SLEEP = 0; oscillator on; PWM control active.",
+      "entry_condition": "Clear SLEEP bit",
+      "exit_condition": "Set SLEEP bit or power cycle",
+      "notes": "PWM control registers should not be accessed within 500 us after wake."
+    },
+    {
+      "name": "sleep_mode",
+      "description": "MODE1.SLEEP = 1; oscillator off; no PWM control possible.",
+      "entry_condition": "Set SLEEP bit",
+      "exit_condition": "Clear SLEEP bit",
+      "notes": "LEDn outputs cannot be turned on, off or dimmed/blinked."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "pca9685",
+      "page": 7,
+      "snippet": "The last bit of the address byte defines the operation to be performed. When set to logic 1 a read is selected, while a logic 0 selects a write operation."
+    },
+    {
+      "source_id": "pca9685",
+      "page": 8,
+      "snippet": "Default power-up value (ALLCALLADR register): E0h or 1110 000X"
+    },
+    {
+      "source_id": "pca9685",
+      "page": 8,
+      "snippet": "Default power-up values: -SUBADR1 register: E2h or 1110 001X"
+    },
+    {
+      "source_id": "pca9685",
+      "page": 8,
+      "snippet": "PCA9685 sends an ACK when E0h (R/W = 0) or E1h (R/W = 1) is sent by the master."
+    },
+    {
+      "source_id": "pca9685",
+      "page": 14,
+      "snippet": "Mode register 1 controlling restart, external clock, auto-increment, sleep, subaddress and all-call response"
+    },
+    {
+      "source_id": "pca9685",
+      "page": 16,
+      "snippet": "Outputs change on STOP command [2]."
+    },
+    {
+      "source_id": "pca9685",
+      "page": 21,
+      "snippet": "LEDn_ON count for LED0, 8 LSBs"
+    },
+    {
+      "source_id": "pca9685",
+      "page": 25,
+      "snippet": "The LEDn_ON and LEDn_OFF counts can vary from 0 to 4095."
+    },
+    {
+      "source_id": "pca9685",
+      "page": 25,
+      "snippet": "The hardware forces a minimum value that can be loaded into the PRE_SCALE register at '3'."
+    },
+    {
+      "source_id": "pca9685",
+      "page": 15,
+      "snippet": "It takes 500  s max. for the oscillator to be up and running once SLEEP bit has been set to logic 0."
+    },
+    {
+      "source_id": "pca9685",
+      "page": 28,
+      "snippet": "Once the correct byte (SWRST data byte 1) has been sent and correctly acknowledged, the master sends a STOP command to end the SWRST Call"
+    },
+    {
+      "source_id": "pca9685",
+      "page": 40,
+      "snippet": "Minimum SCL clock frequency is limited by the bus time-out feature, which resets the serial bus interface if either SDA or SCL is held LOW for a minimum of 25 ms."
+    }
+  ],
+  "requires_human": [
+    "The datasheet's prescale equation is garbled in the provided text; the IR uses the standard documented formula from the prose near Section 7.3.5, but please confirm against the rendered equation if absolute fidelity is required.",
+    "The structured source excerpt does not enumerate all six hardware address-pin combinations; only the default and several representative values are present, so the address list is partial.",
+    "The PCA9685 is a PWM LED controller, not a measurement sensor; the read_channels here model the user-visible PWM timing data bound to each LED channel, which may be interpreted differently by downstream consumers.",
+    "The dedicated TestMode register at 0xFF is included from the register summary but should generally be excluded from normal driver operation."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

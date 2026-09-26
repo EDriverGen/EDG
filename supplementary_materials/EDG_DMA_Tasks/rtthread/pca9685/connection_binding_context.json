@@ -1,0 +1,89 @@
+{
+  "binding_id": "rtthread_stm32f103rb_i2c1_dma",
+  "platform_id": "rtthread_stm32f103rb",
+  "connection_type": "i2c",
+  "mode": "dma",
+  "bus_instance": "i2c1",
+  "bus_instance_kind": "named_bus",
+  "bus_symbol": "i2c1",
+  "backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+  "address_mode": "7-bit",
+  "fixed_attachment": {},
+  "notes": [
+    "Enable BSP_USING_HARD_I2C1, BSP_I2C1_RX_USING_DMA, and BSP_I2C1_TX_USING_DMA; retain i2c1 and its pins.",
+    "Use the existing hardware-I2C registration, with payload messages of at least 2 bytes.",
+    "Preserve combined-message/repeated-start semantics; one-byte register-selection phases may use the backend's control-transfer path.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use hardware-I2C DMA for channel-register writes, preserving auto-increment and PWM configuration."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+    "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+  ],
+  "dma": "required",
+  "completion_irq": "required",
+  "helper_usage_patterns": [],
+  "dma_requirements": {
+    "task_package_id": "rtthread_stm32f103rb__pca9685__i2c1_dma",
+    "mode": "dma",
+    "physical_bus": "i2c",
+    "backend": "RT-Thread STM32F1 hardware-I2C1 DMA",
+    "access_pattern": "rtos_bus_dma",
+    "candidate_transfer_apis": [
+      "rt_i2c_transfer"
+    ],
+    "dma_channels": {
+      "controller": "DMA1",
+      "tx": 6,
+      "rx": 7
+    },
+    "minimum_core_payload_bytes": 2,
+    "configuration_requirements": [
+      "Enable BSP_USING_HARD_I2C1, BSP_I2C1_RX_USING_DMA, and BSP_I2C1_TX_USING_DMA; retain i2c1 and its pins.",
+      "Use the existing hardware-I2C registration, with payload messages of at least 2 bytes.",
+      "Preserve combined-message/repeated-start semantics; one-byte register-selection phases may use the backend's control-transfer path."
+    ],
+    "generation_requirements": [
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use hardware-I2C DMA for channel-register writes, preserving auto-increment and PWM configuration."
+    ],
+    "device_scenarios": [
+      "Retain prescale/setup ordering.",
+      "Transfer complete channel register groups."
+    ],
+    "validation_requirements": [
+      {
+        "id": "dma_payload",
+        "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+      },
+      {
+        "id": "completion_order",
+        "requirement": "Consume receive data and reuse buffers only after the required completion event."
+      },
+      {
+        "id": "error_and_timeout",
+        "requirement": "Return the specified error and release transfer state after failure or timeout."
+      },
+      {
+        "id": "repeat_operation",
+        "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+      }
+    ],
+    "source_evidence": [
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/drv_hard_i2c.c",
+      "DriverGen/data/rtos/rt-thread/bsp/stm32/libraries/HAL_Drivers/drivers/config/f1/dma_config.h"
+    ]
+  }
+}

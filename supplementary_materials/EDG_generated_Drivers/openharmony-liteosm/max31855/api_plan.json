@@ -1,0 +1,23 @@
+{
+  "eval_class": "multi_channel",
+  "init_call": "max31855_init(&g_eval_dev, bus_handle)",
+  "channels": [
+    {
+      "id": "thermocouple",
+      "call": "max31855_read_temperatures(&g_eval_dev, &tc, &local)",
+      "out_arg": "tc",
+      "out_type": "int32_t",
+      "physical_unit": "milli_degC"
+    },
+    {
+      "id": "temp_local",
+      "call": "max31855_read_temperatures(&g_eval_dev, &tc, &local)",
+      "out_arg": "local",
+      "out_type": "int32_t",
+      "physical_unit": "milli_degC"
+    }
+  ],
+  "dev_struct_type": "struct max31855_device",
+  "init_extra_setup_c": "struct SpiDevInfo spi_info = {0, 0};\nDevHandle bus_handle = SpiOpen(&spi_info);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+  "preamble_c": "#include \"spi_if.h\"\n#include \"hdf_base.h\""
+}

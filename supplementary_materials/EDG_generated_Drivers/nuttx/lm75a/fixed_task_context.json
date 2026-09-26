@@ -1,0 +1,242 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/nuttx_generic_devfs__lm75a__i2c1_polling/task_package.json",
+  "task_package": {
+    "package_id": "nuttx_generic_devfs__lm75a__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/nuttx_generic_devfs.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/nuttx_generic_devfs_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/lm75a.json",
+    "reference_driver_root": "DriverGen/data/references/lm75a/nuttx",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "nuttx_generic_devfs",
+        "rtos": "nuttx",
+        "rtos_bundle": "nuttx",
+        "board": "nucleo-f103rb",
+        "board_alias": "nuttx_f103rb",
+        "integration": "public_i2c_master_and_gpio_char_driver",
+        "integration_style": "nuttx_core_plus_apps_and_public_headers",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "nuttx_generic_devfs_i2c1_polling",
+        "platform_id": "nuttx_generic_devfs",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "1",
+        "bus_instance_kind": "board_i2cbus_initialize",
+        "bus_symbol": "board_i2cbus_initialize(1)",
+        "backend": "NuttX i2c_master lower-half",
+        "address_mode": "7-bit",
+        "fixed_attachment": {},
+        "required_helpers": [
+          "board_i2cbus_initialize",
+          "i2c_write",
+          "i2c_read",
+          "usleep"
+        ],
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "lm75a",
+        "attachment_type": "i2c_sensor",
+        "required_bus_type": "i2c",
+        "address_mode": "7-bit",
+        "addressing": {
+          "default": "0x48",
+          "alternates": [
+            "0x49",
+            "0x4A",
+            "0x4B",
+            "0x4C",
+            "0x4D",
+            "0x4E",
+            "0x4F"
+          ],
+          "selection_rule": "A2/A1/A0 define the lower address bits."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "Minimal driver only requires I2C power, ground, SDA, and SCL."
+          ]
+        },
+        "optional_attachment": {
+          "os_pin": "optional",
+          "address_select_pins": [
+            "A0",
+            "A1",
+            "A2"
+          ]
+        },
+        "default_overrides": {
+          "bus_instance": null,
+          "irq": "absent",
+          "dma": "absent",
+          "reset_gpio": null,
+          "power_gpio": null
+        },
+        "protocol_hints": {}
+      }
+    },
+    "notes": [
+      "This package freezes a concrete task setup for nuttx + lm75a.",
+      "It is intended for controlled DriverGen experiments and reduces variation in board/integration assumptions."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/nuttx",
+      "DriverGen/data/raw/lm75a",
+      "DriverGen/data/references/lm75a/nuttx"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "nuttx_generic_devfs",
+    "board": "nucleo-f103rb",
+    "board_alias": "nuttx_f103rb",
+    "rtos": "nuttx",
+    "rtos_bundle": "nuttx",
+    "integration": "public_i2c_master_and_gpio_char_driver",
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "gpio_timing"
+      ],
+      "available_instances": {
+        "i2c": [
+          "1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "optional"
+    },
+    "notes": [
+      "This platform targets the NuttX nucleo-f103rb board while using i2c_master lower-half devices and GPIO character devices.",
+      "Task packages follow the existing NuttX reference drivers that use board_i2cbus_initialize and /dev/gpio* paths."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/i2c/i2c_master.h",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/ioexpander/gpio.h",
+      "DriverGen/data/rtos/nuttx-project/apps/system/i2c/i2c_main.c"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "nuttx_generic_devfs_i2c1_polling",
+    "platform_id": "nuttx_generic_devfs",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "1",
+    "bus_instance_kind": "board_i2cbus_initialize",
+    "bus_symbol": "board_i2cbus_initialize(1)",
+    "backend": "NuttX i2c_master lower-half",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "required_helpers": [
+      "board_i2cbus_initialize",
+      "i2c_write",
+      "i2c_read",
+      "usleep"
+    ],
+    "notes": [
+      "Default NuttX I2C binding uses board_i2cbus_initialize(1) as in the reference samples."
+    ],
+    "evidence": [
+      "DriverGen/data/references/bh1750/nuttx/bh1750_sample_ref.c",
+      "DriverGen/data/rtos/nuttx-project/nuttx/include/nuttx/i2c/i2c_master.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "lm75a",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B",
+        "0x4C",
+        "0x4D",
+        "0x4E",
+        "0x4F"
+      ],
+      "selection_rule": "A2/A1/A0 define the lower address bits."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver only requires I2C power, ground, SDA, and SCL."
+      ]
+    },
+    "optional_attachment": {
+      "os_pin": "optional",
+      "address_select_pins": [
+        "A0",
+        "A1",
+        "A2"
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers treat LM75A as a simple two-byte temperature register device with no explicit measurement trigger."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/lm75a",
+      "DriverGen/data/references/lm75a/*/*_ref.h"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "nuttx_generic_devfs__lm75a__i2c1_polling",
+    "rtos": "nuttx",
+    "rtos_bundle": "nuttx",
+    "board": "nucleo-f103rb",
+    "board_alias": "nuttx_f103rb",
+    "integration": "public_i2c_master_and_gpio_char_driver",
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "i2c",
+    "bus_instance": "1",
+    "bus_instance_kind": "board_i2cbus_initialize",
+    "bus_symbol": "board_i2cbus_initialize(1)",
+    "bus_backend": "NuttX i2c_master lower-half",
+    "address_mode": "7-bit",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {},
+    "device_attachment_context_id": "lm75a",
+    "device_addressing": {
+      "default": "0x48",
+      "alternates": [
+        "0x49",
+        "0x4A",
+        "0x4B",
+        "0x4C",
+        "0x4D",
+        "0x4E",
+        "0x4F"
+      ],
+      "selection_rule": "A2/A1/A0 define the lower address bits."
+    }
+  }
+}

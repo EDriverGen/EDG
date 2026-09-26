@@ -1,0 +1,202 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtems__hcsr04",
+  "device_id": "hcsr04",
+  "rtos_id": "rtems",
+  "bus": "gpio_timing",
+  "scope": "rtems fixed task for hcsr04; bus=gpio_timing, board=generic_devfs; only APIs needed by copied reference driver and fixed task configuration.",
+  "api_contract": {
+    "headers": [
+      "rtems/gpio.h"
+    ],
+    "types": {
+      "resource": "file descriptor / caller-provided GPIO pin",
+      "status": "int, ssize_t, or rtems_status_code according to operation"
+    },
+    "task_binding": {
+      "bus": "gpio_timing",
+      "instance": "caller-provided fixed GPIO pin(s)",
+      "mode": "polling",
+      "rtos": "rtems generic_devfs"
+    },
+    "operations": [
+      {
+        "name": "rtems_gpio_request_pin",
+        "signature": "rtems_status_code rtems_gpio_request_pin(uint32_t pin_number, rtems_gpio_function function, bool output_enable, bool logic_invert, void *bsp_specific)"
+      },
+      {
+        "name": "rtems_gpio_set",
+        "signature": "rtems_status_code rtems_gpio_set(rtems_gpio_pin pin)"
+      },
+      {
+        "name": "rtems_gpio_clear",
+        "signature": "rtems_status_code rtems_gpio_clear(rtems_gpio_pin pin)"
+      },
+      {
+        "name": "rtems_gpio_get_value",
+        "signature": "int rtems_gpio_get_value(uint32_t pin_number)"
+      },
+      {
+        "name": "delay_us",
+        "signature": "void delay_us(uint32_t us)",
+        "implementation": "reference is a no-op stub; platform mechanism cannot be determined"
+      },
+      {
+        "name": "delay_us",
+        "signature": "void delay_us(uint32_t us)",
+        "unit": "microseconds",
+        "reference": "function body is an empty stub; target implementation is not specified"
+      }
+    ],
+    "preconditions": "Use task_requirements fixed bus and copied reference-driver preconditions; the task owns only its assigned bus.",
+    "source_variants": {
+      "authoritative_for_standard": "The copied RTEMS baseline API pack gives original public API declarations and semantic return documentation; it is the primary callable contract.",
+      "baseline_api_pack": {
+        "file": "evidence/rtos/shared/baseline_api/rtems/gpio_timing/pack.md",
+        "rtems_gpio_request_pin": "rtems_status_code rtems_gpio_request_pin(uint32_t pin_number, rtems_gpio_function function, bool output_enable, bool logic_invert, void *bsp_specific)",
+        "rtems_gpio_get_value": "int rtems_gpio_get_value(uint32_t pin_number)",
+        "evidence_lines": {
+          "request_pin": "1675-1681",
+          "get_value": "1631"
+        }
+      },
+      "benchmark_harness_stub": {
+        "file": "evidence/rtos/shared/harness_api/rtems/rtems/gpio.h",
+        "rtems_gpio_request_pin": "two-argument simplified pin/direction form",
+        "rtems_gpio_get_value": "two-argument pin plus int * output form",
+        "evidence_lines": "14-18"
+      },
+      "adjudication": "The harness signatures differ from the supplied original API pack. They are compatibility stubs and do not override the copied RTEMS baseline API. These task standards follow the baseline pack; source divergence remains documented."
+    }
+  },
+  "facts": [
+    {
+      "id": "gpio_pin_binding",
+      "category": "bus_binding",
+      "requirement": "The caller supplies GPIO pin numbers according to the fixed GPIO timing task; single-wire or trigger/echo roles and input/output directions follow the reference driver, without introducing other buses.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 4,
+          "line_end": 4
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 1
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 16,
+          "line_end": 16
+        }
+      ]
+    },
+    {
+      "id": "gpio_mode",
+      "category": "gpio_configuration",
+      "requirement": "Use the original five-argument rtems_gpio_request_pin(uint32_t pin_number, rtems_gpio_function function, bool output_enable, bool logic_invert, void *bsp_specific) to choose digital input/output; inspect rtems_status_code success.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/rtems/gpio.h",
+          "line_start": 14,
+          "line_end": 18
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/gpio_timing/pack.md",
+          "line_start": 1675,
+          "line_end": 1681
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/rtems/gpio.h",
+          "line_start": 14,
+          "line_end": 18
+        }
+      ]
+    },
+    {
+      "id": "gpio_io",
+      "category": "polling_transport_or_io",
+      "requirement": "Use rtems_gpio_set(uint32_t pin_number) and rtems_gpio_clear(uint32_t pin_number) for high/low output, and int rtems_gpio_get_value(uint32_t pin_number) for input level (0/1; -1 invalid/unconfigured); set/clear return rtems_status_code.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 19,
+          "line_end": 19
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 33,
+          "line_end": 33
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 31,
+          "line_end": 31
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 37,
+          "line_end": 37
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 46,
+          "line_end": 46
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/rtems/gpio.h",
+          "line_start": 16,
+          "line_end": 18
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/rtems/gpio_timing/pack.md",
+          "line_start": 1596,
+          "line_end": 1631
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/rtems/gpio.h",
+          "line_start": 14,
+          "line_end": 18
+        }
+      ]
+    },
+    {
+      "id": "microsecond_timing",
+      "category": "driver_wait",
+      "requirement": "The reference calls delay_us(uint32_t us) for microsecond pulse/polling intervals; retain microsecond units and submillisecond timing capability. Its function body is an empty stub, so the underlying RTEMS timing API cannot be determined from these materials.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 3,
+          "line_end": 6
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 30,
+          "line_end": 49
+        }
+      ]
+    }
+  ]
+}

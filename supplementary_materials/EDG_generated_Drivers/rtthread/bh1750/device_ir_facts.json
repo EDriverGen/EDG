@@ -1,0 +1,1191 @@
+{
+  "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+  "source": "device_ir_projection_v1",
+  "device_id": "bh1750",
+  "bus_type": "i2c",
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion",
+  "addresses": [
+    {
+      "index": 0,
+      "address": "0x23",
+      "addressing_form": "7-bit",
+      "is_default": true,
+      "description": "ADDR pin low (≤0.3*VCC)",
+      "raw_record": {
+        "address": "0x23",
+        "description": "ADDR pin low (≤0.3*VCC)",
+        "is_default": true
+      }
+    },
+    {
+      "index": 1,
+      "address": "0x5C",
+      "addressing_form": "7-bit",
+      "is_default": false,
+      "description": "ADDR pin high (≥0.7*VCC)",
+      "raw_record": {
+        "address": "0x5C",
+        "description": "ADDR pin high (≥0.7*VCC)",
+        "is_default": false
+      }
+    }
+  ],
+  "registers": [
+    {
+      "index": 0,
+      "name": "Data Register",
+      "address": "0x00",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "16-bit register storing ambient light measurement result. Initial value 0x0000.",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "byte_part": null,
+      "raw_record": {
+        "name": "Data Register",
+        "value": null,
+        "access": "ro",
+        "size_bits": 16,
+        "description": "16-bit register storing ambient light measurement result. Initial value 0x0000."
+      }
+    },
+    {
+      "index": 1,
+      "name": "Measurement Time Register",
+      "address": "0x45",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "8-bit register for measurement time adjustment. Default 69 decimal (0x45).",
+      "semantic_roles": [
+        "result"
+      ],
+      "byte_part": null,
+      "raw_record": {
+        "name": "Measurement Time Register",
+        "value": "0x45",
+        "access": "wo",
+        "size_bits": 8,
+        "description": "8-bit register for measurement time adjustment. Default 69 decimal (0x45)."
+      }
+    }
+  ],
+  "bitfields": [
+    {
+      "index": 0,
+      "name": "MTreg",
+      "register": "Measurement Time Register",
+      "bit_range": [
+        7,
+        0
+      ],
+      "reset_value": null,
+      "description": "Measurement time register value. Range 31 to 254 decimal. Default 69.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "coefficient"
+      ],
+      "raw_record": {
+        "name": "MTreg",
+        "register": "Measurement Time Register",
+        "bits": [
+          7,
+          0
+        ],
+        "roles": [
+          "config",
+          "coefficient"
+        ],
+        "description": "Measurement time register value. Range 31 to 254 decimal. Default 69."
+      }
+    }
+  ],
+  "operation_steps": [
+    {
+      "source": "operation_flows",
+      "flow_id": "power_on",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x01"
+        ],
+        "notes": "Power On command"
+      },
+      "length": null,
+      "notes": "Send Power On command (0x01) to wake device.",
+      "semantic_roles": [
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x01"
+          ],
+          "notes": "Power On command"
+        },
+        "notes": "Send Power On command (0x01) to wake device."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "reset_data_register",
+      "flow_kind": "other",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x07"
+        ],
+        "notes": "Reset command"
+      },
+      "length": null,
+      "notes": "Reset Data Register to 0x0000.",
+      "semantic_roles": [
+        "data",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x07"
+          ],
+          "notes": "Reset command"
+        },
+        "notes": "Reset Data Register to 0x0000."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_h_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x10"
+        ],
+        "notes": "Continuously H-Resolution Mode opcode"
+      },
+      "length": null,
+      "notes": "Start continuous measurement at 1 lx resolution.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x10"
+          ],
+          "notes": "Continuously H-Resolution Mode opcode"
+        },
+        "notes": "Start continuous measurement at 1 lx resolution."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_h_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait max 180ms for first measurement completion.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 180,
+        "notes": "Wait max 180ms for first measurement completion."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_h_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 2,
+        "notes": "Read 2 bytes: High Byte then Low Byte"
+      },
+      "length": 2,
+      "notes": "Read measurement result from Data Register.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 2,
+          "notes": "Read 2 bytes: High Byte then Low Byte"
+        },
+        "notes": "Read measurement result from Data Register."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_h_resolution_mode2",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x11"
+        ],
+        "notes": "Continuously H-Resolution Mode2 opcode"
+      },
+      "length": null,
+      "notes": "Start continuous measurement at 0.5 lx resolution.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x11"
+          ],
+          "notes": "Continuously H-Resolution Mode2 opcode"
+        },
+        "notes": "Start continuous measurement at 0.5 lx resolution."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_h_resolution_mode2",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait max 180ms for first measurement completion.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 180,
+        "notes": "Wait max 180ms for first measurement completion."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_h_resolution_mode2",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 2,
+        "notes": "Read 2 bytes: High Byte then Low Byte"
+      },
+      "length": 2,
+      "notes": "Read measurement result.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 2,
+          "notes": "Read 2 bytes: High Byte then Low Byte"
+        },
+        "notes": "Read measurement result."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_l_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x13"
+        ],
+        "notes": "Continuously L-Resolution Mode opcode"
+      },
+      "length": null,
+      "notes": "Start continuous measurement at 4 lx resolution.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x13"
+          ],
+          "notes": "Continuously L-Resolution Mode opcode"
+        },
+        "notes": "Start continuous measurement at 4 lx resolution."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_l_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait max 24ms for first measurement completion.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 24,
+        "notes": "Wait max 24ms for first measurement completion."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "continuous_l_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 2,
+        "notes": "Read 2 bytes: High Byte then Low Byte"
+      },
+      "length": 2,
+      "notes": "Read measurement result.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 2,
+          "notes": "Read 2 bytes: High Byte then Low Byte"
+        },
+        "notes": "Read measurement result."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_h_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x20"
+        ],
+        "notes": "One Time H-Resolution Mode opcode"
+      },
+      "length": null,
+      "notes": "Start one-time measurement at 1 lx resolution.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x20"
+          ],
+          "notes": "One Time H-Resolution Mode opcode"
+        },
+        "notes": "Start one-time measurement at 1 lx resolution."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_h_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait max 180ms for measurement completion.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 180,
+        "notes": "Wait max 180ms for measurement completion."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_h_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 2,
+        "notes": "Read 2 bytes: High Byte then Low Byte"
+      },
+      "length": 2,
+      "notes": "Read measurement result.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 2,
+          "notes": "Read 2 bytes: High Byte then Low Byte"
+        },
+        "notes": "Read measurement result."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_h_resolution_mode2",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x21"
+        ],
+        "notes": "One Time H-Resolution Mode2 opcode"
+      },
+      "length": null,
+      "notes": "Start one-time measurement at 0.5 lx resolution.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x21"
+          ],
+          "notes": "One Time H-Resolution Mode2 opcode"
+        },
+        "notes": "Start one-time measurement at 0.5 lx resolution."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_h_resolution_mode2",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait max 180ms for measurement completion.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 180,
+        "notes": "Wait max 180ms for measurement completion."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_h_resolution_mode2",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 2,
+        "notes": "Read 2 bytes: High Byte then Low Byte"
+      },
+      "length": 2,
+      "notes": "Read measurement result.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 2,
+          "notes": "Read 2 bytes: High Byte then Low Byte"
+        },
+        "notes": "Read measurement result."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_l_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x23"
+        ],
+        "notes": "One Time L-Resolution Mode opcode"
+      },
+      "length": null,
+      "notes": "Start one-time measurement at 4 lx resolution.",
+      "semantic_roles": [
+        "result",
+        "config",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x23"
+          ],
+          "notes": "One Time L-Resolution Mode opcode"
+        },
+        "notes": "Start one-time measurement at 4 lx resolution."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_l_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 1,
+      "op": "delay",
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Wait max 24ms for measurement completion.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "op": "delay",
+        "delay_ms": 24,
+        "notes": "Wait max 24ms for measurement completion."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "one_time_l_resolution_mode",
+      "flow_kind": "read",
+      "step_index": 2,
+      "op": "read",
+      "role": null,
+      "register": null,
+      "transaction_kind": "read",
+      "transaction": {
+        "kind": "read",
+        "length": 2,
+        "notes": "Read 2 bytes: High Byte then Low Byte"
+      },
+      "length": 2,
+      "notes": "Read measurement result.",
+      "semantic_roles": [
+        "result",
+        "data",
+        "config"
+      ],
+      "raw_record": {
+        "op": "read",
+        "transaction": {
+          "kind": "read",
+          "length": 2,
+          "notes": "Read 2 bytes: High Byte then Low Byte"
+        },
+        "notes": "Read measurement result."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "change_measurement_time_high",
+      "flow_kind": "calibration",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x44"
+        ],
+        "notes": "High bits of MTreg (example: 01000_100 for MTreg=0x8A)"
+      },
+      "length": null,
+      "notes": "Write high bits of measurement time register. Opcode is 01000_MT[7,6,5].",
+      "semantic_roles": [
+        "result",
+        "data",
+        "coefficient"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x44"
+          ],
+          "notes": "High bits of MTreg (example: 01000_100 for MTreg=0x8A)"
+        },
+        "notes": "Write high bits of measurement time register. Opcode is 01000_MT[7,6,5]."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "change_measurement_time_low",
+      "flow_kind": "calibration",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x6A"
+        ],
+        "notes": "Low bits of MTreg (example: 011_01010 for MTreg=0x8A)"
+      },
+      "length": null,
+      "notes": "Write low bits of measurement time register. Opcode is 011_MT[4,3,2,1,0].",
+      "semantic_roles": [
+        "result",
+        "data",
+        "coefficient"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x6A"
+          ],
+          "notes": "Low bits of MTreg (example: 011_01010 for MTreg=0x8A)"
+        },
+        "notes": "Write low bits of measurement time register. Opcode is 011_MT[4,3,2,1,0]."
+      }
+    },
+    {
+      "source": "operation_flows",
+      "flow_id": "power_down",
+      "flow_kind": "power",
+      "step_index": 0,
+      "op": "write",
+      "role": null,
+      "register": null,
+      "transaction_kind": "write",
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x00"
+        ],
+        "notes": "Power Down command"
+      },
+      "length": null,
+      "notes": "Enter low power mode.",
+      "semantic_roles": [
+        "data",
+        "config",
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "op": "write",
+        "transaction": {
+          "kind": "write",
+          "bytes": [
+            "0x00"
+          ],
+          "notes": "Power Down command"
+        },
+        "notes": "Enter low power mode."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Power-up: DVI must be held low for at least 1µs after VCC supply for asynchronous reset.",
+      "semantic_roles": [
+        "data",
+        "control"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Power-up: DVI must be held low for at least 1µs after VCC supply for asynchronous reset."
+      }
+    },
+    {
+      "source": "init_sequence",
+      "flow_id": "init_sequence",
+      "flow_kind": "init",
+      "step_index": 1,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "After DVI goes high, device is in power down mode. Send Power On command (0x01) if needed.",
+      "semantic_roles": [
+        "data",
+        "config",
+        "control",
+        "trigger"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "After DVI goes high, device is in power down mode. Send Power On command (0x01) if needed."
+      }
+    },
+    {
+      "source": "read_sequence",
+      "flow_id": "read_sequence",
+      "flow_kind": "read",
+      "step_index": 0,
+      "op": null,
+      "role": null,
+      "register": null,
+      "transaction_kind": null,
+      "transaction": null,
+      "length": null,
+      "notes": "Read sequence depends on measurement mode. See operation_flows for details.",
+      "semantic_roles": [
+        "result",
+        "config"
+      ],
+      "raw_record": {
+        "transaction": null,
+        "notes": "Read sequence depends on measurement mode. See operation_flows for details."
+      }
+    }
+  ],
+  "channels": [
+    {
+      "index": 0,
+      "id": "illuminance",
+      "raw_type": "uint16",
+      "physical_unit": "lux",
+      "flow_id": "continuous_h_resolution_mode",
+      "source_bytes": [
+        "high_byte",
+        "low_byte"
+      ],
+      "source_signal": null,
+      "formula_id": "illuminance_h_resolution",
+      "notes": "16-bit raw counts from Data Register",
+      "raw_record": {
+        "id": "illuminance",
+        "raw_type": "uint16",
+        "physical_unit": "lux",
+        "flow_id": "continuous_h_resolution_mode",
+        "source_bytes": [
+          "high_byte",
+          "low_byte"
+        ],
+        "source_signal": null,
+        "formula_id": "illuminance_h_resolution",
+        "notes": "16-bit raw counts from Data Register"
+      }
+    }
+  ],
+  "formula_inputs": [
+    {
+      "formula_index": 0,
+      "formula_id": "illuminance_h_resolution",
+      "input_index": 0,
+      "name": "raw_counts",
+      "byte_source": "high_byte:8 || low_byte:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "16-bit raw counts from Data Register.",
+      "expression": "(raw_counts * MTreg * 10) // (12 * 69)",
+      "output": {
+        "name": "lux",
+        "unit": "lux"
+      },
+      "raw_record": {
+        "name": "raw_counts",
+        "byte_source": "high_byte:8 || low_byte:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "16-bit raw counts from Data Register."
+      }
+    },
+    {
+      "formula_index": 0,
+      "formula_id": "illuminance_h_resolution",
+      "input_index": 1,
+      "name": "MTreg",
+      "byte_source": null,
+      "source_signal": null,
+      "default_value": 69,
+      "config_source": "Measurement Time Register",
+      "description": "Measurement time register value, default 69.",
+      "expression": "(raw_counts * MTreg * 10) // (12 * 69)",
+      "output": {
+        "name": "lux",
+        "unit": "lux"
+      },
+      "raw_record": {
+        "name": "MTreg",
+        "byte_source": null,
+        "source_signal": null,
+        "default_value": 69,
+        "config_source": "Measurement Time Register",
+        "description": "Measurement time register value, default 69."
+      }
+    },
+    {
+      "formula_index": 1,
+      "formula_id": "illuminance_h_resolution_mode2",
+      "input_index": 0,
+      "name": "raw_counts",
+      "byte_source": "high_byte:8 || low_byte:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "16-bit raw counts from Data Register.",
+      "expression": "(raw_counts * MTreg * 10) // (24 * 69)",
+      "output": {
+        "name": "lux",
+        "unit": "lux"
+      },
+      "raw_record": {
+        "name": "raw_counts",
+        "byte_source": "high_byte:8 || low_byte:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "16-bit raw counts from Data Register."
+      }
+    },
+    {
+      "formula_index": 1,
+      "formula_id": "illuminance_h_resolution_mode2",
+      "input_index": 1,
+      "name": "MTreg",
+      "byte_source": null,
+      "source_signal": null,
+      "default_value": 69,
+      "config_source": "Measurement Time Register",
+      "description": "Measurement time register value, default 69.",
+      "expression": "(raw_counts * MTreg * 10) // (24 * 69)",
+      "output": {
+        "name": "lux",
+        "unit": "lux"
+      },
+      "raw_record": {
+        "name": "MTreg",
+        "byte_source": null,
+        "source_signal": null,
+        "default_value": 69,
+        "config_source": "Measurement Time Register",
+        "description": "Measurement time register value, default 69."
+      }
+    },
+    {
+      "formula_index": 2,
+      "formula_id": "illuminance_l_resolution",
+      "input_index": 0,
+      "name": "raw_counts",
+      "byte_source": "high_byte:8 || low_byte:8",
+      "source_signal": null,
+      "default_value": null,
+      "config_source": null,
+      "description": "16-bit raw counts from Data Register.",
+      "expression": "(raw_counts * MTreg * 40) // (12 * 69)",
+      "output": {
+        "name": "lux",
+        "unit": "lux"
+      },
+      "raw_record": {
+        "name": "raw_counts",
+        "byte_source": "high_byte:8 || low_byte:8",
+        "source_signal": null,
+        "default_value": null,
+        "config_source": null,
+        "description": "16-bit raw counts from Data Register."
+      }
+    },
+    {
+      "formula_index": 2,
+      "formula_id": "illuminance_l_resolution",
+      "input_index": 1,
+      "name": "MTreg",
+      "byte_source": null,
+      "source_signal": null,
+      "default_value": 69,
+      "config_source": "Measurement Time Register",
+      "description": "Measurement time register value, default 69.",
+      "expression": "(raw_counts * MTreg * 40) // (12 * 69)",
+      "output": {
+        "name": "lux",
+        "unit": "lux"
+      },
+      "raw_record": {
+        "name": "MTreg",
+        "byte_source": null,
+        "source_signal": null,
+        "default_value": 69,
+        "config_source": "Measurement Time Register",
+        "description": "Measurement time register value, default 69."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "bh1750",
+      "page": 10,
+      "snippet": "Slave Address is 2 types, it is determined by ADDR Terminal ADDR = 'H' (ADDR ≥ 0.7VCC ) → '1011100' ADDR = 'L' (ADDR ≤ 0.3VCC ) → '0100011'"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Instruction Set Architecture table: Power Down 0000_0000, Power On 0000_0001, Reset 0000_0111, Continuously H-Resolution Mode 0001_0000, etc."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Measurement Mode explanation: H-resolution Mode2 Typ. 120ms. 0.5 lx, H-Resolution Mode Typ. 120ms. 1 lx., L-Resolution Mode Typ. 16ms. 4 lx."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 11,
+      "snippet": "How to calculate when the data High Byte is \"10000011\" and Low Byte is \"10010000\" ( 2 15 + 2 9 + 2 8 + 2 7 + 2 4 ) / 1.2 ≒ 28067 [ lx ]"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 12,
+      "snippet": "H-reslution mode : Illuminance per 1 count ( lx / count )    = 1 / 1.2 *( 69 / X )"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 12,
+      "snippet": "H-reslution mode2 : Illuminance per 1 count ( lx / count )    = 1 / 1.2 *( 69 / X ) / 2"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 12,
+      "snippet": "changable range of MTreg binary 0001_1111 ( sensitivity : default * 0.45 ) ... 0100_0101 default ... 1111_1110 ( sensitivity : default * 3.68 )"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 2,
+      "snippet": "H-Resolution Mode Measurement Time t HR Typ. 120 ms Max. 180 ms"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 2,
+      "snippet": "L-Resolution Mode Measurement Time t LR Typ. 16 ms Max. 24 ms"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 2,
+      "snippet": "I2C SCL Clock Frequency f SCL Max. 400 kHz"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 6,
+      "snippet": "DVI is I2C bus reference voltage terminal. And it is also asynchronous reset terminal. It is necessary to set to 'L' after VCC is supplied."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 13,
+      "snippet": "DVI Terminal: please set to 'L' ( at least 1µs, DVI <= 0.4V ) after VCC is supplied."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 4,
+      "snippet": "Data Register → This is for registration of Ambient Light Data. Initial Value is \"0000_0000_0000_0000\"."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 4,
+      "snippet": "Measurement Time Register → This is for registration of measurement time. Initial Value is \"0100_0101\"."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Reset command is for only reset Illuminance data register. ( reset value is '0' )"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 4,
+      "snippet": "\"Power On\" Command is possible to omit."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 10,
+      "snippet": "BH1750FVI is not able to accept plural command without stop condition. Please insert SP every 1 Opecode."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 11,
+      "snippet": "Wait to complete 1st    H-resolution mode measurement.( max. 180ms. )"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 12,
+      "snippet": "It is possilbe to detect 0.23lx by using this function at H-resolution mode. And it is possilbe to detect 0.11lx by using this function at H-resolution mode2."
+    }
+  ],
+  "coverage_hints": {
+    "identity_registers": [],
+    "identity_registers_not_referenced_by_flows": [],
+    "config_registers": [],
+    "config_registers_not_referenced_by_flows": [],
+    "result_registers": [
+      {
+        "name": "Data Register",
+        "address": "0x00",
+        "access": "ro",
+        "semantic_roles": [
+          "result",
+          "data"
+        ]
+      },
+      {
+        "name": "Measurement Time Register",
+        "address": "0x45",
+        "access": "wo",
+        "semantic_roles": [
+          "result"
+        ]
+      }
+    ],
+    "result_registers_not_referenced_by_flows": [],
+    "coefficient_registers": [],
+    "channels_without_source_bytes": [],
+    "formula_inputs_without_byte_source": [],
+    "non_contiguous_result_hints": [],
+    "default_only_init": []
+  },
+  "coverage_issues": [],
+  "summary": {
+    "fact_bank_version": "2026-05-05.fact-bank-p1-signals",
+    "address_count": 2,
+    "register_count": 2,
+    "bitfield_count": 1,
+    "operation_step_count": 26,
+    "channel_count": 1,
+    "formula_input_count": 6,
+    "evidence_span_count": 19,
+    "coverage_issue_count": 0,
+    "coverage_warning_count": 0,
+    "coverage_error_count": 0
+  }
+}

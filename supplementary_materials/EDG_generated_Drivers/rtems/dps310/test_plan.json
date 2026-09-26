@@ -1,0 +1,143 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x77",
+      "write_prefix_any_of": [
+        [
+          "0x0C"
+        ]
+      ],
+      "note": "init: RESET"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x77",
+      "write_prefix_any_of": [
+        [
+          "0x0D"
+        ]
+      ],
+      "note": "init: ID"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x77",
+      "write_prefix_any_of": [
+        [
+          "0x10"
+        ]
+      ],
+      "note": "init: COEF"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x77",
+      "write_prefix_any_of": [
+        [
+          "0x00"
+        ],
+        [
+          "0x01"
+        ],
+        [
+          "0x02"
+        ],
+        [
+          "0x03"
+        ],
+        [
+          "0x04"
+        ],
+        [
+          "0x05"
+        ],
+        [
+          "0x06"
+        ],
+        [
+          "0x07"
+        ],
+        [
+          "0x08"
+        ],
+        [
+          "0x09"
+        ],
+        [
+          "0x0A"
+        ],
+        [
+          "0x0B"
+        ],
+        [
+          "0x28"
+        ]
+      ],
+      "read_any": true,
+      "note": "read_cycle: one of CFG_REG, COEF_SRCE, FIFO_STS, INT_STS, MEAS_CFG, PRS_CFG, PSR_B0, PSR_B1, PSR_B2, TMP_B0, TMP_B1, TMP_B2, TMP_CFG"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "nominal_pressure_and_temp",
+      "mock_preload": {
+        "0x00": [
+          "0x7F",
+          "0xFF",
+          "0xFF"
+        ],
+        "0x03": [
+          "0x00",
+          "0x80",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "pressure": 8388607,
+        "temp": 32768
+      },
+      "derivation": "pressure: 0x7FFFFF = 8388607; temp: 0x008000 = 32768"
+    },
+    {
+      "name": "zero_pressure_and_temp",
+      "mock_preload": {
+        "0x00": [
+          "0x00",
+          "0x00",
+          "0x00"
+        ],
+        "0x03": [
+          "0x00",
+          "0x00",
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "pressure": 0,
+        "temp": 0
+      },
+      "derivation": "pressure: 0x000000 = 0; temp: 0x000000 = 0"
+    },
+    {
+      "name": "negative_pressure_and_temp",
+      "mock_preload": {
+        "0x00": [
+          "0xFF",
+          "0xFF",
+          "0xFF"
+        ],
+        "0x03": [
+          "0xFF",
+          "0xFF",
+          "0xFF"
+        ]
+      },
+      "expected_channels": {
+        "pressure": -1,
+        "temp": -1
+      },
+      "derivation": "pressure: 0xFFFFFF sign-extended = -1; temp: 0xFFFFFF sign-extended = -1"
+    }
+  ]
+}

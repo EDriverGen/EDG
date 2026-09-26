@@ -1,0 +1,117 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x20",
+      "write_prefix_any_of": [
+        [
+          "0x00",
+          "0x00"
+        ]
+      ],
+      "note": "IODIRA=0x00: all GPA outputs"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x20",
+      "write_prefix_any_of": [
+        [
+          "0x01",
+          "0x00"
+        ]
+      ],
+      "note": "IODIRB=0x00: all GPB outputs"
+    },
+    {
+      "phase": "read_porta",
+      "addr_or_pin": "0x20",
+      "write_prefix_any_of": [
+        [
+          "0x12"
+        ]
+      ],
+      "note": "Set pointer to GPIOA"
+    },
+    {
+      "phase": "read_porta",
+      "addr_or_pin": "0x20",
+      "write_prefix_any_of": [],
+      "note": "Read GPIOA byte"
+    },
+    {
+      "phase": "read_portb",
+      "addr_or_pin": "0x20",
+      "write_prefix_any_of": [
+        [
+          "0x13"
+        ]
+      ],
+      "note": "Set pointer to GPIOB"
+    },
+    {
+      "phase": "read_portb",
+      "addr_or_pin": "0x20",
+      "write_prefix_any_of": [],
+      "note": "Read GPIOB byte"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "porta_all_high",
+      "mock_preload": {
+        "0x12": [
+          "0xFF"
+        ]
+      },
+      "expected_channels": {
+        "gpio_a0": 1,
+        "gpio_a1": 1,
+        "gpio_a2": 1,
+        "gpio_a3": 1,
+        "gpio_a4": 1,
+        "gpio_a5": 1,
+        "gpio_a6": 1,
+        "gpio_a7": 1
+      },
+      "derivation": "porta_val=0xFF; each bit extracted via (porta_val>>n)&1 yields 1 for all n=0..7"
+    },
+    {
+      "name": "porta_bit0_high_others_low",
+      "mock_preload": {
+        "0x12": [
+          "0x01"
+        ]
+      },
+      "expected_channels": {
+        "gpio_a0": 1,
+        "gpio_a1": 0,
+        "gpio_a2": 0,
+        "gpio_a3": 0,
+        "gpio_a4": 0,
+        "gpio_a5": 0,
+        "gpio_a6": 0,
+        "gpio_a7": 0
+      },
+      "derivation": "porta_val=0x01; (0x01>>0)&1=1; (0x01>>1)&1=0; ... (0x01>>7)&1=0"
+    },
+    {
+      "name": "portb_all_low",
+      "mock_preload": {
+        "0x13": [
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "gpio_b0": 0,
+        "gpio_b1": 0,
+        "gpio_b2": 0,
+        "gpio_b3": 0,
+        "gpio_b4": 0,
+        "gpio_b5": 0,
+        "gpio_b6": 0,
+        "gpio_b7": 0
+      },
+      "derivation": "portb_val=0x00; each bit extracted via (portb_val>>n)&1 yields 0 for all n=0..7"
+    }
+  ]
+}

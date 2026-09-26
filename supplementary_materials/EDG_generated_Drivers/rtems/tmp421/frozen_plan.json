@@ -1,0 +1,176 @@
+{
+  "device_id": "tmp421",
+  "rtos_id": "rtems",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "tmp421_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "dev_struct_type": "struct tmp421_device",
+    "channels": [
+      {
+        "id": "temp_local",
+        "call": "tmp421_read_temperature_local(&g_eval_dev, &temp_local_val)",
+        "out_arg": "temp_local_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_remote",
+        "call": "tmp421_read_temperature_remote1(&g_eval_dev, &temp_remote_val)",
+        "out_arg": "temp_remote_val",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0xFF"
+          ]
+        ],
+        "note": "probe_identity: write_then_read Device ID"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_temperature_local: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x2A",
+        "write_prefix_any_of": [
+          [
+            "0x11"
+          ]
+        ],
+        "note": "read_temperature_remote1: write_then_read low byte"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_positive",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x19"
+          ],
+          "0x10": [
+            "0x50"
+          ],
+          "0x01": [
+            "0x1A"
+          ],
+          "0x11": [
+            "0x80"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 25312,
+          "temp_remote": 27000
+        },
+        "derivation": "local: high_byte=0x19=25, low_byte=0x50, low_nibble=0x05, raw=((25<<4)+5)=405, milli=405*625/10=25312. remote: high_byte=0x1A=26, low_byte=0x80, low_nibble=0x08, raw=((26<<4)+8)=424, milli=424*625/10=26500."
+      },
+      {
+        "name": "zero_near_zero",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0x00"
+          ],
+          "0x10": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x00"
+          ],
+          "0x11": [
+            "0x10"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 0,
+          "temp_remote": 62
+        },
+        "derivation": "local: high_byte=0, low_byte=0, raw=0, milli=0*625/10=0. remote: high_byte=0, low_byte=0x10, low_nibble=0x01, raw=1, milli=1*625/10=62."
+      },
+      {
+        "name": "negative_twos_complement",
+        "mock_preload": {
+          "0x08": [
+            "0x00"
+          ],
+          "0x00": [
+            "0xF6"
+          ],
+          "0x10": [
+            "0x80"
+          ],
+          "0x01": [
+            "0xF6"
+          ],
+          "0x11": [
+            "0x80"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": -10000,
+          "temp_remote": -10000
+        },
+        "derivation": "local: high_byte=0xF6=-10, low_byte=0x80, low_nibble=0x08, raw=((-10<<4)+8)=-152, milli=-152*625/10=-9500. remote: same bytes, same calculation."
+      }
+    ]
+  },
+  "plan_hash": "b1aed9b5b026b8ea",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 9.342,
+  "prompt_chars": 57646,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"tmp421_init(&g_eval_dev, bus_handle)\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"dev_struct_type\": \"struct tmp421_device\", \"channels\": [{\"id\": \"temp_local\", \"call\": \"tmp421_read_temperature_local(&g_eval_dev, &temp_local_val)\", \"out_arg\": \"temp_local_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}, {\"id\": \"temp_remote\", \"call\": \"tmp421_read_temperature_remote1(&g_eval_dev, &temp_remote_val)\", \"out_arg\": \"temp_remote_val\", \"out_type\": \"int32_t\", \"physical_unit\": \"milli_degC\"}]}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFE\"]], \"note\": \"probe_identity: write_then_read Manufacturer ID\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0xFF\"]], \"note\": \"probe_identity: write_then_read Device ID\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temperature_local: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x10\"]], \"note\": \"read_temperature_local: write_then_read low byte\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x01\"]], \"note\": \"read_temperature_remote1: write_then_read\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x2A\", \"write_prefix_any_of\": [[\"0x11\"]], \"note\": \"read_temperature_remote1: write_then_read low byte\"}], \"test_stimuli\": [{\"name\": \"nominal_positive\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x00\": [\"0x19\"], \"0x10\": [\"0x50\"], \"0x01\": [\"0x1A\"], \"0x11\": [\"0x80\"]}, \"expected_channels\": {\"temp_local\": 25312, \"temp_remote\": 27000}, \"derivation\": \"local: high_byte=0x19=25, low_byte=0x50, low_nibble=0x05, raw=((25<<4)+5)=405, milli=405*625/10=25312. remote: high_byte=0x1A=26, low_byte=0x80, low_nibble=0x08, raw=((26<<4)+8)=424, milli=424*625/10=26500.\"}, {\"name\": \"zero_near_zero\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x00\": [\"0x00\"], \"0x10\": [\"0x00\"], \"0x01\": [\"0x00\"], \"0x11\": [\"0x10\"]}, \"expected_channels\": {\"temp_local\": 0, \"temp_remote\": 62}, \"derivation\": \"local: high_byte=0, low_byte=0, raw=0, milli=0*625/10=0. remote: high_byte=0, low_byte=0x10, low_nibble=0x01, raw=1, milli=1*625/10=62.\"}, {\"name\": \"negative_twos_complement\", \"mock_preload\": {\"0x08\": [\"0x00\"], \"0x00\": [\"0xF6\"], \"0x10\": [\"0x80\"], \"0x01\": [\"0xF6\"], \"0x11\": [\"0x80\"]}, \"expected_channels\": {\"temp_local\": -10000, \"temp_remote\": -10000}, \"derivation\": \"local: high_byte=0xF6=-10, low_byte=0x80, low_nibble=0x08, raw=((-10<<4)+8)=-152, milli=-152*625/10=-9500. remote: same bytes, same calculation.\"}]}}"
+}

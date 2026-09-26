@@ -1,0 +1,89 @@
+{
+  "device_id": "vl53l0x",
+  "rtos_id": "rtems",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef VL53L0X_H\n#define VL53L0X_H\n\n#include <stdint.h>\n\nstruct vl53l0x_dev {\n    int fd;\n    uint8_t i2c_addr;\n};\n\nint vl53l0x_init(struct vl53l0x_dev *dev, int bus_handle);\nint vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw);\n\n#endif /* VL53L0X_H */",
+  "driver_source": "#include \"vl53l0x.h\"\n#include <stdint.h>\n#include <unistd.h>\n#include <fcntl.h>\n\n#include <linux/i2c.h>\n#include <linux/i2c-dev.h>\n#include <sys/ioctl.h>\n#include \"rtems.h\"\n#define VL53L0X_I2C_ADDR 0x52\n\nstatic int i2c_write_read(int fd, uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    struct i2c_msg msgs[2];\n    struct i2c_rdwr_ioctl_data rdwr;\n    int ret;\n\n    msgs[0].addr = addr;\n    msgs[0].flags = 0;\n    msgs[0].len = 1;\n    msgs[0].buf = &reg;\n\n    msgs[1].addr = addr;\n    msgs[1].flags = I2C_M_RD;\n    msgs[1].len = len;\n    msgs[1].buf = buf;\n\n    rdwr.msgs = msgs;\n    rdwr.nmsgs = 2;\n\n    ret = ioctl(fd, I2C_RDWR, &rdwr);\n    if (ret < 0) {\n        return -1;\n    }\n    return 0;\n}\n\nint vl53l0x_init(struct vl53l0x_dev *dev, int bus_handle)\n{\n    dev->fd = bus_handle;\n    dev->i2c_addr = VL53L0X_I2C_ADDR;\n    return 0;\n}\n\nint vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw)\n{\n    uint8_t buf[2];\n    int ret;\n\n    ret = i2c_write_read(dev->fd, dev->i2c_addr, 0x00, buf, 2);\n    if (ret < 0) {\n        return -1;\n    }\n\n    *raw = ((int32_t)buf[0] << 8) | buf[1];\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "vl53l0x_init(&g_eval_dev, bus_handle)",
+    "read_call": "vl53l0x_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct vl53l0x_dev",
+    "init_extra_setup_c": "int fd = open(bus_name, O_RDWR);\nif (fd < 0) { return DRIVERGEN_EVAL_ERR_IO; }\nstruct vl53l0x_dev *dev = &g_eval_dev;\ndev->fd = fd;\nint bus_handle = fd;",
+    "preamble_c": "#include <dev/i2c/i2c.h>\n#include <linux/i2c-dev.h>\n#include <linux/i2c.h>\n#include <sys/ioctl.h>\n#include <fcntl.h>\n#include <unistd.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x52",
+        "write_prefix_any_of": [
+          [
+            "0xC0"
+          ],
+          [
+            "0xC1"
+          ],
+          [
+            "0xC2"
+          ],
+          [
+            "0x51"
+          ],
+          [
+            "0x61"
+          ]
+        ],
+        "note": "read_cycle: one of reference_register_0x51, reference_register_0x61, reference_register_0xC0, reference_register_0xC1, reference_register_0xC2"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "distance_100mm",
+        "mock_preload": {
+          "0x52:0x00": [
+            "0x00",
+            "0x64"
+          ]
+        },
+        "expected_read_raw": 100,
+        "derivation": "mock_preload bytes [0x00, 0x64] represent big-endian uint16 value 0x0064 = 100. Since raw value is already in mm, expected_read_raw = 100."
+      },
+      {
+        "name": "distance_0mm",
+        "mock_preload": {
+          "0x52:0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "derivation": "mock_preload bytes [0x00, 0x00] represent big-endian uint16 value 0x0000 = 0. expected_read_raw = 0."
+      },
+      {
+        "name": "distance_8191mm",
+        "mock_preload": {
+          "0x52:0x00": [
+            "0x1F",
+            "0xFF"
+          ]
+        },
+        "expected_read_raw": 8191,
+        "derivation": "mock_preload bytes [0x1F, 0xFF] represent big-endian uint16 value 0x1FFF = 8191. expected_read_raw = 8191."
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 4.958,
+  "prompt_chars": 40198,
+  "raw_response": "{\"driver_header\": \"#ifndef VL53L0X_H\\n#define VL53L0X_H\\n\\n#include <stdint.h>\\n\\nstruct vl53l0x_dev {\\n    int fd;\\n    uint8_t i2c_addr;\\n};\\n\\nint vl53l0x_init(struct vl53l0x_dev *dev, int bus_handle);\\nint vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw);\\n\\n#endif /* VL53L0X_H */\", \"driver_source\": \"#include \\\"vl53l0x.h\\\"\\n#include <stdint.h>\\n#include <unistd.h>\\n#include <fcntl.h>\\n#include <sys/ioctl.h>\\n#include <linux/i2c-dev.h>\\n#include <linux/i2c.h>\\n\\n#define VL53L0X_I2C_ADDR 0x52\\n\\nstatic int i2c_write_read(int fd, uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    struct i2c_msg msgs[2];\\n    struct i2c_rdwr_ioctl_data rdwr;\\n    int ret;\\n\\n    msgs[0].addr = addr;\\n    msgs[0].flags = 0;\\n    msgs[0].len = 1;\\n    msgs[0].buf = &reg;\\n\\n    msgs[1].addr = addr;\\n    msgs[1].flags = I2C_M_RD;\\n    msgs[1].len = len;\\n    msgs[1].buf = buf;\\n\\n    rdwr.msgs = msgs;\\n    rdwr.nmsgs = 2;\\n\\n    ret = ioctl(fd, I2C_RDWR, &rdwr);\\n    if (ret < 0) {\\n        return -1;\\n    }\\n    return 0;\\n}\\n\\nint vl53l0x_init(struct vl53l0x_dev *dev, int bus_handle)\\n{\\n    dev->fd = bus_handle;\\n    dev->i2c_addr = VL53L0X_I2C_ADDR;\\n    return 0;\\n}\\n\\nint vl53l0x_read_distance(struct vl53l0x_dev *dev, int32_t *raw)\\n{\\n    uint8_t buf[2];\\n    int ret;\\n\\n    ret = i2c_write_read(dev->fd, dev->i2c_addr, 0x00, buf, 2);\\n    if (ret < 0) {\\n        return -1;\\n    }\\n\\n    *raw = ((int32_t)buf[0] << 8) | buf[1];\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "b1ce931747bdb181"
+}

@@ -1,0 +1,690 @@
+{
+  "device_id": "ds18b20",
+  "bus_type": "gpio_timing",
+  "address_rule": {
+    "type": "none",
+    "addressing_form": "64-bit ROM code",
+    "addresses": [
+      {
+        "address": null,
+        "description": "Unique 64-bit ROM code: 8-bit family code (28h), 48-bit serial number, 8-bit CRC.",
+        "is_default": true
+      }
+    ]
+  },
+  "register_map": null,
+  "read_channels": [
+    {
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "flow_id": "convert_t",
+      "source_bytes": [
+        "scratchpad_byte0",
+        "scratchpad_byte1"
+      ],
+      "source_signal": null,
+      "formula_id": "temp_conversion",
+      "notes": "Temperature data from scratchpad bytes 0 and 1 (LSB first)."
+    }
+  ],
+  "access_model": {
+    "kind": "gpio_timing",
+    "address_bytes": null,
+    "read_requires_pointer": null,
+    "direct_read_after_write": null,
+    "notes": "1-Wire protocol implemented via GPIO bit-banging with precise timing."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "init",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "set_signal",
+          "signal": "DQ",
+          "duration_us": 480,
+          "notes": "Master pulls DQ low for at least 480 µs (reset pulse)."
+        },
+        {
+          "op": "wait_signal",
+          "signal": "DQ",
+          "edge": "rising",
+          "timeout_ms": 1,
+          "notes": "Master releases bus and waits for presence pulse: DS18B20 waits 15-60 µs then pulls low for 60-240 µs."
+        }
+      ],
+      "outputs": [],
+      "notes": "Initialization sequence: master sends reset pulse, DS18B20 responds with presence pulse."
+    },
+    {
+      "flow_id": "convert_t",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [
+        "Device must be addressed via ROM command if multiple devices on bus."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x44"
+            ],
+            "notes": "Issue Convert T command (0x44)."
+          },
+          "notes": "Initiates temperature conversion."
+        },
+        {
+          "op": "set_signal",
+          "signal": "DQ",
+          "duration_us": 10,
+          "notes": "If parasite power, enable strong pullup within 10 µs for duration of conversion."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 750,
+          "notes": "Wait for conversion time (93.75ms to 750ms depending on resolution; default 12-bit = 750ms)."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xBE"
+            ],
+            "notes": "Issue Read Scratchpad command (0xBE)."
+          },
+          "notes": "Read scratchpad to get temperature data."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 2,
+            "notes": "Read 2 bytes of temperature data (LSB first)."
+          },
+          "notes": "Reads bytes 0 and 1 of scratchpad."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "scratchpad_byte0:8 || scratchpad_byte1:8",
+          "formula_id": "temp_conversion",
+          "unit": "milli_degC",
+          "notes": "Raw 16-bit signed temperature value.",
+          "source_signal": null
+        }
+      ],
+      "notes": "Initiate temperature conversion and read result."
+    },
+    {
+      "flow_id": "write_scratchpad",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x4E"
+            ],
+            "notes": "Issue Write Scratchpad command (0x4E)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              null,
+              null
+            ],
+            "notes": "Write 3 bytes: TH, TL, configuration (LSB first)."
+          },
+          "notes": "Master sends three data bytes to scratchpad."
+        }
+      ],
+      "outputs": [],
+      "notes": "Write TH, TL, and configuration registers to scratchpad."
+    },
+    {
+      "flow_id": "copy_scratchpad",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x48"
+            ],
+            "notes": "Issue Copy Scratchpad command (0x48)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "set_signal",
+          "signal": "DQ",
+          "duration_us": 10,
+          "notes": "If parasite power, enable strong pullup within 10 µs for at least 10ms."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 10,
+          "notes": "Wait for NV write cycle time (tWR = 10ms max)."
+        }
+      ],
+      "outputs": [],
+      "notes": "Copy scratchpad TH, TL, configuration to EEPROM."
+    },
+    {
+      "flow_id": "recall_e2",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xB8"
+            ],
+            "notes": "Issue Recall E2 command (0xB8)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 1,
+            "notes": "Read time slots to check status: 0 while recall in progress, 1 when done."
+          },
+          "notes": "Master reads status bits."
+        }
+      ],
+      "outputs": [],
+      "notes": "Recall EEPROM data to scratchpad."
+    },
+    {
+      "flow_id": "read_power_supply",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xB4"
+            ],
+            "notes": "Issue Read Power Supply command (0xB4)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 1,
+            "notes": "Read time slot: parasite powered devices pull bus low; externally powered let bus remain high."
+          },
+          "notes": "Master reads supply status."
+        }
+      ],
+      "outputs": [],
+      "notes": "Determine if DS18B20 is parasite powered."
+    },
+    {
+      "flow_id": "search_rom",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xF0"
+            ],
+            "notes": "Issue Search ROM command (0xF0)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "postprocess",
+          "notes": "Perform data exchange to learn ROM codes; repeat as needed."
+        }
+      ],
+      "outputs": [],
+      "notes": "Identify all slave devices on the bus by their ROM codes."
+    },
+    {
+      "flow_id": "read_rom",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x33"
+            ],
+            "notes": "Issue Read ROM command (0x33)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 8,
+            "notes": "Read 64-bit ROM code (LSB first)."
+          },
+          "notes": "Reads 8 bytes of ROM code."
+        }
+      ],
+      "outputs": [],
+      "notes": "Read ROM code of a single slave device."
+    },
+    {
+      "flow_id": "match_rom",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x55"
+            ],
+            "notes": "Issue Match ROM command (0x55)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "notes": "Send 64-bit ROM code of target device (LSB first)."
+          },
+          "notes": "Master sends 8 bytes of ROM code."
+        }
+      ],
+      "outputs": [],
+      "notes": "Address a specific slave device by its ROM code."
+    },
+    {
+      "flow_id": "skip_rom",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xCC"
+            ],
+            "notes": "Issue Skip ROM command (0xCC)."
+          },
+          "notes": ""
+        }
+      ],
+      "outputs": [],
+      "notes": "Address all devices on the bus simultaneously."
+    },
+    {
+      "flow_id": "alarm_search",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xEC"
+            ],
+            "notes": "Issue Alarm Search command (0xEC)."
+          },
+          "notes": ""
+        },
+        {
+          "op": "postprocess",
+          "notes": "Perform data exchange to identify devices with alarm flag."
+        }
+      ],
+      "outputs": [],
+      "notes": "Identify devices with alarm flag set."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "little_endian",
+    "bit_width": 16,
+    "effective_bits": 12,
+    "signed": true,
+    "right_shift": 0,
+    "sign_extend_from_bit": 11,
+    "notes": "Temperature register: 2 bytes, LSB first; 12-bit resolution default; sign bits in bits 15-11."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Temperature Register LSB",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Byte 0 of scratchpad, LSB of temperature data."
+    },
+    {
+      "name": "Temperature Register MSB",
+      "value": "0x01",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Byte 1 of scratchpad, MSB of temperature data."
+    },
+    {
+      "name": "TH Register",
+      "value": "0x02",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Byte 2 of scratchpad, high alarm trigger register (nonvolatile EEPROM)."
+    },
+    {
+      "name": "TL Register",
+      "value": "0x03",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Byte 3 of scratchpad, low alarm trigger register (nonvolatile EEPROM)."
+    },
+    {
+      "name": "Configuration Register",
+      "value": "0x04",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Byte 4 of scratchpad, configures resolution via R0 and R1 bits."
+    },
+    {
+      "name": "Scratchpad CRC",
+      "value": "0x08",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Byte 8 of scratchpad, CRC for bytes 0-7."
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Temperature Register MSB",
+      "name": "Sign bits (S)",
+      "bits": "15:11",
+      "description": "Sign extension bits; S=0 for positive, S=1 for negative."
+    },
+    {
+      "register": "Temperature Register LSB",
+      "name": "Temperature data bits",
+      "bits": "10:0",
+      "description": "Temperature data with resolution-dependent LSBs."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "R1",
+      "bits": "6",
+      "description": "Resolution select bit 1."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "R0",
+      "bits": "5",
+      "description": "Resolution select bit 0."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up default: 12-bit resolution, alarm registers loaded from EEPROM. No explicit bus traffic required."
+    },
+    {
+      "transaction": null,
+      "notes": "Initialization sequence: master sends reset pulse (low >= 480 µs), then waits for presence pulse."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": null,
+      "notes": "To read temperature: issue Convert T (0x44), wait conversion time, then issue Read Scratchpad (0xBE) and read 2 bytes."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "tCONV_9bit",
+      "value": 93.75,
+      "unit": "ms",
+      "condition": "9-bit resolution",
+      "notes": "Maximum conversion time for 9-bit resolution."
+    },
+    {
+      "name": "tCONV_10bit",
+      "value": 187.5,
+      "unit": "ms",
+      "condition": "10-bit resolution",
+      "notes": "Maximum conversion time for 10-bit resolution."
+    },
+    {
+      "name": "tCONV_11bit",
+      "value": 375,
+      "unit": "ms",
+      "condition": "11-bit resolution",
+      "notes": "Maximum conversion time for 11-bit resolution."
+    },
+    {
+      "name": "tCONV_12bit",
+      "value": 750,
+      "unit": "ms",
+      "condition": "12-bit resolution",
+      "notes": "Maximum conversion time for 12-bit resolution (default)."
+    },
+    {
+      "name": "tSPON",
+      "value": 10,
+      "unit": "us",
+      "condition": "After Convert T or Copy Scratchpad command",
+      "notes": "Time to strong pullup on."
+    },
+    {
+      "name": "tSLOT",
+      "value": 120,
+      "unit": "us",
+      "condition": "Write or read time slot",
+      "notes": "Maximum time slot duration."
+    },
+    {
+      "name": "tREC",
+      "value": 1,
+      "unit": "us",
+      "condition": "Recovery time between slots",
+      "notes": "Minimum recovery time."
+    },
+    {
+      "name": "tLOW0",
+      "value": 120,
+      "unit": "us",
+      "condition": "Write 0 low time",
+      "notes": "Maximum write 0 low time."
+    },
+    {
+      "name": "tLOW1",
+      "value": 15,
+      "unit": "us",
+      "condition": "Write 1 low time",
+      "notes": "Maximum write 1 low time."
+    },
+    {
+      "name": "tRDV",
+      "value": 15,
+      "unit": "us",
+      "condition": "Read data valid after falling edge",
+      "notes": "Maximum read data valid time."
+    },
+    {
+      "name": "tRSTH",
+      "value": 480,
+      "unit": "us",
+      "condition": "Reset time high (presence detect wait)",
+      "notes": "Minimum reset time high."
+    },
+    {
+      "name": "tRSTL",
+      "value": 480,
+      "unit": "us",
+      "condition": "Reset time low",
+      "notes": "Minimum reset time low."
+    },
+    {
+      "name": "tPDHIGH",
+      "value": 60,
+      "unit": "us",
+      "condition": "Presence-detect high (wait after reset)",
+      "notes": "Maximum presence-detect high time."
+    },
+    {
+      "name": "tPDLOW",
+      "value": 240,
+      "unit": "us",
+      "condition": "Presence-detect low (presence pulse duration)",
+      "notes": "Maximum presence-detect low time."
+    },
+    {
+      "name": "tWR",
+      "value": 10,
+      "unit": "ms",
+      "condition": "NV write cycle time",
+      "notes": "Maximum NV write cycle time."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temp_conversion",
+      "formula": "Temperature (°C) = (raw_16bit_signed) * 0.0625",
+      "integer_approximation_expression": null,
+      "executable_expression_status": "complex_compensation_algorithm",
+      "notes": "Canonicalized: exact compensation is preserved in formula/inputs, but the single-line integer expression was marked non-executable because it is too complex or not accepted by the safe expression evaluator."
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "Presence pulse not detected after reset",
+      "detection": "Master does not receive presence pulse within tPDHIGH + tPDLOW window.",
+      "driver_action": "Return -ENODEV or retry initialization."
+    },
+    {
+      "condition": "CRC mismatch on scratchpad read",
+      "detection": "Calculated CRC of bytes 0-7 does not match byte 8.",
+      "driver_action": "Retry read operation; if persistent, return -EIO."
+    },
+    {
+      "condition": "Conversion timeout",
+      "detection": "If using external supply, read time slots indicate conversion still in progress beyond tCONV.",
+      "driver_action": "Return -ETIMEDOUT."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "idle",
+      "description": "Low-power idle state after power-up or after conversion complete.",
+      "current_consumption_ua": 1,
+      "notes": "Standby current typically 750 nA."
+    },
+    {
+      "name": "converting",
+      "description": "Active temperature conversion.",
+      "current_consumption_ma": 1.5,
+      "notes": "Active current up to 1.5 mA during conversion."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "ds18b20",
+      "page": 3,
+      "snippet": "The DS18B20 output temperature data is calibrated in degrees Celsius; for Fahrenheit applications, a lookup table or conversion routine must be used."
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 3,
+      "snippet": "The temperature data is stored as a 16-bit sign-extended two's complement number in the temperature register"
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 8,
+      "snippet": "Byte 4 of the scratchpad memory contains the configuration register"
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 8,
+      "snippet": "The user can set the conversion resolution of the DS18B20 using the R0 and R1 bits in this register as shown in Table 2."
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 11,
+      "snippet": "This command initiates a single temperature conversion."
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 11,
+      "snippet": "This command allows the master to read the contents of the scratchpad."
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 15,
+      "snippet": "All communication with the DS18B20 begins with an initialization sequence that consists of a reset pulse from the master followed by a presence pulse from the DS18B20."
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 20,
+      "snippet": "Temperature Conversion Time: 9-bit resolution: 93.75 ms, 10-bit: 187.5 ms, 11-bit: 375 ms, 12-bit: 750 ms"
+    },
+    {
+      "source_id": "ds18b20",
+      "page": 20,
+      "snippet": "Time Slot: 60 to 120 µs"
+    }
+  ],
+  "requires_human": [
+    "CRC polynomial implementation details for scratchpad and ROM verification",
+    "Exact bit-banging implementation for 1-Wire timing (e.g., precise delays for read/write slots)",
+    "Parasite power strong pullup MOSFET circuit design",
+    "If non-default resolution is desired, the configuration register must be written before conversion; current flow assumes default 12-bit resolution."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

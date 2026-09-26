@@ -1,0 +1,139 @@
+{
+  "device": "ssd1306",
+  "rtos": "nuttx",
+  "combo": "ssd1306_nuttx",
+  "overall_claim": "runtime-smoke-valid",
+  "verdicts": [
+    {
+      "device": "ssd1306",
+      "level": "L1",
+      "passed": true,
+      "claim": "build-valid",
+      "detail": "ELF 46672 bytes (text=8607, data=80, bss=296)",
+      "evidence": {
+        "elf_path": "/tmp/dg_eval_ssd1306_34a1kyr1/build/ssd1306_nuttx.elf",
+        "elf_bytes": 46672,
+        "text_bytes": 8607,
+        "data_bytes": 80,
+        "bss_bytes": 296,
+        "return_code": 0,
+        "error_count": 0,
+        "warning_count": 9,
+        "first_errors": []
+      }
+    },
+    {
+      "device": "ssd1306",
+      "level": "L2",
+      "passed": true,
+      "claim": "runtime-smoke-valid",
+      "detail": "1/1 vectors boot+done+PASS",
+      "evidence": {
+        "total": 1,
+        "passed": 1,
+        "failed_count": 0,
+        "failed": [],
+        "passed_names": [
+          "init_only"
+        ]
+      }
+    },
+    {
+      "device": "ssd1306",
+      "level": "L3",
+      "passed": false,
+      "claim": "protocol-valid-relaxed",
+      "detail": "0/1 vectors passed relaxed; first failure: init_only — 1 required write(s) missing",
+      "evidence": {
+        "policy": "relaxed",
+        "requested_policy": "auto",
+        "total": 1,
+        "passed": 0,
+        "failed_count": 1,
+        "per_vector": [
+          {
+            "stimulus": "init_only",
+            "passed": false,
+            "detail": "1 required write(s) missing",
+            "generated_len": null,
+            "txn_count": 19,
+            "missing": [
+              {
+                "addr": 60,
+                "any_of": [
+                  [
+                    0,
+                    141
+                  ]
+                ],
+                "description": "Enable charge pump"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "device": "ssd1306",
+      "level": "L4",
+      "passed": true,
+      "claim": "semantic-valid",
+      "detail": "1/1 vectors matched per-vector expected raw",
+      "evidence": {
+        "total": 1,
+        "passed": 1,
+        "failed_count": 0,
+        "per_vector": [
+          {
+            "stimulus": "init_only",
+            "passed": true,
+            "detail": "display frame err=0 matches expected 0",
+            "match_source": "display",
+            "expected_err": 0,
+            "got_err": 0,
+            "status_err": null,
+            "status": null
+          }
+        ]
+      }
+    },
+    {
+      "device": "ssd1306",
+      "level": "L5",
+      "passed": false,
+      "claim": "robust-valid",
+      "detail": "0/2 NACK scenarios passed; first failure: transient_nack_1 — driver reported RESULT: PASS despite first 1 I2C transaction(s) being NACKed — missing error check",
+      "evidence": {
+        "scenarios": [
+          {
+            "scenario": "transient_nack_1",
+            "nack_first_n": 1,
+            "passed": false,
+            "detail": "driver reported RESULT: PASS despite first 1 I2C transaction(s) being NACKed — missing error check",
+            "stimulus": "init_only",
+            "boot_detected": true,
+            "test_done": true,
+            "result_pass": true,
+            "read_raw": null,
+            "duration_s": 24.24
+          },
+          {
+            "scenario": "persistent_nack_99",
+            "nack_first_n": 99,
+            "passed": false,
+            "detail": "firmware booted but DRIVER_TEST DONE never printed (likely hung in driver error path)",
+            "stimulus": "init_only",
+            "boot_detected": true,
+            "test_done": false,
+            "result_pass": false,
+            "read_raw": null,
+            "duration_s": 24.06
+          }
+        ],
+        "total": 2,
+        "passed": 0,
+        "stimulus": "init_only"
+      }
+    }
+  ]
+}

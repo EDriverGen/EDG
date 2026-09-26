@@ -1,0 +1,713 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "mhz19b",
+  "rtos": "rtthread",
+  "board": "stm32f103rb",
+  "bus_type": "uart",
+  "connection": {
+    "connection_type": "uart_polling",
+    "mode": "polling",
+    "bus_instance": "uart1",
+    "bus_symbol": "uart1",
+    "address_mode": null,
+    "backend": "rt-thread device framework serial device"
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "HAL_Delay"
+    ],
+    "error_symbols": []
+  },
+  "bus_contract": {
+    "bus_api_symbols": [],
+    "bus_api_signatures": {},
+    "bus_helper_types": [
+      "struct stm32_uart_config"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "bus_instance": "uart1",
+    "bus_symbol": "uart1",
+    "include_headers": [],
+    "fixed_attachment": {
+      "device_name": "uart1",
+      "baud_rate": 9600,
+      "data_bits": 8,
+      "parity": "none",
+      "stop_bits": 1
+    },
+    "required_helpers": [
+      "rt_device_find",
+      "rt_device_control",
+      "rt_device_open",
+      "rt_device_write",
+      "rt_device_read",
+      "rt_thread_mdelay"
+    ],
+    "runtime_provision_required_for": [
+      "rt_device_control",
+      "rt_device_find",
+      "rt_device_open",
+      "rt_device_read",
+      "rt_device_write"
+    ],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "uart1",
+        "fields": {
+          "bus_instance": "uart1",
+          "bus_symbol": "uart1",
+          "backend": "rt-thread device framework serial device",
+          "mode": "polling"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "integration.pin_binding": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "device_name": "uart1",
+          "baud_rate": 9600,
+          "data_bits": 8,
+          "parity": "none",
+          "stop_bits": 1
+        },
+        "fields": {
+          "fixed_attachment": {
+            "device_name": "uart1",
+            "baud_rate": 9600,
+            "data_bits": 8,
+            "parity": "none",
+            "stop_bits": 1
+          },
+          "required_attachment": {
+            "signals": [
+              "uart_tx",
+              "uart_rx"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "mhz19b",
+    "required_bus_type": "uart",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "uart_tx",
+        "uart_rx"
+      ],
+      "notes": [
+        "MH-Z19B communicates over UART using fixed 9-byte command and response frames.",
+        "The task assumes a local UART instance configured for 9600 baud, 8 data bits, no parity, 1 stop bit."
+      ]
+    },
+    "optional_attachment": {
+      "pwm_output": "not used by this UART task",
+      "abc_calibration": "optional command path"
+    }
+  },
+  "api_bindings": {
+    "uart.key_types": {
+      "symbol": "stm32_uart_config",
+      "kind": "struct",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_device_control": {
+      "symbol": "rt_device_control",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.rt_device_control",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::rt_device_control",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_device_find": {
+      "symbol": "rt_device_find",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.rt_device_find",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::rt_device_find",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_device_open": {
+      "symbol": "rt_device_open",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.rt_device_open",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::rt_device_open",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_device_read": {
+      "symbol": "rt_device_read",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.rt_device_read",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::rt_device_read",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_device_write": {
+      "symbol": "rt_device_write",
+      "kind": "function",
+      "signature": null,
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": "task package helper hook for task_helper.rt_device_write",
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "confidence": 0.85,
+      "declared_in": "task_package::rt_device_write",
+      "implemented_in": null,
+      "requires_runtime_provision": true,
+      "allowed_for_codegen": true
+    },
+    "task_helper.rt_thread_mdelay": {
+      "symbol": "rt_thread_mdelay",
+      "kind": "function",
+      "signature": "rt_err_t rt_thread_mdelay(rt_int32_t ms)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "HAL_Delay",
+      "kind": "function",
+      "signature": "void HAL_Delay(__IO uint32_t Delay)",
+      "required_headers": [],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drv_common.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "uart.key_types": {
+      "slot_id": "uart.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "ranked_candidates",
+      "confidence": 0.606,
+      "symbols": [
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.c",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        },
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.h",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        },
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.c",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        },
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.h",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot represents a small type vocabulary rather than one canonical call target."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "uart1",
+      "fields": {
+        "bus_instance": "uart1",
+        "bus_symbol": "uart1",
+        "backend": "rt-thread device framework serial device",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "device_name": "uart1",
+        "baud_rate": 9600,
+        "data_bits": 8,
+        "parity": "none",
+        "stop_bits": 1
+      },
+      "fields": {
+        "fixed_attachment": {
+          "device_name": "uart1",
+          "baud_rate": 9600,
+          "data_bits": 8,
+          "parity": "none",
+          "stop_bits": 1
+        },
+        "required_attachment": {
+          "signals": [
+            "uart_tx",
+            "uart_rx"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "uart1",
+      "fields": {
+        "bus_instance": "uart1",
+        "bus_symbol": "uart1",
+        "backend": "rt-thread device framework serial device",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "device_name": "uart1",
+        "baud_rate": 9600,
+        "data_bits": 8,
+        "parity": "none",
+        "stop_bits": 1
+      },
+      "fields": {
+        "fixed_attachment": {
+          "device_name": "uart1",
+          "baud_rate": 9600,
+          "data_bits": 8,
+          "parity": "none",
+          "stop_bits": 1
+        },
+        "required_attachment": {
+          "signals": [
+            "uart_tx",
+            "uart_rx"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "uart.key_types": {
+      "slot_id": "uart.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "ranked_candidates",
+      "confidence": 0.606,
+      "symbols": [
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.c",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        },
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.h",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        },
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.c",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.c",
+          "file_kind": "source",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        },
+        {
+          "symbol": "stm32_uart_config",
+          "kind": "struct",
+          "declared_in": "rt-thread:single:0:bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.h",
+          "root_id": "rt-thread:single:0",
+          "file": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart_v2.h",
+          "file_kind": "header",
+          "dir_role_hint": "driver_framework",
+          "score": 12.5,
+          "match_reasons": [
+            "name-tok=2+6.0",
+            "path-tok=1+1.5",
+            "root-role+3.0",
+            "bus[uart]+2.0"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot represents a small type vocabulary rather than one canonical call target."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "rt_thread_mdelay",
+    "HAL_Delay",
+    "stm32_uart_config",
+    "rt_device_control",
+    "rt_device_find",
+    "rt_device_open",
+    "rt_device_read",
+    "rt_device_write"
+  ],
+  "allowed_symbol_provenance": {
+    "rt_thread_mdelay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::src/thread.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "HAL_Delay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drv_common.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "stm32_uart_config": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "rt-thread:single:0::bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_device_control": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::rt_device_control",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_device_find": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::rt_device_find",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_device_open": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::rt_device_open",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_device_read": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::rt_device_read",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "rt_device_write": {
+      "source_kind": "task_package_helper",
+      "verification": "contract_declared",
+      "requires_runtime_provision": true,
+      "declared_in": "task_package::rt_device_write",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "mhz19b_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (1 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "mhz19b_read_sequence",
+      "steps": [
+        {
+          "op": "uart_write",
+          "args": {
+            "bytes": [
+              255,
+              1,
+              134,
+              0,
+              0,
+              0,
+              0,
+              0,
+              121
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "Send read CO2 concentration command."
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        },
+        {
+          "op": "uart_read",
+          "args": {
+            "bytes": [],
+            "length": 9,
+            "pointer_target": null,
+            "notes": "Read 9-byte response."
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.4,
+      "requires_human": true,
+      "notes": "Translated from device_ir.read_sequence (2 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 9/13 required slots covered.",
+    "5 task-package helper hooks declared (stub or board-supplied weak occurrence required at link time)."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "src/thread.c",
+      "kind": "declaration",
+      "for_symbol": "rt_thread_mdelay",
+      "slot_id": "task_helper.rt_thread_mdelay"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/drv_common.c",
+      "kind": "declaration",
+      "for_symbol": "HAL_Delay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "rt-thread:single:0",
+      "path": "bsp/stm32/libraries/HAL_Drivers/drivers/drv_usart.c",
+      "kind": "declaration",
+      "for_symbol": "stm32_uart_config",
+      "slot_id": "uart.key_types"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[rt_device_control]",
+      "kind": "contract",
+      "for_symbol": "rt_device_control",
+      "slot_id": "task_helper.rt_device_control"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[rt_device_find]",
+      "kind": "contract",
+      "for_symbol": "rt_device_find",
+      "slot_id": "task_helper.rt_device_find"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[rt_device_open]",
+      "kind": "contract",
+      "for_symbol": "rt_device_open",
+      "slot_id": "task_helper.rt_device_open"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[rt_device_read]",
+      "kind": "contract",
+      "for_symbol": "rt_device_read",
+      "slot_id": "task_helper.rt_device_read"
+    },
+    {
+      "root_id": "task_package",
+      "path": "connection_binding.required_helpers[rt_device_write]",
+      "kind": "contract",
+      "for_symbol": "rt_device_write",
+      "slot_id": "task_helper.rt_device_write"
+    }
+  ],
+  "requires_human": []
+}

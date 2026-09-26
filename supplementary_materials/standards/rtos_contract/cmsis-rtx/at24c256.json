@@ -1,0 +1,196 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "cmsis-rtx__at24c256",
+  "device_id": "at24c256",
+  "rtos_id": "cmsis-rtx",
+  "bus": "i2c",
+  "scope": "cmsis-rtx i2c RTOS/BSP API minimum contract for cmsis-rtx__at24c256; based on copied reference implementation and configuration, existing i2c API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "cmsis-rtx",
+    "bus": "i2c",
+    "task_binding": {
+      "connection_type": "i2c",
+      "mode": "polling",
+      "bus_instance": "i2c1",
+      "bus_symbol": "hi2c1",
+      "backend": "STM32CubeF1 HAL I2C with CMSIS-RTOS2 timing",
+      "address_mode": "7-bit"
+    },
+    "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "at24c256_ref.h",
+      "cmsis_os2.h",
+      "stm32f1xx_hal.h",
+      "stdint.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "HAL_Delay",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+            "line": 31,
+            "text": "HAL_Delay(5);"
+          }
+        ],
+        "available_declaration": "void HAL_Delay(uint32_t Delay);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/cmsis-rtx/i2c/pack.md",
+          "line_start": 556,
+          "line_end": 558
+        }
+      },
+      {
+        "symbol": "HAL_I2C_Init",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+            "line": 6,
+            "text": "if (HAL_I2C_Init(bus) != HAL_OK) return -1;"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_I2C_Init(I2C_HandleTypeDef *hi2c);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 65,
+          "line_end": 66
+        }
+      },
+      {
+        "symbol": "HAL_I2C_Mem_Read",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+            "line": 40,
+            "text": "return HAL_I2C_Mem_Read(dev->bus, (uint16_t)(dev->addr << 1),"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_I2C_Mem_Read(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 63,
+          "line_end": 65
+        }
+      },
+      {
+        "symbol": "HAL_I2C_Mem_Write",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+            "line": 25,
+            "text": "if (HAL_I2C_Mem_Write(dev->bus, (uint16_t)(dev->addr << 1),"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 60,
+          "line_end": 63
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/cmsis-rtx/i2c/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's i2c connection context (i2c1; STM32CubeF1 HAL I2C with CMSIS-RTOS2 timing) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 6,
+          "line_end": 6
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: HAL_I2C_Init.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 6,
+          "line_end": 6
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: HAL_I2C_Mem_Read, HAL_I2C_Mem_Write. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 25,
+          "line_end": 25
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 40,
+          "line_end": 40
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 25,
+          "line_end": 25
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 40,
+          "line_end": 40
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "Provide the task-used wait/delay primitive with the reference time unit and blocking behavior: HAL_Delay.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 31,
+          "line_end": 31
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/reference_drivers/at24c256_ref.h",
+          "line_start": 4,
+          "line_end": 20
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__at24c256/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

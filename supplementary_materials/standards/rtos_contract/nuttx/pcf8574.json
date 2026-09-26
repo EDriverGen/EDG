@@ -1,0 +1,152 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "nuttx__pcf8574",
+  "device_id": "pcf8574",
+  "rtos_id": "nuttx",
+  "bus": "i2c",
+  "scope": "nuttx i2c RTOS/BSP API minimum contract for nuttx__pcf8574; based on copied reference implementation and configuration, existing i2c API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "nuttx",
+    "bus": "i2c",
+    "task_binding": {
+      "connection_type": "i2c",
+      "mode": "polling",
+      "bus_instance": "1",
+      "backend": "NuttX i2c_master lower-half",
+      "address_mode": "7-bit"
+    },
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "pcf8574_ref.h",
+      "errno.h",
+      "nuttx/config.h",
+      "nuttx/i2c/i2c_master.h",
+      "stdint.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "board_i2cbus_initialize",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_eval_adapter.c",
+            "line": 36,
+            "text": "FAR struct i2c_master_s *i2c_bus = board_i2cbus_initialize(1);"
+          }
+        ],
+        "available_declaration": "struct i2c_master_s *board_i2cbus_initialize(int bus);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 110,
+          "line_end": 113
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/nuttx/i2c/pack.md",
+    "reference_api_calls": [
+      {
+        "symbol": "i2c_read",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_ref.c",
+            "line": 43,
+            "text": "ret = i2c_read(dev->i2c, &dev->config, val, 1);"
+          }
+        ],
+        "available_declaration": "int i2c_read(FAR struct i2c_master_s *dev, FAR const struct i2c_config_s *config, FAR uint8_t *buffer, int buflen);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 94,
+          "line_end": 102
+        }
+      },
+      {
+        "symbol": "i2c_write",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_ref.c",
+            "line": 57,
+            "text": "ret = i2c_write(dev->i2c, &dev->config, &buf, 1);"
+          }
+        ],
+        "available_declaration": "int i2c_write(FAR struct i2c_master_s *dev, FAR const struct i2c_config_s *config, FAR const uint8_t *buffer, int buflen);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 87,
+          "line_end": 94
+        }
+      }
+    ],
+    "driver_to_board_boundary": "NuttX reference driver receives a struct i2c_master_s / spi_dev_s handle or a path/fd as shown in its copied source; board initialization, lower-half binding and POSIX wrappers are distinct from the device-driver call interface."
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's i2c connection context (1; NuttX i2c_master lower-half) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_eval_adapter.c",
+          "line_start": 36,
+          "line_end": 36
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: board_i2cbus_initialize.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_eval_adapter.c",
+          "line_start": 36,
+          "line_end": 36
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_ref.h",
+          "line_start": 13,
+          "line_end": 47
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Required reference operations: i2c_read, i2c_write. Preserve buffer/length/address or register-message semantics and returned integer/status convention; NuttX message-vector transfer APIs are acceptable when transaction directions and address are represented.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__pcf8574/inputs/reference_drivers/pcf8574_ref.c",
+          "line_start": 57,
+          "line_end": 57
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtthread__mcp3008",
+  "device_id": "mcp3008",
+  "rtos_id": "rtthread",
+  "bus": "spi",
+  "scope": "rtthread spi RTOS/BSP API minimum contract for rtthread__mcp3008; based on copied reference implementation and configuration, existing spi API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "rtthread",
+    "bus": "spi",
+    "task_binding": {
+      "connection_type": "spi",
+      "mode": "polling",
+      "bus_instance": "spi10",
+      "bus_symbol": "spi10",
+      "backend": "RT-Thread SPI device framework",
+      "address_mode": "chip-select"
+    },
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "mcp3008_ref.h",
+      "rtthread.h",
+      "rtdevice.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "rt_device_find",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+            "line": 12,
+            "text": "dev->spi = (struct rt_spi_device *)rt_device_find(device_name);"
+          }
+        ],
+        "available_declaration": "#ifdef RT_USING_DEVICE rt_device_t rt_device_find(const char *name);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/spi/pack.md",
+          "line_start": 1796,
+          "line_end": 1798
+        }
+      },
+      {
+        "symbol": "rt_kprintf",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_sample_ref.c",
+            "line": 12,
+            "text": "{ rt_kprintf(\"MCP3008 init failed\\n\"); return; }"
+          },
+          {
+            "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_sample_ref.c",
+            "line": 20,
+            "text": "rt_kprintf(\"CH%d: raw=%d  %d.%03d V\\n\", i, raw, mv/1000, mv%1000);"
+          },
+          {
+            "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_sample_ref.c",
+            "line": 23,
+            "text": "rt_kprintf(\"CH%d: read error\\n\", i);"
+          }
+        ],
+        "available_declaration": "rt_kprintf(\"use rt_spi_transfer_message() read w25q ID is:%x%x\\n\", id[3], id[4]);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/rt-thread/spi/pack.md",
+          "line_start": 2390,
+          "line_end": 2393
+        }
+      },
+      {
+        "symbol": "rt_spi_configure",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+            "line": 17,
+            "text": "rt_spi_configure(dev->spi, &cfg);"
+          }
+        ],
+        "available_declaration": "rt_err_t rt_spi_configure(struct rt_spi_device *device, struct rt_spi_configuration *cfg);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 182,
+          "line_end": 186
+        }
+      },
+      {
+        "symbol": "rt_spi_transfer",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+            "line": 33,
+            "text": "if (rt_spi_transfer(dev->spi, tx, rx, 3) != 3)"
+          }
+        ],
+        "available_declaration": "rt_err_t rt_spi_transfer(struct rt_spi_device *device, const void *send_buf, void *recv_buf, rt_size_t length);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/rtthread/rtthread.h",
+          "line_start": 204,
+          "line_end": 211
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/rt-thread/spi/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's spi connection context (spi10; RT-Thread SPI device framework) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+          "line_start": 12,
+          "line_end": 12
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: rt_spi_transfer. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+          "line_start": 33,
+          "line_end": 33
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_ref.c",
+          "line_start": 33,
+          "line_end": 33
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/reference_drivers/mcp3008_ref.h",
+          "line_start": 7,
+          "line_end": 29
+        },
+        {
+          "file": "evidence/rtos/tasks/rtthread__mcp3008/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

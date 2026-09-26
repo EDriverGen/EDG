@@ -1,0 +1,1111 @@
+{
+  "device_id": "mpu6050",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x68",
+        "description": "Default I2C address (AD0 = 0)",
+        "is_default": true
+      },
+      {
+        "address": "0x69",
+        "description": "Alternate I2C address (AD0 = 1)",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 118,
+    "addressing": "1-byte",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Register addresses from 0x00 to 0x75; auto-increment for burst reads."
+  },
+  "read_channels": [
+    {
+      "id": "accel_x",
+      "raw_type": "int16",
+      "physical_unit": "g",
+      "flow_id": "read_sensors",
+      "source_bytes": [
+        "ACCEL_XOUT_H",
+        "ACCEL_XOUT_L"
+      ],
+      "formula_id": "accel_from_raw"
+    },
+    {
+      "id": "accel_y",
+      "raw_type": "int16",
+      "physical_unit": "g",
+      "flow_id": "read_sensors",
+      "source_bytes": [
+        "ACCEL_YOUT_H",
+        "ACCEL_YOUT_L"
+      ],
+      "formula_id": "accel_from_raw"
+    },
+    {
+      "id": "accel_z",
+      "raw_type": "int16",
+      "physical_unit": "g",
+      "flow_id": "read_sensors",
+      "source_bytes": [
+        "ACCEL_ZOUT_H",
+        "ACCEL_ZOUT_L"
+      ],
+      "formula_id": "accel_from_raw"
+    },
+    {
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_sensors",
+      "source_bytes": [
+        "TEMP_OUT_H",
+        "TEMP_OUT_L"
+      ],
+      "formula_id": "temperature_from_raw"
+    },
+    {
+      "id": "gyro_x",
+      "raw_type": "int16",
+      "physical_unit": "deg_per_s",
+      "flow_id": "read_sensors",
+      "source_bytes": [
+        "GYRO_XOUT_H",
+        "GYRO_XOUT_L"
+      ],
+      "formula_id": "gyro_from_raw"
+    },
+    {
+      "id": "gyro_y",
+      "raw_type": "int16",
+      "physical_unit": "deg_per_s",
+      "flow_id": "read_sensors",
+      "source_bytes": [
+        "GYRO_YOUT_H",
+        "GYRO_YOUT_L"
+      ],
+      "formula_id": "gyro_from_raw"
+    },
+    {
+      "id": "gyro_z",
+      "raw_type": "int16",
+      "physical_unit": "deg_per_s",
+      "flow_id": "read_sensors",
+      "source_bytes": [
+        "GYRO_ZOUT_H",
+        "GYRO_ZOUT_L"
+      ],
+      "formula_id": "gyro_from_raw"
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "Register pointer is written first, then data is read/written."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "init",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [
+        "Device powered on"
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x6B",
+              "0x00"
+            ]
+          },
+          "notes": "Wake up device: clear SLEEP bit in PWR_MGMT_1."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 100,
+          "notes": "Wait for device to stabilize after wake-up."
+        }
+      ],
+      "outputs": [],
+      "requires_human": true,
+      "notes": "The exact power-up stabilization time is not specified; 100 ms is a typical assumption. Clock source configuration (CLKSEL) is recommended but not implemented; defaults to internal oscillator."
+    },
+    {
+      "flow_id": "probe",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [
+        "Device initialized"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x75"
+            ],
+            "length": 1,
+            "pointer_target": "WHO_AM_I"
+          },
+          "notes": "Read WHO_AM_I register to verify device identity."
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "flow_id": "read_sensors",
+      "kind": "read",
+      "channels": [
+        "accel_x",
+        "accel_y",
+        "accel_z",
+        "temperature",
+        "gyro_x",
+        "gyro_y",
+        "gyro_z"
+      ],
+      "preconditions": [
+        "Device initialized"
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x3B"
+            ],
+            "length": 14,
+            "pointer_target": "ACCEL_XOUT_H"
+          },
+          "notes": "Burst read from ACCEL_XOUT_H (0x3B) through GYRO_ZOUT_L (0x48), 14 bytes."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "accel_x",
+          "byte_source": "ACCEL_XOUT_H:8 || ACCEL_XOUT_L:8",
+          "formula_id": "accel_from_raw"
+        },
+        {
+          "channel": "accel_y",
+          "byte_source": "ACCEL_YOUT_H:8 || ACCEL_YOUT_L:8",
+          "formula_id": "accel_from_raw"
+        },
+        {
+          "channel": "accel_z",
+          "byte_source": "ACCEL_ZOUT_H:8 || ACCEL_ZOUT_L:8",
+          "formula_id": "accel_from_raw"
+        },
+        {
+          "channel": "temperature",
+          "byte_source": "TEMP_OUT_H:8 || TEMP_OUT_L:8",
+          "formula_id": "temperature_from_raw"
+        },
+        {
+          "channel": "gyro_x",
+          "byte_source": "GYRO_XOUT_H:8 || GYRO_XOUT_L:8",
+          "formula_id": "gyro_from_raw"
+        },
+        {
+          "channel": "gyro_y",
+          "byte_source": "GYRO_YOUT_H:8 || GYRO_YOUT_L:8",
+          "formula_id": "gyro_from_raw"
+        },
+        {
+          "channel": "gyro_z",
+          "byte_source": "GYRO_ZOUT_H:8 || GYRO_ZOUT_L:8",
+          "formula_id": "gyro_from_raw"
+        }
+      ],
+      "requires_human": true,
+      "notes": "The conversion formulae assume default full-scale ranges (±2g for accel, ±250°/s for gyro). If non-default ranges are configured via GYRO_CONFIG or ACCEL_CONFIG, the formulae must be adjusted accordingly."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 16,
+    "signed": true,
+    "right_shift": 0,
+    "sign_extend_from_bit": 15,
+    "notes": "All sensor data registers are 16-bit two's complement, MSB first."
+  },
+  "registers_or_commands": [
+    {
+      "name": "SELF_TEST_X",
+      "value": "0x0D",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Self-test X axis"
+    },
+    {
+      "name": "SELF_TEST_Y",
+      "value": "0x0E",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Self-test Y axis"
+    },
+    {
+      "name": "SELF_TEST_Z",
+      "value": "0x0F",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Self-test Z axis"
+    },
+    {
+      "name": "SELF_TEST_A",
+      "value": "0x10",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Self-test A"
+    },
+    {
+      "name": "SMPLRT_DIV",
+      "value": "0x19",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Sample rate divider"
+    },
+    {
+      "name": "CONFIG",
+      "value": "0x1A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Configuration (EXT_SYNC_SET, DLPF_CFG)"
+    },
+    {
+      "name": "GYRO_CONFIG",
+      "value": "0x1B",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Gyroscope configuration (self-test, FS_SEL)"
+    },
+    {
+      "name": "ACCEL_CONFIG",
+      "value": "0x1C",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Accelerometer configuration (self-test, AFS_SEL)"
+    },
+    {
+      "name": "FIFO_EN",
+      "value": "0x23",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "FIFO enable"
+    },
+    {
+      "name": "I2C_MST_CTRL",
+      "value": "0x24",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C master control"
+    },
+    {
+      "name": "I2C_SLV0_ADDR",
+      "value": "0x25",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 0 address"
+    },
+    {
+      "name": "I2C_SLV0_REG",
+      "value": "0x26",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 0 register"
+    },
+    {
+      "name": "I2C_SLV0_CTRL",
+      "value": "0x27",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 0 control"
+    },
+    {
+      "name": "I2C_SLV1_ADDR",
+      "value": "0x28",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 1 address"
+    },
+    {
+      "name": "I2C_SLV1_REG",
+      "value": "0x29",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 1 register"
+    },
+    {
+      "name": "I2C_SLV1_CTRL",
+      "value": "0x2A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 1 control"
+    },
+    {
+      "name": "I2C_SLV2_ADDR",
+      "value": "0x2B",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 2 address"
+    },
+    {
+      "name": "I2C_SLV2_REG",
+      "value": "0x2C",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 2 register"
+    },
+    {
+      "name": "I2C_SLV2_CTRL",
+      "value": "0x2D",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 2 control"
+    },
+    {
+      "name": "I2C_SLV3_ADDR",
+      "value": "0x2E",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 3 address"
+    },
+    {
+      "name": "I2C_SLV3_REG",
+      "value": "0x2F",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 3 register"
+    },
+    {
+      "name": "I2C_SLV3_CTRL",
+      "value": "0x30",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 3 control"
+    },
+    {
+      "name": "I2C_SLV4_ADDR",
+      "value": "0x31",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 4 address"
+    },
+    {
+      "name": "I2C_SLV4_REG",
+      "value": "0x32",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 4 register"
+    },
+    {
+      "name": "I2C_SLV4_DO",
+      "value": "0x33",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 4 data out"
+    },
+    {
+      "name": "I2C_SLV4_CTRL",
+      "value": "0x34",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 4 control"
+    },
+    {
+      "name": "I2C_SLV4_DI",
+      "value": "0x35",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "I2C slave 4 data in"
+    },
+    {
+      "name": "I2C_MST_STATUS",
+      "value": "0x36",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "I2C master status"
+    },
+    {
+      "name": "INT_PIN_CFG",
+      "value": "0x37",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt pin configuration"
+    },
+    {
+      "name": "INT_ENABLE",
+      "value": "0x38",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt enable"
+    },
+    {
+      "name": "INT_STATUS",
+      "value": "0x3A",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Interrupt status"
+    },
+    {
+      "name": "ACCEL_XOUT_H",
+      "value": "0x3B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Accelerometer X high byte"
+    },
+    {
+      "name": "ACCEL_XOUT_L",
+      "value": "0x3C",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Accelerometer X low byte"
+    },
+    {
+      "name": "ACCEL_YOUT_H",
+      "value": "0x3D",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Accelerometer Y high byte"
+    },
+    {
+      "name": "ACCEL_YOUT_L",
+      "value": "0x3E",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Accelerometer Y low byte"
+    },
+    {
+      "name": "ACCEL_ZOUT_H",
+      "value": "0x3F",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Accelerometer Z high byte"
+    },
+    {
+      "name": "ACCEL_ZOUT_L",
+      "value": "0x40",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Accelerometer Z low byte"
+    },
+    {
+      "name": "TEMP_OUT_H",
+      "value": "0x41",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Temperature high byte"
+    },
+    {
+      "name": "TEMP_OUT_L",
+      "value": "0x42",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Temperature low byte"
+    },
+    {
+      "name": "GYRO_XOUT_H",
+      "value": "0x43",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Gyroscope X high byte"
+    },
+    {
+      "name": "GYRO_XOUT_L",
+      "value": "0x44",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Gyroscope X low byte"
+    },
+    {
+      "name": "GYRO_YOUT_H",
+      "value": "0x45",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Gyroscope Y high byte"
+    },
+    {
+      "name": "GYRO_YOUT_L",
+      "value": "0x46",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Gyroscope Y low byte"
+    },
+    {
+      "name": "GYRO_ZOUT_H",
+      "value": "0x47",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Gyroscope Z high byte"
+    },
+    {
+      "name": "GYRO_ZOUT_L",
+      "value": "0x48",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Gyroscope Z low byte"
+    },
+    {
+      "name": "EXT_SENS_DATA_00",
+      "value": "0x49",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 0"
+    },
+    {
+      "name": "EXT_SENS_DATA_01",
+      "value": "0x4A",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 1"
+    },
+    {
+      "name": "EXT_SENS_DATA_02",
+      "value": "0x4B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 2"
+    },
+    {
+      "name": "EXT_SENS_DATA_03",
+      "value": "0x4C",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 3"
+    },
+    {
+      "name": "EXT_SENS_DATA_04",
+      "value": "0x4D",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 4"
+    },
+    {
+      "name": "EXT_SENS_DATA_05",
+      "value": "0x4E",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 5"
+    },
+    {
+      "name": "EXT_SENS_DATA_06",
+      "value": "0x4F",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 6"
+    },
+    {
+      "name": "EXT_SENS_DATA_07",
+      "value": "0x50",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 7"
+    },
+    {
+      "name": "EXT_SENS_DATA_08",
+      "value": "0x51",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 8"
+    },
+    {
+      "name": "EXT_SENS_DATA_09",
+      "value": "0x52",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 9"
+    },
+    {
+      "name": "EXT_SENS_DATA_10",
+      "value": "0x53",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 10"
+    },
+    {
+      "name": "EXT_SENS_DATA_11",
+      "value": "0x54",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 11"
+    },
+    {
+      "name": "EXT_SENS_DATA_12",
+      "value": "0x55",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 12"
+    },
+    {
+      "name": "EXT_SENS_DATA_13",
+      "value": "0x56",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 13"
+    },
+    {
+      "name": "EXT_SENS_DATA_14",
+      "value": "0x57",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 14"
+    },
+    {
+      "name": "EXT_SENS_DATA_15",
+      "value": "0x58",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 15"
+    },
+    {
+      "name": "EXT_SENS_DATA_16",
+      "value": "0x59",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 16"
+    },
+    {
+      "name": "EXT_SENS_DATA_17",
+      "value": "0x5A",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 17"
+    },
+    {
+      "name": "EXT_SENS_DATA_18",
+      "value": "0x5B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 18"
+    },
+    {
+      "name": "EXT_SENS_DATA_19",
+      "value": "0x5C",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 19"
+    },
+    {
+      "name": "EXT_SENS_DATA_20",
+      "value": "0x5D",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 20"
+    },
+    {
+      "name": "EXT_SENS_DATA_21",
+      "value": "0x5E",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 21"
+    },
+    {
+      "name": "EXT_SENS_DATA_22",
+      "value": "0x5F",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 22"
+    },
+    {
+      "name": "EXT_SENS_DATA_23",
+      "value": "0x60",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "External sensor data 23"
+    },
+    {
+      "name": "I2C_SLV0_DO",
+      "value": "0x63",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 0 data out"
+    },
+    {
+      "name": "I2C_SLV1_DO",
+      "value": "0x64",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 1 data out"
+    },
+    {
+      "name": "I2C_SLV2_DO",
+      "value": "0x65",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 2 data out"
+    },
+    {
+      "name": "I2C_SLV3_DO",
+      "value": "0x66",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C slave 3 data out"
+    },
+    {
+      "name": "I2C_MST_DELAY_CTRL",
+      "value": "0x67",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "I2C master delay control"
+    },
+    {
+      "name": "SIGNAL_PATH_RESET",
+      "value": "0x68",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Signal path reset"
+    },
+    {
+      "name": "USER_CTRL",
+      "value": "0x6A",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "User control"
+    },
+    {
+      "name": "PWR_MGMT_1",
+      "value": "0x6B",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Power management 1"
+    },
+    {
+      "name": "PWR_MGMT_2",
+      "value": "0x6C",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Power management 2"
+    },
+    {
+      "name": "FIFO_COUNTH",
+      "value": "0x72",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "FIFO count high"
+    },
+    {
+      "name": "FIFO_COUNTL",
+      "value": "0x73",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "FIFO count low"
+    },
+    {
+      "name": "FIFO_R_W",
+      "value": "0x74",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "FIFO read/write"
+    },
+    {
+      "name": "WHO_AM_I",
+      "value": "0x75",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Who am I (device ID)"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "CONFIG",
+      "bits": "5:3",
+      "name": "EXT_SYNC_SET",
+      "description": "FSYNC bit location"
+    },
+    {
+      "register": "CONFIG",
+      "bits": "2:0",
+      "name": "DLPF_CFG",
+      "description": "Digital low pass filter configuration"
+    },
+    {
+      "register": "GYRO_CONFIG",
+      "bits": "7",
+      "name": "XG_ST",
+      "description": "X gyro self-test"
+    },
+    {
+      "register": "GYRO_CONFIG",
+      "bits": "6",
+      "name": "YG_ST",
+      "description": "Y gyro self-test"
+    },
+    {
+      "register": "GYRO_CONFIG",
+      "bits": "5",
+      "name": "ZG_ST",
+      "description": "Z gyro self-test"
+    },
+    {
+      "register": "GYRO_CONFIG",
+      "bits": "4:3",
+      "name": "FS_SEL",
+      "description": "Gyro full scale select"
+    },
+    {
+      "register": "ACCEL_CONFIG",
+      "bits": "7",
+      "name": "XA_ST",
+      "description": "X accel self-test"
+    },
+    {
+      "register": "ACCEL_CONFIG",
+      "bits": "6",
+      "name": "YA_ST",
+      "description": "Y accel self-test"
+    },
+    {
+      "register": "ACCEL_CONFIG",
+      "bits": "5",
+      "name": "ZA_ST",
+      "description": "Z accel self-test"
+    },
+    {
+      "register": "ACCEL_CONFIG",
+      "bits": "4:3",
+      "name": "AFS_SEL",
+      "description": "Accel full scale select"
+    },
+    {
+      "register": "PWR_MGMT_1",
+      "bits": "7",
+      "name": "DEVICE_RESET",
+      "description": "Reset all registers"
+    },
+    {
+      "register": "PWR_MGMT_1",
+      "bits": "6",
+      "name": "SLEEP",
+      "description": "Sleep mode"
+    },
+    {
+      "register": "PWR_MGMT_1",
+      "bits": "5",
+      "name": "CYCLE",
+      "description": "Cycle mode"
+    },
+    {
+      "register": "PWR_MGMT_1",
+      "bits": "3",
+      "name": "TEMP_DIS",
+      "description": "Disable temperature sensor"
+    },
+    {
+      "register": "PWR_MGMT_1",
+      "bits": "2:0",
+      "name": "CLKSEL",
+      "description": "Clock source select"
+    },
+    {
+      "register": "PWR_MGMT_2",
+      "bits": "7:6",
+      "name": "LP_WAKE_CTRL",
+      "description": "Wake-up frequency in low power mode"
+    },
+    {
+      "register": "PWR_MGMT_2",
+      "bits": "5",
+      "name": "STBY_XA",
+      "description": "X accel standby"
+    },
+    {
+      "register": "PWR_MGMT_2",
+      "bits": "4",
+      "name": "STBY_YA",
+      "description": "Y accel standby"
+    },
+    {
+      "register": "PWR_MGMT_2",
+      "bits": "3",
+      "name": "STBY_ZA",
+      "description": "Z accel standby"
+    },
+    {
+      "register": "PWR_MGMT_2",
+      "bits": "2",
+      "name": "STBY_XG",
+      "description": "X gyro standby"
+    },
+    {
+      "register": "PWR_MGMT_2",
+      "bits": "1",
+      "name": "STBY_YG",
+      "description": "Y gyro standby"
+    },
+    {
+      "register": "PWR_MGMT_2",
+      "bits": "0",
+      "name": "STBY_ZG",
+      "description": "Z gyro standby"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x6B",
+          "0x00"
+        ]
+      },
+      "notes": "Wake up device: clear SLEEP bit in PWR_MGMT_1."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait ~100 ms for device to stabilize."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x3B"
+        ],
+        "length": 14,
+        "pointer_target": "ACCEL_XOUT_H"
+      },
+      "notes": "Burst read from ACCEL_XOUT_H (0x3B) through GYRO_ZOUT_L (0x48), 14 bytes."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "power_up_stabilization",
+      "value": 100,
+      "unit": "ms",
+      "condition": "after power-up",
+      "notes": "Wait ~100 ms after power-up before reading sensor data."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "accel_from_raw",
+      "formula": "Acceleration (g) = raw * full_scale_range / 32768, where full_scale_range depends on AFS_SEL: ±2g (16384 LSB/g), ±4g (8192 LSB/g), ±8g (4096 LSB/g), ±16g (2048 LSB/g).",
+      "integer_approximation_expression": {
+        "expression": "(raw * 1000) // 16384",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "ACCEL_XOUT_H:8 || ACCEL_XOUT_L:8",
+            "description": "16-bit two's complement accelerometer reading."
+          }
+        ],
+        "output": {
+          "name": "accel_milli_g",
+          "unit": "g"
+        }
+      }
+    },
+    {
+      "name": "temperature_from_raw",
+      "formula": "Temperature (degC) = (TEMP_OUT / 340) + 36.53",
+      "integer_approximation_expression": {
+        "expression": "((raw * 1000) // 340) + 36530",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "TEMP_OUT_H:8 || TEMP_OUT_L:8",
+            "description": "16-bit signed temperature reading."
+          }
+        ],
+        "output": {
+          "name": "temp_milli_degC",
+          "unit": "milli_degC"
+        }
+      }
+    },
+    {
+      "name": "gyro_from_raw",
+      "formula": "Angular rate (deg/s) = raw / sensitivity, where sensitivity depends on FS_SEL: ±250°/s (131 LSB/°/s), ±500°/s (65.5 LSB/°/s), ±1000°/s (32.8 LSB/°/s), ±2000°/s (16.4 LSB/°/s).",
+      "integer_approximation_expression": {
+        "expression": "(raw * 1000) // 131",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "GYRO_XOUT_H:8 || GYRO_XOUT_L:8",
+            "description": "16-bit two's complement gyroscope reading."
+          }
+        ],
+        "output": {
+          "name": "gyro_milli_deg_per_s",
+          "unit": "deg_per_s"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "i2c_nack",
+      "description": "I2C NACK during transaction",
+      "detection": "I2C master status register indicates NACK",
+      "driver_action": "retry once then return -EIO"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "normal",
+      "description": "Normal operation mode, all sensors active",
+      "register": "PWR_MGMT_1",
+      "value": "0x00"
+    },
+    {
+      "name": "sleep",
+      "description": "Sleep mode, low power",
+      "register": "PWR_MGMT_1",
+      "value": "0x40"
+    },
+    {
+      "name": "cycle",
+      "description": "Cycle mode, accelerometer only low power",
+      "register": "PWR_MGMT_1",
+      "value": "0x20"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "mpu6050",
+      "page": 45,
+      "snippet": "The default value of the register is 0x68."
+    },
+    {
+      "source_id": "mpu6050",
+      "page": 40,
+      "snippet": "Upon power up, the MPU-60X0 clock source defaults to the internal oscillator."
+    },
+    {
+      "source_id": "mpu6050",
+      "page": 30,
+      "snippet": "Temperature in degrees C = (TEMP_OUT Register Value as a signed quantity)/340 + 36.53"
+    },
+    {
+      "source_id": "mpu6050",
+      "page": 29,
+      "snippet": "Each 16-bit accelerometer measurement has a full scale defined in ACCEL_FS (Register 28)."
+    },
+    {
+      "source_id": "mpu6050",
+      "page": 31,
+      "snippet": "Each 16-bit gyroscope measurement has a full scale defined in FS_SEL (Register 27)."
+    }
+  ],
+  "requires_human": [
+    "The exact power-up stabilization time is not specified; 100 ms is a typical assumption.",
+    "The conversion formulae for accelerometer and gyroscope depend on the selected full-scale range; the expressions assume default ±2g and ±250°/s respectively. If a different range is configured, the formula must be adjusted.",
+    "Clock source configuration (CLKSEL) is recommended for improved stability but not implemented; defaults to internal oscillator."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

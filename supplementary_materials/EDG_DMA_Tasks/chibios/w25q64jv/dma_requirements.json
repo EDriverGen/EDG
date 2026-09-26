@@ -1,0 +1,59 @@
+{
+  "task_package_id": "chibios_generic_hal__w25q64jv__spi1_dma",
+  "mode": "dma",
+  "physical_bus": "spi",
+  "backend": "ChibiOS STM32F1 SPIv1 HAL DMA",
+  "access_pattern": "rtos_bus_dma",
+  "candidate_transfer_apis": [
+    "spiExchange",
+    "spiSend",
+    "spiReceive"
+  ],
+  "dma_channels": {
+    "controller": "DMA1",
+    "tx": 3,
+    "rx": 2
+  },
+  "minimum_core_payload_bytes": 1,
+  "configuration_requirements": [
+    "Use the original ST_NUCLEO64_F103RB board and SPID1.",
+    "Enable the selected STM32 HAL peripheral, its existing DMA channel configuration, and IRQ/completion support.",
+    "Use the HAL completion and timeout conventions before exposing the returned buffer."
+  ],
+  "generation_requirements": [
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use DMA for memory read/program payloads. Preserve opcode/address framing, chip-select boundaries, write enable, page boundaries, and device busy waits."
+  ],
+  "device_scenarios": [
+    "Read contiguous 64-byte and 256-byte payloads.",
+    "Program within a 256-byte page and check readback.",
+    "Keep chip select asserted across command/address and payload phases."
+  ],
+  "validation_requirements": [
+    {
+      "id": "dma_payload",
+      "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+    },
+    {
+      "id": "completion_order",
+      "requirement": "Consume receive data and reuse buffers only after the required completion event."
+    },
+    {
+      "id": "error_and_timeout",
+      "requirement": "Return the specified error and release transfer state after failure or timeout."
+    },
+    {
+      "id": "repeat_operation",
+      "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+    }
+  ],
+  "source_evidence": [
+    "DriverGen/data/rtos/chibios/os/hal/ports/STM32/LLD/SPIv1/hal_spi_lld.c"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "chibios",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, (void *)bus_name)",
+    "read_call": "lm75a_read_temp(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct lm75a_ctx",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temp: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x32 0x00], raw_count = ((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "c51a7378ae707060",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 16.175,
+  "prompt_chars": 44264,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"lm75a_init(&g_eval_dev, (void *)bus_name)\", \"read_call\": \"lm75a_read_temp(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct lm75a_ctx\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"preamble_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_temp: write_then_read\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x01\", \"0x90\"]}, \"expected_read_raw\": 25000, \"derivation\": \"Raw register 0x0190 = 0b0000000110010000, 11-bit value = 0b00000001100 = 12 (decimal). Temp = 12 * 0.125 = 1.5 degC. Wait, that's not 25C. Let's recalc: For 25C, raw = 25 / 0.125 = 200 = 0x00C8. So bytes [0x00, 0xC8]. Corrected: mock_preload [0x00, 0xC8] gives raw 200, temp = 200 * 0.125 = 25 degC = 25000 milli_degC.\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xFF\", \"0x38\"]}, \"expected_read_raw\": -10000, \"derivation\": \"Raw register 0xFF38 = 0b1111111100111000, 11-bit value = 0b11111110011 = -13 (two's complement). Temp = -13 * 0.125 = -1.625 degC. Wait, that's not -10C. For -10C, raw = -10 / 0.125 = -80 = 0xFFB0 (16-bit two's complement). So bytes [0xFF, 0xB0] give raw -80, temp = -80 * 0.125 = -10 degC = -10000 milli_degC.\"}]}}"
+}

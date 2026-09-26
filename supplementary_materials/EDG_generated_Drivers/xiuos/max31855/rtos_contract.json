@@ -1,0 +1,872 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "max31855",
+  "rtos": "xiuos",
+  "board": "stm32f103-nano",
+  "bus_type": "spi",
+  "connection": {
+    "connection_type": "spi",
+    "mode": "polling",
+    "bus_instance": "/dev/spi0",
+    "bus_symbol": "/dev/spi0",
+    "address_mode": "chip-select",
+    "backend": "XiUOS transform-layer SPI device path",
+    "helper_usage_patterns": []
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "PrivTaskDelay"
+    ],
+    "error_symbols": [
+      "ERROR",
+      "int_status_return"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "SpiBusInit",
+      "SpiDevConfigureCs",
+      "SpiReleaseBus"
+    ],
+    "bus_api_signatures": {
+      "SpiBusInit": "int SpiBusInit(struct SpiBus *spi_bus, const char *bus_name)",
+      "SpiDevConfigureCs": "int SpiDevConfigureCs(struct HardwareDev *dev, uint8 spi_chip_select, uint8 spi_cs_release)",
+      "SpiReleaseBus": "int SpiReleaseBus(struct SpiBus *spi_bus)"
+    },
+    "bus_helper_types": [
+      "SpiSdDeviceType",
+      "SpiBus",
+      "HardwareDev"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "xizi_transform_layer",
+    "integration_style": "xiuos_transform_plus_bus_framework",
+    "bus_instance": "/dev/spi0",
+    "bus_symbol": "/dev/spi0",
+    "include_headers": [
+      "../../../../../../Ubiquitous/XiZi_IIoT/arch/kswitch.h",
+      "../../../arch/kswitch.h",
+      "../../../kernel/include/xs_base.h",
+      "../../../kernel/include/xs_service.h",
+      "../../switch_api/user_api.h",
+      "APP_Framework/Framework/transform_layer/xizi/transform.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/include/bus.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/include/bus_serial.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/include/dev_serial.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/posix_support/include/fs.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/posix_support/include/mqueue.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/posix_support/include/pthread arm.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/posix_support/include/pthread.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/posix_support/include/semaphore.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/posix_support/include/signal.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/posix_support/include/timer.h",
+      "APP_Framework/Framework/transform_layer/xizi/user_api/switch_api/user_api.h",
+      "Ubiquitous/XiZi_AIoT_Micro/kernel_actracer/actracer.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/assert.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/bitmap64.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/buddy.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/execelf.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/ipc.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/kalloc.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/list.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/log.h",
+      "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/rbtree.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/user_api.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xizi.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_assign.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_base.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_capability.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_delay.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_event.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_hook.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_isolation.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_isr.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_kdbg.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_klist.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_ktask.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_ktask_stat.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_ktick.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_memory.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_msg.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_mutex.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_sem.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_service.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_spinlock.h",
+      "Ubiquitous/XiZi_IIoT_Macro/kernel/include/xs_timer.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_pin.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_pin.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/device.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/flash_spi.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/include/sd_spi.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/spi/third_party_spi/SFUD/sfud/inc/sfud.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/spi/third_party_spi/SFUD/sfud/inc/sfud_cfg.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/spi/third_party_spi/SFUD/sfud/inc/sfud_def.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/spi/third_party_spi/SFUD/sfud/inc/sfud_flash_def.h",
+      "Ubiquitous/XiZi_IIoT_Macro/resources/spi/third_party_spi/SFUD/sfud/inc/sfud_port.h",
+      "actracer.h",
+      "actracer_tag.h",
+      "arch_interrupt.h",
+      "assert.h",
+      "board.h",
+      "bus.h",
+      "bus_adc.h",
+      "bus_camera.h",
+      "bus_can.h",
+      "bus_dac.h",
+      "bus_hwtimer.h",
+      "bus_i2c.h",
+      "bus_kpu.h",
+      "bus_lcd.h",
+      "bus_pin.h",
+      "bus_rtc.h",
+      "bus_sdio.h",
+      "bus_serial.h",
+      "bus_spi.h",
+      "bus_touch.h",
+      "bus_usb.h",
+      "bus_wdt.h",
+      "dev_adc.h",
+      "dev_camera.h",
+      "dev_can.h",
+      "dev_dac.h",
+      "dev_hwtimer.h",
+      "dev_i2c.h",
+      "dev_kpu.h",
+      "dev_lcd.h",
+      "dev_pin.h",
+      "dev_rtc.h",
+      "dev_sdio.h",
+      "dev_serial.h",
+      "dev_spi.h",
+      "dev_touch.h",
+      "dev_usb.h",
+      "dev_wdt.h",
+      "device.h",
+      "errno.h",
+      "fcntl.h",
+      "flash_spi.h",
+      "iot-vfs_posix.h",
+      "libc.h",
+      "list.h",
+      "log.h",
+      "memlayout.h",
+      "mpu.h",
+      "object_allocator.h",
+      "pmp.h",
+      "pthread arm.h",
+      "pthread.h",
+      "rbtree.h",
+      "sd_spi.h",
+      "semaphore.h",
+      "sfud.h",
+      "sfud_cfg.h",
+      "sfud_def.h",
+      "sfud_flash_def.h",
+      "sfud_port.h",
+      "signal.h",
+      "stdarg.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "stdlib.h",
+      "stm32_usb_host.h",
+      "string.h",
+      "sys/stat.h",
+      "sys/time.h",
+      "sys/types.h",
+      "time.h",
+      "timer.h",
+      "transform.h",
+      "uart_common_ope.h",
+      "user_api.h",
+      "xizi.h",
+      "xs_assign.h",
+      "xs_avltree.h",
+      "xs_banner.h",
+      "xs_base.h",
+      "xs_capability.h",
+      "xs_circular_area.h",
+      "xs_dataqueue.h",
+      "xs_delay.h",
+      "xs_event.h",
+      "xs_hook.h",
+      "xs_id.h",
+      "xs_init.h",
+      "xs_isolation.h",
+      "xs_isr.h",
+      "xs_kdbg.h",
+      "xs_kdevice.h",
+      "xs_klist.h",
+      "xs_ktask.h",
+      "xs_ktask_stat.h",
+      "xs_ktick.h",
+      "xs_memory.h",
+      "xs_msg.h",
+      "xs_mutex.h",
+      "xs_poll.h",
+      "xs_sem.h",
+      "xs_service.h",
+      "xs_spinlock.h",
+      "xs_timer.h",
+      "xs_waitqueue.h",
+      "xs_workqueue.h",
+      "xsconfig.h"
+    ],
+    "fixed_attachment": {
+      "device_path": "/dev/spi0"
+    },
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "/dev/spi0",
+        "fields": {
+          "bus_instance": "/dev/spi0",
+          "bus_symbol": "/dev/spi0",
+          "backend": "XiUOS transform-layer SPI device path",
+          "mode": "polling",
+          "address_mode": "chip-select"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "integration.pin_binding": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "device_path": "/dev/spi0"
+        },
+        "fields": {
+          "fixed_attachment": {
+            "device_path": "/dev/spi0"
+          },
+          "required_attachment": {
+            "signals": [
+              "SCK",
+              "MISO",
+              "CS"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "max31855",
+    "required_bus_type": "spi",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "SCK",
+        "MISO",
+        "CS"
+      ],
+      "spi": {
+        "mode": "mode0",
+        "data_width_bits": 8,
+        "bit_order": "msb_first",
+        "max_hz": 5000000
+      },
+      "notes": [
+        "Read-only 32-bit SPI stream; MOSI command bytes are not required."
+      ]
+    },
+    "optional_attachment": {
+      "mosi": "not_required",
+      "thermocouple_type": "device_variant_dependent"
+    }
+  },
+  "api_bindings": {
+    "spi.acquire_or_bind": {
+      "symbol": "SpiBusInit",
+      "kind": "function",
+      "signature": "int SpiBusInit(struct SpiBus *spi_bus, const char *bus_name)",
+      "required_headers": [
+        "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.key_types": {
+      "symbol": "SpiSdDeviceType",
+      "kind": "typedef",
+      "signature": "struct SpiSdDevice *\nstruct SpiBus {\n  struct Bus bus;\n  void *private_data;\n};\nstruct HardwareDev {\n};\nstruct SpiSdDevice {\n};",
+      "required_headers": [
+        "Ubiquitous/XiZi_IIoT_Macro/resources/include/sd_spi.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.7,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/sd_spi.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "PrivTaskDelay",
+      "kind": "function",
+      "signature": "int PrivTaskDelay(int32_t ms)",
+      "required_headers": [
+        "APP_Framework/Framework/transform_layer/xizi/transform.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.error_status": {
+      "symbol": "ERROR",
+      "kind": "macro",
+      "signature": null,
+      "required_headers": [
+        "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/log.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_AIoT_Micro/softkernel/include/log.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.cs_control": {
+      "symbol": "SpiDevConfigureCs",
+      "kind": "function",
+      "signature": "int SpiDevConfigureCs(struct HardwareDev *dev, uint8 spi_chip_select, uint8 spi_cs_release)",
+      "required_headers": [
+        "Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.transaction_begin": {
+      "symbol": "SpiBusInit",
+      "kind": "function",
+      "signature": "int SpiBusInit(struct SpiBus *spi_bus, const char *bus_name)",
+      "required_headers": [
+        "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.9,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "spi.transaction_end": {
+      "symbol": "SpiReleaseBus",
+      "kind": "function",
+      "signature": "int SpiReleaseBus(struct SpiBus *spi_bus)",
+      "required_headers": [
+        "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "SpiBus",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "SpiBusInit",
+          "signature": "int SpiBusInit(struct SpiBus *spi_bus, const char *bus_name)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "HardwareDev",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "SpiDevConfigureCs",
+          "signature": "int SpiDevConfigureCs(struct HardwareDev *dev, uint8 spi_chip_select, uint8 spi_cs_release)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "SpiBusInit",
+          "signature": "int SpiBusInit(struct SpiBus *spi_bus, const char *bus_name)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "PrivTaskDelay",
+          "signature": "int PrivTaskDelay(int32_t ms)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "SpiDevConfigureCs",
+          "signature": "int SpiDevConfigureCs(struct HardwareDev *dev, uint8 spi_chip_select, uint8 spi_cs_release)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+          "source_slot": "spi.transaction_end",
+          "source_symbol": "SpiReleaseBus",
+          "signature": "int SpiReleaseBus(struct SpiBus *spi_bus)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "/dev/spi0",
+      "fields": {
+        "bus_instance": "/dev/spi0",
+        "bus_symbol": "/dev/spi0",
+        "backend": "XiUOS transform-layer SPI device path",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "device_path": "/dev/spi0"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "device_path": "/dev/spi0"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCK",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "/dev/spi0",
+      "fields": {
+        "bus_instance": "/dev/spi0",
+        "bus_symbol": "/dev/spi0",
+        "backend": "XiUOS transform-layer SPI device path",
+        "mode": "polling",
+        "address_mode": "chip-select"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "device_path": "/dev/spi0"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "device_path": "/dev/spi0"
+        },
+        "required_attachment": {
+          "signals": [
+            "SCK",
+            "MISO",
+            "CS"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "spi.key_types": {
+      "slot_id": "spi.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "SpiBus",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "SpiBusInit",
+          "signature": "int SpiBusInit(struct SpiBus *spi_bus, const char *bus_name)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "HardwareDev",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "SpiDevConfigureCs",
+          "signature": "int SpiDevConfigureCs(struct HardwareDev *dev, uint8 spi_chip_select, uint8 spi_cs_release)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+          "source_slot": "spi.acquire_or_bind",
+          "source_symbol": "SpiBusInit",
+          "signature": "int SpiBusInit(struct SpiBus *spi_bus, const char *bus_name)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+          "source_slot": "runtime.delay_ms",
+          "source_symbol": "PrivTaskDelay",
+          "signature": "int PrivTaskDelay(int32_t ms)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+          "source_slot": "spi.cs_control",
+          "source_symbol": "SpiDevConfigureCs",
+          "signature": "int SpiDevConfigureCs(struct HardwareDev *dev, uint8 spi_chip_select, uint8 spi_cs_release)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+          "source_slot": "spi.transaction_end",
+          "source_symbol": "SpiReleaseBus",
+          "signature": "int SpiReleaseBus(struct SpiBus *spi_bus)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "ERROR",
+    "SpiBusInit",
+    "SpiSdDeviceType",
+    "PrivTaskDelay",
+    "SpiDevConfigureCs",
+    "SpiReleaseBus"
+  ],
+  "allowed_symbol_provenance": {
+    "ERROR": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_AIoT_Micro/softkernel/include/log.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "SpiBusInit": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "SpiSdDeviceType": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/sd_spi.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "PrivTaskDelay": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "SpiDevConfigureCs": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "SpiReleaseBus": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "xiuos:single:0::Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "max31855_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "max31855_read_sequence",
+      "steps": [
+        {
+          "op": "spi_read",
+          "args": {
+            "bytes": [],
+            "length": 32,
+            "pointer_target": null,
+            "notes": "Drive CS low, clock 32 SCK cycles, read 32 bits on SO."
+          },
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "structured",
+          "confidence": 0.4,
+          "description": ""
+        }
+      ],
+      "derivation": "structured",
+      "confidence": 0.4,
+      "requires_human": true,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: structured."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 6/7 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_AIoT_Micro/softkernel/include/log.h",
+      "kind": "declaration",
+      "for_symbol": "ERROR",
+      "slot_id": "runtime.error_status"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "kind": "declaration",
+      "for_symbol": "SpiBusInit",
+      "slot_id": "spi.acquire_or_bind"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_IIoT_Macro/resources/include/sd_spi.h",
+      "kind": "declaration",
+      "for_symbol": "SpiSdDeviceType",
+      "slot_id": "spi.key_types"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "APP_Framework/Framework/transform_layer/xizi/transform.c",
+      "kind": "declaration",
+      "for_symbol": "PrivTaskDelay",
+      "slot_id": "runtime.delay_ms"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_IIoT_Macro/resources/include/dev_spi.h",
+      "kind": "declaration",
+      "for_symbol": "SpiDevConfigureCs",
+      "slot_id": "spi.cs_control"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "kind": "declaration",
+      "for_symbol": "SpiBusInit",
+      "slot_id": "spi.transaction_begin"
+    },
+    {
+      "root_id": "xiuos:single:0",
+      "path": "Ubiquitous/XiZi_IIoT_Macro/resources/include/bus_spi.h",
+      "kind": "declaration",
+      "for_symbol": "SpiReleaseBus",
+      "slot_id": "spi.transaction_end"
+    }
+  ],
+  "requires_human": [
+    "spi.transfer",
+    "integration.bus_instance_binding",
+    "integration.pin_binding",
+    "spi.transfer_registers"
+  ]
+}

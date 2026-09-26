@@ -1,0 +1,87 @@
+{
+  "device_id": "at24c256",
+  "rtos_id": "zephyr",
+  "eval_class": "memory",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "at24c256_init(&g_eval_dev, g_eval_dev)",
+    "mem_read_call": "at24c256_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "at24c256_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 32768,
+    "memory_page_bytes": 64,
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include <zephyr/kernel.h>\n#include <zephyr/device.h>\n#include <zephyr/drivers/i2c.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x50",
+        "write_prefix_any_of": [],
+        "note": "current_address_read: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "plan_hash": "12d8247683e28360",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 5.439,
+  "prompt_chars": 54008,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"memory\", \"init_call\": \"at24c256_init(&g_eval_dev, g_eval_dev)\", \"mem_read_call\": \"at24c256_read(&g_eval_dev, addr, buf, len)\", \"mem_write_call\": \"at24c256_write(&g_eval_dev, addr, buf, len)\", \"memory_size_bytes\": 32768, \"memory_page_bytes\": 64, \"dev_struct_type\": \"const struct device *\", \"init_extra_setup_c\": \"g_eval_dev = device_get_binding(bus_name);\\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\", \"preamble_c\": \"#include <zephyr/kernel.h>\\n#include <zephyr/device.h>\\n#include <zephyr/drivers/i2c.h>\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x50\", \"write_prefix_any_of\": [], \"note\": \"current_address_read: direct read\"}], \"test_stimuli\": [{\"name\": \"read_byte_at_address_0x0000\", \"mock_preload\": {\"0x0000\": [\"0xAB\"]}, \"expected_mem_bytes\": \"AB\", \"derivation\": \"Preload address 0x0000 with byte 0xAB. Driver reads 1 byte from address 0x0000, returns 0xAB.\"}, {\"name\": \"read_byte_at_address_0x00FF\", \"mock_preload\": {\"0x00FF\": [\"0x42\"]}, \"expected_mem_bytes\": \"42\", \"derivation\": \"Preload address 0x00FF with byte 0x42. Driver reads 1 byte from address 0x00FF, returns 0x42.\"}]}}"
+}

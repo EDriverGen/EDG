@@ -1,0 +1,425 @@
+{
+  "device_id": "bh1750",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x23",
+        "description": "ADDR = 'L' (ADDR ≦ 0.3VCC)",
+        "is_default": true
+      },
+      {
+        "address": "0x5C",
+        "description": "ADDR = 'H' (ADDR ≧ 0.7VCC)",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 2,
+    "addressing": "command_opcode",
+    "auto_increment": false,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "No explicit register map; device uses command opcodes and a readback data register."
+  },
+  "read_channels": [
+    {
+      "id": "illuminance",
+      "raw_type": "uint16",
+      "physical_unit": "lx",
+      "read_call_hint": "read 2 bytes after a measurement command and conversion delay",
+      "notes": "Measurement result register, 16-bit unsigned value."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 16,
+    "signed": false,
+    "right_shift": null,
+    "sign_extend_from_bit": null,
+    "notes": "Readout is high byte then low byte; output is an unsigned 16-bit illuminance count."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Power Down",
+      "value": "0x00",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "No active state."
+    },
+    {
+      "name": "Power On",
+      "value": "0x01",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Waiting for measurement command."
+    },
+    {
+      "name": "Reset",
+      "value": "0x07",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Reset Data register value. Reset command is not acceptable in Power Down mode."
+    },
+    {
+      "name": "Continuously H-Resolution Mode",
+      "value": "0x10",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Start measurement at 1lx resolution. Measurement Time is typically 120ms."
+    },
+    {
+      "name": "Continuously H-Resolution Mode2",
+      "value": "0x11",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Start measurement at 0.5lx resolution. Measurement Time is typically 120ms."
+    },
+    {
+      "name": "Continuously L-Resolution Mode",
+      "value": "0x13",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Start measurement at 4lx resolution. Measurement Time is typically 16ms."
+    },
+    {
+      "name": "One Time H-Resolution Mode",
+      "value": "0x20",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Start measurement at 1lx resolution. Measurement Time is typically 120ms. It is automatically set to Power Down mode after measurement."
+    },
+    {
+      "name": "One Time H-Resolution Mode2",
+      "value": "0x21",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Start measurement at 0.5lx resolution. Measurement Time is typically 120ms. It is automatically set to Power Down mode after measurement."
+    },
+    {
+      "name": "One Time L-Resolution Mode",
+      "value": "0x23",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Start measurement at 4lx resolution. Measurement Time is typically 16ms. It is automatically set to Power Down mode after measurement."
+    },
+    {
+      "name": "Change Measurement time ( High bit )",
+      "value": "0x40",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Change measurement time; high bits MT[7,6,5]."
+    },
+    {
+      "name": "Change Masurement time ( Low bit )",
+      "value": "0x60",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Change measurement time; low bits MT[4,3,2,1,0]."
+    }
+  ],
+  "bitfields": [],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power On command may be omitted."
+    },
+    {
+      "transaction": null,
+      "notes": "After VCC is supplied, hold DVI low for at least 1 us to ensure asynchronous reset and Power Down state."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x01"
+        ],
+        "notes": "Optional Power On command."
+      },
+      "notes": "Optional: send Power On before measurement commands."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x07"
+        ],
+        "notes": "Reset command."
+      },
+      "notes": "Optional: reset illuminance data register after Power On if previous measurement result should be cleared."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0x10"
+        ],
+        "notes": "Start measurement command."
+      },
+      "notes": "Use a default conservative measurement mode: continuously H-Resolution Mode."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x10"
+        ],
+        "length": 2,
+        "pointer_target": "illuminance",
+        "notes": "Send measurement command then read 2 bytes from the data register."
+      },
+      "notes": "For continuous modes, wait for the measurement time to complete before reading the result."
+    },
+    {
+      "transaction": null,
+      "notes": "Combine returned bytes as high byte [15:8] then low byte [7:0]."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "h_resolution_mode_measurement_time",
+      "value": 120,
+      "unit": "ms",
+      "condition": "typical",
+      "notes": "Measurement Time is typically 120ms."
+    },
+    {
+      "name": "h_resolution_mode_max_time",
+      "value": 180,
+      "unit": "ms",
+      "condition": "maximum",
+      "notes": "Wait to complete 1st H-resolution mode measurement.( max. 180ms. )"
+    },
+    {
+      "name": "h_resolution_mode2_measurement_time",
+      "value": 120,
+      "unit": "ms",
+      "condition": "typical",
+      "notes": "Measurement Time is typically 120ms."
+    },
+    {
+      "name": "h_resolution_mode2_max_time",
+      "value": 180,
+      "unit": "ms",
+      "condition": "maximum",
+      "notes": "Wait to complete 1st H-resolution mode2 measurement.( max. 180ms. )"
+    },
+    {
+      "name": "l_resolution_mode_measurement_time",
+      "value": 16,
+      "unit": "ms",
+      "condition": "typical",
+      "notes": "Measurement Time is typically 16ms."
+    },
+    {
+      "name": "l_resolution_mode_max_time",
+      "value": 24,
+      "unit": "ms",
+      "condition": "maximum",
+      "notes": "Wait to complete L-resolution mode measurement.( max. 24ms. )"
+    },
+    {
+      "name": "i2c_clock_frequency_max",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "bus limit",
+      "notes": "I 2 C SCL Clock Frequency ... Max. 400 kHz"
+    },
+    {
+      "name": "dvi_reset_low_minimum",
+      "value": 1,
+      "unit": "us",
+      "condition": "after VCC is supplied",
+      "notes": "set to 'L' ( at least 1µs, DVI <= 0.4V ) after VCC is supplied"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "illuminance_from_data",
+      "formula": "Illuminance in lux is derived from the 16-bit measurement result. Datasheet examples show lux = raw / 1.2 for the default MTreg = 69 in H-resolution mode, and lux scales inversely with MTreg.",
+      "integer_approximation_expression": {
+        "expression": "(raw * 1000) / 1200",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "high_byte:8 || low_byte:8",
+            "description": "16-bit measurement result, high byte first."
+          }
+        ],
+        "output": {
+          "name": "illuminance_mlux",
+          "unit": "milli_lx"
+        }
+      }
+    },
+    {
+      "name": "illuminance_mtreg_adjusted",
+      "formula": "For H-resolution mode, lx/count = 1 / 1.2 * (69 / X), where X is MTreg. For H-resolution mode2, divide by 2 again.",
+      "integer_approximation_expression": {
+        "expression": "(raw * 69 * 1000) / (12 * mtreg)",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "high_byte:8 || low_byte:8",
+            "description": "16-bit measurement result."
+          },
+          {
+            "name": "mtreg",
+            "byte_source": null,
+            "description": "Measurement time register value X."
+          }
+        ],
+        "output": {
+          "name": "illuminance_mlux",
+          "unit": "milli_lx"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "name": "i2c_nack",
+      "condition": "slave address or data byte not acknowledged",
+      "driver_action": "abort transaction and return error"
+    },
+    {
+      "name": "measurement_timeout",
+      "condition": "no valid measurement result before the mode-specific maximum time",
+      "driver_action": "retry once then surface error"
+    },
+    {
+      "name": "power_down_read_attempt",
+      "condition": "read requested before sending a measurement command after Power Down",
+      "driver_action": "return error and require reinitialization"
+    },
+    {
+      "name": "reset_in_power_down",
+      "condition": "Reset command issued while in Power Down mode",
+      "driver_action": "ignore command and report protocol error"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "power_down",
+      "description": "No active state.",
+      "entry_conditions": "Power Down command or one-time measurement completion.",
+      "exit_conditions": "Power On or any measurement command."
+    },
+    {
+      "name": "power_on_waiting",
+      "description": "Waiting for measurement command.",
+      "entry_conditions": "Power On command.",
+      "exit_conditions": "measurement command issued."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "bh1750",
+      "page": 10,
+      "snippet": "Slave Address is 2 types, it is determined by ADDR Terminal"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 10,
+      "snippet": "ADDR = 'H'    ( ADDR ≧ 0.7VCC ) → '1011100'"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 10,
+      "snippet": "ADDR = 'L'    ( ADDR ≦ 0.3VCC ) → '0100011'"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Power Down                           0000_0000"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Reset                                0000_0111"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Continuously H-Resolution Mode       0001_0000"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Continuously H-Resolution Mode2      0001_0001"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "Continuously L-Resolution Mode       0001_0011"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "One Time H-Resolution Mode           0010_0000"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "One Time H-Resolution Mode2          0010_0001"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 5,
+      "snippet": "One Time L-Resolution Mode           0010_0011"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 11,
+      "snippet": "After about 240ms, measurement result is registered to Data Register."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 2,
+      "snippet": "H-Resolution Mode Measurement Time               t HR     ...   Typ.    120    180        ms"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 2,
+      "snippet": "L-Resolution Mode Measurement Time               t LR     ...   Typ.     16     24        ms"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 4,
+      "snippet": "Data Register → This is for registration of Ambient Light Data. Initial Value is \"0000_0000_0000_0000\"."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 4,
+      "snippet": "Measurement Time Register → This is for registration of measurement time. Initial Value is \"0100_0101\"."
+    },
+    {
+      "source_id": "bh1750",
+      "page": 11,
+      "snippet": "H-reslution mode : Illuminance per 1 count ( lx / count )    = 1 / 1.2 *( 69 / X )"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 11,
+      "snippet": "H-reslution mode2 : Illuminance per 1 count ( lx / count )    = 1 / 1.2 *( 69 / X ) / 2"
+    },
+    {
+      "source_id": "bh1750",
+      "page": 6,
+      "snippet": "DVI is I 2 C bus reference voltage terminal. And it is also asynchronous reset terminal. It is necessary to set to 'L' after VCC is supplied."
+    }
+  ],
+  "requires_human": [
+    "The datasheet outline says 'Electrical Characteristics ( VCC = 3.0V, DVI = 3.0V ... )'; confirm whether 'DVI' is intended as the I2C reference voltage pin name or a typo in the outline context. The terminal table explicitly uses DVI.",
+    "The datasheet shows MTreg default 0100_0101 (69) and formulas using X=MTreg, but does not explicitly define how to write the default MTreg value beyond the split high-bit and low-bit command opcodes; confirm whether the driver should program MTreg on init or rely on power-up default.",
+    "The datasheet states 'Power On' command is possible to omit; confirm whether the recommended init sequence should actually send Power On on all boards or skip it when starting from Power Down.",
+    "The 'After about 240ms' note conflicts with the 120ms typical measurement time for H-resolution mode; confirm whether 240ms refers to a specific command path or includes extra margin and should not be used as default delay."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

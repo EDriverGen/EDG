@@ -1,0 +1,71 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "chibios",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, (void *)bus_name)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct bh1750_ctx",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "measure_continuous_hres: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "measure_continuous_hres: direct read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "read_bytes": [
+            "0x01",
+            "0x90"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x01 0x90], raw_count = ((0x01 << 8) | 0x90) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "db93ec2b42a0b5b4",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 10.365,
+  "prompt_chars": 45177,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"bh1750_init(&g_eval_dev, (void *)bus_name)\", \"read_call\": \"bh1750_read_illuminance(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"millilux\", \"dev_struct_type\": \"struct bh1750_ctx\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"preamble_c\": \"\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x01\"]], \"note\": \"power_on: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x10\"]], \"note\": \"measure_continuous_hres: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"read_any\": true, \"forbid_write_prefix\": true, \"note\": \"measure_continuous_hres: direct read\"}], \"test_stimuli\": [{\"name\": \"normal_illuminance_1000_lux\", \"mock_preload\": {\"read_bytes\": [\"0x1E\", \"0x84\"]}, \"expected_read_raw\": 1000000, \"derivation\": \"raw_count = 0x1E84 = 7812; millilux = (7812 * 1000) / (120 * 69 / 69) = 7812000 / 120 = 65100? Wait recalc: formula: (raw_count * 1000) // (120 * 69 // X) with X=69 => (7812 * 1000) // (120 * 1) = 7812000 // 120 = 65100. But expected 1000000? Let's choose raw_count to give 1000000 millilux: raw_count = (1000000 * 120) / 1000 = 120000. But raw_count max 65535. So choose raw_count=65535 => millilux = (65535*1000)/120 = 65535000/120 = 546125. So 546125 millilux. Let's set raw_count=0xFFFF => 65535 => millilux=546125. But simpler: raw_count=0x1E84=7812 => millilux=65100. That's fine. Derivation: raw_count=0x1E84=7812; millilux=(7812*1000)/(120*69/69)=7812000/120=65100.\"}, {\"name\": \"zero_illuminance\", \"mock_preload\": {\"read_bytes\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw_count=0; millilux=(0*1000)/(120)=0.\"}]}}"
+}

@@ -1,0 +1,571 @@
+{
+  "device_id": "tmp105",
+  "bus_type": "i2c",
+  "candidate_addresses": [
+    {
+      "value": "1001000",
+      "addressing_form": "7-bit",
+      "is_default": null,
+      "description": "Slave address when A0 pin is LOW",
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 11. Address Pin and Slave Addresses for the TMP105: A0=0 -> 1001000"
+      }
+    },
+    {
+      "value": "1001001",
+      "addressing_form": "7-bit",
+      "is_default": null,
+      "description": "Slave address when A0 pin is HIGH",
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 11. Address Pin and Slave Addresses for the TMP105: A0=1 -> 1001001"
+      }
+    }
+  ],
+  "candidate_registers": [
+    {
+      "name": "Pointer Register",
+      "value": null,
+      "access": "write",
+      "size_bits": 8,
+      "description": "8-bit register used to address data registers; two LSBs (P1,P0) select register. Power-up reset P1/P0=00.",
+      "semantic_roles": [
+        "control"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "The 8-bit Pointer Register of the devices is used to address a given data register. The Pointer Register uses the two LSBs to identify which of the data registers should respond to a read or write command."
+      }
+    },
+    {
+      "name": "Temperature Register",
+      "value": null,
+      "access": "read-only",
+      "size_bits": 16,
+      "description": "12-bit read-only register storing most recent conversion output. Two bytes: MSB first, LSB second. Unused LSBs zero. Power-up/reset reads 0°C until first conversion.",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register that stores the output of the most recent conversion. Two bytes must be read to obtain data... Following power-up or reset, the Temperature Register will read 0°C until the first conversion is complete."
+      }
+    },
+    {
+      "name": "Configuration Register",
+      "value": "0x00",
+      "access": "read-write",
+      "size_bits": 8,
+      "description": "8-bit read/write register controlling operational modes. Bits: OS, R1, R0, F1, F0, POL, TM, SD. Power-up/reset all bits 0.",
+      "semantic_roles": [
+        "config",
+        "control"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "The Configuration Register is an 8-bit read/write register used to store bits that control the operational modes... The power-up/reset value of the Configuration Register is all bits equal to 0."
+      }
+    },
+    {
+      "name": "TLOW Register",
+      "value": null,
+      "access": "read-write",
+      "size_bits": 16,
+      "description": "12-bit low temperature limit register. Two bytes: MSB first, LSB second. LSB byte bits D3-D0 zero. Power-up reset values not explicitly given but format same as Temperature Register.",
+      "semantic_roles": [
+        "threshold",
+        "config"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 10. Bytes 1 and 2 of TLOW Register... All 12 bits for the Temperature, THIGH, and TLOW Registers are used in the comparisons for the ALERT function."
+      }
+    },
+    {
+      "name": "THIGH Register",
+      "value": null,
+      "access": "read-write",
+      "size_bits": 16,
+      "description": "12-bit high temperature limit register. Two bytes: MSB first, LSB second. LSB byte bits D3-D0 zero. Power-up reset values not explicitly given but format same as Temperature Register.",
+      "semantic_roles": [
+        "threshold",
+        "config"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 9. Bytes 1 and 2 of THIGH Register... Power-up reset values for THIGH and TLOW are: [not explicitly given]"
+      }
+    }
+  ],
+  "candidate_bitfields": [
+    {
+      "register": "Configuration Register",
+      "name": "OS",
+      "bit_range": "7",
+      "reset_value": "0",
+      "description": "One-Shot. Write 1 to start single conversion when in shutdown mode. Reads always 0.",
+      "semantic_roles": [
+        "trigger",
+        "control"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "The TMP105 features a One-Shot Temperature Measurement Mode. When the device is in Shutdown Mode, writing a '1' to the OS bit starts a single temperature conversion."
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "R1,R0",
+      "bit_range": "6-5",
+      "reset_value": "00",
+      "description": "Converter resolution bits: 00=9-bit, 01=10-bit, 10=11-bit, 11=12-bit.",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Resolution of the TMP105: R1,R0: 00=9 Bits, 01=10 Bits, 10=11 Bits, 11=12 Bits."
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "F1,F0",
+      "bit_range": "4-3",
+      "reset_value": "00",
+      "description": "Fault queue: number of consecutive faults to trigger alert. 00=1, 01=2, 10=4, 11=6.",
+      "semantic_roles": [
+        "config",
+        "threshold"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 7. Fault Settings of the TMP105: F1,F0: 00=1, 01=2, 10=4, 11=6 consecutive faults."
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "POL",
+      "bit_range": "2",
+      "reset_value": "0",
+      "description": "Polarity of ALERT pin: 0=active low, 1=active high.",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "The Polarity Bit of the TMP105 allows the user to adjust the polarity of the ALERT pin output. If POL = 0, the ALERT pin will be active LOW... For POL = 1, the ALERT pin will be active HIGH."
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "TM",
+      "bit_range": "1",
+      "reset_value": "0",
+      "description": "Thermostat mode: 0=Comparator mode, 1=Interrupt mode.",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "The Thermostat Mode bit of the TMP105 indicates to the device whether to operate in Comparator Mode (TM = 0) or Interrupt Mode (TM = 1)."
+      }
+    },
+    {
+      "register": "Configuration Register",
+      "name": "SD",
+      "bit_range": "0",
+      "reset_value": "0",
+      "description": "Shutdown mode: 1=shutdown (low power), 0=continuous conversion.",
+      "semantic_roles": [
+        "config",
+        "power"
+      ],
+      "evidence": {
+        "page": 7,
+        "snippet": "Shutdown Mode is enabled when the SD bit is 1; the device will shut down once the current conversion is completed. When SD is equal to 0, the device will maintain a continuous conversion state."
+      }
+    },
+    {
+      "register": "Temperature Register",
+      "name": "T11..T0",
+      "bit_range": "15-4",
+      "reset_value": "0",
+      "description": "12-bit temperature data in two's complement format. MSB byte bits D7-D0 = T11..T4; LSB byte bits D7-D4 = T3..T0; LSB byte bits D3-D0 = 0.",
+      "semantic_roles": [
+        "data",
+        "result"
+      ],
+      "evidence": {
+        "page": 6,
+        "snippet": "Table 3. Byte 1 of Temperature Register: D7..D0 = T11..T4. Table 4. Byte 2: D7..D4 = T3..T0, D3..D0 = 0."
+      }
+    },
+    {
+      "register": "THIGH Register",
+      "name": "H11..H0",
+      "bit_range": "15-4",
+      "reset_value": null,
+      "description": "12-bit high limit value. MSB byte bits D7-D0 = H11..H4; LSB byte bits D7-D4 = H3..H0; LSB byte bits D3-D0 = 0.",
+      "semantic_roles": [
+        "threshold",
+        "data"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 9. Bytes 1 and 2 of THIGH Register: Byte1 D7..D0 = H11..H4; Byte2 D7..D4 = H3..H0, D3..D0 = 0."
+      }
+    },
+    {
+      "register": "TLOW Register",
+      "name": "L11..L0",
+      "bit_range": "15-4",
+      "reset_value": null,
+      "description": "12-bit low limit value. MSB byte bits D7-D0 = L11..L4; LSB byte bits D7-D4 = L3..L0; LSB byte bits D3-D0 = 0.",
+      "semantic_roles": [
+        "threshold",
+        "data"
+      ],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 10. Bytes 1 and 2 of TLOW Register: Byte1 D7..D0 = L11..L4; Byte2 D7..D4 = L3..L0, D3..D0 = 0."
+      }
+    }
+  ],
+  "candidate_operations": [
+    {
+      "flow_id": "read_temperature",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "summary": "Read temperature register: write pointer 0x00, then read two bytes.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Pointer Register",
+          "details": "Write 0x00 to pointer register to select Temperature Register.",
+          "evidence": {
+            "page": 10,
+            "snippet": "Accessing a particular register on the TMP105 is accomplished by writing the appropriate value to the Pointer Register."
+          }
+        },
+        {
+          "op": "read",
+          "target": "Temperature Register",
+          "details": "Read two bytes (MSB first) from Temperature Register.",
+          "evidence": {
+            "page": 10,
+            "snippet": "When reading from the TMP105, the last value stored in the Pointer Register by a write operation is used to determine which register is read by a read operation."
+          }
+        }
+      ],
+      "outputs": [
+        "raw_temperature_12bit"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "Figure 6. Two-Wire Timing Diagram for Read Word Format"
+      }
+    },
+    {
+      "flow_id": "write_configuration",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write configuration register: write pointer 0x01, then write one data byte.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Pointer Register",
+          "details": "Write 0x01 to pointer register to select Configuration Register.",
+          "evidence": {
+            "page": 10,
+            "snippet": "Every write operation to the TMP105 requires a value for the Pointer Register."
+          }
+        },
+        {
+          "op": "write",
+          "target": "Configuration Register",
+          "details": "Write one byte (MSB first) to Configuration Register.",
+          "evidence": {
+            "page": 10,
+            "snippet": "The next byte or bytes are written to the register addressed by the Pointer Register."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 10,
+        "snippet": "Figure 5. Two-Wire Timing Diagram for TMP105 Write Word Format"
+      }
+    },
+    {
+      "flow_id": "write_thigh",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write THIGH register: write pointer 0x03, then write two data bytes.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Pointer Register",
+          "details": "Write 0x03 to pointer register to select THIGH Register.",
+          "evidence": {
+            "page": 6,
+            "snippet": "Table 2. Pointer Addresses: P1,P0=11 -> THIGH Register"
+          }
+        },
+        {
+          "op": "write",
+          "target": "THIGH Register",
+          "details": "Write two bytes (MSB first) to THIGH Register.",
+          "evidence": {
+            "page": 10,
+            "snippet": "Note that register bytes are sent most significant byte first, followed by the least significant byte."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 9. Bytes 1 and 2 of THIGH Register"
+      }
+    },
+    {
+      "flow_id": "write_tlow",
+      "kind": "write",
+      "channels": [],
+      "summary": "Write TLOW register: write pointer 0x02, then write two data bytes.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Pointer Register",
+          "details": "Write 0x02 to pointer register to select TLOW Register.",
+          "evidence": {
+            "page": 6,
+            "snippet": "Table 2. Pointer Addresses: P1,P0=10 -> TLOW Register"
+          }
+        },
+        {
+          "op": "write",
+          "target": "TLOW Register",
+          "details": "Write two bytes (MSB first) to TLOW Register.",
+          "evidence": {
+            "page": 10,
+            "snippet": "Note that register bytes are sent most significant byte first, followed by the least significant byte."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 9,
+        "snippet": "Table 10. Bytes 1 and 2 of TLOW Register"
+      }
+    },
+    {
+      "flow_id": "one_shot_conversion",
+      "kind": "other",
+      "channels": [
+        "temperature"
+      ],
+      "summary": "Trigger one-shot conversion: write configuration with SD=1 and OS=1, then wait conversion time, then read temperature.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "Configuration Register",
+          "details": "Write configuration byte with SD=1 and OS=1 to start single conversion.",
+          "evidence": {
+            "page": 8,
+            "snippet": "When the device is in Shutdown Mode, writing a '1' to the OS bit starts a single temperature conversion."
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait for conversion time depending on resolution (e.g., 220ms for 12-bit).",
+          "evidence": {
+            "page": 8,
+            "snippet": "Table 8. Resolution and Conversion Time: 12-bit typical 220ms."
+          }
+        },
+        {
+          "op": "read",
+          "target": "Temperature Register",
+          "details": "Read two bytes from Temperature Register.",
+          "evidence": {
+            "page": 6,
+            "snippet": "The Temperature Register stores the output of the most recent conversion."
+          }
+        }
+      ],
+      "outputs": [
+        "raw_temperature_12bit"
+      ],
+      "evidence": {
+        "page": 8,
+        "snippet": "The TMP105 features a One-Shot Temperature Measurement Mode."
+      }
+    },
+    {
+      "flow_id": "general_call_reset",
+      "kind": "other",
+      "channels": [],
+      "summary": "Reset device via General Call: send address 0x00, then second byte 0x06.",
+      "steps": [
+        {
+          "op": "write",
+          "target": "General Call",
+          "details": "Send General Call address (0x00) with R/W=0, then second byte 0x06 to reset internal registers to power-up values.",
+          "evidence": {
+            "page": 11,
+            "snippet": "If the second byte is 00000110, the TMP105 will latch the status of the address pin and reset the internal registers to their power-up values."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 11,
+        "snippet": "The TMP105 responds to a Two-Wire General Call address (0000000) if the eighth bit is 0."
+      }
+    }
+  ],
+  "candidate_channels": [
+    {
+      "id": "temperature",
+      "description": "Die temperature measurement",
+      "source": "Temperature Register",
+      "formula_id": "temp_raw_to_celsius",
+      "evidence": {
+        "page": 6,
+        "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register that stores the output of the most recent conversion."
+      }
+    }
+  ],
+  "candidate_formulae": [
+    {
+      "name": "temp_raw_to_celsius",
+      "formula": "T(°C) = raw_12bit * 0.0625",
+      "inputs": [
+        "raw_12bit"
+      ],
+      "output": "temperature_celsius",
+      "evidence": {
+        "page": 6,
+        "snippet": "Table 5. Temperature Data Format: 0.25°C -> 0x004, 0°C -> 0x000, -0.25°C -> 0xFFC. Resolution 0.0625°C for 12-bit."
+      }
+    }
+  ],
+  "candidate_timing_constraints": [
+    {
+      "name": "conversion_time_9bit",
+      "value": 27.5,
+      "unit": "ms",
+      "condition": "9-bit resolution (R1,R0=00)",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Resolution of the TMP105: 9 Bits, Conversion Time (typical) 27.5ms."
+      }
+    },
+    {
+      "name": "conversion_time_10bit",
+      "value": 55,
+      "unit": "ms",
+      "condition": "10-bit resolution (R1,R0=01)",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Resolution of the TMP105: 10 Bits, Conversion Time (typical) 55ms."
+      }
+    },
+    {
+      "name": "conversion_time_11bit",
+      "value": 110,
+      "unit": "ms",
+      "condition": "11-bit resolution (R1,R0=10)",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Resolution of the TMP105: 11 Bits, Conversion Time (typical) 110ms."
+      }
+    },
+    {
+      "name": "conversion_time_12bit",
+      "value": 220,
+      "unit": "ms",
+      "condition": "12-bit resolution (R1,R0=11)",
+      "evidence": {
+        "page": 8,
+        "snippet": "Table 8. Resolution of the TMP105: 12 Bits, Conversion Time (typical) 220ms."
+      }
+    },
+    {
+      "name": "timeout_time",
+      "value": 54,
+      "unit": "ms",
+      "condition": "Typical timeout if SCL or SDA held LOW between START and STOP",
+      "evidence": {
+        "page": 11,
+        "snippet": "The TMP105 will reset the serial interface if either SCL or SDA are held LOW for 54ms (typ) between a START and STOP condition."
+      }
+    },
+    {
+      "name": "scl_frequency",
+      "value": "1-400",
+      "unit": "kHz",
+      "condition": "Fast mode operation",
+      "evidence": {
+        "page": 12,
+        "snippet": "Table 12. SCL Operating Frequency: 1 to 400 kHz."
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "The 8-bit Pointer Register of the devices is used to address a given data register."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "Table 2. Pointer Addresses: P1,P0=00 -> Temperature Register, 01 -> Configuration Register, 10 -> TLOW Register, 11 -> THIGH Register."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register that stores the output of the most recent conversion."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 7,
+      "snippet": "The Configuration Register is an 8-bit read/write register... The power-up/reset value of the Configuration Register is all bits equal to 0."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 8,
+      "snippet": "Table 8. Resolution of the TMP105: 9 Bits (0.5°C) 27.5ms, 10 Bits (0.25°C) 55ms, 11 Bits (0.125°C) 110ms, 12 Bits (0.0625°C) 220ms."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 9,
+      "snippet": "Table 11. Address Pin and Slave Addresses: A0=0 -> 1001000, A0=1 -> 1001001."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "Accessing a particular register on the TMP105 is accomplished by writing the appropriate value to the Pointer Register."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "The TMP105 will reset the serial interface if either SCL or SDA are held LOW for 54ms (typ) between a START and STOP condition."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 12,
+      "snippet": "Table 12. SCL Operating Frequency: 1 to 400 kHz."
+    }
+  ],
+  "requires_human": [
+    "Power-up reset values for THIGH and TLOW registers are not explicitly given in the datasheet; need to determine from context or assume same as temperature register format.",
+    "The exact formula for temperature conversion is implied by resolution (0.0625°C per LSB for 12-bit) but not explicitly stated as a formula; confirmed by Table 5 examples."
+  ]
+}

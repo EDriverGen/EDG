@@ -1,0 +1,91 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x71",
+      "write_prefix_any_of": [
+        [
+          "0x08"
+        ]
+      ],
+      "note": "read_pwm_channel: write"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x71",
+      "read_any": true,
+      "note": "read_pwm_channel: direct read"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "led0_duty_50_percent",
+      "mock_preload": {
+        "0x08": [
+          "0x00",
+          "0x08"
+        ],
+        "0x09": [
+          "0x00"
+        ],
+        "0x0A": [
+          "0x00"
+        ],
+        "0x0B": [
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "led0": 2048,
+        "led1": 0
+      },
+      "derivation": "led0: off_l=0x00, off_h=0x08 => ((0x08 & 0x0F)*256)+0x00 = 2048; led1: off_l=0x00, off_h=0x00 => 0"
+    },
+    {
+      "name": "led0_duty_0_percent",
+      "mock_preload": {
+        "0x08": [
+          "0x00",
+          "0x00"
+        ],
+        "0x09": [
+          "0x00"
+        ],
+        "0x0A": [
+          "0x00"
+        ],
+        "0x0B": [
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "led0": 0,
+        "led1": 0
+      },
+      "derivation": "led0: off_l=0x00, off_h=0x00 => 0; led1: off_l=0x00, off_h=0x00 => 0"
+    },
+    {
+      "name": "led0_duty_100_percent",
+      "mock_preload": {
+        "0x08": [
+          "0xFF",
+          "0x0F"
+        ],
+        "0x09": [
+          "0x00"
+        ],
+        "0x0A": [
+          "0x00"
+        ],
+        "0x0B": [
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "led0": 4095,
+        "led1": 0
+      },
+      "derivation": "led0: off_l=0xFF, off_h=0x0F => ((0x0F & 0x0F)*256)+0xFF = 4095; led1: off_l=0x00, off_h=0x00 => 0"
+    }
+  ]
+}

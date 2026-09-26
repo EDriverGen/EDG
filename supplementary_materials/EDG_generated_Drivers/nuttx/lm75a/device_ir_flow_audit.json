@@ -1,0 +1,226 @@
+{
+  "applied": false,
+  "changed_fields": [],
+  "violations_before_count": 1,
+  "violations_after_count": 1,
+  "violations_before": [
+    "conversion_formulae[0]: missing required key 'integer_approximation_expression'"
+  ],
+  "violations_after": [
+    "conversion_formulae[0]: missing required key 'integer_approximation_expression'"
+  ],
+  "audit_findings": [
+    {
+      "flow_id": "read_temp",
+      "summary": "Audit of temperature read flow for lifecycle completeness.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Datasheet states: 'In normal operation mode, the temp-to-digital conversion is executed every 100 ms' and 'Reading temperature data does not affect the conversion in progress'. No trigger write needed; conversion runs continuously.",
+          "action": "No change needed."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Datasheet: 'the temp-to-digital conversion is executed every 100 ms' and 'The temp reading data is not available until the first conversion is completed in about 100 ms.' Init flow includes a 100 ms delay. Read flow does not include a wait, but datasheet implies conversion is continuous and reading at any time returns latest result; no explicit ready flag. However, the 100 ms conversion period is a timing constraint.",
+          "action": "No change needed; conversion is continuous."
+        },
+        {
+          "name": "result_read",
+          "status": "present",
+          "evidence": "Read flow includes write_then_read with pointer 0x00 and length 2 to read Temp register.",
+          "action": "No change needed."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or acknowledge step required for temperature read; reading does not affect conversion.",
+          "action": "No change needed."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Default configuration (normal mode, OS comparator, etc.) is sufficient for temperature reading. No calibration needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "byte_source",
+          "status": "present",
+          "evidence": "Outputs specify byte_source 'temp_msb:8 || temp_lsb:8' from Temp register.",
+          "action": "No change needed."
+        }
+      ]
+    },
+    {
+      "flow_id": "init",
+      "summary": "Audit of init flow for lifecycle completeness.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Power-up default is normal mode; no trigger write needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "present",
+          "evidence": "Init flow includes a 100 ms delay for first conversion completion.",
+          "action": "No change needed."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "Init flow does not require reading a result; it only ensures device is ready.",
+          "action": "No change needed."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack needed at init.",
+          "action": "No change needed."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "not_required",
+          "evidence": "Default configuration is acceptable; no calibration needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes in init flow.",
+          "action": "No change needed."
+        }
+      ]
+    },
+    {
+      "flow_id": "write_conf",
+      "summary": "Audit of configuration write flow for lifecycle completeness.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Write flow is for setting configuration; no trigger needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed after writing configuration; device accepts writes immediately.",
+          "action": "No change needed."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No result read needed for write flow.",
+          "action": "No change needed."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow writes configuration register.",
+          "action": "No change needed."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No change needed."
+        }
+      ]
+    },
+    {
+      "flow_id": "write_tos",
+      "summary": "Audit of Tos write flow for lifecycle completeness.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Write flow for set-point; no trigger needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed after writing Tos.",
+          "action": "No change needed."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No result read needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow writes Tos register.",
+          "action": "No change needed."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No change needed."
+        }
+      ]
+    },
+    {
+      "flow_id": "write_thyst",
+      "summary": "Audit of Thyst write flow for lifecycle completeness.",
+      "checks": [
+        {
+          "name": "trigger_or_mode",
+          "status": "not_required",
+          "evidence": "Write flow for set-point; no trigger needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "wait_or_poll",
+          "status": "not_required",
+          "evidence": "No wait needed after writing Thyst.",
+          "action": "No change needed."
+        },
+        {
+          "name": "result_read",
+          "status": "not_required",
+          "evidence": "No result read needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "clear_or_ack",
+          "status": "not_required",
+          "evidence": "No clear or ack needed.",
+          "action": "No change needed."
+        },
+        {
+          "name": "config_or_calibration",
+          "status": "present",
+          "evidence": "Flow writes Thyst register.",
+          "action": "No change needed."
+        },
+        {
+          "name": "byte_source",
+          "status": "not_required",
+          "evidence": "No output bytes.",
+          "action": "No change needed."
+        }
+      ]
+    }
+  ],
+  "cache_hit": true,
+  "cache_key": "498f0f59c54eeec1"
+}

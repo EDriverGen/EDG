@@ -1,0 +1,139 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "tobudos__hcsr04",
+  "device_id": "hcsr04",
+  "rtos_id": "tobudos",
+  "bus": "gpio_timing",
+  "scope": "Polling gpio_timing driver contract for hcsr04 on ToBudOS/STM32F1 HAL. The fixed instance comes from task_requirements; include only HAL/timing operations actually used by the reference implementation and waits inside the main driver.",
+  "api_contract": {
+    "profile": "gpio_timing",
+    "fixed_binding": {
+      "instance": "default_gpio_slot",
+      "symbol": "GPIOA/GPIO_PIN_0 + GPIOA/GPIO_PIN_1",
+      "backend": "STM32F1 HAL GPIO + board microsecond timing hooks",
+      "mode": "polling"
+    },
+    "operations": [
+      {
+        "name": "HAL_GPIO_ReadPin",
+        "signature": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *, uint16_t pin)"
+      },
+      {
+        "name": "HAL_GPIO_WritePin",
+        "signature": "void HAL_GPIO_WritePin(GPIO_TypeDef *, uint16_t pin, GPIO_PinState)"
+      },
+      {
+        "name": "*_delay_us",
+        "signature": "void *_delay_us(uint32_t us)"
+      }
+    ],
+    "semantics": {
+      "polling": true,
+      "addressing": null,
+      "error_reporting": "HAL_StatusTypeDef/HAL_OK at checked call sites",
+      "timeouts": "bounded per-transfer timeout supplied by caller; value from reference call sites"
+    }
+  },
+  "facts": [
+    {
+      "id": "gpio_binding",
+      "category": "bus_binding",
+      "requirement": "Use the fixed gpio_timing task slot default_gpio_slot (GPIOA/GPIO_PIN_0 + GPIOA/GPIO_PIN_1). The caller supplies the required GPIO ports/pins to the reference driver; operations follow this task's GPIO timing bus.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 25
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/task_requirements.json",
+          "line_start": 40,
+          "line_end": 40
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 1,
+          "line_end": 3
+        }
+      ]
+    },
+    {
+      "id": "gpio_control",
+      "category": "polling_transport_or_io",
+      "requirement": "Provide the subset of HAL_GPIO_Init, HAL_GPIO_ReadPin, and HAL_GPIO_WritePin actually used by the reference, allowing the required pins to drive outputs or sample inputs for the single-wire protocol, read GPIO_PinState, and write SET/RESET levels.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 8,
+          "line_end": 8
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 15,
+          "line_end": 15
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 17,
+          "line_end": 17
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 19,
+          "line_end": 19
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 23,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/gpio_timing/pack.md",
+          "line_start": 437,
+          "line_end": 437
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/gpio_timing/pack.md",
+          "line_start": 447,
+          "line_end": 448
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/tobudos/stubs_gpio.c",
+          "line_start": 64,
+          "line_end": 66
+        }
+      ]
+    },
+    {
+      "id": "microsecond_timing",
+      "category": "driver_wait",
+      "requirement": "Provide microsecond delays through the external board hook *_delay_us(uint32_t us) actually called by the reference; retain the units.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 16,
+          "line_end": 16
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.c",
+          "line_start": 20,
+          "line_end": 20
+        },
+        {
+          "file": "evidence/rtos/tasks/tobudos__hcsr04/inputs/reference_drivers/hcsr04_ref.h",
+          "line_start": 23,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/shared/baseline_api/tobudos/gpio_timing/pack.md",
+          "line_start": 1415,
+          "line_end": 1416
+        }
+      ]
+    }
+  ]
+}

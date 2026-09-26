@@ -1,0 +1,922 @@
+{
+  "contract_version": "trace-rtos-contract-v2",
+  "contract_metadata": {
+    "extractor_version": "v2",
+    "compat_schema": "trace-rtos-contract-v1"
+  },
+  "task_package_id": null,
+  "device_id": "ds18b20",
+  "rtos": "riot",
+  "board": "nucleo-f103rb",
+  "bus_type": "gpio",
+  "connection": {
+    "connection_type": "gpio_timing",
+    "mode": "polling",
+    "bus_instance": "default_gpio_slot",
+    "bus_symbol": "GPIO_PIN(0, 0)",
+    "address_mode": null,
+    "backend": "RIOT periph GPIO driver",
+    "helper_usage_patterns": []
+  },
+  "runtime_contract": {
+    "runtime_symbols": [],
+    "delay_symbols": [
+      "xtimer_usleep",
+      "xtimer_msleep"
+    ],
+    "error_symbols": [
+      "int_status_return"
+    ]
+  },
+  "bus_contract": {
+    "bus_api_symbols": [
+      "gpio_init",
+      "gpio_read",
+      "gpio_set"
+    ],
+    "bus_api_signatures": {
+      "gpio_init": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+      "gpio_read": "bool gpio_read(gpio_t pin)",
+      "gpio_set": "void gpio_set(gpio_t pin)"
+    },
+    "bus_helper_types": [
+      "gpio_flank_t",
+      "gpio_t",
+      "gpio_mode_t"
+    ],
+    "transaction_patterns": [],
+    "device_transaction_shape": "unknown"
+  },
+  "integration_contract": {
+    "integration": "riot_periph_driver_api",
+    "integration_style": "riot_periph_plus_ztimer",
+    "bus_instance": "default_gpio_slot",
+    "bus_symbol": "GPIO_PIN(0, 0)",
+    "include_headers": [
+      "RP2350.h",
+      "VIC.h",
+      "architecture.h",
+      "arm_cpu.h",
+      "assert.h",
+      "async_read.h",
+      "at86rf2xx.h",
+      "at86rf2xx_internal.h",
+      "at86rf2xx_registers.h",
+      "atomic_utils.h",
+      "avr/interrupt.h",
+      "avr/io.h",
+      "bitarithm.h",
+      "bitfield.h",
+      "board.h",
+      "busy_wait.h",
+      "byteorder.h",
+      "c11_atomics_compat.hpp",
+      "checksum/crc16_ccitt.h",
+      "cib.h",
+      "clic.h",
+      "clist.h",
+      "clock_conf.h",
+      "compiler_hints.h",
+      "container.h",
+      "core/include/cond.h",
+      "core/include/mbox.h",
+      "core/include/msg.h",
+      "core/include/msg_bus.h",
+      "core/include/mutex.h",
+      "core/include/sched.h",
+      "core/include/stdio.h",
+      "core/include/thread.h",
+      "core/include/thread_flags.h",
+      "core/lib/include/assert.h",
+      "core/lib/include/bitarithm.h",
+      "core/lib/include/cib.h",
+      "core/lib/include/clist.h",
+      "core/lib/include/compiler_hints.h",
+      "core/lib/include/container.h",
+      "core/lib/include/debug.h",
+      "core/lib/include/irq.h",
+      "core/lib/include/kernel_defines.h",
+      "core/lib/include/list.h",
+      "core/lib/include/log.h",
+      "core/lib/include/modules.h",
+      "core/lib/include/rmutex.h",
+      "core/lib/include/thread_config.h",
+      "core_cm3.h",
+      "core_cm33.h",
+      "cpu.h",
+      "cpu/arm7_common/include/irq_arch.h",
+      "cpu/arm7_common/include/thread_arch.h",
+      "cpu/arm7tdmi_gba/include/cpu.h",
+      "cpu/arm7tdmi_gba/include/periph_cpu.h",
+      "cpu/atmega_common/include/gpio_ll_arch.h",
+      "cpu/atmega_common/include/periph_cpu_common.h",
+      "cpu/atxmega/include/periph_cpu.h",
+      "cpu/esp32/esp-eth/esp_eth_netdev.h",
+      "cpu/esp32/esp-eth/esp_eth_params.h",
+      "cpu/esp32/include/gpio_arch.h",
+      "cpu/esp32/include/syscalls.h",
+      "cpu/esp32/vendor/include/esp_event_legacy.h",
+      "cpu/esp8266/vendor/esp-idf/esp8266/include/esp_event.h",
+      "cpu/esp8266/vendor/esp-idf/wpa_supplicant/include/crypto/random.h",
+      "cpu/fe310/include/vendor/platform.h",
+      "cpu/gd32v/include/vendor/gd32vf103.h",
+      "cpu/gd32v/include/vendor/gd32vf103_gpio.h",
+      "cpu/lm4f120/include/periph_cpu.h",
+      "cpu/lpc1768/include/periph_cpu.h",
+      "cpu/lpc1768/include/vendor/LPC17xx.h",
+      "cpu/lpc23xx/include/cpu.h",
+      "cpu/lpc23xx/include/periph_cpu.h",
+      "cpu/msp430/include/cpu.h",
+      "cpu/msp430/include/f2xx_g2xx/msp430_regs.h",
+      "cpu/msp430/include/f2xx_g2xx/periph_cpu.h",
+      "cpu/msp430/include/gpio_ll_arch.h",
+      "cpu/msp430/include/periph_cpu_common.h",
+      "cpu/native/include/async_read.h",
+      "cpu/native/include/native_internal.h",
+      "cpu/native/include/periph_conf.h",
+      "cpu/native/include/socket_zep.h",
+      "cpu/qn908x/include/flexcomm.h",
+      "cpu/qn908x/include/gpio_mux.h",
+      "cpu/qn908x/include/vectors_qn908x.h",
+      "cpu/qn908x/include/vendor/drivers/fsl_clock.h",
+      "cpu/qn908x/include/vendor/drivers/fsl_iocon.h",
+      "cpu/riscv_common/include/clic.h",
+      "cpu/riscv_common/include/plic.h",
+      "cpu/riscv_common/include/vendor/riscv_csr.h",
+      "cpu/riscv_common/include/xh3irq.h",
+      "cpu/rp2350_common/include/clock_conf.h",
+      "cpu/rp2350_common/include/gpio_conf.h",
+      "cpu/rp2350_common/include/helpers.h",
+      "cpu/rp2350_common/include/multicore.h",
+      "cpu/rp2350_common/include/periph_cpu.h",
+      "cpu/rp2350_common/include/pio.h",
+      "cpu/rp2350_common/include/uart_conf.h",
+      "cpu/rp2350_riscv/include/core_cm33.h",
+      "cpu/stm32/include/periph/c0/periph_cpu.h",
+      "cpu/stm32/include/periph/cpu_gpio.h",
+      "cpu/stm32/include/periph/cpu_gpio_ll.h",
+      "cpu_conf.h",
+      "debug.h",
+      "dirent.h",
+      "div.h",
+      "driver/rtc_io.h",
+      "drivers/at86rf2xx/include/at86rf2xx_aes.h",
+      "drivers/at86rf2xx/include/at86rf2xx_internal.h",
+      "drivers/at86rf2xx/include/at86rf2xx_params.h",
+      "drivers/at86rf2xx/include/at86rf2xx_registers.h",
+      "drivers/hd44780/include/hd44780_internal.h",
+      "drivers/hd44780/include/hd44780_params.h",
+      "drivers/include/at86rf2xx.h",
+      "drivers/include/hd44780.h",
+      "drivers/include/net/netdev.h",
+      "drivers/include/net/netdev/eth.h",
+      "drivers/include/pcf857x.h",
+      "drivers/include/periph/adc.h",
+      "drivers/include/periph/gpio.h",
+      "drivers/include/periph/gpio_ll.h",
+      "drivers/include/periph/gpio_ll_irq.h",
+      "drivers/include/periph/i2c.h",
+      "drivers/include/periph/pwm.h",
+      "drivers/include/periph/spi.h",
+      "drivers/include/periph/timer.h",
+      "drivers/include/pulse_counter.h",
+      "drivers/include/saul.h",
+      "drivers/kw41zrf/vendor/OSAbstraction/Interface/fsl_os_abstraction.h",
+      "drivers/kw41zrf/vendor/XCVR/MKW41Z4/fsl_xcvr.h",
+      "drivers/pulse_counter/include/pulse_counter_params.h",
+      "em_cmu.h",
+      "em_device.h",
+      "em_gpio.h",
+      "em_iadc.h",
+      "em_timer.h",
+      "em_timer_utils.h",
+      "em_usart.h",
+      "endian.h",
+      "err.h",
+      "errno.h",
+      "esp/common_macros.h",
+      "esp_attr.h",
+      "esp_common.h",
+      "esp_err.h",
+      "esp_eth.h",
+      "esp_eth_mac.h",
+      "esp_eth_mac_esp.h",
+      "esp_eth_netdev.h",
+      "esp_eth_params.h",
+      "esp_eth_phy.h",
+      "esp_event.h",
+      "esp_event_legacy.h",
+      "esp_intr_alloc.h",
+      "esp_netif.h",
+      "esp_sleep.h",
+      "esp_wifi_types.h",
+      "event.h",
+      "flexcomm.h",
+      "fmt.h",
+      "fsl_common.h",
+      "fsl_os_abstraction.h",
+      "fsl_os_abstraction_config.h",
+      "fsl_xcvr.h",
+      "gd32vf103.h",
+      "gpio_arch.h",
+      "gpio_arch_common.h",
+      "gpio_conf.h",
+      "gpio_ll_arch.h",
+      "gpio_mux.h",
+      "hal/gpio_hal.h",
+      "hal/gpio_types.h",
+      "hal/rtc_io_types.h",
+      "hd44780.h",
+      "hd44780_internal.h",
+      "helpers.h",
+      "ifaddrs.h",
+      "inttypes.h",
+      "iolist.h",
+      "irq.h",
+      "irq_arch.h",
+      "isrpipe.h",
+      "kernel_defines.h",
+      "limits.h",
+      "list.h",
+      "log.h",
+      "log_module.h",
+      "lpc23xx.h",
+      "lwip/ip_addr.h",
+      "macros/units.h",
+      "mbox.h",
+      "modules.h",
+      "msg.h",
+      "msp430.h",
+      "msp430_regs.h",
+      "msp430_regs_common.h",
+      "multicore.h",
+      "mutex.h",
+      "native_internal.h",
+      "net/ethernet.h",
+      "net/eui64.h",
+      "net/gnrc.h",
+      "net/gnrc/netif/ethernet.h",
+      "net/gnrc/nettype.h",
+      "net/ieee802154/radio.h",
+      "net/ipv6/addr.h",
+      "net/l2filter.h",
+      "net/netdev.h",
+      "net/netdev/eth.h",
+      "net/netdev/ieee802154.h",
+      "net/netopt.h",
+      "net/zep.h",
+      "netdb.h",
+      "od.h",
+      "os/os_cputime.h",
+      "os/os_error.h",
+      "os/os_time.h",
+      "panic.h",
+      "pcf857x.h",
+      "pcf857x_params.h",
+      "periph/adc.h",
+      "periph/gpio.h",
+      "periph/gpio_ll.h",
+      "periph/gpio_ll_arch.h",
+      "periph/gpio_ll_irq.h",
+      "periph/i2c.h",
+      "periph/pwm.h",
+      "periph/spi.h",
+      "periph/timer.h",
+      "periph_conf.h",
+      "periph_cpu.h",
+      "periph_cpu_common.h",
+      "phydat.h",
+      "pkg/mynewt-core/include/hal/hal_gpio.h",
+      "pkg/mynewt-core/include/os/os_time.h",
+      "pkg/uwb-core/include/dpl/dpl_cputime.h",
+      "pkg/uwb-core/include/dpl/dpl_time.h",
+      "plic.h",
+      "pm_layered.h",
+      "poll.h",
+      "pulse_counter.h",
+      "pulse_counter_params.h",
+      "random.h",
+      "riot_version.h",
+      "rmutex.h",
+      "rom/ets_sys.h",
+      "saul.h",
+      "saul/periph.h",
+      "saul_reg.h",
+      "sched.h",
+      "signal.h",
+      "soc/gpio_reg.h",
+      "soc/gpio_sig_map.h",
+      "soc/gpio_struct.h",
+      "soc/io_mux_reg.h",
+      "soc/rtc_cntl_reg.h",
+      "soc/rtc_io_periph.h",
+      "socket_zep.h",
+      "stdalign.h",
+      "stdarg.h",
+      "stdatomic.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "stdlib.h",
+      "string.h",
+      "sys/include/event/timeout.h",
+      "sys/include/isrpipe/read_timeout.h",
+      "sys/include/net/sixlowpan/nd.h",
+      "sys/include/xtimer.h",
+      "sys/include/xtimer/implementation.h",
+      "sys/include/xtimer/tick_conversion.h",
+      "sys/include/ztimer.h",
+      "sys/include/ztimer/config.h",
+      "sys/include/ztimer/overhead.h",
+      "sys/include/ztimer/periodic.h",
+      "sys/include/ztimer/xtimer_compat.h",
+      "sys/include/ztimer64/xtimer_compat.h",
+      "sys/ioctl.h",
+      "sys/socket.h",
+      "sys/stat.h",
+      "sys/statvfs.h",
+      "sys/time.h",
+      "sys/types.h",
+      "sys/uio.h",
+      "syscalls.h",
+      "syscalls_common.h",
+      "tcpip_adapter.h",
+      "thread.h",
+      "thread_arch.h",
+      "thread_config.h",
+      "thread_flags.h",
+      "time.h",
+      "time_units.h",
+      "timer_arch.h",
+      "timex.h",
+      "tools.h",
+      "uart_conf.h",
+      "unistd.h",
+      "util/ucontext.h",
+      "vectors_cortexm.h",
+      "vectors_qn908x.h",
+      "vendor/aon.h",
+      "vendor/clint.h",
+      "vendor/drivers/fsl_clock.h",
+      "vendor/drivers/fsl_iocon.h",
+      "vendor/gd32vf103_periph.h",
+      "vendor/gpio.h",
+      "vendor/i2c.h",
+      "vendor/otp.h",
+      "vendor/platform.h",
+      "vendor/plic.h",
+      "vendor/prci.h",
+      "vendor/pwm.h",
+      "vendor/riscv_csr.h",
+      "vendor/spi.h",
+      "vendor/uart.h",
+      "xh3irq.h",
+      "xtensa/xtensa_api.h",
+      "xtimer.h",
+      "xtimer/implementation.h",
+      "xtimer/tick_conversion.h",
+      "ztimer.h",
+      "ztimer/config.h",
+      "ztimer/convert_frac.h",
+      "ztimer/convert_muldiv64.h",
+      "ztimer/convert_shift.h",
+      "ztimer/overhead.h",
+      "ztimer/periodic.h",
+      "ztimer/periph_rtc.h",
+      "ztimer/periph_rtt.h",
+      "ztimer/periph_timer.h",
+      "ztimer/xtimer_compat.h",
+      "ztimer64.h",
+      "ztimer64/xtimer_compat.h"
+    ],
+    "fixed_attachment": {
+      "trig_pin": "GPIO_PIN(0, 0)",
+      "echo_pin": "GPIO_PIN(0, 1)"
+    },
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": [],
+    "context_bindings": {
+      "integration.bus_instance_binding": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "default_gpio_slot",
+        "fields": {
+          "bus_instance": "default_gpio_slot",
+          "bus_symbol": "GPIO_PIN(0, 0)",
+          "backend": "RIOT periph GPIO driver",
+          "mode": "polling"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "integration.pin_binding": {
+        "slot_id": "integration.pin_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": {
+          "trig_pin": "GPIO_PIN(0, 0)",
+          "echo_pin": "GPIO_PIN(0, 1)"
+        },
+        "fields": {
+          "fixed_attachment": {
+            "trig_pin": "GPIO_PIN(0, 0)",
+            "echo_pin": "GPIO_PIN(0, 1)"
+          },
+          "required_attachment": {
+            "signals": [
+              "data"
+            ]
+          }
+        },
+        "notes": [
+          "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+        ]
+      }
+    },
+    "board_sources": []
+  },
+  "device_contract": {
+    "device_id": "ds18b20",
+    "required_bus_type": "gpio",
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "data"
+      ],
+      "notes": [
+        "DS18B20 uses a Dallas 1-Wire data line with reset/presence pulse, bit slots, Skip ROM command, Convert T command, and Read Scratchpad command.",
+        "The data pin must be switchable between output drive and input sampling with microsecond-scale delay support."
+      ]
+    },
+    "optional_attachment": {
+      "pull_up": "external or board pull-up required by the 1-Wire bus",
+      "parasite_power": "not assumed"
+    }
+  },
+  "api_bindings": {
+    "gpio.configure": {
+      "symbol": "gpio_init",
+      "kind": "function",
+      "signature": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+      "required_headers": [
+        "drivers/include/periph/gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.key_types": {
+      "symbol": "gpio_flank_t",
+      "kind": "typedef",
+      "signature": "enum { GPIO_FALLING = 0, /**< emit interrupt on falling flank */ GPIO_RISING = 1, /**< emit interrup",
+      "required_headers": [
+        "drivers/include/periph/gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.65,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.read": {
+      "symbol": "gpio_read",
+      "kind": "function",
+      "signature": "bool gpio_read(gpio_t pin)",
+      "required_headers": [
+        "drivers/include/periph/gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "gpio.write": {
+      "symbol": "gpio_set",
+      "kind": "function",
+      "signature": "void gpio_set(gpio_t pin)",
+      "required_headers": [
+        "drivers/include/periph/gpio.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_us": {
+      "symbol": "xtimer_usleep",
+      "kind": "function",
+      "signature": "static inline void xtimer_usleep(uint32_t microseconds)",
+      "required_headers": [
+        "sys/include/xtimer.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 1.0,
+      "declared_in": "riot:single:0::sys/include/xtimer.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    },
+    "runtime.delay_ms": {
+      "symbol": "xtimer_msleep",
+      "kind": "function",
+      "signature": "static inline void xtimer_msleep(uint32_t milliseconds)",
+      "required_headers": [
+        "sys/include/xtimer.h"
+      ],
+      "required_types": [],
+      "semantic_role": null,
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "confidence": 0.95,
+      "declared_in": "riot:single:0::sys/include/xtimer.h",
+      "implemented_in": null,
+      "requires_runtime_provision": false,
+      "allowed_for_codegen": true
+    }
+  },
+  "slot_fulfillments": {
+    "gpio.key_types": {
+      "slot_id": "gpio.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "gpio_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "gpio_init",
+          "signature": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "gpio_mode_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "gpio_init",
+          "signature": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "gpio_init",
+          "signature": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "default_gpio_slot",
+      "fields": {
+        "bus_instance": "default_gpio_slot",
+        "bus_symbol": "GPIO_PIN(0, 0)",
+        "backend": "RIOT periph GPIO driver",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "trig_pin": "GPIO_PIN(0, 0)",
+        "echo_pin": "GPIO_PIN(0, 1)"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "trig_pin": "GPIO_PIN(0, 0)",
+          "echo_pin": "GPIO_PIN(0, 1)"
+        },
+        "required_attachment": {
+          "signals": [
+            "data"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "context_bindings": {
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "default_gpio_slot",
+      "fields": {
+        "bus_instance": "default_gpio_slot",
+        "bus_symbol": "GPIO_PIN(0, 0)",
+        "backend": "RIOT periph GPIO driver",
+        "mode": "polling"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    },
+    "integration.pin_binding": {
+      "slot_id": "integration.pin_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": {
+        "trig_pin": "GPIO_PIN(0, 0)",
+        "echo_pin": "GPIO_PIN(0, 1)"
+      },
+      "fields": {
+        "fixed_attachment": {
+          "trig_pin": "GPIO_PIN(0, 0)",
+          "echo_pin": "GPIO_PIN(0, 1)"
+        },
+        "required_attachment": {
+          "signals": [
+            "data"
+          ]
+        }
+      },
+      "notes": [
+        "Concrete signal-to-pin mapping is a board/task binding; repo symbols are only supporting definitions."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "gpio.key_types": {
+      "slot_id": "gpio.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "gpio_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "gpio_init",
+          "signature": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        },
+        {
+          "symbol": "gpio_mode_t",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "gpio_init",
+          "signature": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+          "source_slot": "gpio.configure",
+          "source_symbol": "gpio_init",
+          "signature": "int gpio_init(gpio_t pin, gpio_mode_t mode)",
+          "score": 1.0,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "allowed_symbols": [
+    "gpio_init",
+    "gpio_read",
+    "gpio_set",
+    "xtimer_usleep",
+    "gpio_flank_t",
+    "xtimer_msleep"
+  ],
+  "allowed_symbol_provenance": {
+    "gpio_init": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "gpio_read": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "gpio_set": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "xtimer_usleep": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::sys/include/xtimer.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "gpio_flank_t": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::drivers/include/periph/gpio.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    },
+    "xtimer_msleep": {
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "requires_runtime_provision": false,
+      "declared_in": "riot:single:0::sys/include/xtimer.h",
+      "implemented_in": null,
+      "allowed_for_codegen": true
+    }
+  },
+  "transaction_templates": [
+    {
+      "template_id": "ds18b20_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (2 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "ds18b20_read_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (1 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "forbidden_assumptions": [],
+  "notes": [
+    "v2 contract: 8/8 required slots covered.",
+    "No task-package helper hooks; all bindings come from manifest sources."
+  ],
+  "evidence_spans": [
+    {
+      "root_id": "riot:single:0",
+      "path": "drivers/include/periph/gpio.h",
+      "kind": "declaration",
+      "for_symbol": "gpio_init",
+      "slot_id": "gpio.configure"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "drivers/include/periph/gpio.h",
+      "kind": "declaration",
+      "for_symbol": "gpio_read",
+      "slot_id": "gpio.read"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "drivers/include/periph/gpio.h",
+      "kind": "declaration",
+      "for_symbol": "gpio_set",
+      "slot_id": "gpio.write"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "sys/include/xtimer.h",
+      "kind": "declaration",
+      "for_symbol": "xtimer_usleep",
+      "slot_id": "runtime.delay_us"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "drivers/include/periph/gpio.h",
+      "kind": "declaration",
+      "for_symbol": "gpio_flank_t",
+      "slot_id": "gpio.key_types"
+    },
+    {
+      "root_id": "riot:single:0",
+      "path": "sys/include/xtimer.h",
+      "kind": "declaration",
+      "for_symbol": "xtimer_msleep",
+      "slot_id": "runtime.delay_ms"
+    }
+  ],
+  "requires_human": []
+}

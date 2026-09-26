@@ -1,0 +1,623 @@
+{
+  "device_id": "lm75a",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x48",
+        "description": "A2=A1=A0=GND (default)",
+        "is_default": true
+      },
+      {
+        "address": "0x49",
+        "description": "A2=A1=GND, A0=Vcc",
+        "is_default": false
+      },
+      {
+        "address": "0x4A",
+        "description": "A2=GND, A1=Vcc, A0=GND",
+        "is_default": false
+      },
+      {
+        "address": "0x4B",
+        "description": "A2=GND, A1=Vcc, A0=Vcc",
+        "is_default": false
+      },
+      {
+        "address": "0x4C",
+        "description": "A2=Vcc, A1=GND, A0=GND",
+        "is_default": false
+      },
+      {
+        "address": "0x4D",
+        "description": "A2=Vcc, A1=GND, A0=Vcc",
+        "is_default": false
+      },
+      {
+        "address": "0x4E",
+        "description": "A2=Vcc, A1=Vcc, A0=GND",
+        "is_default": false
+      },
+      {
+        "address": "0x4F",
+        "description": "A2=A1=A0=Vcc",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": null,
+  "read_channels": [
+    {
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "flow_id": "read_temp",
+      "source_bytes": [
+        "temp_msb",
+        "temp_lsb"
+      ],
+      "source_signal": null,
+      "formula_id": "temp_conversion",
+      "notes": "11-bit two's complement temperature data from Temp register."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": false,
+    "direct_read_after_write": false,
+    "notes": "Pointer register selects data register; pointer byte must be included in write commands, but read can omit pointer if already set to desired register."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "power_up_default",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "delay",
+          "delay_ms": 100,
+          "notes": "Wait ~100 ms for first conversion to complete after power-up."
+        }
+      ],
+      "outputs": [],
+      "notes": "Power-up default state: normal mode, OS comparator, Tos=80°C, Thyst=75°C, OS active LOW, pointer=0."
+    },
+    {
+      "flow_id": "write_config",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x01",
+              "DATA"
+            ],
+            "pointer_target": "Conf"
+          },
+          "notes": "Send pointer byte (01H) followed by configuration data byte."
+        }
+      ],
+      "outputs": [],
+      "notes": "Write configuration register (1-byte data). Must include pointer byte."
+    },
+    {
+      "flow_id": "write_tos_thyst",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x03",
+              "DATA",
+              "DATA"
+            ],
+            "pointer_target": "Tos"
+          },
+          "notes": "Send pointer byte (03H for Tos) followed by MS byte then LS byte."
+        }
+      ],
+      "outputs": [],
+      "notes": "Write Tos or Thyst register (2-byte data). Must include pointer byte."
+    },
+    {
+      "flow_id": "read_temp",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x00"
+            ],
+            "length": 2,
+            "pointer_target": "Temp"
+          },
+          "notes": "Write pointer byte (00H), then read MS byte then LS byte."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8",
+          "formula_id": "temp_conversion",
+          "unit": "milli_degC",
+          "notes": "16-bit raw value from Temp register; only 11 MSB bits significant."
+        }
+      ],
+      "notes": "Read Temp register including pointer byte (2-byte data)."
+    },
+    {
+      "flow_id": "read_temp_preset_pointer",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [
+        "Pointer already set to Temp register."
+      ],
+      "steps": [
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "length": 2,
+            "pointer_target": "Temp"
+          },
+          "notes": "Read MS byte then LS byte without sending pointer byte."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8",
+          "formula_id": "temp_conversion",
+          "unit": "milli_degC",
+          "notes": "16-bit raw value from Temp register; only 11 MSB bits significant."
+        }
+      ],
+      "notes": "Read Temp register with preset pointer (2-byte data)."
+    },
+    {
+      "flow_id": "shutdown_mode",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x01",
+              "0x01"
+            ],
+            "pointer_target": "Conf"
+          },
+          "notes": "Write configuration byte with B0=1."
+        }
+      ],
+      "outputs": [],
+      "notes": "Enter shutdown mode by setting B0 of Conf register to 1."
+    },
+    {
+      "flow_id": "normal_mode_from_shutdown",
+      "kind": "power",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0x01",
+              "0x00"
+            ],
+            "pointer_target": "Conf"
+          },
+          "notes": "Write configuration byte with B0=0."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 100,
+          "notes": "Wait for first conversion to complete after returning to normal mode."
+        }
+      ],
+      "outputs": [],
+      "notes": "Return to normal mode by clearing B0 of Conf register to 0, then wait for conversion."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 11,
+    "signed": true,
+    "right_shift": 5,
+    "sign_extend_from_bit": 10,
+    "notes": "Temp register: 2 bytes, MSB then LSB; lower 5 bits unused. 11-bit two's complement."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Pointer",
+      "value": null,
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Pointer register selects data register for write/read. Two LSB bits select register."
+    },
+    {
+      "name": "Conf",
+      "value": "0x01",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Configuration register. Contains a single 8-bit data byte. Default = 00H."
+    },
+    {
+      "name": "Temp",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "Temperature register. Contains two 8-bit data bytes. Stores measured Temp data."
+    },
+    {
+      "name": "Tos",
+      "value": "0x03",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "Over-temp Shutdown threshold register. Contains two 8-bit data bytes. Default = 50 00H (80°C)."
+    },
+    {
+      "name": "Thyst",
+      "value": "0x02",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "Hysteresis register. Contains two 8-bit data bytes. Default = 4B 00H (75°C)."
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Pointer",
+      "name": "Pointer value",
+      "bits": "B1-B0",
+      "description": "Selects register: 00=Temp, 01=Conf, 10=Thyst, 11=Tos."
+    },
+    {
+      "register": "Conf",
+      "name": "Reserved",
+      "bits": "B7-B5",
+      "description": "Reserved for manufacturer use."
+    },
+    {
+      "register": "Conf",
+      "name": "OS Fault queue",
+      "bits": "B4-B3",
+      "description": "Programmable fault queue: 00=1, 01=2, 10=4, 11=6 consecutive faults."
+    },
+    {
+      "register": "Conf",
+      "name": "OS Polarity",
+      "bits": "B2",
+      "description": "1 = OS active HIGH, 0 = OS active LOW (default)."
+    },
+    {
+      "register": "Conf",
+      "name": "OS Comp/Interrupt",
+      "bits": "B1",
+      "description": "1 = OS interrupt, 0 = OS comparator (default)."
+    },
+    {
+      "register": "Conf",
+      "name": "Shut-down",
+      "bits": "B0",
+      "description": "1 = Shut-down, 0 = Normal (default)."
+    },
+    {
+      "register": "Temp",
+      "name": "Temp data",
+      "bits": "MS byte B7-B0, LS byte B7-B5",
+      "description": "11-bit 2's complement temperature data. D10 (MSB) to D0 (LSB). LS byte B4-B0 not used."
+    },
+    {
+      "register": "Tos",
+      "name": "Tos data",
+      "bits": "MS byte B7-B0, LS byte B7",
+      "description": "9-bit 2's complement over-temp shutdown threshold data. D8 (MSB) to D0 (LSB). LS byte B6-B0 not used."
+    },
+    {
+      "register": "Thyst",
+      "name": "Thyst data",
+      "bits": "MS byte B7-B0, LS byte B7",
+      "description": "9-bit 2's complement hysteresis data. D8 (MSB) to D0 (LSB). LS byte B6-B0 not used."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up default state: normal mode, OS comparator, Tos=80°C, Thyst=75°C, OS active LOW, pointer=0. First conversion takes ~100 ms."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait ~100 ms for first conversion to complete before expecting valid temperature data."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 2,
+        "pointer_target": "Temp"
+      },
+      "notes": "Set pointer to Temp (0x00), then read 2 bytes (MSB:LSB)."
+    },
+    {
+      "transaction": null,
+      "notes": "Combine the two bytes into a signed 16-bit raw value; only 11 significant bits (MSB D10..D0)."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "scl_clock_period",
+      "value": 2.5,
+      "unit": "us",
+      "condition": "VCC=2.8V to 5.5V, Tamb=-55°C to +125°C",
+      "notes": "SCL clock period"
+    },
+    {
+      "name": "scl_high_pulse_width",
+      "value": 0.6,
+      "unit": "us",
+      "condition": "VCC=2.8V to 5.5V, Tamb=-55°C to +125°C",
+      "notes": "SCL HIGH pulse width"
+    },
+    {
+      "name": "scl_low_pulse_width",
+      "value": 1.3,
+      "unit": "us",
+      "condition": "VCC=2.8V to 5.5V, Tamb=-55°C to +125°C",
+      "notes": "SCL LOW pulse width"
+    },
+    {
+      "name": "start_hold_time",
+      "value": 100,
+      "unit": "ns",
+      "condition": "VCC=2.8V to 5.5V, Tamb=-55°C to +125°C",
+      "notes": "Start Hold time"
+    },
+    {
+      "name": "data_setup_time",
+      "value": 100,
+      "unit": "ns",
+      "condition": "VCC=2.8V to 5.5V, Tamb=-55°C to +125°C",
+      "notes": "Data set-up time"
+    },
+    {
+      "name": "data_hold_time",
+      "value": 0,
+      "unit": "ns",
+      "condition": "VCC=2.8V to 5.5V, Tamb=-55°C to +125°C",
+      "notes": "Data hold time"
+    },
+    {
+      "name": "stop_setup_time",
+      "value": 100,
+      "unit": "ns",
+      "condition": "VCC=2.8V to 5.5V, Tamb=-55°C to +125°C",
+      "notes": "Stop set-up time"
+    },
+    {
+      "name": "temperature_conversion_time",
+      "value": 100,
+      "unit": "ms",
+      "condition": "Normal mode",
+      "notes": "Temperature conversion time"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temp_conversion",
+      "formula": "Temp (degC) = raw_signed_11bit * 0.125, where raw_signed_11bit is the 11-bit two's complement value packed in bits D10..D0 of the 16-bit Temp register.",
+      "integer_approximation_expression": null,
+      "executable_expression_status": "complex_compensation_algorithm",
+      "notes": "Canonicalized: exact compensation is preserved in formula/inputs, but the single-line integer expression was marked non-executable because it is too complex or not accepted by the safe expression evaluator."
+    },
+    {
+      "name": "limit_conversion",
+      "formula": "Limit (degC) = raw_signed_9bit * 0.5, where raw_signed_9bit is the 9-bit two's complement value packed in bits D8..D0 of the 16-bit Tos/Thyst register.",
+      "integer_approximation_expression": {
+        "expression": "(((raw >> 7) & 0x1FF) * 500) - (((raw >> 7) & 0x100) * 1000)",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "limit_msb:8 || limit_lsb:8",
+            "description": "16-bit Tos or Thyst register; lower 7 bits unused."
+          }
+        ],
+        "output": {
+          "name": "limit_mdegC",
+          "unit": "milli_degC"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "I2C NACK during write or read",
+      "detection": "Device does not acknowledge address or data byte.",
+      "driver_action": "Abort transaction and return -EIO."
+    },
+    {
+      "condition": "Measurement timeout",
+      "detection": "Temperature conversion takes longer than expected (e.g., > 200 ms).",
+      "driver_action": "Return -ETIMEDOUT."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "normal",
+      "description": "Normal operation mode, temperature conversion every 100 ms.",
+      "current_ma": 0.1
+    },
+    {
+      "name": "shutdown",
+      "description": "Shutdown mode, conversion disabled, I2C active, current ~3.5 µA.",
+      "current_ma": 0.0035
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "lm75a",
+      "page": 8,
+      "snippet": "the other four MSB bits of the address data are preset to '1001'"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 9,
+      "snippet": "only 11 significant bits should be used, and the 5 LSB bits of the LS byte are zero and should be ignored."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 7,
+      "snippet": "the temp-to-digital conversion is executed every 100 ms"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 8,
+      "snippet": "Pointer register contains an 8-bit data byte of which the two LSB bits represent the pointer value"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 9,
+      "snippet": "Configuration register table (Table 5) shows the bit assignments"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 9,
+      "snippet": "If the Temp data MSB bit D10 = 0 then the temperature is positive and Temp value (°C) = +(Temp data) * 0.125 °C"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 10,
+      "snippet": "only 9 bits of the two bytes are used to store the set-point data in 2's complement format with the resolution of 0.5 °C"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 6,
+      "snippet": "SCL clock period 2.5 µs"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 11,
+      "snippet": "At power-up, the device is put into normal operation mode, the Tos is set to 80 °C, the Thyst is set to 75 °C"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 11,
+      "snippet": "The OS output is an open-drain output"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 11,
+      "snippet": "Fault queue is defined as the number of faults that must occur consecutively to activate the OS output"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 11,
+      "snippet": "Setting B0 to 1 will put the device into shut-down mode"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 12,
+      "snippet": "The communication between the host and the LM75A must strictly follow the rules as defined by the I2C-bus management."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 13,
+      "snippet": "Figure 6. Write configuration register (1-byte data)."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 14,
+      "snippet": "Figure 9. Write Tos or Thyst register (2-byte data)."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 14,
+      "snippet": "Figure 10. Read Temp or Tos or Thyst register including Pointer byte (2-byte data)."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 15,
+      "snippet": "Figure 11. Read Temp or Tos or Thyst register with preset Pointer (2-byte data)."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 5,
+      "snippet": "Temperature accuracy ±2 °C from -25 °C to +100 °C"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 5,
+      "snippet": "Temperature resolution 0.125 °C"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 5,
+      "snippet": "Supply quiescent current Normal mode: I2C inactive 100 µA"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 5,
+      "snippet": "Shut-down mode 3.5 µA"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 4,
+      "snippet": "Supply voltage 2.8 V to 5.5 V"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 4,
+      "snippet": "Operating ambient temperature range -55 °C to +125 °C"
+    },
+    {
+      "source_id": "lm75a",
+      "page": 3,
+      "snippet": "SDA: I2C serial bi-directional data line. Open Drain."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 3,
+      "snippet": "OS: Overtemp Shutdown output. Open Drain."
+    },
+    {
+      "source_id": "lm75a",
+      "page": 8,
+      "snippet": "Table 2. Register table"
+    }
+  ],
+  "requires_human": [
+    "A2, A1, A0 pin connections determine slave address; must be set per application.",
+    "Pull-up resistors on SDA and SCL lines are required; value not specified in datasheet (typical 10kΩ mentioned).",
+    "OS output requires external pull-up resistor; value up to 200kΩ recommended to minimize self-heating."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

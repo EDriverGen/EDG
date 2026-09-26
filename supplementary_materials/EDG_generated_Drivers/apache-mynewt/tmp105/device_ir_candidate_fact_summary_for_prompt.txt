@@ -1,0 +1,48 @@
+Summary: {"address_count": 2, "bitfield_count": 10, "bus_type": "I2C", "channel_count": 1, "device_id": "tmp105", "evidence_span_count": 23, "formula_count": 1, "operation_count": 5, "register_count": 5, "requires_human_count": 0, "timing_count": 16}
+Addresses:
+- 1001000 form=7-bit default=None desc=Slave address when A0 pin is low
+- 1001001 form=7-bit default=None desc=Slave address when A0 pin is high
+Registers:
+- Pointer Register@None access=write bits=8 roles=control desc=8-bit register used to address data registers; two LSBs (P1,P0) select register
+- Temperature Register@None access=read-only bits=16 roles=result,data desc=12-bit read-only register storing most recent conversion output; two bytes (MSB first)
+- Configuration Register@0x00 access=read-write bits=8 roles=config,control desc=8-bit register controlling operational modes; power-up/reset value all bits 0
+- T LOW Register@None access=read-write bits=16 roles=threshold,coefficient desc=16-bit register (12-bit data) for low temperature limit; two bytes MSB first
+- T HIGH Register@None access=read-write bits=16 roles=threshold,coefficient desc=16-bit register (12-bit data) for high temperature limit; two bytes MSB first
+Bitfields:
+- Pointer Register.P1-P0 bits=1:0 roles=control desc=Selects register: 00=Temperature, 01=Configuration, 10=T LOW, 11=T HIGH
+- Configuration Register.OS bits=7 roles=trigger,control desc=One-Shot: write 1 to start single conversion in shutdown mode; reads as 0
+- Configuration Register.R1-R0 bits=6:5 roles=config desc=Converter resolution: 00=9-bit, 01=10-bit, 10=11-bit, 11=12-bit
+- Configuration Register.F1-F0 bits=4:3 roles=config,threshold desc=Fault queue: number of consecutive faults to trigger alert; 00=1, 01=2, 10=4, 11=6
+- Configuration Register.POL bits=2 roles=config desc=ALERT polarity: 0=active low, 1=active high
+- Configuration Register.TM bits=1 roles=config desc=Thermostat mode: 0=Comparator mode, 1=Interrupt mode
+- Configuration Register.SD bits=0 roles=config,power desc=Shutdown mode: 1=shutdown after current conversion, 0=continuous conversion
+- Temperature Register.T11-T0 bits=15:4 roles=result,data desc=12-bit temperature data in two's complement format; bits 3:0 are zero
+- T LOW Register.L11-L0 bits=15:4 roles=threshold desc=12-bit low limit data; bits 3:0 are zero
+- T HIGH Register.H11-H0 bits=15:4 roles=threshold desc=12-bit high limit data; bits 3:0 are zero
+Operations:
+- write_register kind=write channels= outputs= summary=Write to a register by first sending pointer byte then data bytes steps=[write:slave address:Send slave address with R/W bit LOW; write:Pointer Register:Send pointer value to select register; write:data register:Send one or more data bytes (MSB first) to the addressed register]
+- read_register kind=read channels= outputs=register value summary=Read from a register; pointer must be set first via a write steps=[write:slave address:Send slave address with R/W bit LOW to set pointer; write:Pointer Register:Send pointer value to select register; write_then_read:slave address:Send START condition, then slave address with R/W bit HIGH to initiate read; read:data register:Read data bytes (MSB first); master acknowledges each byte except last]
+- one_shot_conversion kind=read channels=temperature outputs=temperature raw value summary=Trigger a single temperature conversion in shutdown mode by writing OS bit, then wait for conversion time and read te... steps=[write:Configuration Register:Write OS=1 (and SD=1) to start single conversion; delay:None:Wait for conversion time (depends on resolution: 27.5ms to 220ms typical); read:Temperature Register:Read two bytes from Temperature Register]
+- general_call_reset kind=other channels= outputs= summary=Reset device via General Call with second byte 0x06 steps=[write:General Call address:Send General Call address (0x00) with R/W bit LOW; write:second byte:Send second byte 0x06 to reset internal registers to power-up values]
+- smbus_alert_response kind=other channels= outputs=slave address with alert direction bit summary=Respond to SMBus Alert command by returning slave address with alert direction bit steps=[write:SMBus Alert command:Master sends SMBus Alert command (00011001) on bus; read:slave address:If ALERT active, device acknowledges and returns its slave address; LSB indic...]
+Channels:
+- temperature source=Temperature Register formula=temp_conversion desc=Die temperature measurement
+Formulae:
+- temp_conversion inputs=raw (12-bit two's complement integer) output=temperature in °C formula=T(°C) = raw * 0.0625
+Timing:
+- SCL operating frequency=400 kHz when=Fast mode
+- Bus free time=600 ns when=Between STOP and START
+- Hold time after repeated START=100 ns when=After repeated START condition
+- Repeated START setup time=100 ns when=Repeated START condition
+- STOP condition setup time=100 ns when=STOP condition
+- Data hold time=0 ns when=Data hold
+- Data setup time=100 ns when=Data setup
+- SCL low period=1300 ns when=SCL clock low
+- SCL high period=600 ns when=SCL clock high
+- Clock/data fall time=300 ns when=Fall time
+- Clock/data rise time=300 ns when=SCLK ≤ 100kHz
+- Conversion time 9-bit=27.5 ms when=9-bit resolution
+- Conversion time 10-bit=55 ms when=10-bit resolution
+- Conversion time 11-bit=110 ms when=11-bit resolution
+- Conversion time 12-bit=220 ms when=12-bit resolution
+- Timeout time=54 ms when=Typical timeout

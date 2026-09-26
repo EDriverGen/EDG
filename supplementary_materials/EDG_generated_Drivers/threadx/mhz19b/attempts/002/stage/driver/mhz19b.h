@@ -1,0 +1,15 @@
+#ifndef MHZ19B_H
+#define MHZ19B_H
+
+#include <stdint.h>
+#include "stm32f1xx_hal.h"
+
+#include "threadx.h"
+struct mhz19b_device {
+    UART_HandleTypeDef *huart;
+};
+
+int mhz19b_init(struct mhz19b_device *dev, void *bus_handle);
+int mhz19b_read_co2(struct mhz19b_device *dev, int32_t *raw);
+
+#endif

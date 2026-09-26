@@ -1,0 +1,572 @@
+{
+  "schema_version": "edg-device-ir-reference-1.0",
+  "artifact_role": "audit_reference_specification",
+  "device_id": "ds18b20",
+  "scope": "Temperatureconversion/read,ROMselection,parasitepower andthe representedconfiguration/NVoperations. ROM tree-search implementation is outside fixed-device read scope; text-level protocol information is sufficient.",
+  "components": {
+    "B": {
+      "name": "Bus and addressing",
+      "item_ids": [
+        "rom",
+        "reset_each",
+        "rom_select",
+        "convert_command",
+        "scratchpad_read",
+        "power_query",
+        "crc_location",
+        "crc_polynomial",
+        "scratchpad_write",
+        "copy",
+        "recall",
+        "readrom",
+        "search"
+      ]
+    },
+    "G": {
+      "name": "Registers, commands and bitfields",
+      "item_ids": [
+        "resolution"
+      ]
+    },
+    "O": {
+      "name": "Operations and initialization",
+      "item_ids": []
+    },
+    "T": {
+      "name": "Timing",
+      "item_ids": [
+        "reset_low",
+        "reset_high",
+        "presence",
+        "slot",
+        "recovery",
+        "write0",
+        "write1",
+        "read_sample",
+        "conversion_0",
+        "conversion_1",
+        "conversion_2",
+        "conversion_3",
+        "strong_pullup"
+      ]
+    },
+    "V": {
+      "name": "Encoding and conversion",
+      "item_ids": [
+        "temperature_layout",
+        "temperature_formula"
+      ]
+    },
+    "F": {
+      "name": "States and errors",
+      "item_ids": [
+        "initial_temp",
+        "conversion_poll"
+      ]
+    }
+  },
+  "evidence_component": "E_D is represented by the evidence attached to each reference item.",
+  "source_documents": [
+    {
+      "document": "DS18B20.pdf",
+      "pages": 22,
+      "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+    }
+  ],
+  "facts": [
+    {
+      "id": "rom",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Unique64-bit ROM:family28,serial48bits,CRC8",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 6,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_each",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Each communication begins with reset/presence",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_low",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "ResetLOW>=480us",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "reset_high",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "ResetHIGH>=480us",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "presence",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Afterreleasewait15..60us thenpresenceLOW60..240us",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "slot",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "All time slots60..120us",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Recovery>=1us",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "write0",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Write0 LOW60..120us",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "write1",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Write1 releasewithin15us",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 15,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "read_sample",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Release bus and sample within15us fromreadslot fallingedge",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 17,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "rom_select",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "MatchROM55 followed64bits, orSkipROMCC",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "convert_command",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "ConvertT44",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scratchpad_read",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "ReadScratchpadBE reads frombyte0 LSBfirst",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_layout",
+      "component": "V",
+      "category": "encoding",
+      "required": true,
+      "expected": "Scratchpadbyte0LSB,byte1MSB,signed16 withsignextension",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "temperature_formula",
+      "component": "V",
+      "category": "conversion",
+      "required": true,
+      "expected": "TemperatureC=signedraw/16",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "initial_temp",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Powerup temperature value85C until conversion",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 4,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "resolution",
+      "component": "G",
+      "category": "register",
+      "required": true,
+      "expected": "Configbyte4 bits6:5 selectresolution;default11=12bit",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_0",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Maximumconversion93.75ms",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_1",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Maximumconversion187.5ms",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_2",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Maximumconversion375ms",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_3",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Maximumconversion750ms",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "strong_pullup",
+      "component": "T",
+      "category": "timing",
+      "required": true,
+      "expected": "Parasitepower strongpullup within10us andholdentireconversion",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "power_query",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "B4 thenreadbit:0parasite,1external",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "conversion_poll",
+      "component": "F",
+      "category": "state",
+      "required": true,
+      "expected": "Externalpower read0busy/1done;cannotpollunderstrongpullup",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "crc_location",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "Scratchpadbyte8 isCRCofbytes0..7",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "crc_polynomial",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "CRC8 x8+x5+x4+1,init0,LSBfirst",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 8,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "scratchpad_write",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "4E writes TH,TL,config threebytes",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "copy",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "48 copies TH/TL/configtoEEPROM,wait<=10ms",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 20,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "recall",
+      "component": "B",
+      "category": "protocol",
+      "required": true,
+      "expected": "B8 recall;read0busy1done",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 12,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "readrom",
+      "component": "B",
+      "category": "protocol",
+      "required": false,
+      "expected": "33 readsROMonlywhensingledevice",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "component": "B",
+      "category": "protocol",
+      "required": false,
+      "expected": "F0search,ECsearchalarmdevices",
+      "evidence": [
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 10,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        },
+        {
+          "document": "DS18B20.pdf",
+          "pdf_page": 11,
+          "page_text_file": "evidence/datasheets/ds18b20/DS18B20.pages.json"
+        }
+      ]
+    }
+  ]
+}

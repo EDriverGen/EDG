@@ -1,0 +1,387 @@
+{
+  "task_package_path": "EDG_DMA_Tasks/zephyr/mhz19b/task_package.json",
+  "task_package": {
+    "package_id": "zephyr_generic_dt__mhz19b__uart1_dma",
+    "platform_base_context": "EDG_DMA_Tasks/zephyr/mhz19b/platform_base_context.json",
+    "connection_binding_context": "EDG_DMA_Tasks/zephyr/mhz19b/connection_binding_context.json",
+    "device_attachment_context": "EDG_DMA_Tasks/zephyr/mhz19b/device_attachment_context.json",
+    "reference_driver_root": "DriverGen/data/references/mhz19b/zephyr",
+    "device_ir": "EDG_DMA_Tasks/zephyr/mhz19b/device_ir.json",
+    "dma_requirements": "EDG_DMA_Tasks/zephyr/mhz19b/dma_requirements.json",
+    "evaluation_config": "EDG_DMA_Tasks/zephyr/mhz19b/evaluation_config.json",
+    "mode": "dma",
+    "notes": [
+      "MHZ19B on zephyr: DMA payload transfers on the original hardware connection.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+      "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+      "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+    ],
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "zephyr_generic_dt",
+        "rtos": "zephyr",
+        "rtos_bundle": "zephyr",
+        "board": "stm32f103_mini",
+        "board_alias": "zephyr_f103",
+        "integration": "public_driver_api_and_devicetree",
+        "integration_style": "zephyr_core_plus_public_driver_headers",
+        "mcu_family": "stm32f1",
+        "mcu": "stm32f103xb"
+      },
+      "connection": {
+        "binding_id": "zephyr_generic_dt_uart1_dma",
+        "platform_id": "zephyr_generic_dt",
+        "connection_type": "uart_dma",
+        "mode": "dma",
+        "bus_instance": "uart1",
+        "bus_instance_kind": "devicetree_node_label",
+        "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(usart1))",
+        "backend": "Zephyr STM32F1 USART1 asynchronous DMA",
+        "address_mode": null,
+        "fixed_attachment": {
+          "baud_rate": 9600,
+          "data_bits": 8,
+          "parity": "none",
+          "stop_bits": 1
+        },
+        "helper_usage_patterns": []
+      },
+      "device": {
+        "device_id": "mhz19b",
+        "attachment_type": "uart_fixed_frame_sensor",
+        "required_bus_type": "uart",
+        "address_mode": null,
+        "addressing": null,
+        "required_attachment": {
+          "signals": [
+            "uart_tx",
+            "uart_rx"
+          ],
+          "notes": [
+            "MH-Z19B communicates over UART using fixed 9-byte command and response frames.",
+            "The task assumes a local UART instance configured for 9600 baud, 8 data bits, no parity, 1 stop bit."
+          ]
+        },
+        "optional_attachment": {
+          "pwm_output": "not used by this UART task",
+          "abc_calibration": "optional command path"
+        },
+        "default_overrides": {
+          "bus_instance": "uart1",
+          "irq": "dma_completion",
+          "dma": "required",
+          "reset_gpio": null,
+          "power_gpio": null,
+          "mode": "dma",
+          "device_irq": "optional"
+        },
+        "protocol_hints": {
+          "uart_proto": "fixed",
+          "frame_len": 9,
+          "baud_rate": 9600,
+          "read_co2_command": "0xFF 0x01 0x86 0x00 0x00 0x00 0x00 0x00 checksum",
+          "checksum": "one-byte complement checksum over bytes 1..7",
+          "transfer_mode": "dma"
+        }
+      }
+    }
+  },
+  "platform_base_context": {
+    "platform_id": "zephyr_generic_dt",
+    "board": "stm32f103_mini",
+    "board_alias": "zephyr_f103",
+    "rtos": "zephyr",
+    "rtos_bundle": "zephyr",
+    "integration": "public_driver_api_and_devicetree",
+    "integration_style": "zephyr_core_plus_public_driver_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103xb",
+    "capabilities": {
+      "connection_types": [
+        "uart_dma"
+      ],
+      "available_instances": {
+        "uart_dma": [
+          "uart1"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "available_for_dma_completion",
+      "dma": "available_for_selected_connection"
+    },
+    "notes": [
+      "DMA task on the original stm32f103_mini target and stm32f103xb MCU.",
+      "Use the selected existing RTOS/BSP/HAL backend and preserve the original bus connection."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+      "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+      "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "zephyr_generic_dt_uart1_dma",
+    "platform_id": "zephyr_generic_dt",
+    "connection_type": "uart_dma",
+    "mode": "dma",
+    "bus_instance": "uart1",
+    "bus_instance_kind": "devicetree_node_label",
+    "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(usart1))",
+    "backend": "Zephyr STM32F1 USART1 asynchronous DMA",
+    "address_mode": null,
+    "fixed_attachment": {
+      "baud_rate": 9600,
+      "data_bits": 8,
+      "parity": "none",
+      "stop_bits": 1
+    },
+    "notes": [
+      "Enable CONFIG_UART_ASYNC_API and DMA support; configure usart1 RX/TX DMA1 channels.",
+      "Resolve the original task's uart1 label to the board's usart1 node (PA9/PA10); retain 9600-8N1.",
+      "Move/disable console and shell traffic on this sensor UART.",
+      "Accumulate UART_RX_RDY offsets/lengths and handle buffer-release, stop, and timeout events.",
+      "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+      "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+      "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+      "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+      "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+      "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+      "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+      "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+      "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+      "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+    ],
+    "dma": "required",
+    "completion_irq": "required",
+    "helper_usage_patterns": [],
+    "dma_requirements": {
+      "task_package_id": "zephyr_generic_dt__mhz19b__uart1_dma",
+      "mode": "dma",
+      "physical_bus": "uart",
+      "backend": "Zephyr STM32F1 USART1 asynchronous DMA",
+      "access_pattern": "rtos_async_dma",
+      "candidate_transfer_apis": [
+        "uart_callback_set",
+        "uart_rx_enable",
+        "uart_tx",
+        "uart_rx_disable"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 4,
+        "rx": 5
+      },
+      "minimum_core_payload_bytes": 9,
+      "configuration_requirements": [
+        "Enable CONFIG_UART_ASYNC_API and DMA support; configure usart1 RX/TX DMA1 channels.",
+        "Resolve the original task's uart1 label to the board's usart1 node (PA9/PA10); retain 9600-8N1.",
+        "Move/disable console and shell traffic on this sensor UART.",
+        "Accumulate UART_RX_RDY offsets/lengths and handle buffer-release, stop, and timeout events."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+      ],
+      "device_scenarios": [
+        "Arm reception early enough to retain the response.",
+        "Accumulate receive events until the full frame is available.",
+        "Check header, checksum, timeout, and a subsequent request."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+        "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+        "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+      ]
+    },
+    "bsp_node": "usart1",
+    "task_bus_alias": "uart1"
+  },
+  "device_attachment_context": {
+    "device_id": "mhz19b",
+    "attachment_type": "uart_fixed_frame_sensor",
+    "required_bus_type": "uart",
+    "address_mode": null,
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "uart_tx",
+        "uart_rx"
+      ],
+      "notes": [
+        "MH-Z19B communicates over UART using fixed 9-byte command and response frames.",
+        "The task assumes a local UART instance configured for 9600 baud, 8 data bits, no parity, 1 stop bit."
+      ]
+    },
+    "optional_attachment": {
+      "pwm_output": "not used by this UART task",
+      "abc_calibration": "optional command path"
+    },
+    "default_overrides": {
+      "bus_instance": "uart1",
+      "irq": "dma_completion",
+      "dma": "required",
+      "reset_gpio": null,
+      "power_gpio": null,
+      "mode": "dma",
+      "device_irq": "optional"
+    },
+    "protocol_hints": {
+      "uart_proto": "fixed",
+      "frame_len": 9,
+      "baud_rate": 9600,
+      "read_co2_command": "0xFF 0x01 0x86 0x00 0x00 0x00 0x00 0x00 checksum",
+      "checksum": "one-byte complement checksum over bytes 1..7",
+      "transfer_mode": "dma"
+    },
+    "notes": [
+      "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection.",
+      "Preserve the original device protocol, addressing, units, and hardware attachment."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mhz19b",
+      "DriverGen/evaluation/oracle/data/mhz19b/meta.json",
+      "DriverGen/data/references/mhz19b/*/*_ref.h",
+      "DriverGen/data/references/mhz19b/rtthread"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "zephyr_generic_dt__mhz19b__uart1_dma",
+    "rtos": "zephyr",
+    "rtos_bundle": "zephyr",
+    "board": "stm32f103_mini",
+    "board_alias": "zephyr_f103",
+    "integration": "public_driver_api_and_devicetree",
+    "integration_style": "zephyr_core_plus_public_driver_headers",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103xb",
+    "bus_type": "uart_dma",
+    "bus_instance": "uart1",
+    "bus_instance_kind": "devicetree_node_label",
+    "bus_symbol": "DEVICE_DT_GET(DT_NODELABEL(usart1))",
+    "bus_backend": "Zephyr STM32F1 USART1 asynchronous DMA",
+    "address_mode": null,
+    "mode": "dma",
+    "irq": "dma_completion",
+    "dma": "required",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {
+      "baud_rate": 9600,
+      "data_bits": 8,
+      "parity": "none",
+      "stop_bits": 1
+    },
+    "device_attachment_context_id": "mhz19b",
+    "device_addressing": null,
+    "device_irq": "optional",
+    "dma_requirements": {
+      "task_package_id": "zephyr_generic_dt__mhz19b__uart1_dma",
+      "mode": "dma",
+      "physical_bus": "uart",
+      "backend": "Zephyr STM32F1 USART1 asynchronous DMA",
+      "access_pattern": "rtos_async_dma",
+      "candidate_transfer_apis": [
+        "uart_callback_set",
+        "uart_rx_enable",
+        "uart_tx",
+        "uart_rx_disable"
+      ],
+      "dma_channels": {
+        "controller": "DMA1",
+        "tx": 4,
+        "rx": 5
+      },
+      "minimum_core_payload_bytes": 9,
+      "configuration_requirements": [
+        "Enable CONFIG_UART_ASYNC_API and DMA support; configure usart1 RX/TX DMA1 channels.",
+        "Resolve the original task's uart1 label to the board's usart1 node (PA9/PA10); retain 9600-8N1.",
+        "Move/disable console and shell traffic on this sensor UART.",
+        "Accumulate UART_RX_RDY offsets/lengths and handle buffer-release, stop, and timeout events."
+      ],
+      "generation_requirements": [
+        "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+        "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+        "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+        "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+        "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+        "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+        "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+        "Use UART DMA for both the nine-byte request and the complete nine-byte response at the original 9600-8N1 connection."
+      ],
+      "device_scenarios": [
+        "Arm reception early enough to retain the response.",
+        "Accumulate receive events until the full frame is available.",
+        "Check header, checksum, timeout, and a subsequent request."
+      ],
+      "validation_requirements": [
+        {
+          "id": "dma_payload",
+          "requirement": "Observe DMA submission, direction, payload length, and completion for the core data transfer."
+        },
+        {
+          "id": "completion_order",
+          "requirement": "Consume receive data and reuse buffers only after the required completion event."
+        },
+        {
+          "id": "error_and_timeout",
+          "requirement": "Return the specified error and release transfer state after failure or timeout."
+        },
+        {
+          "id": "repeat_operation",
+          "requirement": "Support a subsequent operation after successful completion or completed error cleanup."
+        }
+      ],
+      "source_evidence": [
+        "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+        "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+        "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+      ]
+    },
+    "source_evidence": [
+      "DriverGen/data/rtos/zephyr/drivers/serial/uart_stm32.c",
+      "DriverGen/data/rtos/zephyr/drivers/serial/Kconfig.stm32",
+      "DriverGen/data/rtos/zephyr/include/zephyr/drivers/uart.h"
+    ]
+  }
+}

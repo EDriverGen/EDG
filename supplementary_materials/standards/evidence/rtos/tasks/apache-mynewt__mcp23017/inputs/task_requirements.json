@@ -1,0 +1,163 @@
+{
+  "task_package_id": "apache_mynewt_generic_hal__mcp23017__i2c0_polling",
+  "rtos": "apache-mynewt",
+  "device": "mcp23017",
+  "bus": "i2c",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/mcp23017/apache-mynewt",
+  "task_package": {
+    "package_id": "apache_mynewt_generic_hal__mcp23017__i2c0_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/apache_mynewt_generic_hal.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/apache_mynewt_generic_hal_i2c0_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mcp23017.json",
+    "reference_driver_root": "DriverGen/data/references/mcp23017/apache-mynewt",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "apache_mynewt_generic_hal",
+        "rtos": "apache-mynewt",
+        "board": "generic_hal",
+        "integration": "mynewt_hal",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "apache_mynewt_generic_hal_i2c0_polling",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "i2c0",
+        "bus_symbol": "i2c0",
+        "backend": "Apache Mynewt HAL",
+        "address_mode": "7-bit",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "mcp23017",
+        "attachment_type": "i2c_gpio_expander",
+        "required_bus_type": "i2c"
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "mcp23017 + apache-mynewt + i2c0_polling polling."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mcp23017/*.pdf",
+      "DriverGen/data/references/mcp23017/apache-mynewt"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "apache_mynewt_generic_hal",
+    "board": "generic_hal",
+    "board_alias": "mynewt_hal",
+    "rtos": "apache-mynewt",
+    "rtos_bundle": "apache-mynewt",
+    "integration": "mynewt_native_hal",
+    "integration_style": "integrated_rtos_hal_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "0"
+        ],
+        "spi": [
+          "0"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "0"
+        ]
+      },
+      "timing": [
+        "os_time_delay",
+        "os_time_ms_to_ticks32"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Apache Mynewt includes kernel/os, hw/hal, hw/mcu, hw/bsp, hw/drivers, hw/sensor and hw/util in one repository.",
+      "Device drivers should prefer public HAL headers such as hal/hal_i2c.h, hal/hal_spi.h, hal/hal_gpio.h and OS helpers from os/os_time.h."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/kernel/os/include/os/os_time.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_i2c.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_spi.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_uart.h",
+      "DriverGen/data/rtos/apache-mynewt/hw/util/i2cn/include/i2cn/i2cn.h",
+      "DriverGen/data/references/*/apache-mynewt/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "apache_mynewt_generic_hal_i2c0_polling",
+    "platform_id": "apache_mynewt_generic_hal",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "0",
+    "bus_instance_kind": "hal_i2c_num",
+    "bus_symbol": "0",
+    "backend": "Apache Mynewt HAL I2C",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Mynewt HAL I2C uses a uint8_t i2c_num and struct hal_i2c_master_data.",
+      "The HAL API accepts a 7-bit address in hal_i2c_master_data.address; do not left-shift it."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/apache-mynewt/hw/hal/include/hal/hal_i2c.h",
+      "DriverGen/data/rtos/apache-mynewt/kernel/os/include/os/os_time.h",
+      "DriverGen/data/references/*/apache-mynewt/*_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "mcp23017",
+    "attachment_type": "i2c_gpio_expander",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x20",
+      "alternates": [
+        "0x21",
+        "0x22",
+        "0x23",
+        "0x24",
+        "0x25",
+        "0x26",
+        "0x27"
+      ],
+      "selection_rule": "A0/A1/A2 pins set 3 LSBs. POR with all LOW = 0x20."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "16-bit I2C GPIO expander. Register-pointer: write reg addr then data."
+      ]
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "optional",
+      "dma": "absent",
+      "reset_gpio": "optional",
+      "power_gpio": null
+    },
+    "notes": [
+      "Two 8-bit ports GPA(0x12)/GPB(0x13). Set IODIRA/B to configure direction."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mcp23017/MCP23017.pdf",
+      "DriverGen/data/references/mcp23017/*/*_ref.h"
+    ]
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "device_id": "dps310",
+  "rtos_id": "openharmony-liteosm",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef DPS310_H\n#define DPS310_H\n\n#include <stdint.h>\n#include \"i2c_if.h\"\n\n#define DPS310_I2C_ADDR 0x77\n\n#include \"openharmony_liteosm.h\"\nstruct dps310_dev {\n    DevHandle bus_handle;\n    uint8_t i2c_addr;\n};\n\nint32_t dps310_init(struct dps310_dev *dev, DevHandle bus_handle);\nint32_t dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw);\nint32_t dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw);\n\n#endif\n",
+  "driver_source": "#include \"dps310.h\"\n#include <stdint.h>\n#include <string.h>\n#include \"i2c_if.h\"\n#include \"i2c_msg.h\"\n#include \"hdf_base.h\"\n#include \"osal_time.h\"\n\n#include \"openharmony_liteosm.h\"\n#define DPS310_REG_PSR_B2 0x00\n#define DPS310_REG_TMP_B2 0x03\n#define DPS310_REG_COEF   0x10\n#define DPS310_REG_MEAS_CFG 0x08\n#define DPS310_REG_RESET  0x0C\n#define DPS310_REG_ID     0x0D\n\nstatic int32_t dps310_write_then_read(struct dps310_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    struct I2cMsg msgs[2];\n    uint8_t reg_buf = reg;\n\n    msgs[0].addr = dev->i2c_addr;\n    msgs[0].buf = &reg_buf;\n    msgs[0].len = 1;\n    msgs[0].flags = 0;\n\n    msgs[1].addr = dev->i2c_addr;\n    msgs[1].buf = buf;\n    msgs[1].len = len;\n    msgs[1].flags = I2C_FLAG_READ;\n\n    int32_t ret = I2cTransfer(dev->bus_handle, msgs, 2);\n    if (ret != 2) {\n        return HDF_FAILURE;\n    }\n    return HDF_SUCCESS;\n}\n\nstatic int32_t dps310_write(struct dps310_dev *dev, uint8_t reg, uint8_t value)\n{\n    struct I2cMsg msg;\n    uint8_t data[2] = {reg, value};\n\n    msg.addr = dev->i2c_addr;\n    msg.buf = data;\n    msg.len = 2;\n    msg.flags = 0;\n\n    int32_t ret = I2cTransfer(dev->bus_handle, &msg, 1);\n    if (ret != 1) {\n        return HDF_FAILURE;\n    }\n    return HDF_SUCCESS;\n}\n\nint32_t dps310_init(struct dps310_dev *dev, DevHandle bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = DPS310_I2C_ADDR;\n\n    /* Wait for sensor ready and coefficients ready */\n    OsalMSleep(12);\n    OsalMSleep(40);\n\n    /* Read ID register */\n    uint8_t id;\n    if (dps310_write_then_read(dev, DPS310_REG_ID, &id, 1) != HDF_SUCCESS) {\n        return HDF_FAILURE;\n    }\n\n    /* Soft reset */\n    if (dps310_write(dev, DPS310_REG_RESET, 0x09) != HDF_SUCCESS) {\n        return HDF_FAILURE;\n    }\n\n    /* Read calibration coefficients (required by test plan) */\n    uint8_t coef_buf[18];\n    if (dps310_write_then_read(dev, DPS310_REG_COEF, coef_buf, 18) != HDF_SUCCESS) {\n        return HDF_FAILURE;\n    }\n\n    return HDF_SUCCESS;\n}\n\nint32_t dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw)\n{\n    uint8_t buf[3];\n    if (dps310_write_then_read(dev, DPS310_REG_PSR_B2, buf, 3) != HDF_SUCCESS) {\n        return HDF_FAILURE;\n    }\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\n    if (raw & 0x800000) {\n        raw |= 0xFF000000;\n    }\n    *pressure_raw = raw;\n    return HDF_SUCCESS;\n}\n\nint32_t dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw)\n{\n    uint8_t buf[3];\n    if (dps310_write_then_read(dev, DPS310_REG_TMP_B2, buf, 3) != HDF_SUCCESS) {\n        return HDF_FAILURE;\n    }\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\n    if (raw & 0x800000) {\n        raw |= 0xFF000000;\n    }\n    *temp_raw = raw;\n    return HDF_SUCCESS;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "dps310_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "pressure",
+        "call": "dps310_read_pressure(&g_eval_dev, &pressure_raw)",
+        "out_arg": "pressure_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "temp",
+        "call": "dps310_read_temp(&g_eval_dev, &temp_raw)",
+        "out_arg": "temp_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "struct dps310_dev",
+    "init_extra_setup_c": "DevHandle bus_handle = I2cOpen(1);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"openharmony_liteosm.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0C"
+          ]
+        ],
+        "note": "init: RESET"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0D"
+          ]
+        ],
+        "note": "init: ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "init: COEF"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ],
+          [
+            "0x01"
+          ],
+          [
+            "0x02"
+          ],
+          [
+            "0x03"
+          ],
+          [
+            "0x04"
+          ],
+          [
+            "0x05"
+          ],
+          [
+            "0x06"
+          ],
+          [
+            "0x07"
+          ],
+          [
+            "0x08"
+          ],
+          [
+            "0x09"
+          ],
+          [
+            "0x0A"
+          ],
+          [
+            "0x0B"
+          ],
+          [
+            "0x28"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_cycle: one of CFG_REG, COEF_SRCE, FIFO_STS, INT_STS, MEAS_CFG, PRS_CFG, PSR_B0, PSR_B1, PSR_B2, TMP_B0, TMP_B1, TMP_B2, TMP_CFG"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "pressure_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x12",
+            "0x34",
+            "0x56"
+          ],
+          "0x03": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "pressure": 1193046,
+          "temp": 0
+        },
+        "derivation": "pressure: raw = 0x123456 = 1193046; temp: raw = 0x000000 = 0"
+      },
+      {
+        "name": "temp_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0x03": [
+            "0x00",
+            "0x12",
+            "0x34"
+          ]
+        },
+        "expected_channels": {
+          "pressure": 0,
+          "temp": 4660
+        },
+        "derivation": "pressure: raw = 0x000000 = 0; temp: raw = 0x001234 = 4660"
+      },
+      {
+        "name": "both_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ],
+          "0x03": [
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "pressure": 0,
+          "temp": 0
+        },
+        "derivation": "pressure: raw = 0x000000 = 0; temp: raw = 0x000000 = 0"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.556,
+  "prompt_chars": 40200,
+  "raw_response": "{\"driver_header\": \"#ifndef DPS310_H\\n#define DPS310_H\\n\\n#include <stdint.h>\\n#include \\\"i2c_if.h\\\"\\n\\n#define DPS310_I2C_ADDR 0x77\\n\\nstruct dps310_dev {\\n    DevHandle bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint32_t dps310_init(struct dps310_dev *dev, DevHandle bus_handle);\\nint32_t dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw);\\nint32_t dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"dps310.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n#include \\\"i2c_if.h\\\"\\n#include \\\"i2c_msg.h\\\"\\n#include \\\"hdf_base.h\\\"\\n#include \\\"osal_time.h\\\"\\n\\n#define DPS310_REG_PSR_B2 0x00\\n#define DPS310_REG_TMP_B2 0x03\\n#define DPS310_REG_COEF   0x10\\n#define DPS310_REG_MEAS_CFG 0x08\\n#define DPS310_REG_RESET  0x0C\\n#define DPS310_REG_ID     0x0D\\n\\nstatic int32_t dps310_write_then_read(struct dps310_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    struct I2cMsg msgs[2];\\n    uint8_t reg_buf = reg;\\n\\n    msgs[0].addr = dev->i2c_addr;\\n    msgs[0].buf = &reg_buf;\\n    msgs[0].len = 1;\\n    msgs[0].flags = 0;\\n\\n    msgs[1].addr = dev->i2c_addr;\\n    msgs[1].buf = buf;\\n    msgs[1].len = len;\\n    msgs[1].flags = I2C_FLAG_READ;\\n\\n    int32_t ret = I2cTransfer(dev->bus_handle, msgs, 2);\\n    if (ret != 2) {\\n        return HDF_FAILURE;\\n    }\\n    return HDF_SUCCESS;\\n}\\n\\nstatic int32_t dps310_write(struct dps310_dev *dev, uint8_t reg, uint8_t value)\\n{\\n    struct I2cMsg msg;\\n    uint8_t data[2] = {reg, value};\\n\\n    msg.addr = dev->i2c_addr;\\n    msg.buf = data;\\n    msg.len = 2;\\n    msg.flags = 0;\\n\\n    int32_t ret = I2cTransfer(dev->bus_handle, &msg, 1);\\n    if (ret != 1) {\\n        return HDF_FAILURE;\\n    }\\n    return HDF_SUCCESS;\\n}\\n\\nint32_t dps310_init(struct dps310_dev *dev, DevHandle bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = DPS310_I2C_ADDR;\\n\\n    /* Wait for sensor ready and coefficients ready */\\n    OsalMSleep(12);\\n    OsalMSleep(40);\\n\\n    /* Read ID register */\\n    uint8_t id;\\n    if (dps310_write_then_read(dev, DPS310_REG_ID, &id, 1) != HDF_SUCCESS) {\\n        return HDF_FAILURE;\\n    }\\n\\n    /* Soft reset */\\n    if (dps310_write(dev, DPS310_REG_RESET, 0x09) != HDF_SUCCESS) {\\n        return HDF_FAILURE;\\n    }\\n\\n    /* Read calibration coefficients (required by test plan) */\\n    uint8_t coef_buf[18];\\n    if (dps310_write_then_read(dev, DPS310_REG_COEF, coef_buf, 18) != HDF_SUCCESS) {\\n        return HDF_FAILURE;\\n    }\\n\\n    return HDF_SUCCESS;\\n}\\n\\nint32_t dps310_read_pressure(struct dps310_dev *dev, int32_t *pressure_raw)\\n{\\n    uint8_t buf[3];\\n    if (dps310_write_then_read(dev, DPS310_REG_PSR_B2, buf, 3) != HDF_SUCCESS) {\\n        return HDF_FAILURE;\\n    }\\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\\n    if (raw & 0x800000) {\\n        raw |= 0xFF000000;\\n    }\\n    *pressure_raw = raw;\\n    return HDF_SUCCESS;\\n}\\n\\nint32_t dps310_read_temp(struct dps310_dev *dev, int32_t *temp_raw)\\n{\\n    uint8_t buf[3];\\n    if (dps310_write_then_read(dev, DPS310_REG_TMP_B2, buf, 3) != HDF_SUCCESS) {\\n        return HDF_FAILURE;\\n    }\\n    int32_t raw = ((int32_t)buf[0] << 16) | ((int32_t)buf[1] << 8) | (int32_t)buf[2];\\n    if (raw & 0x800000) {\\n        raw |= 0xFF000000;\\n    }\\n    *temp_raw = raw;\\n    return HDF_SUCCESS;\\n}\\n\"}",
+  "plan_hash": "879f1be824f24639"
+}

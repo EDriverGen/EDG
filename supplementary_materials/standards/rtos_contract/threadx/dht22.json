@@ -1,0 +1,433 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "threadx__dht22",
+  "device_id": "dht22",
+  "rtos_id": "threadx",
+  "bus": "gpio_timing",
+  "scope": "ThreadX gpio_timing task API minimum for threadx__dht22; the reference's callback ops table is the driver/BSP boundary and tx_thread_sleep is only included when used by the task. The fixed task context binds the board implementation; unused bus/runtime features are excluded.",
+  "api_contract": {
+    "rtos": "threadx",
+    "bus": "gpio_timing",
+    "task_binding": {
+      "bus_instance": "default_gpio_slot",
+      "bus_symbol": "port0/pin0 + port0/pin1",
+      "backend": "board/BSP gpio ops + board microsecond timing hooks",
+      "mode": "polling",
+      "address_mode": null
+    },
+    "integration_style": "rtos_core_plus_board_supplied_ops",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "dht22_ref.h",
+      "threadx.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "HAL_Delay",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+            "line": 47,
+            "text": "static void _tx_gpio_delay_ms(uint32_t ms) { HAL_Delay(ms); }"
+          }
+        ],
+        "available_declaration": "void HAL_Delay(uint32_t Delay);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/threadx/threadx.h",
+          "line_start": 281,
+          "line_end": 282
+        }
+      },
+      {
+        "symbol": "HAL_GPIO_Init",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+            "line": 30,
+            "text": "HAL_GPIO_Init(_gpio_port, &gi);"
+          },
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+            "line": 36,
+            "text": "HAL_GPIO_Init(_gpio_port, &gi);"
+          }
+        ],
+        "available_declaration": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/threadx/threadx.h",
+          "line_start": 200,
+          "line_end": 201
+        }
+      },
+      {
+        "symbol": "HAL_GPIO_ReadPin",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+            "line": 44,
+            "text": "return HAL_GPIO_ReadPin(_gpio_port, _gpio_pin_mask) == GPIO_PIN_SET ? 1 : 0;"
+          }
+        ],
+        "available_declaration": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/threadx/threadx.h",
+          "line_start": 202,
+          "line_end": 203
+        }
+      },
+      {
+        "symbol": "HAL_GPIO_WritePin",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+            "line": 40,
+            "text": "HAL_GPIO_WritePin(_gpio_port, _gpio_pin_mask, val ? GPIO_PIN_SET : GPIO_PIN_RESET);"
+          }
+        ],
+        "available_declaration": "void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/threadx/threadx.h",
+          "line_start": 201,
+          "line_end": 202
+        }
+      },
+      {
+        "symbol": "read",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 10,
+            "text": "while (dev->ops->read(dev->ctx) == level) {"
+          }
+        ],
+        "declaration_resolution": "no matching function prototype in supplied harness headers or pack"
+      },
+      {
+        "symbol": "tx_thread_sleep",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_sample_ref.c",
+            "line": 20,
+            "text": "tx_thread_sleep(200);"
+          }
+        ],
+        "available_declaration": "void tx_thread_sleep(ULONG timer_ticks);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/threadx/threadx.h",
+          "line_start": 89,
+          "line_end": 89
+        }
+      },
+      {
+        "symbol": "write",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 21,
+            "text": "ops->set_output(ctx); ops->write(ctx, 1);"
+          },
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 31,
+            "text": "dev->ops->write(dev->ctx, 0);"
+          },
+          {
+            "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 33,
+            "text": "dev->ops->write(dev->ctx, 1);"
+          }
+        ],
+        "declaration_resolution": "no matching function prototype in supplied harness headers or pack"
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/threadx/gpio_timing/pack.md",
+    "driver_to_board_boundary": "Device reference accepts a callback/ops-table pointer and opaque bus context; callback function-pointer prototypes are the driver-side requirement and board routines implement them.",
+    "reference_ops": [
+      {
+        "ops_type": "struct dht22_gpio_ops",
+        "field": "set_output",
+        "signature": "void (*set_output)(void *ctx);",
+        "evidence": {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 19,
+          "line_end": 20
+        }
+      },
+      {
+        "ops_type": "struct dht22_gpio_ops",
+        "field": "set_input",
+        "signature": "void (*set_input)(void *ctx);",
+        "evidence": {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 20,
+          "line_end": 21
+        }
+      },
+      {
+        "ops_type": "struct dht22_gpio_ops",
+        "field": "write",
+        "signature": "void (*write)(void *ctx, int val);",
+        "evidence": {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 21,
+          "line_end": 22
+        }
+      },
+      {
+        "ops_type": "struct dht22_gpio_ops",
+        "field": "read",
+        "signature": "int (*read)(void *ctx);",
+        "evidence": {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 22,
+          "line_end": 23
+        }
+      },
+      {
+        "ops_type": "struct dht22_gpio_ops",
+        "field": "delay_us",
+        "signature": "void (*delay_us)(uint32_t us);",
+        "evidence": {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 23,
+          "line_end": 24
+        }
+      },
+      {
+        "ops_type": "struct dht22_gpio_ops",
+        "field": "delay_ms",
+        "signature": "void (*delay_ms)(uint32_t ms);",
+        "evidence": {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 24,
+          "line_end": 25
+        }
+      }
+    ],
+    "reference_ops_header": "tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+    "reference_call_evidence": [
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_sample_ref.c",
+        "line_start": 20,
+        "line_end": 20
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 10,
+        "line_end": 10
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 11,
+        "line_end": 11
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 20,
+        "line_end": 20
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 21,
+        "line_end": 21
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 28,
+        "line_end": 28
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 30,
+        "line_end": 30
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 31,
+        "line_end": 31
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 32,
+        "line_end": 32
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 33,
+        "line_end": 33
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 34,
+        "line_end": 34
+      },
+      {
+        "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+        "line_start": 35,
+        "line_end": 35
+      }
+    ]
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's gpio_timing connection context (default_gpio_slot; board/BSP gpio ops + board microsecond timing hooks) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 30,
+          "line_end": 30
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: HAL_GPIO_Init.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 30,
+          "line_end": 30
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 36,
+          "line_end": 36
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: HAL_GPIO_ReadPin, HAL_GPIO_WritePin, read, write. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 40,
+          "line_end": 40
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 44,
+          "line_end": 44
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 21,
+          "line_end": 21
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 40,
+          "line_end": 40
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 44,
+          "line_end": 44
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 21,
+          "line_end": 21
+        }
+      ]
+    },
+    {
+      "id": "gpio_or_chip_select",
+      "category": "gpio",
+      "requirement": "Provide the GPIO input/output and chip-select control used by the reference; for GPIO-timed tasks this includes switching the pin direction/level and sampling input as needed.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 40,
+          "line_end": 40
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 44,
+          "line_end": 44
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 21,
+          "line_end": 21
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "Provide the task-used wait/delay primitive with the reference time unit and blocking behavior: HAL_Delay, tx_thread_sleep.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_eval_adapter.c",
+          "line_start": 47,
+          "line_end": 47
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_sample_ref.c",
+          "line_start": 20,
+          "line_end": 20
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 7,
+          "line_end": 35
+        },
+        {
+          "file": "evidence/rtos/tasks/threadx__dht22/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

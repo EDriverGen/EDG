@@ -1,0 +1,197 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "cmsis-rtx__mhz19b",
+  "device_id": "mhz19b",
+  "rtos_id": "cmsis-rtx",
+  "bus": "uart_polling",
+  "scope": "cmsis-rtx uart_polling RTOS/BSP API minimum contract for cmsis-rtx__mhz19b; based on copied reference implementation and configuration, existing uart_polling API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "cmsis-rtx",
+    "bus": "uart_polling",
+    "task_binding": {
+      "connection_type": "uart_polling",
+      "mode": "polling",
+      "bus_instance": "uart1",
+      "bus_symbol": "huart1",
+      "backend": "STM32CubeF1 HAL UART with CMSIS-RTOS2 timing",
+      "address_mode": null
+    },
+    "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "mhz19b_ref.h",
+      "cmsis_os2.h",
+      "stm32f1xx_hal.h",
+      "stdint.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "HAL_UART_Init",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 17,
+            "text": "if (HAL_UART_Init(uart) != HAL_OK) {"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_UART_Init(UART_HandleTypeDef *huart);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 104,
+          "line_end": 106
+        }
+      },
+      {
+        "symbol": "HAL_UART_Receive",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 38,
+            "text": "if (HAL_UART_Receive(dev->uart, resp, MHZ19B_FRAME_LEN, 200) != HAL_OK) {"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_UART_Receive(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 113,
+          "line_end": 115
+        }
+      },
+      {
+        "symbol": "HAL_UART_Transmit",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 35,
+            "text": "if (HAL_UART_Transmit(dev->uart, cmd, MHZ19B_FRAME_LEN, 100) != HAL_OK) {"
+          },
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 62,
+            "text": "return HAL_UART_Transmit(dev->uart, cmd, MHZ19B_FRAME_LEN, 100) == HAL_OK ? 0 : -1;"
+          },
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 75,
+            "text": "return HAL_UART_Transmit(dev->uart, cmd, MHZ19B_FRAME_LEN, 100) == HAL_OK ? 0 : -1;"
+          }
+        ],
+        "available_declaration": "HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size, uint32_t Timeout);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 109,
+          "line_end": 113
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/cmsis-rtx/uart_polling/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's uart_polling connection context (uart1; STM32CubeF1 HAL UART with CMSIS-RTOS2 timing) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 17,
+          "line_end": 17
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: HAL_UART_Init.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 17,
+          "line_end": 17
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: HAL_UART_Receive, HAL_UART_Transmit. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 35,
+          "line_end": 35
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 62,
+          "line_end": 62
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 75,
+          "line_end": 75
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 38,
+          "line_end": 38
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 35,
+          "line_end": 35
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 62,
+          "line_end": 62
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 75,
+          "line_end": 75
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 38,
+          "line_end": 38
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/reference_drivers/mhz19b_ref.h",
+          "line_start": 4,
+          "line_end": 23
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__mhz19b/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

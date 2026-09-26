@@ -1,0 +1,59 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "rtthread",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef LM75A_H\n#define LM75A_H\n\n#include <stdint.h>\n\nstruct rt_i2c_bus_device;\n\nstruct lm75a_device {\n    struct rt_i2c_bus_device *bus;\n    uint8_t addr;\n};\n\nint lm75a_init(struct lm75a_device *dev, struct rt_i2c_bus_device *bus);\nint lm75a_read_temperature(struct lm75a_device *dev, int32_t *raw);\n\n#endif /* LM75A_H */",
+  "driver_source": "#include \"lm75a.h\"\n#include <stdint.h>\n\n#include \"rtthread.h\"\n#define LM75A_ADDR 0x48\n#define LM75A_REG_TEMP 0x00\n\nint lm75a_init(struct lm75a_device *dev, struct rt_i2c_bus_device *bus)\n{\n    if (dev == RT_NULL || bus == RT_NULL) {\n        return -1;\n    }\n    dev->bus = bus;\n    dev->addr = LM75A_ADDR;\n    rt_thread_mdelay(100);\n    return 0;\n}\n\nint lm75a_read_temperature(struct lm75a_device *dev, int32_t *raw)\n{\n    struct rt_i2c_msg msgs[2];\n    uint8_t cmd = LM75A_REG_TEMP;\n    uint8_t buf[2];\n    int ret;\n\n    msgs[0].addr = dev->addr;\n    msgs[0].flags = 0;\n    msgs[0].len = 1;\n    msgs[0].buf = &cmd;\n\n    msgs[1].addr = dev->addr;\n    msgs[1].flags = RT_I2C_RD;\n    msgs[1].len = 2;\n    msgs[1].buf = buf;\n\n    ret = rt_i2c_transfer(dev->bus, msgs, 2);\n    if (ret != 2) {\n        return -1;\n    }\n\n    int16_t raw16 = ((int16_t)buf[0] << 8) | buf[1];\n    *raw = (raw16 >> 5) & 0x7FF;\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, bus)",
+    "read_call": "lm75a_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "struct lm75a_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only",
+    "preamble_c": "#include \"rtthread.h\""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_temp: write_then_read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x32 0x00], raw_count = ((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 5.599,
+  "prompt_chars": 31506,
+  "raw_response": "{\"driver_header\": \"#ifndef LM75A_H\\n#define LM75A_H\\n\\n#include <stdint.h>\\n\\nstruct lm75a_device {\\n    struct rt_i2c_bus_device *bus;\\n    uint8_t addr;\\n};\\n\\nint lm75a_init(struct lm75a_device *dev, struct rt_i2c_bus_device *bus);\\nint lm75a_read_temperature(struct lm75a_device *dev, int32_t *raw);\\n\\n#endif /* LM75A_H */\", \"driver_source\": \"#include \\\"lm75a.h\\\"\\n#include \\\"rtthread.h\\\"\\n#include <stdint.h>\\n\\n#define LM75A_ADDR 0x48\\n#define LM75A_REG_TEMP 0x00\\n\\nint lm75a_init(struct lm75a_device *dev, struct rt_i2c_bus_device *bus)\\n{\\n    if (dev == RT_NULL || bus == RT_NULL) {\\n        return -1;\\n    }\\n    dev->bus = bus;\\n    dev->addr = LM75A_ADDR;\\n    rt_thread_mdelay(100);\\n    return 0;\\n}\\n\\nint lm75a_read_temperature(struct lm75a_device *dev, int32_t *raw)\\n{\\n    struct rt_i2c_msg msgs[2];\\n    uint8_t cmd = LM75A_REG_TEMP;\\n    uint8_t buf[2];\\n    int ret;\\n\\n    msgs[0].addr = dev->addr;\\n    msgs[0].flags = 0;\\n    msgs[0].len = 1;\\n    msgs[0].buf = &cmd;\\n\\n    msgs[1].addr = dev->addr;\\n    msgs[1].flags = RT_I2C_RD;\\n    msgs[1].len = 2;\\n    msgs[1].buf = buf;\\n\\n    ret = rt_i2c_transfer(dev->bus, msgs, 2);\\n    if (ret != 2) {\\n        return -1;\\n    }\\n\\n    int16_t raw16 = ((int16_t)buf[0] << 8) | buf[1];\\n    *raw = (raw16 >> 5) & 0x7FF;\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "e57c8e6b5d18e2c7"
+}

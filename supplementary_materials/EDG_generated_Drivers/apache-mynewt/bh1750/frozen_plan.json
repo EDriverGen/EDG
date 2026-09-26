@@ -1,0 +1,80 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "apache-mynewt",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus_handle)",
+    "read_call": "bh1750_read(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_lx",
+    "dev_struct_type": "struct bh1750_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ],
+          [
+            "0x07"
+          ],
+          [
+            "0x10"
+          ]
+        ],
+        "note": "Power On, Reset, Start measurement"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "read_any": true,
+        "note": "Send measurement command then read 2 bytes"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x10": [
+            "0x01",
+            "0x90"
+          ]
+        },
+        "expected_read_raw": 400000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x01 0x90 decode to raw=((0x01 << 8) | 0x90) = 400; public value in milli_lx is 400 * 1000 = 400000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x10": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((0x00 << 8) | 0x00) = 0; public value in milli_lx is 0 * 1000 = 0."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "264fd06e398a3b43",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.561,
+  "prompt_chars": 48593,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"bh1750_init(&g_eval_dev, bus_handle)\", \"read_call\": \"bh1750_read(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_lx\", \"dev_struct_type\": \"struct bh1750_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init_cycle\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x01\"], [\"0x07\"], [\"0x10\"]], \"note\": \"Power On, Reset, Start measurement\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x10\"]], \"read_any\": true, \"note\": \"Send measurement command then read 2 bytes\"}], \"test_stimuli\": [{\"name\": \"nominal_illuminance\", \"mock_preload\": {\"read_bytes\": [\"0x0B\", \"0xB8\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw = 0x0BB8 = 3000; (3000 * 1000) / 1200 = 2500? Wait recalc: 3000*1000=3000000; 3000000/1200=2500. But expected milli_lx for 3000 raw is 2500? Actually 3000/1.2=2500 lx = 2500000 milli_lx? No: formula (raw*1000)/1200 gives milli_lx. 3000*1000=3000000; /1200=2500. So 2500 milli_lx = 2.5 lx. That seems low. Let's pick raw=1200 -> (1200*1000)/1200=1000 milli_lx = 1 lx. For a more typical value, raw=30000 -> (30000*1000)/1200=25000 milli_lx = 25 lx. So set raw=30000 = 0x7530. Bytes: high=0x75, low=0x30. Derivation: (30000*1000)/1200 = 25000.\"}, {\"name\": \"zero_illuminance\", \"mock_preload\": {\"read_bytes\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw = 0; (0 * 1000) / 1200 = 0.\"}, {\"name\": \"high_illuminance\", \"mock_preload\": {\"read_bytes\": [\"0xFF\", \"0xFF\"]}, \"expected_read_raw\": 54612, \"derivation\": \"raw = 0xFFFF = 65535; (65535 * 1000) / 1200 = 65535000 / 1200 = 54612.5, truncated to 54612.\"}]}}"
+}

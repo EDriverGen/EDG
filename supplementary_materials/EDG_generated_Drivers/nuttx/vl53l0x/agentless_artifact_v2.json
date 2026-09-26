@@ -1,0 +1,2914 @@
+{
+  "version": "2.0",
+  "task_spec": {
+    "rtos_id": "nuttx",
+    "board": "nucleo-f103rb",
+    "mcu_family": "stm32f1",
+    "integration": "public_i2c_master_and_gpio_char_driver",
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "bus_intent": {
+      "canonical_bus": "i2c",
+      "connection_type": "i2c",
+      "mode": "polling",
+      "backend": "NuttX i2c_master lower-half",
+      "address_mode": "7-bit",
+      "bus_instance": "1"
+    },
+    "device_id": "vl53l0x",
+    "device_ir_hash": "65780284ec14b914",
+    "device_transaction_shape": "unknown",
+    "task_package_id": null
+  },
+  "source_roots": [
+    {
+      "root_id": "nuttx:single:0",
+      "path": "<PROJECT_ROOT>/data/rtos/nuttx-project/nuttx",
+      "roles": [
+        "kernel",
+        "runtime"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "nuttx",
+      "sha": "a84d263f"
+    },
+    {
+      "root_id": "nuttx:companion:nuttx-apps",
+      "path": "<PROJECT_ROOT>/data/rtos/nuttx-project/apps",
+      "roles": [
+        "board_integration"
+      ],
+      "priority": 1.0,
+      "rtos_scope_id": "nuttx",
+      "sha": "b8718d8"
+    }
+  ],
+  "slots": {
+    "i2c.acquire_or_bind": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function",
+        "macro"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cdev_open"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "i2c.addressing": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "macro",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "address_rule",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "i2c.addressing",
+        "fulfillment_kind": "context_binding",
+        "source": "device_ir.address_rule+task_context.device_attachment",
+        "confidence": 0.9,
+        "value": {
+          "type": "fixed_address",
+          "addresses": [
+            {
+              "address": "0x52",
+              "description": "default device address",
+              "is_default": true
+            }
+          ],
+          "default_address_resolution": {
+            "method": "description-keyword",
+            "confidence": "high",
+            "matched_pattern": "\\bdefault\\b",
+            "matched_index": 0
+          },
+          "addressing_form": "7-bit"
+        },
+        "fields": {
+          "address_rule": {
+            "type": "fixed_address",
+            "addresses": [
+              {
+                "address": "0x52",
+                "description": "default device address",
+                "is_default": true
+              }
+            ],
+            "default_address_resolution": {
+              "method": "description-keyword",
+              "confidence": "high",
+              "matched_pattern": "\\bdefault\\b",
+              "matched_index": 0
+            },
+            "addressing_form": "7-bit"
+          },
+          "addressing": {
+            "default": "0x29",
+            "alternates": [],
+            "selection_rule": "Default boot address before any address reprogramming."
+          },
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+        ]
+      },
+      "confidence": 0.9
+    },
+    "i2c.key_types": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "struct",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2ctool_s"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "i2c.key_types",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_symbol_signatures",
+        "confidence": 0.85,
+        "symbols": [
+          {
+            "symbol": "i2c_msg_s",
+            "kind": "type_ref",
+            "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+            "source_slot": "i2c.transfer",
+            "source_symbol": "i2cdev_transfer",
+            "signature": "int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-signature-type-ref"
+            ]
+          }
+        ],
+        "notes": [
+          "This slot is derived from the type references used by already-bound bus APIs."
+        ]
+      },
+      "confidence": 0.65
+    },
+    "i2c.read": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "i2c.transfer": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "i2cdev_transfer"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "i2c.write": {
+      "required": true,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    },
+    "runtime.delay_ms": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "function",
+        "macro",
+        "task_package_helper"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo",
+        "task_package_helper"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "up_mdelay"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": null,
+      "confidence": 0.95
+    },
+    "runtime.error_status": {
+      "required": true,
+      "layer": "runtime",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "enum",
+        "typedef"
+      ],
+      "preferred_root_roles": [
+        "kernel",
+        "runtime",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "covered",
+      "bindings": [
+        "OK"
+      ],
+      "fulfillment_kind": "symbol_binding",
+      "fulfillment": {
+        "slot_id": "runtime.error_status",
+        "fulfillment_kind": "multi_symbol_evidence",
+        "source": "bound_api_return_status_convention",
+        "confidence": 0.75,
+        "symbols": [
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+            "source_slot": "i2c.acquire_or_bind",
+            "source_symbol": "i2cdev_open",
+            "signature": "int i2cdev_open(int bus)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          },
+          {
+            "symbol": "int_status_return",
+            "kind": "type_ref",
+            "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+            "source_slot": "i2c.transfer",
+            "source_symbol": "i2cdev_transfer",
+            "signature": "int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)",
+            "score": 0.95,
+            "match_reasons": [
+              "bound-api-return-status-convention"
+            ]
+          }
+        ],
+        "notes": [
+          "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+        ]
+      },
+      "confidence": 1.0
+    },
+    "integration.bus_instance_binding": {
+      "required": true,
+      "layer": "integration",
+      "canonical_bus": null,
+      "expected_kinds": [
+        "macro",
+        "struct",
+        "config"
+      ],
+      "preferred_root_roles": [
+        "board_integration",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template+bus_instance",
+      "status": "covered",
+      "bindings": [],
+      "fulfillment_kind": "context_binding",
+      "fulfillment": {
+        "slot_id": "integration.bus_instance_binding",
+        "fulfillment_kind": "context_binding",
+        "source": "task_context.connection_binding",
+        "confidence": 0.95,
+        "value": "1",
+        "fields": {
+          "bus_instance": "1",
+          "bus_symbol": "board_i2cbus_initialize(1)",
+          "backend": "NuttX i2c_master lower-half",
+          "mode": "polling",
+          "address_mode": "7-bit"
+        },
+        "notes": [
+          "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+        ]
+      },
+      "confidence": 0.95
+    },
+    "i2c.release": {
+      "required": false,
+      "layer": "bus",
+      "canonical_bus": "i2c",
+      "expected_kinds": [
+        "function"
+      ],
+      "preferred_root_roles": [
+        "driver_framework",
+        "vendor_hal"
+      ],
+      "source_kinds_allowed": [
+        "manifest_repo"
+      ],
+      "origin": "template",
+      "status": "ambiguous",
+      "bindings": [],
+      "fulfillment_kind": null,
+      "fulfillment": null,
+      "confidence": 0.0
+    }
+  },
+  "symbols": {
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "symbol": "OK",
+      "kind": "macro",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "0",
+      "signature_source": "parser",
+      "declared_in": "nuttx:companion:nuttx-apps::system/zmodem/host/nuttx/config.h",
+      "implemented_in": null,
+      "required_headers": [
+        "system/zmodem/host/nuttx/config.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 1.0,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "nuttx:companion:nuttx-apps",
+          "path": "system/zmodem/host/nuttx/config.h",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "exact-name+12.0"
+      ]
+    },
+    "i2c.acquire_or_bind": {
+      "slot_id": "i2c.acquire_or_bind",
+      "symbol": "i2cdev_open",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int i2cdev_open(int bus)",
+      "signature_source": "parser",
+      "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+      "implemented_in": null,
+      "required_headers": [
+        "system/i2c/i2ctool.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "nuttx:companion:nuttx-apps",
+          "path": "system/i2c/i2c_devif.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=3+6.0",
+        "path-tok=1+1.5",
+        "bus[i2c]+2.0",
+        "llm_bound:i2cdev_open is a public HAL function in NuttX that opens an I2C bus device, matching the slot's intent. It is declared i"
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "symbol": "i2ctool_s",
+      "kind": "struct",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": null,
+      "signature_source": "parser",
+      "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_main.c",
+      "implemented_in": null,
+      "required_headers": [
+        "system/i2c/i2ctool.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.65,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "nuttx:companion:nuttx-apps",
+          "path": "system/i2c/i2c_main.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "path-tok=1+1.5",
+        "bus[i2c]+2.0",
+        "llm_bound:Candidate i2ctool_s from system/i2c/i2ctool.h is a public header struct with i2c in its path and name, matching the slot"
+      ]
+    },
+    "i2c.transfer": {
+      "slot_id": "i2c.transfer",
+      "symbol": "i2cdev_transfer",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)",
+      "signature_source": "parser",
+      "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+      "implemented_in": null,
+      "required_headers": [
+        "system/i2c/i2ctool.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "nuttx:companion:nuttx-apps",
+          "path": "system/i2c/i2c_devif.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=2+6.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "bus[i2c]+2.0",
+        "llm_bound:The candidate i2cdev_transfer matches the slot intent for I2C transfer, is declared in a public header (i2ctool.h) with "
+      ]
+    },
+    "runtime.delay_ms": {
+      "slot_id": "runtime.delay_ms",
+      "symbol": "up_mdelay",
+      "kind": "function",
+      "source_kind": "manifest_repo",
+      "verification": "source_declared",
+      "signature": "void weak_function up_mdelay(unsigned int milliseconds)",
+      "signature_source": "parser",
+      "declared_in": "nuttx:single:0::sched/clock/clock_delay.c",
+      "implemented_in": null,
+      "required_headers": [
+        "include/nuttx/arch.h"
+      ],
+      "required_types": [],
+      "return_semantics": null,
+      "semantic_role": null,
+      "confidence": 0.95,
+      "allowed_for_codegen": true,
+      "requires_runtime_provision": false,
+      "evidence": [
+        {
+          "root_id": "nuttx:single:0",
+          "path": "sched/clock/clock_delay.c",
+          "start_line": null,
+          "end_line": null,
+          "kind": "declaration"
+        }
+      ],
+      "notes": [
+        "name-tok=1+3.0",
+        "sig-tok=2+4.0",
+        "path-tok=1+1.5",
+        "root-role+3.0",
+        "llm_bound:up_mdelay is a millisecond delay function from NuttX kernel, matching the slot's intent and task context (nuttx, stm32f1"
+      ]
+    }
+  },
+  "_symbol_index": {
+    "OK": [
+      "runtime.error_status"
+    ],
+    "i2cdev_open": [
+      "i2c.acquire_or_bind"
+    ],
+    "i2ctool_s": [
+      "i2c.key_types"
+    ],
+    "i2cdev_transfer": [
+      "i2c.transfer"
+    ],
+    "up_mdelay": [
+      "runtime.delay_ms"
+    ]
+  },
+  "slot_fulfillments": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "fixed_address",
+        "addresses": [
+          {
+            "address": "0x52",
+            "description": "default device address",
+            "is_default": true
+          }
+        ],
+        "default_address_resolution": {
+          "method": "description-keyword",
+          "confidence": "high",
+          "matched_pattern": "\\bdefault\\b",
+          "matched_index": 0
+        },
+        "addressing_form": "7-bit"
+      },
+      "fields": {
+        "address_rule": {
+          "type": "fixed_address",
+          "addresses": [
+            {
+              "address": "0x52",
+              "description": "default device address",
+              "is_default": true
+            }
+          ],
+          "default_address_resolution": {
+            "method": "description-keyword",
+            "confidence": "high",
+            "matched_pattern": "\\bdefault\\b",
+            "matched_index": 0
+          },
+          "addressing_form": "7-bit"
+        },
+        "addressing": {
+          "default": "0x29",
+          "alternates": [],
+          "selection_rule": "Default boot address before any address reprogramming."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "i2c_msg_s",
+          "kind": "type_ref",
+          "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cdev_transfer",
+          "signature": "int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "i2cdev_open",
+          "signature": "int i2cdev_open(int bus)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cdev_transfer",
+          "signature": "int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "1",
+      "fields": {
+        "bus_instance": "1",
+        "bus_symbol": "board_i2cbus_initialize(1)",
+        "backend": "NuttX i2c_master lower-half",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "context_bindings": {
+    "i2c.addressing": {
+      "slot_id": "i2c.addressing",
+      "fulfillment_kind": "context_binding",
+      "source": "device_ir.address_rule+task_context.device_attachment",
+      "confidence": 0.9,
+      "value": {
+        "type": "fixed_address",
+        "addresses": [
+          {
+            "address": "0x52",
+            "description": "default device address",
+            "is_default": true
+          }
+        ],
+        "default_address_resolution": {
+          "method": "description-keyword",
+          "confidence": "high",
+          "matched_pattern": "\\bdefault\\b",
+          "matched_index": 0
+        },
+        "addressing_form": "7-bit"
+      },
+      "fields": {
+        "address_rule": {
+          "type": "fixed_address",
+          "addresses": [
+            {
+              "address": "0x52",
+              "description": "default device address",
+              "is_default": true
+            }
+          ],
+          "default_address_resolution": {
+            "method": "description-keyword",
+            "confidence": "high",
+            "matched_pattern": "\\bdefault\\b",
+            "matched_index": 0
+          },
+          "addressing_form": "7-bit"
+        },
+        "addressing": {
+          "default": "0x29",
+          "alternates": [],
+          "selection_rule": "Default boot address before any address reprogramming."
+        },
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Device addressing is a device/task fact; the RTOS API only consumes the chosen address value."
+      ]
+    },
+    "integration.bus_instance_binding": {
+      "slot_id": "integration.bus_instance_binding",
+      "fulfillment_kind": "context_binding",
+      "source": "task_context.connection_binding",
+      "confidence": 0.95,
+      "value": "1",
+      "fields": {
+        "bus_instance": "1",
+        "bus_symbol": "board_i2cbus_initialize(1)",
+        "backend": "NuttX i2c_master lower-half",
+        "mode": "polling",
+        "address_mode": "7-bit"
+      },
+      "notes": [
+        "Concrete bus instance comes from the task package / board context, not from an RTOS API symbol."
+      ]
+    }
+  },
+  "multi_symbol_evidence": {
+    "i2c.key_types": {
+      "slot_id": "i2c.key_types",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_symbol_signatures",
+      "confidence": 0.85,
+      "symbols": [
+        {
+          "symbol": "i2c_msg_s",
+          "kind": "type_ref",
+          "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cdev_transfer",
+          "signature": "int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-signature-type-ref"
+          ]
+        }
+      ],
+      "notes": [
+        "This slot is derived from the type references used by already-bound bus APIs."
+      ]
+    },
+    "runtime.error_status": {
+      "slot_id": "runtime.error_status",
+      "fulfillment_kind": "multi_symbol_evidence",
+      "source": "bound_api_return_status_convention",
+      "confidence": 0.75,
+      "symbols": [
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+          "source_slot": "i2c.acquire_or_bind",
+          "source_symbol": "i2cdev_open",
+          "signature": "int i2cdev_open(int bus)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        },
+        {
+          "symbol": "int_status_return",
+          "kind": "type_ref",
+          "declared_in": "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+          "source_slot": "i2c.transfer",
+          "source_symbol": "i2cdev_transfer",
+          "signature": "int i2cdev_transfer(int fd, FAR struct i2c_msg_s *msgv, int msgc)",
+          "score": 0.95,
+          "match_reasons": [
+            "bound-api-return-status-convention"
+          ]
+        }
+      ],
+      "notes": [
+        "Status/error handling is represented by the return convention of already-bound RTOS/bus APIs."
+      ]
+    }
+  },
+  "transaction_fulfillments": {},
+  "types": {},
+  "integration": {
+    "bus_instance": "1",
+    "bus_symbol": "board_i2cbus_initialize(1)",
+    "backend": "NuttX i2c_master lower-half",
+    "mode": "polling",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "device_attachment": {
+      "device_id": "vl53l0x",
+      "attachment_type": "i2c_sensor",
+      "required_bus_type": "i2c",
+      "address_mode": "7-bit",
+      "addressing": {
+        "default": "0x29",
+        "alternates": [],
+        "selection_rule": "Default boot address before any address reprogramming."
+      },
+      "required_attachment": {
+        "signals": [],
+        "notes": [
+          "Minimal reference driver uses only the core I2C register path documented in the datasheet."
+        ]
+      },
+      "optional_attachment": {
+        "xshut_pin": "optional",
+        "gpio1_interrupt_pin": "optional"
+      },
+      "default_overrides": {
+        "bus_instance": null,
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      },
+      "notes": [
+        "This attachment context intentionally targets the datasheet-backed minimal single-shot flow, not the full ST API stack.",
+        "If a project needs advanced ranging modes or calibration workflows, additional vendor API context should be attached separately."
+      ],
+      "evidence": [
+        "DriverGen/data/raw/vl53l0x/VL53L0X.pdf",
+        "DriverGen/data/references/vl53l0x/*/*_ref.h"
+      ]
+    },
+    "include_headers": [
+      "../nuts.h",
+      "alt1250_container.h",
+      "alt1250_daemon.h",
+      "alt1250_dbg.h",
+      "alt1250_devif.h",
+      "alt1250_evt.h",
+      "alt1250_fwupdate.h",
+      "alt1250_postproc.h",
+      "alt1250_sms.h",
+      "alt1250_socket.h",
+      "alt1250_usockevent.h",
+      "alt1250_usockif.h",
+      "alt1250_usrsock_hdlr.h",
+      "alt1250_util.h",
+      "arch/arch.h",
+      "arch/arm/include/limits.h",
+      "arch/inttypes.h",
+      "arch/irq.h",
+      "arch/stdbool.h",
+      "arch/stdint.h",
+      "arch/types.h",
+      "arpa/inet.h",
+      "assert.h",
+      "cmocka.h",
+      "debug.h",
+      "errno.h",
+      "fcntl.h",
+      "i2ctool.h",
+      "include/assert.h",
+      "include/errno.h",
+      "include/lzf.h",
+      "include/malloc.h",
+      "include/modbus/mb.h",
+      "include/modbus/mb_m.h",
+      "include/modbus/mbframe.h",
+      "include/modbus/mbfunc.h",
+      "include/modbus/mbport.h",
+      "include/modbus/mbproto.h",
+      "include/modbus/mbutils.h",
+      "include/netutils/netlib.h",
+      "include/netutils/smtp.h",
+      "include/nuttx/arch.h",
+      "include/nuttx/bits.h",
+      "include/nuttx/board.h",
+      "include/nuttx/cache.h",
+      "include/nuttx/can.h",
+      "include/nuttx/circbuf.h",
+      "include/nuttx/clock.h",
+      "include/nuttx/compiler.h",
+      "include/nuttx/config.h",
+      "include/nuttx/event.h",
+      "include/nuttx/init.h",
+      "include/nuttx/irq.h",
+      "include/nuttx/lin.h",
+      "include/nuttx/list.h",
+      "include/nuttx/list_type.h",
+      "include/nuttx/mm/mm.h",
+      "include/nuttx/mqueue.h",
+      "include/nuttx/mutex.h",
+      "include/nuttx/notifier.h",
+      "include/nuttx/queue.h",
+      "include/nuttx/sched.h",
+      "include/nuttx/scsi.h",
+      "include/nuttx/sdio.h",
+      "include/nuttx/semaphore.h",
+      "include/nuttx/signal.h",
+      "include/nuttx/streams.h",
+      "include/nuttx/thermal.h",
+      "include/nuttx/timers/clkcnt.h",
+      "include/nuttx/timers/cs2100-cp.h",
+      "include/nuttx/timers/oneshot.h",
+      "include/nuttx/timers/timer.h",
+      "include/nuttx/timers/watchdog.h",
+      "include/nuttx/userspace.h",
+      "include/nuttx/wdog.h",
+      "include/nuttx/wqueue.h",
+      "include/poll.h",
+      "include/stdbool.h",
+      "include/stddef.h",
+      "include/stdint.h",
+      "include/stdio.h",
+      "include/time.h",
+      "inttypes.h",
+      "limits.h",
+      "lte/alt1250/alt1250_container.h",
+      "lte/alt1250/alt1250_daemon.h",
+      "lte/alt1250/alt1250_postproc.h",
+      "lte/alt1250/alt1250_usockevent.h",
+      "lte/alt1250/alt1250_usockif.h",
+      "lte/alt1250/alt1250_util.h",
+      "lte/alt1250/callback_handlers/alt1250_evt.h",
+      "lte/alt1250/usock_handlers/alt1250_fwupdate.h",
+      "lte/alt1250/usock_handlers/alt1250_ioctl_subhdlr.h",
+      "lte/alt1250/usock_handlers/alt1250_sms.h",
+      "lte/alt1250/usock_handlers/alt1250_usrsock_hdlr.h",
+      "lte/lapi.h",
+      "lte/lte_api.h",
+      "lte/lte_lwm2m.h",
+      "lzf.h",
+      "malloc.h",
+      "mbascii.h",
+      "mbcrc.h",
+      "mbport.h",
+      "mbproto.h",
+      "modbus/ascii/mbascii.h",
+      "modbus/mb.h",
+      "modbus/mb_m.h",
+      "modbus/mbframe.h",
+      "modbus/mbport.h",
+      "modbus/nuttx/port.h",
+      "mqueue.h",
+      "net/if.h",
+      "netinet/in.h",
+      "netutils/netlib.h",
+      "netutils/smtp.h",
+      "nuttx/addrenv.h",
+      "nuttx/arch.h",
+      "nuttx/cache.h",
+      "nuttx/can.h",
+      "nuttx/can/can_common.h",
+      "nuttx/clock.h",
+      "nuttx/compiler.h",
+      "nuttx/config.h",
+      "nuttx/crc32.h",
+      "nuttx/event.h",
+      "nuttx/fs/fs.h",
+      "nuttx/fs/ioctl.h",
+      "nuttx/i2c/i2c_master.h",
+      "nuttx/irq.h",
+      "nuttx/leds/userled.h",
+      "nuttx/lib/lib.h",
+      "nuttx/lib/math32.h",
+      "nuttx/list.h",
+      "nuttx/list_type.h",
+      "nuttx/mm/iob.h",
+      "nuttx/mm/map.h",
+      "nuttx/modem/alt1250.h",
+      "nuttx/mtd/configdata.h",
+      "nuttx/mtd/mtd.h",
+      "nuttx/mutex.h",
+      "nuttx/net/dns.h",
+      "nuttx/net/ip.h",
+      "nuttx/net/netconfig.h",
+      "nuttx/net/netdev.h",
+      "nuttx/net/netfilter/ip6_tables.h",
+      "nuttx/net/netfilter/ip_tables.h",
+      "nuttx/net/sms.h",
+      "nuttx/net/usrsock.h",
+      "nuttx/notifier.h",
+      "nuttx/queue.h",
+      "nuttx/sched.h",
+      "nuttx/semaphore.h",
+      "nuttx/sensors/bmi160.h",
+      "nuttx/signal.h",
+      "nuttx/spinlock.h",
+      "nuttx/spinlock_type.h",
+      "nuttx/timers/clkcnt.h",
+      "nuttx/tls.h",
+      "nuttx/userspace.h",
+      "nuttx/wdog.h",
+      "nuttx/wireless/lte/lte.h",
+      "nuttx/wireless/lte/lte_ioctl.h",
+      "nuttx/wqueue.h",
+      "poll.h",
+      "port.h",
+      "pthread.h",
+      "sched.h",
+      "semaphore.h",
+      "setjmp.h",
+      "signal.h",
+      "stdarg.h",
+      "stdbool.h",
+      "stddef.h",
+      "stdint.h",
+      "stdio.h",
+      "stdlib.h",
+      "string.h",
+      "sys/boardctl.h",
+      "sys/ioctl.h",
+      "sys/param.h",
+      "sys/poll.h",
+      "sys/socket.h",
+      "sys/stat.h",
+      "sys/time.h",
+      "sys/timex.h",
+      "sys/types.h",
+      "sys/wait.h",
+      "system/i2c/i2ctool.h",
+      "system/zmodem/host/debug.h",
+      "system/zmodem/host/nuttx/compiler.h",
+      "system/zmodem/host/nuttx/config.h",
+      "system/zmodem/host/nuttx/crc32.h",
+      "termios.h",
+      "testing/nuts/devices/tests.h",
+      "testing/nuts/dstructs/tests.h",
+      "time.h",
+      "unistd.h"
+    ],
+    "helper_usage_patterns": [],
+    "runtime_provision_required_for": []
+  },
+  "files": {
+    "api_definition": [
+      {
+        "path": "include/nuttx/init.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 1,
+        "n_macros": 10,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 1
+      },
+      {
+        "path": "include/nuttx/arch.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.error_status"
+        ],
+        "n_functions": 139,
+        "n_macros": 41,
+        "n_typedefs": 3,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/board.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 38,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/bits.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 6,
+        "n_macros": 29,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/lin.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 49,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/mm/mm.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 45,
+        "n_macros": 36,
+        "n_typedefs": 0,
+        "n_structs": 9,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/streams.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 37,
+        "n_macros": 12,
+        "n_typedefs": 14,
+        "n_structs": 33,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/thermal.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 8,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 12,
+        "n_enums": 2
+      },
+      {
+        "path": "include/nuttx/circbuf.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 20,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/event.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 11,
+        "n_macros": 11,
+        "n_typedefs": 3,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/list.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 3,
+        "n_macros": 47,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/timers/cs2100-cp.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 3,
+        "n_macros": 63,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2ctool.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 18,
+        "n_macros": 19,
+        "n_typedefs": 1,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/modbus/mbproto.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 20,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/modbus/mb_m.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 42,
+        "n_macros": 2,
+        "n_typedefs": 2,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "testing/nuts/devices/tests.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 5,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/callback_handlers/alt1250_evt.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 15,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "testing/nuts/dstructs/tests.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 3,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/usock_handlers/alt1250_sms.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 8,
+        "n_macros": 6,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 1
+      },
+      {
+        "path": "lte/alt1250/usock_handlers/alt1250_fwupdate.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/usock_handlers/alt1250_ioctl_subhdlr.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/usock_handlers/alt1250_usrsock_hdlr.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 29,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "modbus/nuttx/port.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 10,
+        "n_macros": 7,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/clock.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 18,
+        "n_macros": 117,
+        "n_typedefs": 2,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/timers/oneshot.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 17,
+        "n_macros": 18,
+        "n_typedefs": 1,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/wdog.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 6,
+        "n_macros": 6,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/errno.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 287,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/timers/timer.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 9,
+        "n_macros": 24,
+        "n_typedefs": 1,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/timers/watchdog.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 7,
+        "n_macros": 19,
+        "n_typedefs": 0,
+        "n_structs": 7,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/can.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 106,
+        "n_typedefs": 2,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/sdio.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 7,
+        "n_macros": 283,
+        "n_typedefs": 3,
+        "n_structs": 1,
+        "n_enums": 1
+      },
+      {
+        "path": "include/nuttx/mqueue.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 20,
+        "n_macros": 22,
+        "n_typedefs": 0,
+        "n_structs": 6,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/mutex.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 33,
+        "n_macros": 9,
+        "n_typedefs": 2,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/semaphore.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 24,
+        "n_macros": 15,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/signal.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 18,
+        "n_macros": 31,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/scsi.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 455,
+        "n_typedefs": 0,
+        "n_structs": 31,
+        "n_enums": 0
+      },
+      {
+        "path": "include/modbus/mb.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 12,
+        "n_macros": 2,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/modbus/mbframe.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 7,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/modbus/mbfunc.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 10,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/modbus/mbport.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.release",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 47,
+        "n_macros": 1,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/modbus/mbutils.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "modbus/ascii/mbascii.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 8,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/netutils/netlib.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 89,
+        "n_macros": 13,
+        "n_typedefs": 1,
+        "n_structs": 16,
+        "n_enums": 1
+      },
+      {
+        "path": "include/netutils/smtp.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 4,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/alt1250_container.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 10,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/alt1250_daemon.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 6,
+        "n_macros": 17,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 1
+      },
+      {
+        "path": "lte/alt1250/alt1250_postproc.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/alt1250_usockevent.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 2,
+        "n_macros": 16,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/alt1250_usockif.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 12,
+        "n_macros": 11,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/alt1250_util.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 2,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/zmodem/host/debug.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 5,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/zmodem/host/nuttx/compiler.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 0,
+        "n_macros": 148,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/zmodem/host/nuttx/config.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 1,
+        "n_macros": 21,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/zmodem/host/nuttx/crc32.h",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "header",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 2,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "arch/arm/include/limits.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 0,
+        "n_macros": 30,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/assert.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 1,
+        "n_macros": 35,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/lzf.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 2,
+        "n_macros": 11,
+        "n_typedefs": 4,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/malloc.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 4,
+        "n_macros": 16,
+        "n_typedefs": 0,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/cache.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.error_status"
+        ],
+        "n_functions": 23,
+        "n_macros": 26,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/compiler.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 589,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/config.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 45,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/irq.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 6,
+        "n_macros": 47,
+        "n_typedefs": 7,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/list_type.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.delay_ms"
+        ],
+        "n_functions": 0,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/notifier.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 19,
+        "n_typedefs": 1,
+        "n_structs": 4,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/queue.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 20,
+        "n_macros": 36,
+        "n_typedefs": 4,
+        "n_structs": 8,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/sched.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.error_status"
+        ],
+        "n_functions": 43,
+        "n_macros": 89,
+        "n_typedefs": 6,
+        "n_structs": 14,
+        "n_enums": 2
+      },
+      {
+        "path": "include/nuttx/timers/clkcnt.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 13,
+        "n_macros": 4,
+        "n_typedefs": 1,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/userspace.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 0,
+        "n_macros": 4,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 0
+      },
+      {
+        "path": "include/nuttx/wqueue.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.error_status"
+        ],
+        "n_functions": 18,
+        "n_macros": 22,
+        "n_typedefs": 2,
+        "n_structs": 3,
+        "n_enums": 1
+      },
+      {
+        "path": "include/poll.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/stdbool.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 7,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/stddef.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 0,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/stdint.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind",
+          "runtime.delay_ms",
+          "runtime.error_status"
+        ],
+        "n_functions": 0,
+        "n_macros": 63,
+        "n_typedefs": 68,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "include/stdio.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "i2c.acquire_or_bind"
+        ],
+        "n_functions": 69,
+        "n_macros": 32,
+        "n_typedefs": 1,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "include/time.h",
+        "root_id": "nuttx:single:0",
+        "file_kind": "header",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 28,
+        "n_macros": 16,
+        "n_typedefs": 0,
+        "n_structs": 4,
+        "n_enums": 0
+      }
+    ],
+    "implementation": [
+      {
+        "path": "system/i2c/i2c_main.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 13,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "testing/drivers/drivertest/drivertest_i2c_read.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write"
+        ],
+        "n_functions": 7,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "testing/drivers/drivertest/drivertest_i2c_write.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write"
+        ],
+        "n_functions": 7,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2c_devif.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.read",
+          "i2c.release",
+          "i2c.transfer",
+          "i2c.write"
+        ],
+        "n_functions": 5,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2c_dump.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2c_get.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2c_set.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.read",
+          "i2c.release",
+          "i2c.write"
+        ],
+        "n_functions": 2,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2c_verf.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.read",
+          "i2c.release"
+        ],
+        "n_functions": 1,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2c_dev.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.addressing",
+          "i2c.read"
+        ],
+        "n_functions": 1,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "examples/configdata/configdata_main.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 16,
+        "n_macros": 9,
+        "n_typedefs": 0,
+        "n_structs": 5,
+        "n_enums": 0
+      },
+      {
+        "path": "testing/drivers/drivertest/drivertest_i2c_spi.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.read"
+        ],
+        "n_functions": 5,
+        "n_macros": 2,
+        "n_typedefs": 0,
+        "n_structs": 1,
+        "n_enums": 0
+      },
+      {
+        "path": "system/i2c/i2c_reset.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.read"
+        ],
+        "n_functions": 1,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "examples/modbusmaster/mbmaster_main.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 6,
+        "n_macros": 12,
+        "n_typedefs": 0,
+        "n_structs": 3,
+        "n_enums": 1
+      },
+      {
+        "path": "examples/sendmail/sendmail_main.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 1,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "modbus/nuttx/portevent_m.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.write"
+        ],
+        "n_functions": 11,
+        "n_macros": 1,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "sched/clock/clock_delay.c",
+        "root_id": "nuttx:single:0",
+        "file_kind": "source",
+        "role_hint": "kernel",
+        "slot_ids": [
+          "runtime.delay_ms"
+        ],
+        "n_functions": 4,
+        "n_macros": 3,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "examples/modbus/modbus_main.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.release",
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 13,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 1
+      },
+      {
+        "path": "system/i2c/i2c_bus.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.release"
+        ],
+        "n_functions": 1,
+        "n_macros": 0,
+        "n_typedefs": 0,
+        "n_structs": 0,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/callback_handlers/alt1250_evt.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 115,
+        "n_macros": 8,
+        "n_typedefs": 0,
+        "n_structs": 14,
+        "n_enums": 0
+      },
+      {
+        "path": "lte/alt1250/usock_handlers/alt1250_sms.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "i2c.key_types"
+        ],
+        "n_functions": 32,
+        "n_macros": 19,
+        "n_typedefs": 0,
+        "n_structs": 2,
+        "n_enums": 0
+      },
+      {
+        "path": "modbus/ascii/mbascii.c",
+        "root_id": "nuttx:companion:nuttx-apps",
+        "file_kind": "source",
+        "role_hint": null,
+        "slot_ids": [
+          "integration.bus_instance_binding"
+        ],
+        "n_functions": 14,
+        "n_macros": 7,
+        "n_typedefs": 3,
+        "n_structs": 0,
+        "n_enums": 0
+      }
+    ],
+    "board_config": [],
+    "exemplar": [],
+    "other": []
+  },
+  "transaction_templates": [
+    {
+      "template_id": "vl53l0x_init_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.init_sequence (4 step(s)) via priority chain; weakest path used: shape."
+    },
+    {
+      "template_id": "vl53l0x_read_sequence",
+      "steps": [
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        },
+        {
+          "op": "description",
+          "args": {},
+          "slot_id": null,
+          "bound_symbol": null,
+          "derivation": "shape",
+          "confidence": 0.1,
+          "description": ""
+        }
+      ],
+      "derivation": "shape",
+      "confidence": 0.1,
+      "requires_human": false,
+      "notes": "Translated from device_ir.read_sequence (3 step(s)) via priority chain; weakest path used: shape."
+    }
+  ],
+  "validation": {
+    "passed_gates": [
+      "root_coverage",
+      "symbol_existence",
+      "root_role",
+      "example_consistency",
+      "no_stub_authority",
+      "cache_provenance"
+    ],
+    "failed_gates": [
+      "slot_coverage"
+    ],
+    "warnings": [
+      "mcu_affinity"
+    ],
+    "gate_results": [
+      {
+        "gate_id": "root_coverage",
+        "passed": true,
+        "severity": "info",
+        "message": "rtos 'nuttx' is integrated; n_roots=2 (no minimum)",
+        "evidence": {
+          "rtos_id": "nuttx",
+          "n_roots": 2
+        }
+      },
+      {
+        "gate_id": "slot_coverage",
+        "passed": false,
+        "severity": "error",
+        "message": "2 required slot(s) uncovered: ['i2c.read', 'i2c.write']",
+        "evidence": {
+          "missing_required": [
+            "i2c.read",
+            "i2c.write"
+          ],
+          "non_symbol_fulfillments": [
+            "i2c.addressing",
+            "i2c.key_types",
+            "integration.bus_instance_binding",
+            "runtime.error_status"
+          ]
+        }
+      },
+      {
+        "gate_id": "symbol_existence",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings traced to parsed source",
+        "evidence": {
+          "missing": []
+        }
+      },
+      {
+        "gate_id": "root_role",
+        "passed": true,
+        "severity": "info",
+        "message": "all manifest_repo bindings come from authoritative roles",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "mcu_affinity",
+        "passed": false,
+        "severity": "warning",
+        "message": "no manifest binding's declared_in mentions mcu_family=stm32f1 (5 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+        "evidence": {
+          "other_paths_sample": [
+            "nuttx:companion:nuttx-apps::system/zmodem/host/nuttx/config.h",
+            "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+            "nuttx:companion:nuttx-apps::system/i2c/i2c_main.c",
+            "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+            "nuttx:single:0::sched/clock/clock_delay.c"
+          ]
+        }
+      },
+      {
+        "gate_id": "example_consistency",
+        "passed": true,
+        "severity": "info",
+        "message": "no exemplar files referenced; gate skipped",
+        "evidence": {}
+      },
+      {
+        "gate_id": "no_stub_authority",
+        "passed": true,
+        "severity": "info",
+        "message": "no stub source_kind in current bindings (or all marked link-only)",
+        "evidence": {
+          "bad": []
+        }
+      },
+      {
+        "gate_id": "cache_provenance",
+        "passed": true,
+        "severity": "info",
+        "message": "all cache-provenance fields present",
+        "evidence": {
+          "missing": []
+        }
+      }
+    ]
+  },
+  "ledger": {
+    "rounds": [
+      {
+        "round": 0,
+        "deterministic": true,
+        "covered_slots": [
+          "runtime.error_status"
+        ],
+        "missing_slots": [
+          "i2c.acquire_or_bind",
+          "i2c.addressing",
+          "i2c.key_types",
+          "i2c.read",
+          "i2c.transfer",
+          "i2c.write",
+          "runtime.delay_ms",
+          "integration.bus_instance_binding",
+          "i2c.release"
+        ],
+        "new_files_added": [
+          "nuttx:single:0::include/nuttx/init.h",
+          "nuttx:single:0::include/nuttx/arch.h",
+          "nuttx:single:0::include/nuttx/board.h",
+          "nuttx:single:0::include/nuttx/bits.h",
+          "nuttx:single:0::include/nuttx/lin.h",
+          "nuttx:single:0::include/nuttx/mm/mm.h",
+          "nuttx:single:0::include/nuttx/streams.h",
+          "nuttx:single:0::include/nuttx/thermal.h",
+          "nuttx:single:0::include/nuttx/circbuf.h",
+          "nuttx:single:0::include/nuttx/event.h",
+          "nuttx:single:0::include/nuttx/list.h",
+          "nuttx:single:0::include/nuttx/timers/cs2100-cp.h",
+          "nuttx:companion:nuttx-apps::system/i2c/i2ctool.h",
+          "nuttx:companion:nuttx-apps::include/modbus/mbproto.h",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_main.c",
+          "nuttx:companion:nuttx-apps::testing/drivers/drivertest/drivertest_i2c_read.c",
+          "nuttx:companion:nuttx-apps::testing/drivers/drivertest/drivertest_i2c_write.c",
+          "nuttx:companion:nuttx-apps::include/modbus/mb_m.h",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_devif.c",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_dump.c",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_get.c",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_set.c",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_verf.c",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_dev.c",
+          "nuttx:companion:nuttx-apps::testing/nuts/devices/tests.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/callback_handlers/alt1250_evt.h",
+          "nuttx:companion:nuttx-apps::testing/nuts/dstructs/tests.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/usock_handlers/alt1250_sms.h",
+          "nuttx:companion:nuttx-apps::examples/configdata/configdata_main.c",
+          "nuttx:companion:nuttx-apps::lte/alt1250/usock_handlers/alt1250_fwupdate.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/usock_handlers/alt1250_ioctl_subhdlr.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/usock_handlers/alt1250_usrsock_hdlr.h",
+          "nuttx:companion:nuttx-apps::testing/drivers/drivertest/drivertest_i2c_spi.c",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_reset.c",
+          "nuttx:companion:nuttx-apps::examples/modbusmaster/mbmaster_main.c",
+          "nuttx:companion:nuttx-apps::examples/sendmail/sendmail_main.c",
+          "nuttx:companion:nuttx-apps::modbus/nuttx/port.h",
+          "nuttx:companion:nuttx-apps::modbus/nuttx/portevent_m.c",
+          "nuttx:single:0::sched/clock/clock_delay.c",
+          "nuttx:single:0::include/nuttx/clock.h",
+          "nuttx:single:0::include/nuttx/timers/oneshot.h",
+          "nuttx:single:0::include/nuttx/wdog.h",
+          "nuttx:single:0::include/errno.h",
+          "nuttx:single:0::include/nuttx/timers/timer.h",
+          "nuttx:single:0::include/nuttx/timers/watchdog.h",
+          "nuttx:single:0::include/nuttx/can.h",
+          "nuttx:single:0::include/nuttx/sdio.h",
+          "nuttx:single:0::include/nuttx/mqueue.h",
+          "nuttx:single:0::include/nuttx/mutex.h",
+          "nuttx:single:0::include/nuttx/semaphore.h",
+          "nuttx:single:0::include/nuttx/signal.h",
+          "nuttx:single:0::include/nuttx/scsi.h",
+          "nuttx:companion:nuttx-apps::examples/modbus/modbus_main.c",
+          "nuttx:companion:nuttx-apps::include/modbus/mb.h",
+          "nuttx:companion:nuttx-apps::include/modbus/mbframe.h",
+          "nuttx:companion:nuttx-apps::include/modbus/mbfunc.h",
+          "nuttx:companion:nuttx-apps::include/modbus/mbport.h",
+          "nuttx:companion:nuttx-apps::include/modbus/mbutils.h",
+          "nuttx:companion:nuttx-apps::modbus/ascii/mbascii.h",
+          "nuttx:companion:nuttx-apps::system/i2c/i2c_bus.c",
+          "nuttx:companion:nuttx-apps::include/netutils/netlib.h",
+          "nuttx:companion:nuttx-apps::include/netutils/smtp.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/alt1250_container.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/alt1250_daemon.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/alt1250_postproc.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/alt1250_usockevent.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/alt1250_usockif.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/alt1250_util.h",
+          "nuttx:companion:nuttx-apps::lte/alt1250/callback_handlers/alt1250_evt.c",
+          "nuttx:companion:nuttx-apps::lte/alt1250/usock_handlers/alt1250_sms.c",
+          "nuttx:companion:nuttx-apps::modbus/ascii/mbascii.c",
+          "nuttx:companion:nuttx-apps::system/zmodem/host/debug.h",
+          "nuttx:companion:nuttx-apps::system/zmodem/host/nuttx/compiler.h",
+          "nuttx:companion:nuttx-apps::system/zmodem/host/nuttx/config.h",
+          "nuttx:companion:nuttx-apps::system/zmodem/host/nuttx/crc32.h",
+          "nuttx:single:0::arch/arm/include/limits.h",
+          "nuttx:single:0::include/assert.h",
+          "nuttx:single:0::include/lzf.h",
+          "nuttx:single:0::include/malloc.h",
+          "nuttx:single:0::include/nuttx/cache.h",
+          "nuttx:single:0::include/nuttx/compiler.h",
+          "nuttx:single:0::include/nuttx/config.h",
+          "nuttx:single:0::include/nuttx/irq.h",
+          "nuttx:single:0::include/nuttx/list_type.h",
+          "nuttx:single:0::include/nuttx/notifier.h",
+          "nuttx:single:0::include/nuttx/queue.h",
+          "nuttx:single:0::include/nuttx/sched.h",
+          "nuttx:single:0::include/nuttx/timers/clkcnt.h",
+          "nuttx:single:0::include/nuttx/userspace.h",
+          "nuttx:single:0::include/nuttx/wqueue.h",
+          "nuttx:single:0::include/poll.h",
+          "nuttx:single:0::include/stdbool.h",
+          "nuttx:single:0::include/stddef.h",
+          "nuttx:single:0::include/stdint.h",
+          "nuttx:single:0::include/stdio.h",
+          "nuttx:single:0::include/time.h"
+        ],
+        "rejected_files": [],
+        "llm_calls": {
+          "directory_router": 4,
+          "file_selector": 4
+        },
+        "token_usage": {
+          "input_tokens_total": 51132,
+          "output_tokens_total": 8400
+        }
+      },
+      {
+        "round": 0,
+        "deterministic": false,
+        "covered_slots": [
+          "i2c.acquire_or_bind",
+          "i2c.key_types",
+          "i2c.transfer",
+          "runtime.delay_ms"
+        ],
+        "missing_slots": [
+          "i2c.addressing",
+          "i2c.read",
+          "i2c.write",
+          "integration.bus_instance_binding",
+          "i2c.release"
+        ],
+        "new_files_added": [],
+        "rejected_files": [],
+        "llm_calls": {
+          "symbol_binder": 8
+        },
+        "token_usage": {
+          "input_tokens_delta": 20119,
+          "output_tokens_delta": 5600,
+          "input_tokens_total": 71251,
+          "output_tokens_total": 14000
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_slots": 10,
+    "n_bound": 5,
+    "n_fulfilled": 7,
+    "n_non_symbol_fulfillments": 4,
+    "n_required": 9,
+    "n_required_bound": 7,
+    "n_required_fulfilled": 7,
+    "n_required_symbol_bound": 5,
+    "provenance": {
+      "manifest_repo": 5,
+      "_requires_runtime_provision": 0
+    },
+    "timings_ms": {
+      "dir_router": 26.44,
+      "dir_router_llm": 36658.39,
+      "file_selector": 109.54,
+      "file_selector_llm": 78989.96,
+      "exact_symbol_file_backfill": 36.22,
+      "deep_parse": 260.72,
+      "include_expand": 578.08,
+      "symbol_rank": 509.97,
+      "binder_deterministic": 2.8,
+      "binder_llm": 14767.89,
+      "gap_diagnoser_llm": 9372.76,
+      "source_kind_classifier": 0.03
+    },
+    "budget": {
+      "calls_by_kind": {
+        "directory_router": 4,
+        "file_selector": 4,
+        "symbol_binder": 8,
+        "gap_diagnoser": 5
+      },
+      "input_tokens_total": 75493,
+      "output_tokens_total": 16500,
+      "limits": {
+        "max_calls_per_task": 60,
+        "max_input_tokens_per_task": 320000,
+        "max_output_tokens_per_task": 80000
+      }
+    }
+  }
+}

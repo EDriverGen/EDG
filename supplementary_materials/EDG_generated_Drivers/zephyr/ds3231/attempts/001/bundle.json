@@ -1,0 +1,172 @@
+{
+  "device_id": "ds3231",
+  "rtos_id": "zephyr",
+  "eval_class": "rtc",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef DS3231_H\n#define DS3231_H\n\n#include <stdint.h>\n\n#include <zephyr/device.h>\n#include <zephyr/drivers/i2c.h>\nstruct device;\n\nstruct ds3231_time {\n    uint8_t second;\n    uint8_t minute;\n    uint8_t hour;\n    uint8_t weekday;\n    uint8_t day;\n    uint8_t month;\n    uint8_t year;\n};\n\nint ds3231_init(const struct device *dev);\nint ds3231_get_time(const struct device *dev, struct ds3231_time *t);\nint ds3231_set_time(const struct device *dev, const struct ds3231_time *t);\n\n#endif /* DS3231_H */\n",
+  "driver_source": "#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>\n#include <stdint.h>\n#include <stddef.h>\n#include <errno.h>\n#include \"ds3231.h\"\n\n#include <zephyr/sys/byteorder.h>\n#define DS3231_I2C_ADDR 0x68\n\nstatic int ds3231_write_reg(const struct device *dev, uint8_t reg, const uint8_t *data, size_t len)\n{\n    struct i2c_msg msgs[2];\n    uint8_t buf[1 + len];\n    buf[0] = reg;\n    for (size_t i = 0; i < len; i++) {\n        buf[1 + i] = data[i];\n    }\n    msgs[0].buf = buf;\n    msgs[0].len = 1 + len;\n    msgs[0].flags = I2C_MSG_WRITE;\n    return i2c_transfer(dev, msgs, 1, DS3231_I2C_ADDR);\n}\n\nstatic int ds3231_read_reg(const struct device *dev, uint8_t reg, uint8_t *data, size_t len)\n{\n    struct i2c_msg msgs[2];\n    msgs[0].buf = &reg;\n    msgs[0].len = 1;\n    msgs[0].flags = I2C_MSG_WRITE;\n    msgs[1].buf = data;\n    msgs[1].len = len;\n    msgs[1].flags = I2C_MSG_READ | I2C_MSG_STOP;\n    return i2c_transfer(dev, msgs, 2, DS3231_I2C_ADDR);\n}\n\nstatic uint8_t bcd_to_dec(uint8_t bcd)\n{\n    return (bcd >> 4) * 10 + (bcd & 0x0F);\n}\n\nstatic uint8_t dec_to_bcd(uint8_t dec)\n{\n    return ((dec / 10) << 4) | (dec % 10);\n}\n\nint ds3231_init(const struct device *dev)\n{\n    if (!dev) {\n        return -EINVAL;\n    }\n    return 0;\n}\n\nint ds3231_get_time(const struct device *dev, struct ds3231_time *t)\n{\n    uint8_t buf[7];\n    int ret;\n\n    if (!dev || !t) {\n        return -EINVAL;\n    }\n\n    ret = ds3231_read_reg(dev, 0x00, buf, 7);\n    if (ret < 0) {\n        return ret;\n    }\n\n    t->second = bcd_to_dec(buf[0] & 0x7F);\n    t->minute = bcd_to_dec(buf[1] & 0x7F);\n    t->hour = bcd_to_dec(buf[2] & 0x3F);\n    t->weekday = buf[3] & 0x07;\n    t->day = bcd_to_dec(buf[4] & 0x3F);\n    t->month = bcd_to_dec(buf[5] & 0x1F);\n    t->year = bcd_to_dec(buf[6]);\n\n    return 0;\n}\n\nint ds3231_set_time(const struct device *dev, const struct ds3231_time *t)\n{\n    uint8_t buf[8];\n    int ret;\n\n    if (!dev || !t) {\n        return -EINVAL;\n    }\n\n    buf[0] = 0x00;\n    buf[1] = dec_to_bcd(t->second);\n    buf[2] = dec_to_bcd(t->minute);\n    buf[3] = dec_to_bcd(t->hour);\n    buf[4] = t->weekday & 0x07;\n    buf[5] = dec_to_bcd(t->day);\n    buf[6] = dec_to_bcd(t->month);\n    buf[7] = dec_to_bcd(t->year);\n\n    ret = ds3231_write_reg(dev, 0x00, buf + 1, 7);\n    if (ret < 0) {\n        return ret;\n    }\n\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "rtc",
+    "init_call": "ds3231_init(g_eval_dev)",
+    "get_time_call": "ds3231_get_time(g_eval_dev, &t)",
+    "set_time_call": "ds3231_set_time(g_eval_dev, &t)",
+    "time_struct_decl": "struct ds3231_time drv;",
+    "time_struct_from_in": "struct ds3231_time drv = { .year = in->year - 2000, .month = in->month, .day = in->day, .hour = in->hour, .minute = in->minute, .second = in->second, .weekday = in->weekday };",
+    "time_fields": {
+      "year": "drv.year + 2000",
+      "month": "drv.month",
+      "day": "drv.day",
+      "hour": "drv.hour",
+      "minute": "drv.minute",
+      "second": "drv.second",
+      "weekday": "drv.weekday"
+    },
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include \"zephyr.h\"\n#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_time",
+        "mock_preload": {
+          "0x00": [
+            "0x45"
+          ],
+          "0x01": [
+            "0x30"
+          ],
+          "0x02": [
+            "0x14"
+          ],
+          "0x03": [
+            "0x03"
+          ],
+          "0x04": [
+            "0x15"
+          ],
+          "0x05": [
+            "0x06"
+          ],
+          "0x06": [
+            "0x23"
+          ]
+        },
+        "expected_time": {
+          "year": 2023,
+          "month": 6,
+          "day": 15,
+          "hour": 14,
+          "minute": 30,
+          "second": 45,
+          "weekday": 3
+        },
+        "derivation": "BCD: 0x45=45 sec, 0x30=30 min, 0x14=14 hr, 0x03=3 dow, 0x15=15 date, 0x06=6 month, 0x23=23 year -> 2023"
+      },
+      {
+        "name": "zero_time",
+        "mock_preload": {
+          "0x00": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x00"
+          ],
+          "0x02": [
+            "0x00"
+          ],
+          "0x03": [
+            "0x01"
+          ],
+          "0x04": [
+            "0x01"
+          ],
+          "0x05": [
+            "0x01"
+          ],
+          "0x06": [
+            "0x00"
+          ]
+        },
+        "expected_time": {
+          "year": 2000,
+          "month": 1,
+          "day": 1,
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "weekday": 1
+        },
+        "derivation": "BCD: all zeros except day=1, date=1, month=1 -> 2000-01-01 00:00:00"
+      },
+      {
+        "name": "leap_year_time",
+        "mock_preload": {
+          "0x00": [
+            "0x59"
+          ],
+          "0x01": [
+            "0x59"
+          ],
+          "0x02": [
+            "0x23"
+          ],
+          "0x03": [
+            "0x04"
+          ],
+          "0x04": [
+            "0x29"
+          ],
+          "0x05": [
+            "0x02"
+          ],
+          "0x06": [
+            "0x24"
+          ]
+        },
+        "expected_time": {
+          "year": 2024,
+          "month": 2,
+          "day": 29,
+          "hour": 23,
+          "minute": 59,
+          "second": 59,
+          "weekday": 4
+        },
+        "derivation": "BCD: 0x59=59 sec, 0x59=59 min, 0x23=23 hr, 0x04=4 dow, 0x29=29 date, 0x02=2 month, 0x24=24 year -> 2024"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.672,
+  "prompt_chars": 43614,
+  "raw_response": "{\"driver_header\": \"#ifndef DS3231_H\\n#define DS3231_H\\n\\n#include <stdint.h>\\n\\nstruct ds3231_time {\\n    uint8_t second;\\n    uint8_t minute;\\n    uint8_t hour;\\n    uint8_t weekday;\\n    uint8_t day;\\n    uint8_t month;\\n    uint8_t year;\\n};\\n\\nint ds3231_init(const struct device *dev);\\nint ds3231_get_time(const struct device *dev, struct ds3231_time *t);\\nint ds3231_set_time(const struct device *dev, const struct ds3231_time *t);\\n\\n#endif /* DS3231_H */\", \"driver_source\": \"#include <zephyr/kernel.h>\\n#include <zephyr/drivers/i2c.h>\\n#include <stdint.h>\\n#include <stddef.h>\\n#include <errno.h>\\n#include \\\"ds3231.h\\\"\\n\\n#define DS3231_I2C_ADDR 0x68\\n\\nstatic int ds3231_write_reg(const struct device *dev, uint8_t reg, const uint8_t *data, size_t len)\\n{\\n    struct i2c_msg msgs[2];\\n    uint8_t buf[1 + len];\\n    buf[0] = reg;\\n    for (size_t i = 0; i < len; i++) {\\n        buf[1 + i] = data[i];\\n    }\\n    msgs[0].buf = buf;\\n    msgs[0].len = 1 + len;\\n    msgs[0].flags = I2C_MSG_WRITE;\\n    return i2c_transfer(dev, msgs, 1, DS3231_I2C_ADDR);\\n}\\n\\nstatic int ds3231_read_reg(const struct device *dev, uint8_t reg, uint8_t *data, size_t len)\\n{\\n    struct i2c_msg msgs[2];\\n    msgs[0].buf = &reg;\\n    msgs[0].len = 1;\\n    msgs[0].flags = I2C_MSG_WRITE;\\n    msgs[1].buf = data;\\n    msgs[1].len = len;\\n    msgs[1].flags = I2C_MSG_READ | I2C_MSG_STOP;\\n    return i2c_transfer(dev, msgs, 2, DS3231_I2C_ADDR);\\n}\\n\\nstatic uint8_t bcd_to_dec(uint8_t bcd)\\n{\\n    return (bcd >> 4) * 10 + (bcd & 0x0F);\\n}\\n\\nstatic uint8_t dec_to_bcd(uint8_t dec)\\n{\\n    return ((dec / 10) << 4) | (dec % 10);\\n}\\n\\nint ds3231_init(const struct device *dev)\\n{\\n    if (!dev) {\\n        return -EINVAL;\\n    }\\n    return 0;\\n}\\n\\nint ds3231_get_time(const struct device *dev, struct ds3231_time *t)\\n{\\n    uint8_t buf[7];\\n    int ret;\\n\\n    if (!dev || !t) {\\n        return -EINVAL;\\n    }\\n\\n    ret = ds3231_read_reg(dev, 0x00, buf, 7);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    t->second = bcd_to_dec(buf[0] & 0x7F);\\n    t->minute = bcd_to_dec(buf[1] & 0x7F);\\n    t->hour = bcd_to_dec(buf[2] & 0x3F);\\n    t->weekday = buf[3] & 0x07;\\n    t->day = bcd_to_dec(buf[4] & 0x3F);\\n    t->month = bcd_to_dec(buf[5] & 0x1F);\\n    t->year = bcd_to_dec(buf[6]);\\n\\n    return 0;\\n}\\n\\nint ds3231_set_time(const struct device *dev, const struct ds3231_time *t)\\n{\\n    uint8_t buf[8];\\n    int ret;\\n\\n    if (!dev || !t) {\\n        return -EINVAL;\\n    }\\n\\n    buf[0] = 0x00;\\n    buf[1] = dec_to_bcd(t->second);\\n    buf[2] = dec_to_bcd(t->minute);\\n    buf[3] = dec_to_bcd(t->hour);\\n    buf[4] = t->weekday & 0x07;\\n    buf[5] = dec_to_bcd(t->day);\\n    buf[6] = dec_to_bcd(t->month);\\n    buf[7] = dec_to_bcd(t->year);\\n\\n    ret = ds3231_write_reg(dev, 0x00, buf + 1, 7);\\n    if (ret < 0) {\\n        return ret;\\n    }\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "09a0bfcada891a20"
+}

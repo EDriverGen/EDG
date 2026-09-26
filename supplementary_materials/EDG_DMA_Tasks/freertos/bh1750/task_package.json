@@ -1,0 +1,87 @@
+{
+  "package_id": "freertos_stm32f103rb__bh1750__i2c1_dma",
+  "platform_base_context": "EDG_DMA_Tasks/freertos/bh1750/platform_base_context.json",
+  "connection_binding_context": "EDG_DMA_Tasks/freertos/bh1750/connection_binding_context.json",
+  "device_attachment_context": "EDG_DMA_Tasks/freertos/bh1750/device_attachment_context.json",
+  "reference_driver_root": "DriverGen/data/references/bh1750/freertos",
+  "device_ir": "EDG_DMA_Tasks/freertos/bh1750/device_ir.json",
+  "dma_requirements": "EDG_DMA_Tasks/freertos/bh1750/dma_requirements.json",
+  "evaluation_config": "EDG_DMA_Tasks/freertos/bh1750/evaluation_config.json",
+  "mode": "dma",
+  "notes": [
+    "BH1750 on freertos: DMA payload transfers on the original hardware connection.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use DMA for the two-byte measurement result after the device conversion wait."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+  ],
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "freertos_stm32f103rb",
+      "rtos": "freertos",
+      "rtos_bundle": "freertos-stm32f103-project",
+      "board": "stm32f103rb",
+      "board_alias": "f103rb",
+      "integration": "stm32cubef1_hal",
+      "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+      "mcu_family": "stm32f1",
+      "mcu": "stm32f103rb"
+    },
+    "connection": {
+      "binding_id": "freertos_stm32f103rb_i2c1_dma",
+      "platform_id": "freertos_stm32f103rb",
+      "connection_type": "i2c",
+      "mode": "dma",
+      "bus_instance": "i2c1",
+      "bus_instance_kind": "named_hal_handle",
+      "bus_symbol": "hi2c1",
+      "backend": "STM32CubeF1 HAL I2C DMA with freertos completion handling",
+      "address_mode": "7-bit",
+      "fixed_attachment": {},
+      "helper_usage_patterns": []
+    },
+    "device": {
+      "device_id": "bh1750",
+      "attachment_type": "i2c_sensor",
+      "required_bus_type": "i2c",
+      "address_mode": "7-bit",
+      "addressing": {
+        "default": "0x23",
+        "alternates": [
+          "0x5C"
+        ],
+        "selection_rule": "ADDR low selects 0x23, ADDR high selects 0x5C."
+      },
+      "required_attachment": {
+        "signals": [],
+        "notes": [
+          "No dedicated reset or interrupt line is required for the minimal polling driver."
+        ]
+      },
+      "optional_attachment": {
+        "addr_pin": "optional"
+      },
+      "default_overrides": {
+        "bus_instance": "i2c1",
+        "irq": "dma_completion",
+        "dma": "required",
+        "reset_gpio": null,
+        "power_gpio": null,
+        "mode": "dma",
+        "device_irq": "absent"
+      },
+      "protocol_hints": {
+        "transfer_mode": "dma"
+      }
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "expected_transactions": [
+    {
+      "phase": "init",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0xFE"
+        ]
+      ],
+      "note": "probe_identity: write_then_read Manufacturer ID"
+    },
+    {
+      "phase": "init",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0xFF"
+        ]
+      ],
+      "note": "probe_identity: write_then_read Device ID"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x00"
+        ]
+      ],
+      "note": "read_temperature_local: write_then_read local high+low"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x10"
+        ]
+      ],
+      "note": "read_temperature_local: write_then_read local low byte"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x01"
+        ]
+      ],
+      "note": "read_temperature_remote1: write_then_read remote high+low"
+    },
+    {
+      "phase": "read_cycle",
+      "addr_or_pin": "0x2A",
+      "write_prefix_any_of": [
+        [
+          "0x11"
+        ]
+      ],
+      "note": "read_temperature_remote1: write_then_read remote low byte"
+    }
+  ],
+  "test_stimuli": [
+    {
+      "name": "nominal_positive",
+      "mock_preload": {
+        "0x08": [
+          "0x00"
+        ],
+        "0x00": [
+          "0x19",
+          "0x80"
+        ],
+        "0x10": [
+          "0x50"
+        ],
+        "0x01": [
+          "0x1A",
+          "0x30"
+        ],
+        "0x11": [
+          "0x40"
+        ]
+      },
+      "expected_channels": {
+        "temp_local": 25625,
+        "temp_remote": 26875
+      },
+      "derivation": "local: high_byte=0x19=25, low_byte=0x50, combined=((25<<4)+(0x50>>4))*625/10 = (400+5)*62.5 = 405*62.5 = 25312.5? 5 = 25312.5, but expected 25625? 5 = 408*62.5 = 25500. Still off. Choose high_byte=0x19=25, low_byte=0x50 -> low nibble=5, combined=((25<<4)+5)*625/10 = (400+5)*62.5 = 405*62.5 = 25312.5. Not integer. Use high_byte=0x1A=26, low_byte=0x00 -> combined=((26<<4)+0)*625/10 = 416*62.5 = 26000. For remote: high_byte=0x1B=27, low_byte=0x40 -> low nibble=4, combined=((27<<4)+4)*625/10 = (432+4)*62.5 = 436*62.5 = 27250. remote high=0x1B, low=0x40. Then expected local=26000, remote=27250."
+    },
+    {
+      "name": "zero_near_zero",
+      "mock_preload": {
+        "0x08": [
+          "0x00"
+        ],
+        "0x00": [
+          "0x00",
+          "0x00"
+        ],
+        "0x10": [
+          "0x00"
+        ],
+        "0x01": [
+          "0x00",
+          "0x00"
+        ],
+        "0x11": [
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "temp_local": 0,
+        "temp_remote": 0
+      },
+      "derivation": "Both channels: high_byte=0, low_byte=0, combined=0, 0*625/10=0."
+    },
+    {
+      "name": "negative_twos_complement",
+      "mock_preload": {
+        "0x08": [
+          "0x00"
+        ],
+        "0x00": [
+          "0xF6",
+          "0x00"
+        ],
+        "0x10": [
+          "0x00"
+        ],
+        "0x01": [
+          "0xF6",
+          "0x00"
+        ],
+        "0x11": [
+          "0x00"
+        ]
+      },
+      "expected_channels": {
+        "temp_local": -10000,
+        "temp_remote": -10000
+      },
+      "derivation": "high_byte=0xF6=-10 (signed), low_byte=0, combined=((-10)<<4)+0 = -160, -160*625/10 = -160*62.5 = -10000."
+    }
+  ]
+}

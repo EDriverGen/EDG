@@ -1,0 +1,719 @@
+{
+  "device_id": "tmp105",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x48",
+        "description": "Slave address when A0 pin is low",
+        "is_default": true
+      },
+      {
+        "address": "0x49",
+        "description": "Slave address when A0 pin is high",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 8,
+    "addressing": "pointer",
+    "auto_increment": false,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Pointer register selects data register; two LSBs of pointer byte select register."
+  },
+  "read_channels": [
+    {
+      "id": "temperature",
+      "raw_type": "int16",
+      "physical_unit": "milli_degC",
+      "read_call_hint": null,
+      "flow_id": "read_temperature",
+      "source_bytes": [
+        "temp_msb",
+        "temp_lsb"
+      ],
+      "source_signal": null,
+      "formula_id": "temp_conversion",
+      "notes": "12-bit two's complement temperature data in 16-bit register; lower 4 bits zero."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "Pointer register must be written before reading a different register; repeated reads from same register do not require rewriting pointer."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "write_pointer",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null
+            ],
+            "length": null,
+            "pointer_target": "Pointer Register",
+            "notes": "Write pointer value byte to select a data register."
+          },
+          "notes": "Pointer byte: two LSBs select register (00=Temp, 01=Config, 10=TLOW, 11=THIGH)."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Used to set pointer for subsequent read/write."
+    },
+    {
+      "flow_id": "read_temperature",
+      "kind": "read",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [
+        "Pointer register must point to Temperature Register (0x00)."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              0
+            ],
+            "length": null,
+            "pointer_target": "Pointer Register",
+            "notes": "Write pointer value 0x00 to select Temperature Register."
+          },
+          "notes": ""
+        },
+        {
+          "op": "delay",
+          "delay_ms": 220,
+          "notes": "Wait for conversion to complete; 220ms for 12-bit resolution (max 300ms). For lower resolutions, shorter delay may be used."
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": [],
+            "length": 2,
+            "pointer_target": "Temperature Register",
+            "notes": "Read two bytes (MSB first) from Temperature Register."
+          },
+          "notes": "Byte1: T11-T4; Byte2: T3-T0 (upper nibble) with lower nibble zero."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8",
+          "source_signal": null,
+          "formula_id": "temp_conversion",
+          "unit": "milli_degC",
+          "notes": "Raw 16-bit value; lower 4 bits are zero."
+        }
+      ],
+      "requires_human": false,
+      "notes": "If pointer already points to Temperature Register, the initial write can be omitted. Delay ensures conversion complete for first read after power-up or reset."
+    },
+    {
+      "flow_id": "write_config",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              1
+            ],
+            "length": null,
+            "pointer_target": "Pointer Register",
+            "notes": "Write pointer value 0x01 to select Configuration Register."
+          },
+          "notes": ""
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null
+            ],
+            "length": null,
+            "pointer_target": "Configuration Register",
+            "notes": "Write one data byte to Configuration Register."
+          },
+          "notes": "Byte format: OS, R1, R0, F1, F0, POL, TM, SD."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": ""
+    },
+    {
+      "flow_id": "write_thigh",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              3
+            ],
+            "length": null,
+            "pointer_target": "Pointer Register",
+            "notes": "Write pointer value 0x03 to select THIGH Register."
+          },
+          "notes": ""
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              null
+            ],
+            "length": null,
+            "pointer_target": "THIGH Register",
+            "notes": "Write two data bytes MSB first (byte1: H11-H4, byte2: H3-H0 with zeros in lower nibble)."
+          },
+          "notes": ""
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": ""
+    },
+    {
+      "flow_id": "write_tlow",
+      "kind": "write",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              2
+            ],
+            "length": null,
+            "pointer_target": "Pointer Register",
+            "notes": "Write pointer value 0x02 to select TLOW Register."
+          },
+          "notes": ""
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              null,
+              null
+            ],
+            "length": null,
+            "pointer_target": "TLOW Register",
+            "notes": "Write two data bytes MSB first (byte1: L11-L4, byte2: L3-L0 with zeros in lower nibble)."
+          },
+          "notes": ""
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": ""
+    },
+    {
+      "flow_id": "one_shot_conversion",
+      "kind": "other",
+      "channels": [
+        "temperature"
+      ],
+      "preconditions": [
+        "Device must be in shutdown mode (SD=1)."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              1,
+              null
+            ],
+            "length": null,
+            "pointer_target": "Configuration Register",
+            "notes": "Write pointer 0x01 then configuration byte with OS=1 (and SD=1) to start one-shot conversion."
+          },
+          "notes": "OS bit is self-clearing; reads as 0."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 220,
+          "notes": "Wait for conversion time (220ms for 12-bit resolution; adjust for lower resolutions)."
+        },
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              0
+            ],
+            "length": null,
+            "pointer_target": "Pointer Register",
+            "notes": "Write pointer 0x00 to select Temperature Register."
+          },
+          "notes": ""
+        },
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": [],
+            "length": 2,
+            "pointer_target": "Temperature Register",
+            "notes": "Read two bytes (MSB first) from Temperature Register."
+          },
+          "notes": "Byte1: T11-T4; Byte2: T3-T0 (upper nibble) with lower nibble zero."
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8",
+          "source_signal": null,
+          "formula_id": "temp_conversion",
+          "unit": "milli_degC",
+          "notes": "Read temperature after conversion completes."
+        }
+      ],
+      "requires_human": false,
+      "notes": "After one-shot, device returns to shutdown. Temperature is read via explicit read steps."
+    },
+    {
+      "flow_id": "general_call_reset",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              0,
+              6
+            ],
+            "length": null,
+            "pointer_target": null,
+            "notes": "Send General Call address 0x00 with R/W=0, then second byte 0x06 to reset."
+          },
+          "notes": "Resets internal registers to power-up values and latches address pin."
+        },
+        {
+          "op": "delay",
+          "delay_ms": 1,
+          "notes": "Small delay to allow reset to complete."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": ""
+    },
+    {
+      "flow_id": "smbus_alert_response",
+      "kind": "other",
+      "channels": [],
+      "preconditions": [
+        "Device must be in Interrupt Mode (TM=1) and ALERT pin active."
+      ],
+      "steps": [
+        {
+          "op": "read",
+          "transaction": {
+            "kind": "read",
+            "bytes": [],
+            "length": 1,
+            "pointer_target": null,
+            "notes": "Master sends Alert Response address 0x19 (00011001) with R/W=0; if ALERT active, device acknowledges and returns its slave address with direction bit."
+          },
+          "notes": "The returned byte includes slave address (7 bits) and direction bit (LSB) indicating THIGH (1) or TLOW (0) condition."
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "If multiple devices respond, arbitration determines which clears its ALERT."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 16,
+    "effective_bits": 12,
+    "signed": true,
+    "right_shift": 4,
+    "sign_extend_from_bit": 11,
+    "notes": "Temperature register: 2 bytes MSB first; lower 4 bits are zero. 12-bit two's complement value in bits 15:4."
+  },
+  "registers_or_commands": [
+    {
+      "name": "Pointer Register",
+      "value": null,
+      "access": "wo",
+      "size_bits": 8,
+      "description": "8-bit register used to address data registers; two LSBs select register."
+    },
+    {
+      "name": "Temperature Register",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 16,
+      "description": "12-bit read-only register storing most recent conversion output; two bytes MSB first."
+    },
+    {
+      "name": "Configuration Register",
+      "value": "0x01",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "8-bit read/write register controlling operational modes; power-up/reset value all bits 0."
+    },
+    {
+      "name": "TLOW Register",
+      "value": "0x02",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "12-bit low temperature limit register; two bytes MSB first; LSBs zero."
+    },
+    {
+      "name": "THIGH Register",
+      "value": "0x03",
+      "access": "rw",
+      "size_bits": 16,
+      "description": "12-bit high temperature limit register; two bytes MSB first; LSBs zero."
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "Pointer Register",
+      "name": "P1-P0",
+      "bits": "1:0",
+      "access": "rw",
+      "description": "Selects which data register is accessed: 00=Temperature, 01=Configuration, 10=TLOW, 11=THIGH."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "OS",
+      "bits": "7",
+      "access": "rw",
+      "description": "One-Shot: write 1 to start single conversion in shutdown mode; reads as 0."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "R1-R0",
+      "bits": "6:5",
+      "access": "rw",
+      "description": "Converter resolution: 00=9-bit, 01=10-bit, 10=11-bit, 11=12-bit."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "F1-F0",
+      "bits": "4:3",
+      "access": "rw",
+      "description": "Fault queue: number of consecutive faults to trigger alert; 00=1, 01=2, 10=4, 11=6."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "POL",
+      "bits": "2",
+      "access": "rw",
+      "description": "ALERT polarity: 0=active low, 1=active high."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "TM",
+      "bits": "1",
+      "access": "rw",
+      "description": "Thermostat mode: 0=Comparator mode, 1=Interrupt mode."
+    },
+    {
+      "register": "Configuration Register",
+      "name": "SD",
+      "bits": "0",
+      "access": "rw",
+      "description": "Shutdown mode: 1=shutdown (low power), 0=continuous conversion."
+    },
+    {
+      "register": "Temperature Register",
+      "name": "T11-T0",
+      "bits": "15:4",
+      "access": "ro",
+      "description": "12-bit temperature data in two's complement format; bits 3:0 are zero."
+    },
+    {
+      "register": "THIGH Register",
+      "name": "H11-H0",
+      "bits": "15:4",
+      "access": "rw",
+      "description": "12-bit high limit value; bits 3:0 are zero."
+    },
+    {
+      "register": "TLOW Register",
+      "name": "L11-L0",
+      "bits": "15:4",
+      "access": "rw",
+      "description": "12-bit low limit value; bits 3:0 are zero."
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up/reset: Configuration Register all bits 0 (continuous conversion, 9-bit resolution, 1 fault, active low ALERT, comparator mode). Pointer register P1/P0 = 00 (Temperature Register selected)."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait for first conversion to complete: 27.5ms (9-bit) to 220ms (12-bit) depending on default resolution (9-bit)."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          0
+        ],
+        "length": 2,
+        "pointer_target": "Temperature Register"
+      },
+      "notes": "Write pointer 0x00 to select Temperature Register, then read 2 bytes (MSB first)."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "scl_frequency",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Fast mode",
+      "notes": "SCL operating frequency up to 400 kHz."
+    },
+    {
+      "name": "conversion_time_9bit",
+      "value": 27.5,
+      "unit": "ms",
+      "condition": "9-bit resolution",
+      "notes": "Typical conversion time for 9-bit resolution."
+    },
+    {
+      "name": "conversion_time_10bit",
+      "value": 55,
+      "unit": "ms",
+      "condition": "10-bit resolution",
+      "notes": "Typical conversion time for 10-bit resolution."
+    },
+    {
+      "name": "conversion_time_11bit",
+      "value": 110,
+      "unit": "ms",
+      "condition": "11-bit resolution",
+      "notes": "Typical conversion time for 11-bit resolution."
+    },
+    {
+      "name": "conversion_time_12bit",
+      "value": 220,
+      "unit": "ms",
+      "condition": "12-bit resolution",
+      "notes": "Typical conversion time for 12-bit resolution."
+    },
+    {
+      "name": "timeout_time",
+      "value": 54,
+      "unit": "ms",
+      "condition": "Typical",
+      "notes": "Timeout time for SCL or SDA held LOW."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temp_conversion",
+      "formula": "Temperature (°C) = raw_12bit * 0.0625, where raw_12bit is the 12-bit two's complement value from the Temperature Register (bits 15:4).",
+      "integer_approximation_expression": null,
+      "executable_expression_status": "complex_compensation_algorithm",
+      "notes": "Canonicalized: exact compensation is preserved in formula/inputs, but the single-line integer expression was marked non-executable because it is too complex or not accepted by the safe expression evaluator."
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "I2C NACK during address or data transfer",
+      "detection": "Slave does not acknowledge; SDA remains HIGH during ACK clock pulse.",
+      "driver_action": "Abort transaction and report error."
+    },
+    {
+      "condition": "Timeout (SCL or SDA held LOW > 54ms)",
+      "detection": "Internal timeout resets serial interface.",
+      "driver_action": "Release bus and wait for START condition; retry communication."
+    }
+  ],
+  "power_states": [
+    {
+      "name": "continuous_conversion",
+      "condition": "SD bit = 0",
+      "current_typ": 50,
+      "current_unit": "uA",
+      "notes": "Normal operation, continuous conversions."
+    },
+    {
+      "name": "shutdown",
+      "condition": "SD bit = 1",
+      "current_typ": 1.5,
+      "current_unit": "uA",
+      "notes": "Low power shutdown; serial interface active."
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "tmp105",
+      "page": 5,
+      "snippet": "The 8-bit Pointer Register of the devices is used to address a given data register."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "Table 2. Pointer Addresses of the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "The Temperature Register of the TMP105 is a 12-bit, read-only register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "byte 1 is the most significant byte; byte 2 is the least significant byte"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "The Configuration Register is an 8-bit read/write register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "The power-up/reset value of the Configuration Register is all bits equal to 0."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "Shutdown Mode is enabled when the SD bit is 1"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 8,
+      "snippet": "writing a '1' to the OS bit starts a single temperature conversion"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 8,
+      "snippet": "Table 8. Resolution of the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 8,
+      "snippet": "Table 7. Fault Settings of the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 9,
+      "snippet": "Table 9. Bytes 1 and 2 of THIGH Register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 9,
+      "snippet": "Table 10. Bytes 1 and 2 of TLOW Register"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 9,
+      "snippet": "Table 11. Address Pin and Slave Addresses for the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 9,
+      "snippet": "The TMP105 operates only as a slave device on the Two-Wire bus and SMBus."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 10,
+      "snippet": "Accessing a particular register on the TMP105 is accomplished by writing the appropriate value to the Pointer Register."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 10,
+      "snippet": "If repeated reads from the same register are desired, it is not necessary to continually send the Pointer Register byte"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 10,
+      "snippet": "The first byte transmitted by the master is the slave address, with the R/W bit LOW."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 11,
+      "snippet": "The TMP105 supports the SMBus Alert function."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 11,
+      "snippet": "The TMP105 responds to a Two-Wire General Call address (0000000) if the eighth bit is 0."
+    },
+    {
+      "source_id": "tmp105",
+      "page": 11,
+      "snippet": "The TMP105 will reset the serial interface if either SCL or SDA are held LOW for 54ms (typ)"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 12,
+      "snippet": "Table 12. Timing Diagram Definitions for the TMP105"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 3,
+      "snippet": "Conversion Time 12-Bit: 220 ms typ"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 3,
+      "snippet": "Shutdown Current: 1.5 μA typ"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 6,
+      "snippet": "Table 5. Temperature Data Format"
+    },
+    {
+      "source_id": "tmp105",
+      "page": 7,
+      "snippet": "Table 6. Configuration Register Format"
+    }
+  ],
+  "requires_human": [
+    "Confirm that the temperature conversion formula is raw * 0.0625 for 12-bit resolution; for lower resolutions, LSBs are zero so formula still applies.",
+    "Verify that the pointer register is written before every read if the pointer needs to be changed; repeated reads from same register do not require rewriting pointer.",
+    "Check that the ALERT pin polarity and mode (comparator/interrupt) are configured as needed for the application."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

@@ -1,0 +1,91 @@
+{
+  "device_id": "at24c256",
+  "rtos_id": "chibios",
+  "eval_class": "memory",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef AT24C256_H\n#define AT24C256_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct at24c256_device {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nvoid at24c256_init(struct at24c256_device *dev, void *bus_handle);\nint at24c256_read(struct at24c256_device *dev, uint16_t addr, uint8_t *buf, size_t len);\nint at24c256_write(struct at24c256_device *dev, uint16_t addr, const uint8_t *buf, size_t len);\n\n#endif /* AT24C256_H */",
+  "driver_source": "#include \"at24c256.h\"\n#include \"ch.h\"\n#include \"hal.h\"\n#include <string.h>\n\n#include \"chibios.h\"\n#define AT24C256_I2C_ADDR 0x50\n#define AT24C256_PAGE_SIZE 64\n#define AT24C256_WRITE_CYCLE_MS 5\n\nstatic msg_t i2c_write(I2CDriver *i2cp, i2caddr_t addr, const uint8_t *txbuf, size_t txbytes)\n{\n    return i2cMasterTransmitTimeout(i2cp, addr, txbuf, txbytes, NULL, 0, TIME_MS2I(100));\n}\n\nstatic msg_t i2c_read(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes)\n{\n    return i2cMasterReceiveTimeout(i2cp, addr, rxbuf, rxbytes, TIME_MS2I(100));\n}\n\nvoid at24c256_init(struct at24c256_device *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = AT24C256_I2C_ADDR;\n}\n\nint at24c256_read(struct at24c256_device *dev, uint16_t addr, uint8_t *buf, size_t len)\n{\n    I2CDriver *i2cp = (I2CDriver *)dev->bus_handle;\n    uint8_t addr_bytes[2];\n    addr_bytes[0] = (uint8_t)(addr >> 8);\n    addr_bytes[1] = (uint8_t)(addr & 0xFF);\n\n    i2cAcquireBus(i2cp);\n    msg_t res = i2cMasterTransmitTimeout(i2cp, dev->i2c_addr, addr_bytes, 2, buf, len, TIME_MS2I(100));\n    i2cReleaseBus(i2cp);\n\n    return (res == MSG_OK) ? 0 : -1;\n}\n\nint at24c256_write(struct at24c256_device *dev, uint16_t addr, const uint8_t *buf, size_t len)\n{\n    I2CDriver *i2cp = (I2CDriver *)dev->bus_handle;\n    size_t offset = 0;\n    while (offset < len) {\n        size_t page_offset = (addr + offset) % AT24C256_PAGE_SIZE;\n        size_t chunk = AT24C256_PAGE_SIZE - page_offset;\n        if (chunk > len - offset) chunk = len - offset;\n\n        uint8_t txbuf[2 + chunk];\n        uint16_t cur_addr = addr + offset;\n        txbuf[0] = (uint8_t)(cur_addr >> 8);\n        txbuf[1] = (uint8_t)(cur_addr & 0xFF);\n        memcpy(&txbuf[2], buf + offset, chunk);\n\n        i2cAcquireBus(i2cp);\n        msg_t res = i2cMasterTransmitTimeout(i2cp, dev->i2c_addr, txbuf, 2 + chunk, NULL, 0, TIME_MS2I(100));\n        i2cReleaseBus(i2cp);\n\n        if (res != MSG_OK) return -1;\n\n        chThdSleepMilliseconds(AT24C256_WRITE_CYCLE_MS);\n        offset += chunk;\n    }\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "at24c256_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "at24c256_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "at24c256_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 32768,
+    "memory_page_bytes": 64,
+    "dev_struct_type": "struct at24c256_device",
+    "init_extra_setup_c": "I2CDriver *bus_handle = (I2CDriver *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x50",
+        "read_any": true,
+        "note": "current_address_read: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_memory_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.64,
+  "prompt_chars": 38557,
+  "raw_response": "{\"driver_header\": \"#ifndef AT24C256_H\\n#define AT24C256_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct at24c256_device {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nvoid at24c256_init(struct at24c256_device *dev, void *bus_handle);\\nint at24c256_read(struct at24c256_device *dev, uint16_t addr, uint8_t *buf, size_t len);\\nint at24c256_write(struct at24c256_device *dev, uint16_t addr, const uint8_t *buf, size_t len);\\n\\n#endif /* AT24C256_H */\", \"driver_source\": \"#include \\\"at24c256.h\\\"\\n#include \\\"ch.h\\\"\\n#include \\\"chibios.h\\\"\\n#include \\\"hal.h\\\"\\n#include <string.h>\\n\\n#define AT24C256_I2C_ADDR 0x50\\n#define AT24C256_PAGE_SIZE 64\\n#define AT24C256_WRITE_CYCLE_MS 5\\n\\nstatic msg_t i2c_write(I2CDriver *i2cp, i2caddr_t addr, const uint8_t *txbuf, size_t txbytes)\\n{\\n    return i2cMasterTransmitTimeout(i2cp, addr, txbuf, txbytes, NULL, 0, TIME_MS2I(100));\\n}\\n\\nstatic msg_t i2c_read(I2CDriver *i2cp, i2caddr_t addr, uint8_t *rxbuf, size_t rxbytes)\\n{\\n    return i2cMasterReceiveTimeout(i2cp, addr, rxbuf, rxbytes, TIME_MS2I(100));\\n}\\n\\nvoid at24c256_init(struct at24c256_device *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = AT24C256_I2C_ADDR;\\n}\\n\\nint at24c256_read(struct at24c256_device *dev, uint16_t addr, uint8_t *buf, size_t len)\\n{\\n    I2CDriver *i2cp = (I2CDriver *)dev->bus_handle;\\n    uint8_t addr_bytes[2];\\n    addr_bytes[0] = (uint8_t)(addr >> 8);\\n    addr_bytes[1] = (uint8_t)(addr & 0xFF);\\n\\n    i2cAcquireBus(i2cp);\\n    msg_t res = i2cMasterTransmitTimeout(i2cp, dev->i2c_addr, addr_bytes, 2, buf, len, TIME_MS2I(100));\\n    i2cReleaseBus(i2cp);\\n\\n    return (res == MSG_OK) ? 0 : -1;\\n}\\n\\nint at24c256_write(struct at24c256_device *dev, uint16_t addr, const uint8_t *buf, size_t len)\\n{\\n    I2CDriver *i2cp = (I2CDriver *)dev->bus_handle;\\n    size_t offset = 0;\\n    while (offset < len) {\\n        size_t page_offset = (addr + offset) % AT24C256_PAGE_SIZE;\\n        size_t chunk = AT24C256_PAGE_SIZE - page_offset;\\n        if (chunk > len - offset) chunk = len - offset;\\n\\n        uint8_t txbuf[2 + chunk];\\n        uint16_t cur_addr = addr + offset;\\n        txbuf[0] = (uint8_t)(cur_addr >> 8);\\n        txbuf[1] = (uint8_t)(cur_addr & 0xFF);\\n        memcpy(&txbuf[2], buf + offset, chunk);\\n\\n        i2cAcquireBus(i2cp);\\n        msg_t res = i2cMasterTransmitTimeout(i2cp, dev->i2c_addr, txbuf, 2 + chunk, NULL, 0, TIME_MS2I(100));\\n        i2cReleaseBus(i2cp);\\n\\n        if (res != MSG_OK) return -1;\\n\\n        chThdSleepMilliseconds(AT24C256_WRITE_CYCLE_MS);\\n        offset += chunk;\\n    }\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "28188d9bba1ac2ca"
+}

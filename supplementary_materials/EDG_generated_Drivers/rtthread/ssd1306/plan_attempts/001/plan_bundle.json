@@ -1,0 +1,238 @@
+{
+  "device_id": "ssd1306",
+  "rtos_id": "rtthread",
+  "eval_class": "display",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "display",
+    "init_call": "ssd1306_init(&g_eval_dev, bus)",
+    "output_frame_call": "ssd1306_write_display_data(&g_eval_dev, data, len)",
+    "read_status_call": null,
+    "dev_struct_type": "struct ssd1306_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include <drivers/dev_i2c.h>\n#include \"rtdevice.h\"\n#include <stdint.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAE"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD5",
+            "0x80"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA8",
+            "0x3F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xD3",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x40"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA1"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xC8"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xDA",
+            "0x12"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x81",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA4"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xA6"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x2E"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x20",
+            "0x00"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21",
+            "0x00",
+            "0x7F"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22",
+            "0x00",
+            "0x07"
+          ]
+        ],
+        "note": "init_display: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0xAF"
+          ]
+        ],
+        "note": "power_on: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x21"
+          ]
+        ],
+        "note": "write_display_data: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x3C",
+        "write_prefix_any_of": [
+          [
+            "0x22"
+          ]
+        ],
+        "note": "write_display_data: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "init_and_display_frame",
+        "mock_preload": {
+          "frame_ok": [
+            "0x00"
+          ]
+        },
+        "expected_frame_err": 0,
+        "derivation": "No register reads during init; frame_ok sentinel ensures display write succeeds."
+      },
+      {
+        "name": "display_frame_with_data",
+        "mock_preload": {
+          "frame_ok": [
+            "0x00"
+          ]
+        },
+        "expected_frame_err": 0,
+        "derivation": "Frame write with arbitrary data; no readback, so frame_ok sentinel indicates success."
+      }
+    ]
+  },
+  "plan_hash": "2347c5c5680c0e03",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 9.074,
+  "prompt_chars": 57130,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"display\", \"init_call\": \"ssd1306_init(&g_eval_dev, bus)\", \"output_frame_call\": \"ssd1306_write_display_data(&g_eval_dev, data, len)\", \"read_status_call\": null, \"dev_struct_type\": \"struct ssd1306_device\", \"init_extra_setup_c\": \"struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\", \"preamble_c\": \"#include <drivers/dev_i2c.h>\\n#include \\\"rtdevice.h\\\"\\n#include <stdint.h>\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xAE\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xD5\", \"0x80\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xA8\", \"0x3F\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xD3\", \"0x00\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x40\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xA1\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xC8\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xDA\", \"0x12\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x81\", \"0x7F\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xA4\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xA6\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x2E\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x20\", \"0x00\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x21\", \"0x00\", \"0x7F\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x22\", \"0x00\", \"0x07\"]], \"note\": \"init_display: write\"}, {\"phase\": \"init\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0xAF\"]], \"note\": \"power_on: write\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x21\"]], \"note\": \"write_display_data: write\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"0x3C\", \"write_prefix_any_of\": [[\"0x22\"]], \"note\": \"write_display_data: write\"}], \"test_stimuli\": [{\"name\": \"init_and_display_frame\", \"mock_preload\": {\"frame_ok\": [\"0x00\"]}, \"expected_frame_err\": 0, \"derivation\": \"No register reads during init; frame_ok sentinel ensures display write succeeds.\"}, {\"name\": \"display_frame_with_data\", \"mock_preload\": {\"frame_ok\": [\"0x00\"]}, \"expected_frame_err\": 0, \"derivation\": \"Frame write with arbitrary data; no readback, so frame_ok sentinel indicates success.\"}]}}"
+}

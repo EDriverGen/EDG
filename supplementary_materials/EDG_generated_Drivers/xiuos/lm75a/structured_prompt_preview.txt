@@ -1,0 +1,533 @@
+
+## Pointer register [pages 8-8]
+
+The pointer register contains an 8-bit data byte of which the two LSB bits represent the pointer value of the other four registers, and the other 6 MSB bits are equal to 0, as shown in the Pointer register table (Table 3) and the Pointer value table (Table 4). The pointer register is not accessible to the user, but is used to select the data register for write/read operation by including the pointer data byte in the bus command.
+
+Table 3.  Pointer register table
+
+|   B7 |   B6 |   B5 |   B4 |   B3 |   B2 | B1            | B0            |
+|------|------|------|------|------|------|---------------|---------------|
+|    0 |    0 |    0 |    0 |    0 |    0 | Pointer value | Pointer value |
+
+Table 3.  Pointer register table
+
+Table 4.  Pointer value
+
+|   B1 |   B0 | Selected register                 |
+|------|------|-----------------------------------|
+|    0 |    0 | Temperature register (Temp)       |
+|    0 |    1 | Configuration register (Conf)     |
+|    1 |    0 | Hysteresis register (Thyst)       |
+|    1 |    1 | Overtemp shut-down register (Tos) |
+
+Table 4.  Pointer value
+
+Because the Pointer value is latched into the Pointer register when the bus command, which includes the pointer byte, is executed, a read from the LM75A may or may not include the pointer byte in the statement. To read again a register, which has been recently read and the pointer has been preset, the pointer byte does not have to be included. To read a register, which is different with the one that has been recently read, the pointer byte must be included. However, a write to the LM75A must always include the pointer byte in the statement. The bus communication protocols are described in detail in the data communication section.
+
+At power-up, the Pointer value is equal to 0 and the Temp register is selected; users can then read the Temp data without specifying the pointer byte.
+
+LM75A
+
+complete address and indicates that up to 8 devices can be connected to the same bus without address conflict. Because the input pins, SCL, SDA, A2-A0, are not internally biased, it is important that they should not be left floating in any application.
+
+
+## Slave address [pages 8-8]
+
+The LM75A slave address on the I 2 C-bus is partially defined by the logic applied to the device address pins A2, A1 and A0. Each of them is typically connected either to GND for logic 0, or to V CC  for logic 1. These pins represent the three LSB bits of the device 7-bit address. The other four MSB bits of the address data are preset to '1001' by hard wiring inside the LM75A. Table 1 shows the device's
+
+Table 2.  Register table
+
+| Register name   | Pointer value   | R/W       | POR state   | Description                                                                                                                          |
+|-----------------|-----------------|-----------|-------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Conf            | 01H             | R/W       | 00H         | Configuration Register . Contains a single 8-bit data byte. To set the device operating condition. Default = 0.                      |
+| Temp            | 00H             | Read only | N/A         | Temperature Register . Contains two 8-bit data bytes. To store the measured Temp data.                                               |
+| Tos             | 03H             | R/W       | 50 00H      | Over-temp Shutdown threshold Register . Contains two 8-bit data bytes. To store the over-temp shut-down Tos limit. Default = 80 ° C. |
+| Thyst           | 02H             | R/W       | 4B 00H      | Hysteresis Register . Contains two 8-bit data bytes. To store the hysteresis Thyst limit. Default = 75 ° C.                          |
+
+Table 2.  Register table
+
+
+## Table 6.  Temp register table [pages 9-9]
+
+| Temp MS byte        | Temp MS byte        | Temp MS byte        | Temp MS byte        | Temp MS byte        | Temp MS byte        | Temp MS byte        | Temp MS byte        | Temp LS byte        | Temp LS byte        | Temp LS byte        | Temp LS byte   | Temp LS byte   | Temp LS byte   | Temp LS byte   | Temp LS byte   |
+|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|----------------|----------------|----------------|----------------|----------------|
+| MSB                 |                     |                     |                     |                     |                     |                     | LSB                 | MSB                 |                     |                     |                |                |                |                | LSB            |
+| B7                  | B6                  | B5                  | B4                  | B3                  | B2                  | B1                  | B0                  | B7                  | B6                  | B5                  | B4             | B3             | B2             | B1             | B0             |
+| Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Temp data (11 bits) | Not used       | Not used       | Not used       | Not used       | Not used       |
+| MSB                 |                     |                     |                     |                     |                     |                     |                     |                     |                     | LSB                 |                |                |                |                |                |
+| D10                 | D9                  | D8                  | D7                  | D6                  | D5                  | D4                  | D3                  | D2                  | D1                  | D0                  | X              | X              | X              | X              | X              |
+
+Notice that when the Temp register is read, all 16 bits are provided to the bus and must be all collected by the controller to complete the bus operation. However, only the 11 significant bits should be used, and the 5 LSB bits of the LS byte are zero and should be ignored. One of the ways to calculate the Temp value in ° C from the 11-bit Temp data is:
+
+If the Temp data MSB bit D10 = 0 then the temperature is positive and Temp value ( ° C) = + (Temp data) * 0.125 ° C
+
+If the Temp data MSB bit D10 = 1 then the temperature is negative and Temp  value ( ° C) = - (2's complement of Temp data) * 0.125 ° C
+
+The Temp table (Table 7) shows examples of the Temp data and value.
+
+
+## Table 7.  Temp table [pages 9-9]
+
+| Temp data                      | Temp data   | Temp data     | Temp value   |
+|--------------------------------|-------------|---------------|--------------|
+| 11-bit Binary (2's complement) | 3-bit Hex   | Decimal value | ° C          |
+| 0111 1111 000                  | 3F8h        | 1016          | +127.000 ° C |
+| 0111 1110 111                  | 3F7h        | 1015          | +126.875 ° C |
+| 0111 1110 001                  | 3F1h        | 1009          | +126.125 ° C |
+| 0111 1101 000                  | 3E8h        | 1000          | +125.000 ° C |
+| 0001 1001 000                  | 0C8h        | 200           | +25.000 ° C  |
+| 0000 0000 001                  | 001h        | 1             | +0.125 ° C   |
+| 0000 0000 000                  | 000h        | 0             | 0.000 ° C    |
+| 1111 1111 111                  | 7FFh        | -1            | -0.125 ° C   |
+| 1110 0111 000                  | 738h        | -200          | -25.000 ° C  |
+| 11001001 001                   | 649h        | -439          | -54.875 ° C  |
+| 1100 1001 000                  | 648h        | -440          | -55.000 ° C  |
+
+Obviously, for 9-bit Temp data application in replacing the industry standard LM75, just use only 9 MSB bits of the two bytes and disregard 7 LSB bits of the LS byte. The 9-bit temp data with 0.5 ° C resolution of the LM75A is defined exactly in the same way as for the standard LM75 and it is here similar to the Tos and Thyst that is described next.
+
+LM75A
+
+
+## Table 9.  Thyst register table [pages 10-10]
+
+| Thyst MS byte       | Thyst MS byte       | Thyst MS byte       | Thyst MS byte       | Thyst MS byte       | Thyst MS byte       | Thyst MS byte       | Thyst MS byte       | Thyst LS byte       | Thyst LS byte   | Thyst LS byte   | Thyst LS byte   | Thyst LS byte   | Thyst LS byte   | Thyst LS byte   | Thyst LS byte   |
+|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|---------------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|
+| MSB                 |                     |                     |                     |                     |                     |                     | LSB                 | MSB                 |                 |                 |                 |                 |                 |                 | LSB             |
+| B7                  | B6                  | B5                  | B4                  | B3                  | B2                  | B1                  | B0                  | B7                  | B6              | B5              | B4              | B3              | B2              | B1              | B0              |
+| Thyst data (9 bits) | Thyst data (9 bits) | Thyst data (9 bits) | Thyst data (9 bits) | Thyst data (9 bits) | Thyst data (9 bits) | Thyst data (9 bits) | Thyst data (9 bits) | Thyst data (9 bits) | Not used        | Not used        | Not used        | Not used        | Not used        | Not used        | Not used        |
+| MSB                 |                     |                     |                     |                     |                     |                     |                     | LSB                 |                 |                 |                 |                 |                 |                 |                 |
+| D8                  | D7                  | D6                  | D5                  | D4                  | D3                  | D2                  | D1                  | D0                  | X               | X               | X               | X               | X               | X               | X               |
+
+When a set-point register is read, all 16 bits are provided to the bus and must be collected by the controller to complete the bus operation. However, only the 9 significant bits should be used and the 7 LSB bits of the LS byte are equal to zero and should be ignored.
+
+The Tos and Thyst table (Table 10) shows examples of the limit data and value.
+
+
+## Pin description [pages 3-3]
+
+|   PIN | SYMBOL   | DESCRIPTION                                                     |
+|-------|----------|-----------------------------------------------------------------|
+|     1 | SDA      | Digital I/O. I 2 C serial bi-directional data line. Open Drain. |
+|     2 | SCL      | Digital input. I 2 C serial clock input.                        |
+|     3 | OS       | Overtemp Shutdown output. Open Drain.                           |
+|     4 | GND      | Ground. To be connected to the system ground.                   |
+|     5 | A2       | Digital input. User-defined address bit2.                       |
+|     6 | A1       | Digital input. User-defined address bit1.                       |
+|     7 | A0       | Digital input. User-defined address bit0.                       |
+|     8 | V CC     | Power supply.                                                   |
+
+LM75A
+
+
+## DC ELECTRICAL CHARACTERISTICS [pages 5-5]
+
+VCC = 2.8 V to 5.5 V, T amb  = -55 ° C to +125 ° C unless otherwise noted.
+
+| SYMBOL   | PARAMETER                | CONDITIONS                     | MIN.       | TYP. 1   | MAX.       | UNIT   |
+|----------|--------------------------|--------------------------------|------------|----------|------------|--------|
+| T ACC    | Temperature accuracy     | T amb = -25 ° C to +100 ° C    | -2         | -        | +2         | ° C    |
+| T ACC    |                          | T amb = -55 ° C to +125 ° C    | -3         | -        | +3         | ° C    |
+| T RES    | Temperature resolution   | 11-bit digital temp data       | -          | 0.125    | -          | ° C    |
+| T CON    | Temperature conversion   | Normal mode                    | -          | 100      | -          | ms     |
+| I DD     | Supply quiescent current | Normal mode: I 2 C inactive    | -          | 100      | -          | m A    |
+| I DD     |                          | Normal mode: I 2 C active      | -          | -        | 1.0        | mA     |
+| I DD     |                          | Shut-down mode                 | -          | 3.5      | -          | m A    |
+| V IH     | HIGH-level input voltage | Digital pins (SCL, SDA, A2-A0) | 0.7 × V CC | -        | V CC + 0.3 | V      |
+| V IL     | LOW-level input voltage  | Digital pins                   | -0.3       | -        | 0.3 × V CC | V      |
+| V IHYS   | Input voltage hysteresis | SCL and SDA pins               | -          | 300      | -          | mV     |
+| V IHYS   |                          | A2-A0 pins                     | -          | 150      | -          | mV     |
+| I IH     | HIGH-level input current | Digital pins; V IN = V CC      | -1.0       | -        | 1.0        | m A    |
+| I IL     | LOW-level input current  | Digital pins; V IN = 0 V       | -1.0       | -        | 1.0        | m A    |
+| V OL     | LOW-level output voltage | SDA and OS pins; I OL = 3 mA   | -          | -        | 0.4        | V      |
+| V OL     |                          | I OL = 4 mA                    | -          | -        | 0.8        | V      |
+| I LO     | Output leakage current   | SDA and OS pins; V OH = V CC   | -          | -        | 10         | m A    |
+| OSQ      | OS fault queue           | Programmable                   | 1          | -        | 6          | Conv 2 |
+| Tos      | Overtemp shutdown        | Default value                  | -          | 80       | -          | ° C    |
+| Thyst    | Hysteresis               | Default value                  | -          | 75       | -          | ° C    |
+| C IN     | Input capacitance        | Digital pins                   | -          | 20       | -          | pF     |
+
+
+## I 2 C INTERFACE AC CHARACTERISTICS 1 [pages 6-6]
+
+VCC = 2.8 V to 5.5 V, T amb  = -55 ° C to +125 ° C unless otherwise noted.
+
+| SYMBOL   | PARAMETER                      | CONDITIONS                    | MIN.   | TYP.   | MAX.   | UNIT   |
+|----------|--------------------------------|-------------------------------|--------|--------|--------|--------|
+| t CLK    | SCL clock period               | See timing diagram (Figure 4) | 2.5    | -      | -      | m s    |
+| t HIGH   | SCL HIGH pulse width           |                               | 0.6    | -      | -      | m s    |
+| t LOW    | SCL LOW pulse width            |                               | 1.3    | -      | -      | m s    |
+| t HD:STA | Start Hold time                |                               | 100    | -      | -      | ns     |
+| t SU:DAT | Data set-up time               |                               | 100    | -      | -      | ns     |
+| t HD;DAT | Data hold time                 |                               | 0      | -      | -      | ns     |
+| t SU;STO | Stop set-up time               |                               | 100    | -      | -      | ns     |
+| t F      | Fall time (SDA and OS outputs) | C L = 400 pF; I OL = 3 mA     | -      | 250    | -      | ns     |
+
+VCC = 2.8 V to 5.5 V, T amb  = -55 ° C to +125 ° C unless otherwise noted.
+
+
+## Table 5.  Configuration register table [pages 9-9]
+
+| Bit   | Name              | R/W   |   POR | Description                                                                                                                  |
+|-------|-------------------|-------|-------|------------------------------------------------------------------------------------------------------------------------------|
+| B7-B5 | Reserved          | R/W   |   000 | Reserved for the manufacterer use.                                                                                           |
+| B4-B3 | OS Fault queue    | R/W   |    00 | For OS Fault Queue programming. Programmable queue data = 0, 1 ,2, 3 for queue value = 1, 2, 4, 6 respectively. Default = 0. |
+| B2    | OS Polarity       | R/W   |     0 | For OS Polarity selection. 1 = OS active HIGH, 0 = OS active LOW (default).                                                  |
+| B1    | OS Comp/Interrupt | R/W   |     0 | For OS operation Mode selection. 1 = OS interrupt, 0 = OS comparator (default).                                              |
+| B0    | Shut-down         | R/W   |     0 | For Device Operation Mode selection. 1 = Shut-down, 0 = Normal (default).                                                    |
+
+
+## Table 8.  Tos register table [pages 10-10]
+
+| Tos MS byte       | Tos MS byte       | Tos MS byte       | Tos MS byte       | Tos MS byte       | Tos MS byte       | Tos MS byte       | Tos MS byte       | Tos LS byte       | Tos LS byte   | Tos LS byte   | Tos LS byte   | Tos LS byte   | Tos LS byte   | Tos LS byte   | Tos LS byte   |
+|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|-------------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|
+| MSB               |                   |                   |                   |                   |                   |                   | LSB               | MSB               |               |               |               |               |               |               | LSB           |
+| B7                | B6                | B5                | B4                | B3                | B2                | B1                | B0                | B7                | B6            | B5            | B4            | B3            | B2            | B1            | B0            |
+| Tos data (9 bits) | Tos data (9 bits) | Tos data (9 bits) | Tos data (9 bits) | Tos data (9 bits) | Tos data (9 bits) | Tos data (9 bits) | Tos data (9 bits) | Tos data (9 bits) | Not used      | Not used      | Not used      | Not used      | Not used      | Not used      | Not used      |
+| MSB               |                   |                   |                   |                   |                   |                   |                   | LSB               |               |               |               |               |               |               |               |
+| D8                | D7                | D6                | D5                | D4                | D3                | D2                | D1                | D0                | X             | X             | X             | X             | X             | X             | X             |
+
+
+## Table 10.  Tos and Thyst table [pages 10-10]
+
+| Limit data                     | Limit data   | Limit data    | Limit temp value   |
+|--------------------------------|--------------|---------------|--------------------|
+| 11-bit Binary (2's complement) | 3-bit Hex    | Decimal value | ° C                |
+| 0111 1101 0                    | 0FAh         | 250           | +125.0 ° C         |
+| 0001 1001 0                    | 032h         | 50            | +25.0 ° C          |
+| 0000 0000 1                    | 001h         | 1             | +0.5 ° C           |
+| 0000 0000 0                    | 000h         | 0             | 0.0 ° C            |
+| 1111 1111 1                    | 1FFh         | -1            | -0.5 ° C           |
+| 1110 0111 0                    | 1CEh         | -50           | -25.0 ° C          |
+| 1100 1001 0                    | 192h         | -110          | -55.0 ° C          |
+
+
+## General operation [pages 7-7]
+
+The LM75A uses the on-chip band-gap sensor to measure the device temperature with the resolution of 0.125 ° C and stores the 11-bit 2's complement digital data, resulted from 11-bit A-to-D conversion, into the device Temp register. This Temp register can be read at any time by a controller on the I 2 C-bus. Reading temperature data does not affect the conversion in progress during the read operation.
+
+The device can be set to operate in either mode: normal or shut-down. In normal operation mode, the temp-to-digital conversion is executed every 100 ms and the Temp register is updated at the end of each conversion. In shut-down mode, the device becomes idle, data conversion is disabled and the Temp register holds the latest result; however, the device I 2 C interface is still active and register write/ read operation can be performed. The device operation mode is controllable by programming bit B0 of the configuration register. The temperature conversion is initiated when the device is powered-up or put back into normal mode from shut-down.
+
+In addition, at the end of each conversion in normal mode, the temperature data (or Temp) in the Temp register is automatically compared with the over-temp shut-down threshold data (or Tos) stored in the Tos register, and the hysteresis data (or Thyst) stored in the Thyst register, in order to set the state of the device OS output accordingly. The device Tos and Thyst registers are write/read capable, and both operate with 9-bit 2's complement digital data. To match with this 9-bit operation, the temp register uses only the 9 MSB bits of its 11-bit data for the comparison.
+
+The way that the OS output responds to the comparison operation depends upon the OS operation mode selected by configuration
+
+
+## LM75A [pages 7-7]
+
+bit B1, and the user-defined fault queue defined by configuration bits B3 and B4.
+
+In OS comparator mode, the OS output behaves like a thermostat. It becomes active when the Temp exceeds the Tos, and is reset when the Temp drops below the Thyst. Reading the device registers or putting the device into shut-down does not change the state of the OS output. The OS output in this case can be used to control cooling fans or thermal switches.
+
+In OS interrupt mode, the OS output is used for thermal interruption. When the device is powered-up, the OS output is first activated only when the Temp exceeds the Tos; then it remains active indefinitely until being reset by a read of any register. Once the OS output has been activated by crossing Tos and then reset, it can be activated again only when the Temp drops below the Thyst; then again, it remains active indefinitely until being reset by a read of any register. The OS interrupt operation would be continued in this sequence: Tos trip, Reset, Thyst trip, Reset, Tos trip, Reset, Thyst trip, Reset, … Putting the device into shut-down mode also resets the OS output.
+
+In both cases, comparator mode and interrupt mode, the OS output is activated only if a number of consecutive faults, defined by the device fault queue, has been met. The fault queue is programmable and stored in the two bits, B3 and B4, of the Configuration register. Also, the OS output active state is selectable as HIGH or LOW by setting accordingly the configuration register bit B2.
+
+At power-up, the device is put into normal operation mode, the Tos is set to 80 ° C, the Thyst is set to 75 ° C, the OS active state is selected LOW and the fault queue is equal to 1. The temp reading data is not available until the first conversion is completed in about 100 ms.
+
+The OS response to the temperature is illustrated in Figure 5.
+
+Figure 5.  OS response to temperature.
+
+
+## I 2 C serial interface [pages 8-8]
+
+The LM75A can be connected to a compatible 2-wire serial interface I 2 C-bus as a slave device under the control of a controller or master device, using two device terminals, SCL and SDA. The controller must provide the SCL clock signal and write/read data to/from the device through the SDA terminal. Notice that if the I 2 C common pull-up resistors have not been installed as required for I 2 C-bus, then an external pull-up resistor, about 10 k W , is needed for each of these two terminals. The bus communication protocols are described in the data communication section.
+
+
+## Register list [pages 8-8]
+
+The LM75A contains four data registers beside the pointer register as listed in Table 2. The pointer value, read/write capability and default content at power up of the registers are also shown in the Register table.
+
+
+## Configuration register [pages 9-9]
+
+The Configuration register is a write/read register and contains an 8-bit non-complement data byte that is used to configure the device for different operation conditions. The Configuration register table (Table 5) shows the bit assignments of this register.
+
+
+## Temperature register (Temp) [pages 9-9]
+
+The Temp register holds the digital result of temperature measurement or monitor at the end each A-to-D conversion. This register is read only and contains two 8-bit data bytes consisting of one most significant (MS) data byte and one least significant (LS) data byte. However, only 11 bits of those two bytes are used to store the Temp data in 2's complement format with the resolution of 0.125 ° C. The Temp register table (Table 6) shows the bit arrangement of the Temp data in the data bytes.
+
+
+## Overtemp shut-down threshold (Tos) and hysteresis (Thyst) registers [pages 10-10]
+
+These two registers are write/read registers, and also called set-point registers. They are used to store the user-defined temperature limits, called overtemp shut-down threshold (Tos) and hysteresis (Thyst), for the device Watchdog operation. At the end of each conversion the Temp data will be compared with the data stored in these two registers in order to set the state of the device OS output accordingly as described in the 'General operation' section.
+
+Each of the set-point registers contains two 8-bit data bytes consisting of one MS data byte and one LS data byte the same as the Temp register. However, only 9 bits of the two bytes are used to store the set-point data in 2's complement format with the resolution of 0.5 ° C. The Tos register table (Table 8) and Thyst register table (Table 9) show the bit arrangement of the Tos data and Thyst data in the data bytes.
+
+Notice that because only 9-bit data are used in the set-point registers, the device uses only the 9 MSB bits of the Temp data for data comparison.
+
+
+## OS output and polarity [pages 11-11]
+
+The OS output is an open-drain output and its state represents results of the device Watchdog operation as described in the 'General operation' section. In order to observe this output state, an external pull-up resistor is needed. The resistor should be as large as possible, up 200 k W , to minimize the temp reading error due to internal heating by the high OS sinking current.
+
+The OS output active state can be selected as HIGH or LOW by programming bit B2 of the Configuration register: setting B2 to 1 selects OS active HIGH and setting B2 to 0 sets OS active LOW. At power-up, this bit is equal to 0 and the OS active state is LOW.
+
+
+## OS comparator and interrupt modes [pages 11-11]
+
+As described in the 'General operation' section, the device OS output responds to the result of the comparison between the Temp data and the programmed limits, Tos and Thyst, in different ways depending on the selected OS mode: OS comparator or OS interrupt. The OS mode is selected by programming bit B1 of the configuration register: setting B1 to 1 selects the OS interrupt mode, and setting B1 to 0 selects the OS comparator mode. At power up, this bit is equal to 0 and the OS comparator is selected.
+
+The main difference between the two modes is that in OS comparator mode, the OS output becomes active when the Temp has exceeded the Tos and reset when the Temp has dropped below the Thyst, reading a register or putting the device into shut-down does not change the state of the OS output; while in OS interrupt mode, once it has been activated either by exceeding the Tos or dropping below the Thyst, the OS output will remain active indefinitely until reading a register or putting the device into shut-down occurs, then the OS output is reset.
+
+The Tos & Thyst limits must be selected so that Tos temp value > Thyst temp value. Otherwise, the OS output state will be undefined.
+
+
+## Shutdown mode [pages 11-11]
+
+The device operation mode is selected by programming bit B0 of the Configuration register: Setting B0 to 1 will put the device into shut-down mode. Resetting B0 to 0 for the device normal mode.
+
+In shut-down mode, the device draws a small current of about 3.5 m A and the power dissipation is minimized; the temperature conversion stops, but the I 2 C interface remains active and register write/read operation can be performed. If the OS output is in comparator mode, then it remains unchanged. Otherwise, the OS output is reset in interrupt mode.
+
+
+## Data communication [pages 12-12]
+
+The communication between the host and the LM75A must strictly follow the rules as defined by the I 2 C-bus management. The protocols for LM75A register read/write operations are illustrated by the Figures as follows with these definitions:
+
+Before a communication, the I 2 C-bus must be free or not busy. It means that the SCL and SDA lines must be both released by all devices on the bus, and they become HIGH by the bus pull-up resistors.
+
+The host must provide SCL clock pulses necessary for the communication. Data is transferred in sequence of 9 SCL clock pulses for every 8-bit data byte followed by 1-bit status of the acknowledgement.
+
+During data transfer, except the Start and Stop signals, the SDA signal must be stable while the SCL signal is HIGH. It means that SDA signal can be changed only during the LOW duration of the SCL line.
+
+S: Start signal, initiated by the host to start a communication, the SDA goes from HIGH-to-LOW while the SCL is HIGH.
+
+RS: Re-start signal, same as the Start signal, to start a read command that follows a write command.
+
+P: Stop signal, generated by the host to stop a communication, the SDA goes from LOW-to-HIGH while the SCL is HIGH. The bus becomes free thereafter.
+
+LM75A
+
+W: Write bit, when the Write/Read bit = LOW in a write command.
+
+R: Read bit, when the Write/Read bit = HIGH in a read command.
+
+A: Device Acknowledge bit, returned by the LM75A. It is LOW if the device works properly and HIGH if not. The host must release the SDA line during this period in order to give the device the control on the SDA line.
+
+A ′ : Master Acknowledge bit, not returned by the device, but set by the master or host in reading 2-byte data. During this clock period, the host must set the SDA line to LOW in order to notice the device that the first byte has been read for the device to provide the second byte onto the bus.
+
+NA: Not-Acknowledge bit. During this clock period, both the device and host release the SDA line at the end of a data transfer, the host is then enabled to generate the Stop signal.
+
+12.In a write protocol, data is sent from the host to the device and the host controls the SDA line, except during the clock period when the device sends to the bus the device acknowledgement signal.
+
+13.In a read protocol, data is sent to the bus by the device and the host must release the SDA line during the time that the device is providing data onto the bus and controlling the SDA line, except during the clock period when the master sends to the bus the master acknowledgement signal.
+
+
+## Protocols for writing and reading the registers [pages 13-13]
+
+Figure 6.  Write configuration register (1-byte data).
+
+Figure 7.  Read configuration register including Pointer byte (1-byte data).
+
+Figure 8.  Read configuration register with preset Pointer (1-byte data).
+
+LM75A
+
+
+## Digital temperature sensor and thermal Watchdog  [pages 14-15]
+
+LM75A
+
+Figure 9.  Write Tos or Thyst register (2-byte data).
+
+Figure 10.  Read Temp or Tos or Thyst register including Pointer byte (2-byte data).
+
+Figure 11.  Read Temp or Tos or Thyst register with preset Pointer (2-byte data).
+
+
+## Digital temperature sensor and thermal Watchdog  [pages 16-18]
+
+LM75A
+
+| UNIT   |   A max. | A1        | A2        |   A3 | bp        | C         | D(1)      | E(2)      |    e | HE        |    7 | Lp        |   V |   W |   y | z(1)      | θ     |
+|--------|----------|-----------|-----------|------|-----------|-----------|-----------|-----------|------|-----------|------|-----------|-----|-----|-----|-----------|-------|
+| mm     |     1.10 | 0.15 0.05 | 0.95 0.80 | 0.25 | 0.45 0.25 | 0.28 0.15 | 3.10 2.90 | 3.10 2.90 | 0.65 | 5.10 4.70 | 0.94 | 0.70 0.40 | 0.1 | 0.1 | 0.1 | 0.70 0.35 | 6° 0° |
+
+| OUTLINE VERSION   | REFERENCES   | REFERENCES   | REFERENCES   | EUROPEAN PROJECTION   | ISSUE DATE   |
+|-------------------|--------------|--------------|--------------|-----------------------|--------------|
+| OUTLINE VERSION   | IEC          | JEDEC        | EIAJ         |                       |              |
+| SOT505-1          |              |              |              |                       | 99-04-09     |
+
+Digital temperature sensor and thermal Watchdog 
+
+NOTES
+
+LM75A
+
+
+## Data sheet status [pages 18-18]
+
+| Data sheet status [1]   | Product status [2]   | Definitions                                                                                                                                                                                                                                                                                                            |
+|-------------------------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Objective data          | Development          | This data sheet contains data from the objective specification for product development. Philips Semiconductors reserves the right to change the specification in any manner without notice.                                                                                                                            |
+| Preliminary data        | Qualification        | This data sheet contains data from the preliminary specification. Supplementary data will be published at a later date. Philips Semiconductors reserves the right to change the specification without notice, in order to improve the design and supply the best possible product.                                     |
+| Product data            | Production           | This data sheet contains data from the product specification. Philips Semiconductors reserves the right to make changes at any time in order to improve the design, manufacturing and supply. Changes will be communicated according to the Customer Product/Process Change Notification (CPCN) procedure SNW-SQ-650A. |
+
+[1] Please consult the most recently issued data sheet before initiating or completing a design.
+
+[2] The product status of the device(s) described in this data sheet may have changed since this data sheet was published. The latest information is available on the Internet at URL http://www.semiconductors.philips.com.
+
+
+## ORDERING INFORMATION [pages 2-2]
+
+| TYPE NUMBER TYPE NUMBER   | PACKAGE   | PACKAGE                                                           | PACKAGE   | TEMPERATURE RANGE   |
+|---------------------------|-----------|-------------------------------------------------------------------|-----------|---------------------|
+| TYPE NUMBER TYPE NUMBER   | NAME      | DESCRIPTION                                                       | VERSION   | TEMPERATURE RANGE   |
+| LM75AD                    | SO8       | plastic small outline package; 8 leads; body width 3.9mm          | SOT96-1   | -55 to +125 ° C     |
+| LM75ADP                   | TSSOP8    | plastic thin shrink small outline package; 8 leads; body width3mm | SOT505-1  | -55 to +125 ° C     |
+
+WATCHDOG  is a trademark of National Semiconductor Corporation.
+
+
+## ABSOLUTE MAXIMUM RATINGS 1 [pages 4-4]
+
+| SYMBOL   | PARAMETER                 | MIN.   |   MAX. | UNIT   |
+|----------|---------------------------|--------|--------|--------|
+|          | V CC to GND               | -0.3   |    6.0 | V      |
+|          | Voltage at input pins     | -0.3   |    6.0 | V      |
+|          | Current at input pins     | -5.0   |    5.0 | mA     |
+|          | OS output sink current    | -      |   10.0 | mA     |
+|          | OS output voltage         | -0.3   |    6.0 | V      |
+| ESD      | Human Body Model          | -      |   2000 | V      |
+|          | Machine Model             | -      |    200 | V      |
+| T stg    | Storage temperature range | -65    |    150 | ° C    |
+| T j      | Junction temperature      | -      |    150 | ° C    |
+
+
+## OPERATING RATINGS [pages 4-4]
+
+| SYMBOL   | PARAMETER                           |   MIN. |   MAX. | UNIT   |
+|----------|-------------------------------------|--------|--------|--------|
+| V CC     | Supply voltage                      |    2.8 |    5.5 | V      |
+| T amb    | Operating ambient temperature range |    -55 |    125 | ° C    |
+
+LM75A
+
+
+## 1 = HIGH, 0 = LOW [pages 8-8]
+
+|   MSB |    |    |    |    |    | LSB   |
+|-------|----|----|----|----|----|-------|
+|     1 |  0 |  0 |  1 | A2 | A1 | A0    |
+
+
+## Table 11.  Fault queue table [pages 11-11]
+
+| Fault queue data   | Fault queue data   | Fault queue value   |
+|--------------------|--------------------|---------------------|
+| B4                 | B3                 | Decimal             |
+| 0                  | 0                  | 1                   |
+| 0                  | 1                  | 2                   |
+| 1                  | 0                  | 4                   |
+| 1                  | 1                  | 6                   |
+
+
+## LM75A [pages 15-15]
+
+| UNIT   |   A max. | A1          | A2          |   A3 | bp          | C             | D(1)      | E(2)      |     e | HE          |     L | Lp          |             |    V |    W |     y | (L)Z        | theta |
+|--------|----------|-------------|-------------|------|-------------|---------------|-----------|-----------|-------|-------------|-------|-------------|-------------|------|------|-------|-------------|------|
+| mm     |     1.75 | 0.25 0.10   | 1.45 1.25   | 0.25 | 0.49 0.36   | 0.25 0.19     | 5.0 4.8   | 4.0 3.8   |  1.27 | 6.2 5.8     |  1.05 | 1.0 0.4     | 0.7 0.6     | 0.25 | 0.25 |   0.1 | 0.7 0.3     | 8°   |
+| inches |    0.069 | 0.010 0.004 | 0.057 0.049 | 0.01 | 0.019 0.014 | 0.0100 0.0075 | 0.20 0.19 | 0.16 0.15 | 0.050 | 0.244 0.228 | 0.041 | 0.039 0.016 | 0.028 0.024 | 0.01 | 0.01 | 0.004 | 0.028 0.012 | 0°   |
+
+SOT96-1
+
+
+## Notes [pages 15-15]
+
+Plastic or metal protrusions of 0.15 mm maximum per side are not included.
+
+Plastic or metal protrusions of 0.25 mm maximum per side are not included.
+
+| OUTLINE VERSION   | REFERENCES   | REFERENCES   | REFERENCES   | EUROPEAN PROJECTION   | ISSUE DATE        |
+|-------------------|--------------|--------------|--------------|-----------------------|-------------------|
+| OUTLINE VERSION   | IEC          | JEDEC        | EIAJ         |                       |                   |
+| SOT96-1           | 076E03       | MS-012       |              |                       | 97-05-22 99-12-27 |
+
+
+## GENERAL DESCRIPTION [pages 2-2]
+
+The LM75A is a temperature-to-digital converter using an on-chip band-gap temperature sensor and Sigma-delta A-to-D conversion technique. The device is also a thermal detector providing an over-temp detection output. The LM75A contains a number of data registers: Configuration register (Conf) to store the device settings such as device operation mode, OS operation mode, OS polarity and OS fault queue as described in the functional description section; temperature register (Temp) to store the digital temp reading, and set-point registers (Tos & Thyst) to store programmable overtemp shutdown and hysteresis limits, that can be communicated by a controller via the 2-wire serial I 2 C-bus interface. The device also includes an open-drain output (OS) which becomes active when the temperature exceeds the programmed limits. There are three selectable logic address pins so that eight devices can be connected on the same bus without address conflict.
+
+The LM75A can be configured for different operation conditions. It can be set in normal mode to periodically monitor the ambient temperature, or in shutdown mode to minimize power consumption. The OS output operates in either of two selectable modes: OS comparator mode and OS interrupt mode. Its active state can be selected as either HIGH or LOW. The fault queue that defines the number of consecutive faults in order to activate the OS output is programmable as well as the set-point limits.
+
+The temperature register always stores an 11-bit 2's complement data giving a temperature resolution of 0.125 ° C. This high temperature resolution is particularly useful in applications of measuring precisely the thermal drift or runaway.
+
+The device is powered-up in normal operation mode with the OS in comparator mode, temperature threshold of 80 ° C and hysteresis of 75 ° C, so that it can be used as a stand-alone thermostat with those pre-defined temperature set points.
+
+
+## FEATURES [pages 2-2]
+
+LM75A
+
+Pin-for-pin replacement for industry standard LM75 and offers improved temperature resolution of 0.125 ° C and specification of a single part over power supply range from 2.8 V to 5.5 V.
+
+Small 8-pin package types: SO8 and TSSOP8
+
+I 2 C-bus interface with up to 8 devices on the same bus
+
+Power supply range from 2.8 V to 5.5 V
+
+Temperatures range from -55 ° C to +125 ° C
+
+11-bit ADC that offers a temperature resolution of 0.125 ° C
+
+Temperature accuracy of ± 2 ° C from -25 ° C to +100 ° C
+
+Programmable temperature threshold and hysteresis set points
+
+Supply current of 3.5 m A in shut-down mode for power conservation
+
+Stand-alone operation as thermostat at power-up.
+
+
+## OS fault queue [pages 11-11]
+
+Fault queue is defined as the number of faults that must occur consecutively to activate the OS output. It is provided to avoid false tripping due to noise. Because faults are determined at the end of data conversions, fault queue is also defined as the number of consecutive conversions returning a temperature trip. The value of fault queue is selectable by programming the two bits B4 and B3 of
+
+
+## Power-up default and Power-on Reset [pages 11-11]
+
+The LM75A always powers-up in its default state with:
+
+Normal operation mode
+
+OS comparator mode
+
+Tos = 80 ° C
+
+Thyst = 75 ° C
+
+OS output active state = LOW
+
+Pointer value = 0.
+
+When the power supply voltage is dropped below the device power-on reset level of about 1.9 V (POR) and then rises up again, the device will be reset to its default condition as listed above.
+
+
+## LM75A [pages 1-1]
+
+Digital temperature sensor and thermal Watchdog 
+
+Product data
+
+File under Integrated Circuits, Standard Analog
+
+2001 Jul 16
+
+
+## PINNING [pages 3-3]
+
+
+## Pin configuration [pages 3-3]
+
+Figure 1.  SO8 and TSSOP8 pin configurations.
+
+
+## TYPICAL CONNECTION [pages 4-4]
+
+Figure 3.  Typical connection.
+
+
+## FUNCTIONAL DESCRIPTION [pages 7-7]
+

@@ -1,0 +1,61 @@
+{
+  "device_id": "bh1750",
+  "rtos_id": "rtems",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "bh1750_init(&g_eval_dev, bus_handle)",
+    "read_call": "bh1750_read_illuminance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "raw_count",
+    "dev_struct_type": "bh1750_dev_t",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;",
+    "preamble_c": "#include <errno.h>\n",
+    "unit_normalization_note": "single_channel eval ABI read_raw_i32 returns raw/count; physical conversion is helper-only"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_illuminance: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x23",
+        "read_any": true,
+        "forbid_write_prefix": true,
+        "note": "read_illuminance: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "read_bytes": [
+            "0x01",
+            "0x90"
+          ]
+        },
+        "expected_read_raw": 400,
+        "raw_tolerance": 0,
+        "derivation": "single_channel raw-primary normalization: bytes [0x01 0x90], raw_count = ((0x01 << 8) | 0x90) = 400. Physical conversion formula is not applied to drivergen_eval_read_raw_i32."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics",
+    "raw_primary_normalization_source": "device_ir.read_channels+conversion_formulae"
+  },
+  "plan_hash": "ef6c99638bcc019c",
+  "attempt": 1,
+  "model": "gpt-5.4-mini",
+  "provider_name": "newapi",
+  "generation_time_s": 3.947,
+  "prompt_chars": 49185,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"bh1750_init(&g_eval_dev, bus_handle)\", \"read_call\": \"bh1750_read_illuminance(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"lux\", \"dev_struct_type\": \"bh1750_dev_t\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\", \"preamble_c\": \"#include <errno.h>\\n\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"write_prefix_any_of\": [[\"0x10\"]], \"note\": \"read_illuminance: write\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x23\", \"read_any\": true, \"forbid_write_prefix\": true, \"note\": \"read_illuminance: direct read read\"}], \"test_stimuli\": [{\"name\": \"read_illuminance_mid_scale\", \"mock_preload\": {\"0x23:0x10\": [0, 240]}, \"expected_read_raw\": 100, \"derivation\": \"raw=0x00F0=240; lux=(240*5)//6=200\"}, {\"name\": \"read_illuminance_low_scale\", \"mock_preload\": {\"0x23:0x10\": [1, 44]}, \"expected_read_raw\": 133, \"derivation\": \"raw=0x012C=300; lux=(300*5)//6=250\"}]}}"
+}

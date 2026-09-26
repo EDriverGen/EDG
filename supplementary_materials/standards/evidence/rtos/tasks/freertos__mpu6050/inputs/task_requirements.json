@@ -1,0 +1,180 @@
+{
+  "task_package_id": "freertos_stm32f103rb__mpu6050__i2c1_polling",
+  "rtos": "freertos",
+  "device": "mpu6050",
+  "bus": "i2c",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/mpu6050/freertos",
+  "task_package": {
+    "package_id": "freertos_stm32f103rb__mpu6050__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/freertos_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/freertos_stm32f103rb_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/mpu6050.json",
+    "reference_driver_root": "DriverGen/data/references/mpu6050/freertos",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "freertos_stm32f103rb",
+        "rtos": "freertos",
+        "board": "stm32f103rb",
+        "integration": "stm32cubef1_hal",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "freertos_stm32f103rb_i2c1_polling",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "i2c1",
+        "bus_symbol": "hi2c1",
+        "backend": "STM32CubeF1 HAL I2C",
+        "address_mode": "7-bit",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "mpu6050",
+        "attachment_type": "i2c_sensor",
+        "required_bus_type": "i2c",
+        "addressing": {
+          "default": "0x68",
+          "alternates": [
+            "0x69"
+          ],
+          "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "Minimal driver only needs I2C access to power management and sensor data registers."
+          ]
+        },
+        "optional_attachment": {
+          "ad0_pin": "optional",
+          "int_pin": "optional"
+        }
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "This package freezes a concrete task setup for freertos + stm32f103rb + mpu6050.",
+      "It is intended for controlled DriverGen experiments and reduces variation in board/integration assumptions."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/README.md",
+      "DriverGen/data/references/*/freertos/*_ref.h",
+      "DriverGen/data/raw/mpu6050/MPU6050.pdf",
+      "DriverGen/data/raw/mpu6050/MPU6050_RegisterMap.pdf",
+      "DriverGen/data/references/mpu6050/*/*_ref.h",
+      "DriverGen/data/references/mpu6050/freertos"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "freertos_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "freertos",
+    "rtos_bundle": "freertos-stm32f103-project",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Reference drivers use FreeRTOS for scheduling and STM32CubeF1 HAL for bus and GPIO access.",
+      "SPI devices use SPI_HandleTypeDef hspi1; fixed-frame UART sensors use UART_HandleTypeDef huart2.",
+      "Microsecond timing for gpio_timing devices is supplied by board helper hooks, not by the FreeRTOS kernel itself."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/README.md",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "DriverGen/data/references/*/freertos/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "freertos_stm32f103rb_i2c1_polling",
+    "platform_id": "freertos_stm32f103rb",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_instance_kind": "named_hal_handle",
+    "bus_symbol": "hi2c1",
+    "backend": "STM32CubeF1 HAL I2C",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "notes": [
+      "Board project is expected to export I2C_HandleTypeDef hi2c1."
+    ],
+    "evidence": [
+      "DriverGen/data/references/*/freertos/*_ref.h"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "mpu6050",
+    "attachment_type": "i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": "0x68",
+      "alternates": [
+        "0x69"
+      ],
+      "selection_rule": "AD0 low selects 0x68, AD0 high selects 0x69."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Minimal driver only needs I2C access to power management and sensor data registers."
+      ]
+    },
+    "optional_attachment": {
+      "ad0_pin": "optional",
+      "int_pin": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers wake the part from sleep and switch to PLL clocking before data reads."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/mpu6050/MPU6050.pdf",
+      "DriverGen/data/raw/mpu6050/MPU6050_RegisterMap.pdf",
+      "DriverGen/data/references/mpu6050/*/*_ref.h"
+    ]
+  }
+}

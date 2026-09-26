@@ -1,0 +1,188 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "nuttx__vl53l0x",
+  "device_id": "vl53l0x",
+  "rtos_id": "nuttx",
+  "bus": "i2c",
+  "scope": "nuttx i2c RTOS/BSP API minimum contract for nuttx__vl53l0x; based on copied reference implementation and configuration, existing i2c API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "nuttx",
+    "bus": "i2c",
+    "task_binding": {
+      "connection_type": "i2c",
+      "mode": "polling",
+      "bus_instance": "1",
+      "backend": "NuttX i2c_master lower-half",
+      "address_mode": "7-bit"
+    },
+    "integration_style": "nuttx_core_plus_apps_and_public_headers",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "vl53l0x_ref.h",
+      "nuttx.h",
+      "unistd.h",
+      "nuttx/config.h",
+      "nuttx/i2c/i2c_master.h",
+      "stdint.h",
+      "stdio.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "board_i2cbus_initialize",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_eval_adapter.c",
+            "line": 27,
+            "text": "_i2c_bus = board_i2cbus_initialize(1);"
+          }
+        ],
+        "available_declaration": "struct i2c_master_s *board_i2cbus_initialize(int bus);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 110,
+          "line_end": 113
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/nuttx/i2c/pack.md",
+    "reference_api_calls": [
+      {
+        "symbol": "i2c_writeread",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_ref.c",
+            "line": 9,
+            "text": "return i2c_writeread(dev->i2c, &dev->config, &reg, 1, buf, len);"
+          }
+        ],
+        "available_declaration": "int i2c_writeread(FAR struct i2c_master_s *dev, FAR const struct i2c_config_s *config, FAR const uint8_t *wbuf, int wlen, FAR uint8_t *rbuf, int rlen);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 102,
+          "line_end": 110
+        }
+      },
+      {
+        "symbol": "i2c_write",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_ref.c",
+            "line": 13,
+            "text": "return i2c_write(dev->i2c, &dev->config, buf, 2);"
+          }
+        ],
+        "available_declaration": "int i2c_write(FAR struct i2c_master_s *dev, FAR const struct i2c_config_s *config, FAR const uint8_t *buffer, int buflen);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 87,
+          "line_end": 94
+        }
+      },
+      {
+        "symbol": "usleep",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_ref.c",
+            "line": 36,
+            "text": "usleep(50000);"
+          }
+        ],
+        "available_declaration": "int usleep(unsigned int usec);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/nuttx/nuttx.h",
+          "line_start": 50,
+          "line_end": 52
+        }
+      }
+    ],
+    "driver_to_board_boundary": "NuttX reference driver receives a struct i2c_master_s / spi_dev_s handle or a path/fd as shown in its copied source; board initialization, lower-half binding and POSIX wrappers are distinct from the device-driver call interface."
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's i2c connection context (1; NuttX i2c_master lower-half) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_eval_adapter.c",
+          "line_start": 27,
+          "line_end": 27
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: board_i2cbus_initialize.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_eval_adapter.c",
+          "line_start": 27,
+          "line_end": 27
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_ref.h",
+          "line_start": 3,
+          "line_end": 17
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Required reference operations: i2c_writeread, i2c_write. Preserve buffer/length/address or register-message semantics and returned integer/status convention; NuttX message-vector transfer APIs are acceptable when transaction directions and address are represented.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_ref.c",
+          "line_start": 9,
+          "line_end": 9
+        },
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_ref.c",
+          "line_start": 13,
+          "line_end": 13
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "The reference calls usleep(unsigned int usec), so preserve a blocking wait at microsecond input granularity; a millisecond scheduler wait is equivalent where the requested delay is an integral millisecond and the conversion is explicit.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/nuttx__vl53l0x/inputs/reference_drivers/vl53l0x_ref.c",
+          "line_start": 36,
+          "line_end": 36
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/nuttx/unistd.h",
+          "line_start": 4,
+          "line_end": 4
+        }
+      ]
+    }
+  ]
+}

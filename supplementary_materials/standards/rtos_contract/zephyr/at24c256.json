@@ -1,0 +1,112 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "zephyr__at24c256",
+  "device_id": "at24c256",
+  "rtos_id": "zephyr",
+  "bus": "i2c",
+  "scope": "Independent standard for at24c256 on the fixed i2c task configuration, based on its copied reference driver, fixed task requirements, supplied Zephyr API pack and harness. Excludes sample_ref application cadence and device-register behavior.",
+  "api_contract": {
+    "bus": "i2c",
+    "fixed_task_context": "i2c1 DT device handle and 7-bit target address",
+    "handle_and_operations": {
+      "handle": "const struct device * plus 7-bit address",
+      "operations": [
+        "i2c_write_read",
+        "i2c_write",
+        "k_msleep"
+      ],
+      "signatures": {
+        "i2c_write": "int i2c_write(const struct device *dev, const uint8_t *buf, uint32_t num_bytes, uint16_t addr)",
+        "i2c_write_read": "int i2c_write_read(const struct device *dev, uint16_t addr, const void *write_buf, uint32_t num_write, void *read_buf, uint32_t num_read)",
+        "k_msleep": "int32_t k_msleep(int32_t ms)"
+      },
+      "configuration": "fixed i2c1 bus, device address"
+    },
+    "headers": [
+      "zephyr/device.h",
+      "zephyr/drivers/i2c.h",
+      "zephyr/kernel.h for timing calls where used"
+    ],
+    "return_semantics": "Use the integer status from fallible bus/configuration calls; GPIO read yields level or error. UART poll_in is nonblocking: 0 means byte received, nonzero means no byte; poll_out returns void."
+  },
+  "facts": [
+    {
+      "id": "binding",
+      "category": "binding",
+      "requirement": "Bind the required i2c handle/configuration on fixed task context: i2c1 DT device handle and 7-bit target address.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 1,
+          "line_end": 42
+        },
+        {
+          "file": "evidence/rtos/tasks/zephyr__at24c256/inputs/task_requirements.json",
+          "line_start": 1,
+          "line_end": 140
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 41,
+          "line_end": 91
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "category": "api_operations",
+      "requirement": "Provide i2c_write_read for address-prefix plus read transactions and i2c_write for EEPROM page writes, with compatible Zephyr signatures: int i2c_write_read(const struct device *dev, uint16_t addr, const void *write_buf, uint32_t num_write, void *read_buf, uint32_t num_read); int i2c_write(const struct device *dev, const uint8_t *buf, uint32_t num_bytes, uint16_t addr).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 17,
+          "line_end": 42
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 60,
+          "line_end": 64
+        }
+      ]
+    },
+    {
+      "id": "required_waits",
+      "category": "timing",
+      "requirement": "Preserve the EEPROM internal write-cycle wait of 5 milliseconds after every page write; sample application polling intervals are excluded.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 23,
+          "line_end": 35
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 229,
+          "line_end": 231
+        }
+      ]
+    },
+    {
+      "id": "status_handling",
+      "category": "return_semantics",
+      "requirement": "Preserve the fallible API status needed to detect or propagate bus/GPIO configuration and transaction failures; do not convert an error return into success.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/zephyr__at24c256/inputs/reference_drivers/at24c256_ref.c",
+          "line_start": 1,
+          "line_end": 42
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/zephyr/zephyr.h",
+          "line_start": 41,
+          "line_end": 91
+        }
+      ]
+    }
+  ]
+}

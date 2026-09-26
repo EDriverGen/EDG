@@ -1,0 +1,540 @@
+{
+  "device_id": "bme280",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x76",
+        "description": "SDO=GND (default address)",
+        "is_default": true
+      },
+      {
+        "address": "0x77",
+        "description": "SDO=VDDIO",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 256,
+    "addressing": "pointer",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Register pointer with auto-incremented burst reads; write to pointer then repeated-start read is recommended."
+  },
+  "read_channels": [
+    {
+      "id": "temperature",
+      "raw_type": "uint32",
+      "physical_unit": "milli_degC",
+      "read_call_hint": "burst read 0xFA..0xFC",
+      "notes": "Uncompensated temperature output ut[19:0] requires calibration and compensation."
+    },
+    {
+      "id": "pressure",
+      "raw_type": "uint32",
+      "physical_unit": "pa",
+      "read_call_hint": "burst read 0xF7..0xF9",
+      "notes": "Uncompensated pressure output up[19:0] requires calibration and compensation."
+    },
+    {
+      "id": "humidity",
+      "raw_type": "uint16",
+      "physical_unit": "milli_percent_rh",
+      "read_call_hint": "burst read 0xFD..0xFE",
+      "notes": "Uncompensated humidity output uh[15:0] requires calibration and compensation."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 24,
+    "effective_bits": 20,
+    "signed": false,
+    "right_shift": 4,
+    "sign_extend_from_bit": null,
+    "notes": "Pressure and temperature are 20-bit unsigned values stored in 3 bytes; humidity is 16-bit unsigned stored in 2 bytes."
+  },
+  "registers_or_commands": [
+    {
+      "name": "id",
+      "value": "0xD0",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "chip identification number chip_id[7:0], which is 0x60"
+    },
+    {
+      "name": "reset",
+      "value": "0xE0",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Soft reset word; writing 0xB6 resets the device"
+    },
+    {
+      "name": "ctrl_hum",
+      "value": "0xF2",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Humidity data acquisition options"
+    },
+    {
+      "name": "status",
+      "value": "0xF3",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Status bits measuring and im_update"
+    },
+    {
+      "name": "ctrl_meas",
+      "value": "0xF4",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Pressure and temperature data acquisition options; mode control"
+    },
+    {
+      "name": "config",
+      "value": "0xF5",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Rate, filter and interface options"
+    },
+    {
+      "name": "press_msb",
+      "value": "0xF7",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the MSB part up[19:12] of the raw pressure measurement output data"
+    },
+    {
+      "name": "press_lsb",
+      "value": "0xF8",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the LSB part up[11:4] of the raw pressure measurement output data"
+    },
+    {
+      "name": "press_xlsb",
+      "value": "0xF9",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the XLSB part up[3:0] of the raw pressure measurement output data"
+    },
+    {
+      "name": "temp_msb",
+      "value": "0xFA",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the MSB part ut[19:12] of the raw temperature measurement output data"
+    },
+    {
+      "name": "temp_lsb",
+      "value": "0xFB",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the LSB part ut[11:4] of the raw temperature measurement output data"
+    },
+    {
+      "name": "temp_xlsb",
+      "value": "0xFC",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the XLSB part ut[3:0] of the raw temperature measurement output data"
+    },
+    {
+      "name": "hum_msb",
+      "value": "0xFD",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the MSB part uh[15:8] of the raw humidity measurement output data"
+    },
+    {
+      "name": "hum_lsb",
+      "value": "0xFE",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Contains the LSB part uh[7:0] of the raw humidity measurement output data"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "ctrl_hum",
+      "bits": "2:0",
+      "name": "osrs_h",
+      "description": "Controls oversampling of humidity data"
+    },
+    {
+      "register": "status",
+      "bits": "3",
+      "name": "measuring",
+      "description": "Automatically set to '1' whenever a conversion is running"
+    },
+    {
+      "register": "status",
+      "bits": "0",
+      "name": "im_update",
+      "description": "Automatically set to '1' when the NVM data are being copied to image registers"
+    },
+    {
+      "register": "ctrl_meas",
+      "bits": "7:5",
+      "name": "osrs_t",
+      "description": "Controls oversampling of temperature data"
+    },
+    {
+      "register": "ctrl_meas",
+      "bits": "4:2",
+      "name": "osrs_p",
+      "description": "Controls oversampling of pressure data"
+    },
+    {
+      "register": "ctrl_meas",
+      "bits": "1:0",
+      "name": "mode",
+      "description": "Controls the sensor mode of the device"
+    },
+    {
+      "register": "config",
+      "bits": "7:5",
+      "name": "t_sb",
+      "description": "Controls inactive duration t standby in normal mode"
+    },
+    {
+      "register": "config",
+      "bits": "4:2",
+      "name": "filter",
+      "description": "Controls the time constant of the IIR filter"
+    },
+    {
+      "register": "config",
+      "bits": "0",
+      "name": "spi3w_en",
+      "description": "Enables 3-wire SPI interface when set to '1'"
+    },
+    {
+      "register": "press_xlsb",
+      "bits": "7:4",
+      "name": "press_xlsb",
+      "description": "XLSB bits of raw pressure measurement data"
+    },
+    {
+      "register": "temp_xlsb",
+      "bits": "7:4",
+      "name": "temp_xlsb",
+      "description": "XLSB bits of raw temperature measurement data"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "After power-on reset, sleep mode is selected by default; all registers are accessible."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait until im_update clears after power-on-reset before relying on NVM-derived calibration data."
+    },
+    {
+      "transaction": null,
+      "notes": "If configuring humidity, write ctrl_hum first and then write ctrl_meas for the change to become effective."
+    },
+    {
+      "transaction": null,
+      "notes": "If configuring the IIR filter, be aware that writing config resets the filter memory."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xD0"
+        ],
+        "length": 1,
+        "pointer_target": "id"
+      },
+      "notes": "Read chip ID from register 0xD0; expected value is 0x60."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x88"
+        ],
+        "length": 26,
+        "pointer_target": "calibration"
+      },
+      "notes": "Burst read calibration coefficients from 0x88 onward; combine 8-bit registers into the documented signed/unsigned compensation words."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xE1"
+        ],
+        "length": 7,
+        "pointer_target": "calibration_humidity"
+      },
+      "notes": "Read humidity calibration registers in the 0xE1..0xE7 range, using the special bit-packed layout for dig_H4 and dig_H5."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xF7"
+        ],
+        "length": 8,
+        "pointer_target": "press_msb"
+      },
+      "notes": "Burst read pressure, temperature, and humidity data registers; use 0xF7..0xFE for full readout."
+    },
+    {
+      "transaction": null,
+      "notes": "For pressure and temperature, interpret the first six bytes as two 20-bit unsigned raw values; for humidity, use the final two bytes as a 16-bit unsigned raw value."
+    },
+    {
+      "transaction": null,
+      "notes": "Use a single burst read to preserve shadowed data consistency in normal mode."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "startup_time",
+      "value": 2,
+      "unit": "ms",
+      "condition": "after both VDD > 1.58 V and VDDIO > 0.65 V",
+      "notes": "Time to first communication"
+    },
+    {
+      "name": "power_on_reset_wait",
+      "value": 2,
+      "unit": "ms",
+      "condition": "after power-up",
+      "notes": "The readout value is always 0x00; chip ID can be read as soon as the device finished the power-on-reset"
+    },
+    {
+      "name": "standby_time",
+      "value": 0.5,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=000",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "standby_time",
+      "value": 62.5,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=001",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "standby_time",
+      "value": 125,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=010",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "standby_time",
+      "value": 250,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=011",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "standby_time",
+      "value": 500,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=100",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "standby_time",
+      "value": 1000,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=101",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "standby_time",
+      "value": 10,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=110",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "standby_time",
+      "value": 20,
+      "unit": "ms",
+      "condition": "normal mode, t_sb=111",
+      "notes": "t standby in normal mode"
+    },
+    {
+      "name": "i2c_sck_low_pulse_hs_1v62",
+      "value": 160,
+      "unit": "ns",
+      "condition": "HS mode, Cb ≤100 pF, VDDIO = 1.62 V",
+      "notes": "t LOW"
+    },
+    {
+      "name": "i2c_sck_low_pulse_hs_1v2",
+      "value": 210,
+      "unit": "ns",
+      "condition": "HS mode, Cb ≤100 pF, VDDIO = 1.2 V",
+      "notes": "t LOW"
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "temperature_from_ut",
+      "formula": "Temperature is computed from the uncompensated 20-bit temperature reading together with calibration coefficients dig_T1..dig_T3 and the t_fine intermediate value.",
+      "integer_approximation_expression": {
+        "expression": "0",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "temp_msb:8 || temp_lsb:8 || temp_xlsb:8",
+            "description": "20-bit unsigned temperature ADC value ut[19:0]"
+          }
+        ],
+        "output": {
+          "name": "temperature_mdegC",
+          "unit": "milli_degC"
+        }
+      }
+    },
+    {
+      "name": "pressure_from_up",
+      "formula": "Pressure is computed from the uncompensated 20-bit pressure reading together with calibration coefficients dig_P1..dig_P9 and t_fine.",
+      "integer_approximation_expression": {
+        "expression": "0",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "press_msb:8 || press_lsb:8 || press_xlsb:8",
+            "description": "20-bit unsigned pressure ADC value up[19:0]"
+          }
+        ],
+        "output": {
+          "name": "pressure_pa",
+          "unit": "pa"
+        }
+      }
+    },
+    {
+      "name": "humidity_from_uh",
+      "formula": "Humidity is computed from the uncompensated 16-bit humidity reading together with calibration coefficients dig_H1..dig_H6 and t_fine.",
+      "integer_approximation_expression": {
+        "expression": "0",
+        "inputs": [
+          {
+            "name": "raw",
+            "byte_source": "hum_msb:8 || hum_lsb:8",
+            "description": "16-bit unsigned humidity ADC value uh[15:0]"
+          }
+        ],
+        "output": {
+          "name": "humidity_milli_percent_rh",
+          "unit": "milli_percent_rh"
+        }
+      }
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "I2C NACK on address or data phase",
+      "detection": "If the slave NACKs during address or data transmission, abort the transaction",
+      "driver_action": "return -EIO"
+    },
+    {
+      "condition": "status.measuring remains set beyond the expected conversion window",
+      "detection": "Poll status register and time out if measuring does not clear within application-defined maximum wait",
+      "driver_action": "abort transaction and report timeout"
+    },
+    {
+      "condition": "Unexpected reserved bit value in config or ctrl_meas writeback verification",
+      "detection": "If a readback check is implemented and reserved bits differ from written-zero expectation",
+      "driver_action": "reject configuration and report error"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "sleep",
+      "description": "No operation, all registers accessible, lowest power; selected after startup"
+    },
+    {
+      "name": "forced",
+      "description": "Perform one measurement, store results and return to sleep mode"
+    },
+    {
+      "name": "normal",
+      "description": "Perpetual cycling between an active measurement period and an inactive standby period"
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "bme280",
+      "page": 32,
+      "snippet": "The 7-bit device address is 111011x. The 6 MSB bits are fixed."
+    },
+    {
+      "source_id": "bme280",
+      "page": 32,
+      "snippet": "Connecting SDO to GND results in slave address 1110110 (0x76); connection it to VDDIO results in slave address 1110111 (0x77)"
+    },
+    {
+      "source_id": "bme280",
+      "page": 33,
+      "snippet": "first the register address must be sent in write mode (slave address 111011X0). Then either a stop or a repeated start condition must be generated."
+    },
+    {
+      "source_id": "bme280",
+      "page": 27,
+      "snippet": "If the value 0xB6 is written to the register, the device is reset using the complete power-on-reset procedure."
+    },
+    {
+      "source_id": "bme280",
+      "page": 27,
+      "snippet": "The 'id' register contains the chip identification number chip_id[7:0], which is 0x60."
+    },
+    {
+      "source_id": "bme280",
+      "page": 23,
+      "snippet": "Data readout is done by starting a burst read from 0xF7 to 0xFC (temperature and pressure) or from 0xF7 to 0xFE (temperature, pressure and humidity)."
+    },
+    {
+      "source_id": "bme280",
+      "page": 24,
+      "snippet": "The 8-bit registers are named calib00…calib41 and are stored at memory addresses 0x88…0xA1 and 0xE1…0xE7."
+    },
+    {
+      "source_id": "bme280",
+      "page": 24,
+      "snippet": "two words must always be combined in order to represent the compensation word."
+    },
+    {
+      "source_id": "bme280",
+      "page": 28,
+      "snippet": "Automatically set to '1' whenever a conversion is running and back to '0' when the results have been transferred to the data registers."
+    },
+    {
+      "source_id": "bme280",
+      "page": 30,
+      "snippet": "Controls the rate, filter and interface options of the device. Writes to the 'config' register in normal mode may be ignored."
+    },
+    {
+      "source_id": "bme280",
+      "page": 8,
+      "snippet": "Time to first communication after both V DD > 1.58 V and V DDIO > 0.65 V"
+    },
+    {
+      "source_id": "bme280",
+      "page": 35,
+      "snippet": "All modes (standard, fast, high speed) are supported. SDA and SCL are not pure open-drain."
+    }
+  ],
+  "requires_human": [
+    "The datasheet excerpt does not include the full compensation equations from section 4.2.3, so the integer formulas are left as placeholders.",
+    "The exact measurement conversion time versus oversampling/filter settings is referenced in Appendix B and chapter 9, but the provided excerpt does not include the timing table values."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

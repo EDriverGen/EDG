@@ -1,0 +1,264 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "cmsis-rtx__dht22",
+  "device_id": "dht22",
+  "rtos_id": "cmsis-rtx",
+  "bus": "gpio_timing",
+  "scope": "cmsis-rtx gpio_timing RTOS/BSP API minimum contract for cmsis-rtx__dht22; based on copied reference implementation and configuration, existing gpio_timing API pack and harness declarations. Device register protocol is out of scope.",
+  "api_contract": {
+    "rtos": "cmsis-rtx",
+    "bus": "gpio_timing",
+    "task_binding": {
+      "connection_type": "gpio_timing",
+      "mode": "polling",
+      "bus_instance": "PA0:PA1",
+      "bus_symbol": "PA0:PA1",
+      "backend": "STM32CubeF1 HAL GPIO with CMSIS-RTOS2 delay",
+      "address_mode": null
+    },
+    "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+    "referenced_headers": [
+      "drivergen_eval_adapter.h",
+      "dht22_ref.h",
+      "cmsis_os2.h",
+      "stm32f1xx_hal.h",
+      "stdint.h"
+    ],
+    "referenced_calls": [
+      {
+        "symbol": "HAL_Delay",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 60,
+            "text": "HAL_Delay(2);"
+          }
+        ],
+        "available_declaration": "void HAL_Delay(uint32_t Delay);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/cmsis-rtx/gpio_timing/pack.md",
+          "line_start": 618,
+          "line_end": 618
+        }
+      },
+      {
+        "symbol": "HAL_GPIO_Init",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 10,
+            "text": "HAL_GPIO_Init(dev->port, &gpio);"
+          },
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 20,
+            "text": "HAL_GPIO_Init(dev->port, &gpio);"
+          }
+        ],
+        "available_declaration": "void HAL_GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_InitTypeDef *GPIO_Init);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 121,
+          "line_end": 124
+        }
+      },
+      {
+        "symbol": "HAL_GPIO_ReadPin",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 43,
+            "text": "while (HAL_GPIO_ReadPin(dev->port, dev->pin) == level) {"
+          }
+        ],
+        "available_declaration": "GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 126,
+          "line_end": 128
+        }
+      },
+      {
+        "symbol": "HAL_GPIO_WritePin",
+        "call_sites": [
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 36,
+            "text": "HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);"
+          },
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 59,
+            "text": "HAL_GPIO_WritePin(dev->port, dev->pin, GPIO_PIN_RESET);"
+          },
+          {
+            "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+            "line": 61,
+            "text": "HAL_GPIO_WritePin(dev->port, dev->pin, GPIO_PIN_SET);"
+          }
+        ],
+        "available_declaration": "void HAL_GPIO_WritePin(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState);",
+        "declaration_evidence": {
+          "file": "evidence/rtos/shared/harness_api/cmsis-rtx/cmsis_rtx.h",
+          "line_start": 124,
+          "line_end": 126
+        }
+      }
+    ],
+    "baseline_api_pack": "shared/baseline_api/cmsis-rtx/gpio_timing/pack.md"
+  },
+  "facts": [
+    {
+      "id": "task_bus_context",
+      "category": "context",
+      "requirement": "Preserve the task's gpio_timing connection context (PA0:PA1; STM32CubeF1 HAL GPIO with CMSIS-RTOS2 delay) and a usable bus/device handle or descriptor consistent with the reference calling convention.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 10,
+          "line_end": 10
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_or_open",
+      "category": "initialization",
+      "requirement": "Provide the reference-used bus/device initialization or open/bind operation with its actual handle/descriptor semantics: HAL_GPIO_Init.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 10,
+          "line_end": 10
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 20,
+          "line_end": 20
+        }
+      ]
+    },
+    {
+      "id": "bus_data_operations",
+      "category": "transfer",
+      "requirement": "Preserve the task-required polling bus transactions and directions exposed by the reference: HAL_GPIO_ReadPin, HAL_GPIO_WritePin. Keep the callable transfer/read/write or documented equivalent operations and compatible handle, data buffer, length, address/register and return semantics.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 36,
+          "line_end": 36
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 59,
+          "line_end": 59
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 61,
+          "line_end": 61
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        }
+      ]
+    },
+    {
+      "id": "bus_result_convention",
+      "category": "return_status",
+      "requirement": "Preserve a usable result convention for the referenced bus operations (their status/integer result can be checked or propagated as in the reference).",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 36,
+          "line_end": 36
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 59,
+          "line_end": 59
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 61,
+          "line_end": 61
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        }
+      ]
+    },
+    {
+      "id": "gpio_or_chip_select",
+      "category": "gpio",
+      "requirement": "Provide the GPIO input/output and chip-select control used by the reference; for GPIO-timed tasks this includes switching the pin direction/level and sampling input as needed.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 36,
+          "line_end": 36
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 59,
+          "line_end": 59
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 61,
+          "line_end": 61
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 43,
+          "line_end": 43
+        }
+      ]
+    },
+    {
+      "id": "required_wait",
+      "category": "timing",
+      "requirement": "Provide the task-used wait/delay primitive with the reference time unit and blocking behavior: HAL_Delay.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.c",
+          "line_start": 60,
+          "line_end": 60
+        }
+      ]
+    },
+    {
+      "id": "types_headers_and_preconditions",
+      "category": "types_headers",
+      "requirement": "Retain the reference-required bus header/type/handle shape and relevant caller-provided bus or board configuration; include the API declarations needed to call the chosen equivalent operations.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/reference_drivers/dht22_ref.h",
+          "line_start": 4,
+          "line_end": 17
+        },
+        {
+          "file": "evidence/rtos/tasks/cmsis-rtx__dht22/inputs/task_requirements.json",
+          "line_start": 25,
+          "line_end": 100
+        }
+      ]
+    }
+  ]
+}

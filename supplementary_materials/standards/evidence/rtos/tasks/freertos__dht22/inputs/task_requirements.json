@@ -1,0 +1,136 @@
+{
+  "task_package_id": "freertos_stm32f103rb__dht22__gpio_timing_default",
+  "rtos": "freertos",
+  "device": "dht22",
+  "bus": "gpio_timing",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/dht22/freertos",
+  "task_package": {
+    "package_id": "freertos_stm32f103rb__dht22__gpio_timing_default",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/freertos_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/freertos_stm32f103rb_gpio_timing_default.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/dht22.json",
+    "reference_driver_root": "DriverGen/data/references/dht22/freertos",
+    "fixed_task_context": {},
+    "notes": [
+      "Manual task package completing the fixed-context RTOS/device matrix; fixed_task_context is resolved from the referenced layers."
+    ],
+    "evidence": [
+      "DriverGen/data/references/dht22/freertos",
+      "DriverGen/data/raw/dht22"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "freertos_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "freertos",
+    "rtos_bundle": "freertos-stm32f103-project",
+    "integration": "stm32cubef1_hal",
+    "integration_style": "rtos_core_plus_vendor_sdk_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart2"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "Reference drivers use FreeRTOS for scheduling and STM32CubeF1 HAL for bus and GPIO access.",
+      "SPI devices use SPI_HandleTypeDef hspi1; fixed-frame UART sensors use UART_HandleTypeDef huart2.",
+      "Microsecond timing for gpio_timing devices is supplied by board helper hooks, not by the FreeRTOS kernel itself."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/freertos-stm32f103-project/README.md",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+      "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h",
+      "DriverGen/data/references/*/freertos/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "freertos_stm32f103rb_gpio_timing_default",
+    "platform_id": "freertos_stm32f103rb",
+    "connection_type": "gpio_timing",
+    "mode": "polling",
+    "bus_instance": "default_gpio_slot",
+    "bus_instance_kind": "fixed_sample_pins",
+    "bus_symbol": "GPIOA/GPIO_PIN_0 + GPIOA/GPIO_PIN_1",
+    "backend": "STM32CubeF1 HAL GPIO + board microsecond timing hooks",
+    "address_mode": null,
+    "fixed_attachment": {
+      "trig_pin": "GPIOA:GPIO_PIN_0",
+      "echo_pin": "GPIOA:GPIO_PIN_1"
+    },
+    "notes": [
+      "This default gpio_timing slot matches the current HC-SR04 FreeRTOS sample reference."
+    ],
+    "evidence": [
+      "DriverGen/data/references/hcsr04/freertos/hcsr04_sample_ref.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "dht22",
+    "attachment_type": "gpio_single_wire_sensor",
+    "required_bus_type": "gpio_timing",
+    "address_mode": null,
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "data"
+      ],
+      "notes": [
+        "DHT22/AM2302 uses one bidirectional data line with host start pulse, sensor response pulse, then 40 MSB-first bits encoded by pulse width.",
+        "The data pin must be switchable between output drive and input sampling with microsecond-scale delay support."
+      ]
+    },
+    "optional_attachment": {
+      "pull_up": "external or board pull-up required by the single-wire bus"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "protocol_hints": {
+      "gpio_protocol": "single_wire_pulse_width",
+      "frame_bits": 40,
+      "bit_order": "msb_first",
+      "payload_bytes": 5,
+      "checksum": "sum of first four bytes modulo 256 equals byte 4"
+    },
+    "notes": [
+      "Reference drivers require microsecond delay and temporary interrupt masking around the timed read window."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/dht22",
+      "DriverGen/evaluation/oracle/data/dht22/meta.json",
+      "DriverGen/data/references/dht22/*/*_ref.h",
+      "DriverGen/data/references/dht22/rtthread"
+    ]
+  }
+}

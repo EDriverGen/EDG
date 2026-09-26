@@ -1,0 +1,577 @@
+{
+  "device_id": "dps310",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x77",
+        "description": "Default I2C address when SDO pin is left floating or pulled-up to VDDIO",
+        "is_default": true
+      },
+      {
+        "address": "0x76",
+        "description": "Alternate I2C address when SDO pin is pulled-down to GND",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 41,
+    "addressing": "1-byte",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Register addresses 0x00-0x28; auto-increment supported for multi-byte reads/writes."
+  },
+  "read_channels": [
+    {
+      "id": "pressure",
+      "raw_type": "int32",
+      "physical_unit": "Pa",
+      "flow_id": "read_pressure_raw",
+      "source_bytes": [
+        "PRS_B2",
+        "PRS_B1",
+        "PRS_B0"
+      ],
+      "formula_id": "compensated_pressure",
+      "notes": "24-bit two's complement raw pressure; compensated to Pa using calibration coefficients."
+    },
+    {
+      "id": "temperature",
+      "raw_type": "int32",
+      "physical_unit": "degC",
+      "flow_id": "read_temperature_raw",
+      "source_bytes": [
+        "TMP_B2",
+        "TMP_B1",
+        "TMP_B0"
+      ],
+      "formula_id": "compensated_temperature",
+      "notes": "24-bit two's complement raw temperature; compensated to degC using calibration coefficients."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 24,
+    "effective_bits": 24,
+    "signed": true,
+    "right_shift": 0,
+    "sign_extend_from_bit": 23,
+    "notes": "24-bit two's complement; MSB first."
+  },
+  "registers_or_commands": [
+    {
+      "name": "PRS_B2",
+      "value": "0x00",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "MSB of 24-bit 2's complement pressure data"
+    },
+    {
+      "name": "PRS_B1",
+      "value": "0x01",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Middle byte of 24-bit 2's complement pressure data"
+    },
+    {
+      "name": "PRS_B0",
+      "value": "0x02",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "XLSB of 24-bit 2's complement pressure data"
+    },
+    {
+      "name": "TMP_B2",
+      "value": "0x03",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "MSB of 24-bit 2's complement temperature data"
+    },
+    {
+      "name": "TMP_B1",
+      "value": "0x04",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Middle byte of 24-bit 2's complement temperature data"
+    },
+    {
+      "name": "TMP_B0",
+      "value": "0x05",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "XLSB of 24-bit 2's complement temperature data"
+    },
+    {
+      "name": "PRS_CFG",
+      "value": "0x06",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Pressure measurement configuration: rate and oversampling"
+    },
+    {
+      "name": "TMP_CFG",
+      "value": "0x07",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Temperature measurement configuration: sensor source, rate, oversampling"
+    },
+    {
+      "name": "MEAS_CFG",
+      "value": "0x08",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Measurement configuration: mode and status bits"
+    },
+    {
+      "name": "CFG_REG",
+      "value": "0x09",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Interrupt and FIFO configuration"
+    },
+    {
+      "name": "INT_STS",
+      "value": "0x0A",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Interrupt status register, cleared on read"
+    },
+    {
+      "name": "FIFO_STS",
+      "value": "0x0B",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "FIFO status register"
+    },
+    {
+      "name": "RESET",
+      "value": "0x0C",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "FIFO flush and soft reset register"
+    },
+    {
+      "name": "ID",
+      "value": "0x0D",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Product and revision ID"
+    },
+    {
+      "name": "COEF_SRCE",
+      "value": "0x28",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Temperature coefficients source indicator"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "PRS_CFG",
+      "name": "PM_RATE",
+      "bits": "6:4",
+      "type": "rw",
+      "description": "Pressure measurement rate in background mode: 000=1/s, 001=2/s, 010=4/s, 011=8/s, 100=16/s, 101=32/s, 110=64/s, 111=128/s"
+    },
+    {
+      "register": "PRS_CFG",
+      "name": "PM_PRC",
+      "bits": "3:0",
+      "type": "rw",
+      "description": "Pressure oversampling rate: 0000=single, 0001=2x, 0010=4x, 0011=8x, 0100=16x, 0101=32x, 0110=64x, 0111=128x"
+    },
+    {
+      "register": "TMP_CFG",
+      "name": "TMP_EXT",
+      "bits": "7",
+      "type": "rw",
+      "description": "Temperature sensor source: 0=internal ASIC, 1=external MEMS"
+    },
+    {
+      "register": "TMP_CFG",
+      "name": "TMP_RATE",
+      "bits": "6:4",
+      "type": "rw",
+      "description": "Temperature measurement rate in background mode: same encoding as PM_RATE"
+    },
+    {
+      "register": "TMP_CFG",
+      "name": "TMP_PRC",
+      "bits": "3:0",
+      "type": "rw",
+      "description": "Temperature oversampling rate: 0000=single, 0001=2x, 0010=4x, 0011=8x, 0100=16x, 0101=32x, 0110=64x, 0111=128x"
+    },
+    {
+      "register": "MEAS_CFG",
+      "name": "COEF_RDY",
+      "bits": "7",
+      "type": "r",
+      "description": "Coefficients available: 0=not ready, 1=ready"
+    },
+    {
+      "register": "MEAS_CFG",
+      "name": "SENSOR_RDY",
+      "bits": "6",
+      "type": "r",
+      "description": "Sensor initialization complete: 0=not complete, 1=complete"
+    },
+    {
+      "register": "MEAS_CFG",
+      "name": "TMP_RDY",
+      "bits": "5",
+      "type": "r",
+      "description": "Temperature measurement ready, cleared when read"
+    },
+    {
+      "register": "MEAS_CFG",
+      "name": "PRS_RDY",
+      "bits": "4",
+      "type": "r",
+      "description": "Pressure measurement ready, cleared when read"
+    },
+    {
+      "register": "MEAS_CFG",
+      "name": "MEAS_CTRL",
+      "bits": "2:0",
+      "type": "rw",
+      "description": "Measurement mode control: 000=standby, 001=pressure command, 010=temp command, 101=continuous pressure, 110=continuous temp, 111=continuous pressure and temp"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "INT_HL",
+      "bits": "7",
+      "type": "rw",
+      "description": "Interrupt active level: 0=active low, 1=active high"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "INT_FIFO",
+      "bits": "6",
+      "type": "rw",
+      "description": "FIFO full interrupt enable: 0=disable, 1=enable"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "INT_TMP",
+      "bits": "5",
+      "type": "rw",
+      "description": "Temperature measurement ready interrupt enable: 0=disable, 1=enable"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "INT_PRS",
+      "bits": "4",
+      "type": "rw",
+      "description": "Pressure measurement ready interrupt enable: 0=disable, 1=enable"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "T_SHIFT",
+      "bits": "3",
+      "type": "rw",
+      "description": "Temperature result bit-shift: 0=no shift, 1=shift right. Must be set to 1 when oversampling >8x"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "P_SHIFT",
+      "bits": "2",
+      "type": "rw",
+      "description": "Pressure result bit-shift: 0=no shift, 1=shift right. Must be set to 1 when oversampling >8x"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "FIFO_EN",
+      "bits": "1",
+      "type": "rw",
+      "description": "FIFO enable: 0=disable, 1=enable"
+    },
+    {
+      "register": "CFG_REG",
+      "name": "SPI_MODE",
+      "bits": "0",
+      "type": "rw",
+      "description": "SPI mode: 0=4-wire, 1=3-wire"
+    },
+    {
+      "register": "INT_STS",
+      "name": "INT_FIFO_FULL",
+      "bits": "2",
+      "type": "r",
+      "description": "FIFO interrupt status: 0=not active, 1=active"
+    },
+    {
+      "register": "INT_STS",
+      "name": "INT_TMP",
+      "bits": "1",
+      "type": "r",
+      "description": "Temperature measurement interrupt status: 0=not active, 1=active"
+    },
+    {
+      "register": "INT_STS",
+      "name": "INT_PRS",
+      "bits": "0",
+      "type": "r",
+      "description": "Pressure measurement interrupt status: 0=not active, 1=active"
+    },
+    {
+      "register": "FIFO_STS",
+      "name": "FIFO_FULL",
+      "bits": "1",
+      "type": "r",
+      "description": "FIFO full flag: 0=not full, 1=full"
+    },
+    {
+      "register": "FIFO_STS",
+      "name": "FIFO_EMPTY",
+      "bits": "0",
+      "type": "r",
+      "description": "FIFO empty flag: 0=not empty, 1=empty"
+    },
+    {
+      "register": "RESET",
+      "name": "FIFO_FLUSH",
+      "bits": "7",
+      "type": "w",
+      "description": "Write 1 to flush FIFO"
+    },
+    {
+      "register": "RESET",
+      "name": "SOFT_RST",
+      "bits": "3:0",
+      "type": "w",
+      "description": "Write 1001 to generate soft reset"
+    },
+    {
+      "register": "ID",
+      "name": "REV_ID",
+      "bits": "7:4",
+      "type": "r",
+      "description": "Revision ID"
+    },
+    {
+      "register": "ID",
+      "name": "PROD_ID",
+      "bits": "3:0",
+      "type": "r",
+      "description": "Product ID"
+    },
+    {
+      "register": "COEF_SRCE",
+      "name": "TMP_COEF_SRCE",
+      "bits": "7",
+      "type": "r",
+      "description": "Temperature coefficients source: 0=internal ASIC, 1=external MEMS"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up or soft reset: wait for SENSOR_RDY (max 12ms) and COEF_RDY (max 40ms)."
+    },
+    {
+      "transaction": null,
+      "notes": "Read calibration coefficients from 0x10-0x21 (18 bytes)."
+    },
+    {
+      "transaction": null,
+      "notes": "Configure PRS_CFG, TMP_CFG, CFG_REG, and MEAS_CFG for desired mode (e.g., background continuous)."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x00"
+        ],
+        "length": 3,
+        "pointer_target": "PRS_B2"
+      },
+      "notes": "Read 3 bytes of pressure raw data from 0x00."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x03"
+        ],
+        "length": 3,
+        "pointer_target": "TMP_B2"
+      },
+      "notes": "Read 3 bytes of temperature raw data from 0x03."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "T_Sensor_rdy",
+      "value": 12,
+      "unit": "ms",
+      "condition": "After VDD>1.2V & VDDIO>0.6V or soft reset",
+      "notes": "Time to sensor ready (SENSOR_RDY bit set)."
+    },
+    {
+      "name": "T_Coef_rdy",
+      "value": 40,
+      "unit": "ms",
+      "condition": "After VDD>1.2V & VDDIO>0.6V or soft reset",
+      "notes": "Time to coefficients available (COEF_RDY bit set)."
+    },
+    {
+      "name": "I2C_data_setup_time",
+      "value": 20,
+      "unit": "ns",
+      "condition": "Standard and fast mode",
+      "notes": "Data setup time on SDI pin."
+    },
+    {
+      "name": "I2C_data_hold_time",
+      "value": 0,
+      "unit": "ns",
+      "condition": "Standard, fast, and high speed mode",
+      "notes": "Data hold time on SDI pin."
+    },
+    {
+      "name": "I2C_duty_cycle_max",
+      "value": 70,
+      "unit": "%",
+      "condition": "Standard and fast mode",
+      "notes": "Maximum duty cycle."
+    },
+    {
+      "name": "pressure_measurement_time_single",
+      "value": 3.6,
+      "unit": "ms",
+      "condition": "Single oversampling (low precision)",
+      "notes": "Measurement time for single oversampling."
+    },
+    {
+      "name": "pressure_measurement_time_standard",
+      "value": 27.6,
+      "unit": "ms",
+      "condition": "16x oversampling (standard)",
+      "notes": "Measurement time for 16x oversampling."
+    },
+    {
+      "name": "pressure_measurement_time_high_precision",
+      "value": 104.4,
+      "unit": "ms",
+      "condition": "64x oversampling (high precision)",
+      "notes": "Measurement time for 64x oversampling."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "compensated_temperature",
+      "formula": "T_raw_scaled = raw_temp / kT; T_comp = c0 * 0.5 + c1 * T_raw_scaled",
+      "integer_approximation_expression": {
+        "expression": "(((raw_temp * 1000) // kT) * c1 + c0 * 500) // 1000",
+        "inputs": [
+          {
+            "name": "raw_temp",
+            "byte_source": "TMP_B2:8 || TMP_B1:8 || TMP_B0:8",
+            "description": "24-bit two's complement raw temperature"
+          },
+          {
+            "name": "kT",
+            "config_source": "scale_factor_kT",
+            "description": "Scale factor based on temperature oversampling rate"
+          },
+          {
+            "name": "c0",
+            "byte_source": "c0_12bit",
+            "description": "12-bit two's complement coefficient from registers 0x10-0x11"
+          },
+          {
+            "name": "c1",
+            "byte_source": "c1_12bit",
+            "description": "12-bit two's complement coefficient from registers 0x11-0x12"
+          }
+        ],
+        "output": {
+          "name": "T_comp_milliDegC",
+          "unit": "milli_degC"
+        }
+      }
+    },
+    {
+      "name": "compensated_pressure",
+      "formula": "P_raw_scaled = raw_pres / kP; P_comp = c00 + P_raw_scaled * (c10 + P_raw_scaled * (c20 + P_raw_scaled * c30)) + T_raw_scaled * (c01 + P_raw_scaled * (c11 + P_raw_scaled * c21))",
+      "integer_approximation_expression": null
+    }
+  ],
+  "error_conditions": [],
+  "power_states": [],
+  "evidence_spans": [
+    {
+      "source_id": "dps310",
+      "page": 12,
+      "snippet": "The sensor's address is 0x77 (default) or 0x76 (if the SDO pin is pulled-down to GND)."
+    },
+    {
+      "source_id": "dps310",
+      "page": 10,
+      "snippet": "Time to sensor ready T Sensor_rdy 12 ms"
+    },
+    {
+      "source_id": "dps310",
+      "page": 10,
+      "snippet": "Time to coefficients are available. T Coef_rdy 40 ms"
+    },
+    {
+      "source_id": "dps310",
+      "page": 25,
+      "snippet": "Register Map"
+    },
+    {
+      "source_id": "dps310",
+      "page": 14,
+      "snippet": "Read the pressure calibration coefficients (c00, c10, c20, c30, c01, c11, and c21) from the Calibration Coefficient register."
+    },
+    {
+      "source_id": "dps310",
+      "page": 14,
+      "snippet": "Read the temperature calibration coefficients ( c0 and c1 ) from the Calibration Coefficients (COEF) register."
+    },
+    {
+      "source_id": "dps310",
+      "page": 15,
+      "snippet": "Scale Factor (kP or kT) 524288 for single"
+    },
+    {
+      "source_id": "dps310",
+      "page": 14,
+      "snippet": "Calculate scaled measurement results."
+    },
+    {
+      "source_id": "dps310",
+      "page": 14,
+      "snippet": "Calculate compensated measurement results."
+    },
+    {
+      "source_id": "dps310",
+      "page": 22,
+      "snippet": "Data setup time on SDI pin t Setup 20 ns S&F mode"
+    },
+    {
+      "source_id": "dps310",
+      "page": 22,
+      "snippet": "Data hold time on SDI pin t Hold 0 ns S&F&HSmode"
+    },
+    {
+      "source_id": "dps310",
+      "page": 22,
+      "snippet": "Duty Cycle DC 70 % S&F mode"
+    }
+  ],
+  "requires_human": [
+    "The exact compensation formula details (scaled measurement and compensated results) are described in prose; the precise mathematical expressions need to be derived from the flow chart and equations.",
+    "The coefficient bitfield layout (e.g., c0 split across two registers) requires careful assembly of 2's complement numbers from non-contiguous bits.",
+    "The FIFO operation description indicates that the LSB of the 24-bit result is used to indicate measurement type when FIFO is enabled; this may affect data interpretation.",
+    "The interrupt polarity must be set opposite to SDO pin level when using I2C with interrupt; this is a system-level constraint."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

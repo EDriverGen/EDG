@@ -1,0 +1,137 @@
+{
+  "device_id": "w25q64jv",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "memory",
+  "bus_kind": "spi",
+  "driver_header": "#ifndef W25Q64JV_H\n#define W25Q64JV_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct w25q64jv_dev {\n    void *bus_handle;\n};\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\n\n#endif",
+  "driver_source": "#include \"w25q64jv.h\"\n#include \"stm32f1xx_hal.h\"\n#include <stdint.h>\n#include <stddef.h>\n\n#include \"cmsis_rtx.h\"\n#define W25Q64JV_CMD_READ_DATA 0x03\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\n#define W25Q64JV_CMD_JEDEC_ID 0x9F\n\n#define W25Q64JV_PAGE_SIZE 256\n#define W25Q64JV_TIMEOUT 1000\n\nstatic int w25q64jv_transfer(struct w25q64jv_dev *dev, const uint8_t *tx, uint8_t *rx, uint16_t size)\n{\n    SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)dev->bus_handle;\n    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(hspi, tx, rx, size, W25Q64JV_TIMEOUT);\n    return (ret == HAL_OK) ? 0 : -1;\n}\n\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    uint8_t tx[4] = {W25Q64JV_CMD_JEDEC_ID, 0, 0, 0};\n    uint8_t rx[4] = {0};\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\n    if (ret != 0) return -1;\n    // Expected JEDEC ID: 0xEF 0x40 0x17 for W25Q64JV\n    if (rx[1] != 0xEF || rx[2] != 0x40 || rx[3] != 0x17) return -1;\n    return 0;\n}\n\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\n{\n    if (len == 0) return 0;\n    uint8_t tx[4];\n    tx[0] = W25Q64JV_CMD_READ_DATA;\n    tx[1] = (addr >> 16) & 0xFF;\n    tx[2] = (addr >> 8) & 0xFF;\n    tx[3] = addr & 0xFF;\n    uint8_t rx[4];\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\n    if (ret != 0) return -1;\n    // Now read data bytes\n    size_t remaining = len;\n    while (remaining > 0) {\n        uint16_t chunk = (remaining > W25Q64JV_PAGE_SIZE) ? W25Q64JV_PAGE_SIZE : (uint16_t)remaining;\n        ret = w25q64jv_transfer(dev, NULL, buf, chunk);\n        if (ret != 0) return -1;\n        buf += chunk;\n        remaining -= chunk;\n    }\n    return 0;\n}\n\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\n{\n    if (len == 0) return 0;\n    // Write enable\n    uint8_t we_cmd = W25Q64JV_CMD_WRITE_ENABLE;\n    int ret = w25q64jv_transfer(dev, &we_cmd, NULL, 1);\n    if (ret != 0) return -1;\n    // Page program\n    uint8_t tx[4 + W25Q64JV_PAGE_SIZE];\n    tx[0] = W25Q64JV_CMD_PAGE_PROGRAM;\n    tx[1] = (addr >> 16) & 0xFF;\n    tx[2] = (addr >> 8) & 0xFF;\n    tx[3] = addr & 0xFF;\n    size_t chunk = (len > W25Q64JV_PAGE_SIZE) ? W25Q64JV_PAGE_SIZE : len;\n    for (size_t i = 0; i < chunk; i++) {\n        tx[4 + i] = buf[i];\n    }\n    ret = w25q64jv_transfer(dev, tx, NULL, 4 + chunk);\n    if (ret != 0) return -1;\n    // Wait for completion (poll BUSY)\n    uint8_t status_cmd = 0x05;\n    uint8_t status_rx;\n    do {\n        ret = w25q64jv_transfer(dev, &status_cmd, &status_rx, 1);\n        if (ret != 0) return -1;\n        // status_rx is the status register; BUSY is bit 0\n    } while (status_rx & 0x01);\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "memory",
+    "init_call": "w25q64jv_init(&g_eval_dev, bus_handle)",
+    "mem_read_call": "w25q64jv_read(&g_eval_dev, addr, buf, len)",
+    "mem_write_call": "w25q64jv_write(&g_eval_dev, addr, buf, len)",
+    "memory_size_bytes": 8388608,
+    "memory_page_bytes": 256,
+    "dev_struct_type": "struct w25q64jv_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x9F"
+          ]
+        ],
+        "note": "init: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "init: direct read read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "write_prefix_any_of": [
+          [
+            "0x03"
+          ]
+        ],
+        "note": "read_memory: write"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x00",
+        "read_any": true,
+        "note": "read_memory: direct read read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x06"
+          ]
+        ],
+        "note": "write_page: write"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x02"
+          ]
+        ],
+        "note": "write_page: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_memory_probe_1",
+        "mock_preload": {
+          "0x0000": [
+            "0xDE",
+            "0xAD",
+            "0xBE",
+            "0xEF",
+            "0x10",
+            "0x32",
+            "0x54",
+            "0x76",
+            "0x89",
+            "0xAB",
+            "0xCD",
+            "0xEF",
+            "0x01",
+            "0x23",
+            "0x45",
+            "0x67"
+          ]
+        },
+        "expected_mem_bytes": "DEADBEEF1032547689ABCDEF01234567",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      },
+      {
+        "name": "mechanical_memory_probe_2",
+        "mock_preload": {
+          "0x0000": [
+            "0x00",
+            "0xFF",
+            "0x55",
+            "0xAA",
+            "0x12",
+            "0x34",
+            "0x56",
+            "0x78",
+            "0x9A",
+            "0xBC",
+            "0xFE",
+            "0xDC",
+            "0x11",
+            "0x22",
+            "0x33",
+            "0x44"
+          ]
+        },
+        "expected_mem_bytes": "00FF55AA123456789ABCFEDC11223344",
+        "derivation": "memory harness reads 16 bytes from device-internal address 0x0000; mock_preload['0x0000'] provides exactly these 16 bytes, so expected_mem_bytes is their concatenated hex string"
+      }
+    ],
+    "mechanical_test_stimuli_source": "memory_harness_probe+api_contract.memory_size_bytes"
+  },
+  "runtime_path": "renode_spi",
+  "slave_kind": "spi_generic_slave",
+  "spi_sub_mode": "register",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 8.21,
+  "prompt_chars": 38428,
+  "raw_response": "{\"driver_header\": \"#ifndef W25Q64JV_H\\n#define W25Q64JV_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct w25q64jv_dev {\\n    void *bus_handle;\\n};\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle);\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len);\\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"w25q64jv.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include <stdint.h>\\n#include <stddef.h>\\n\\n#define W25Q64JV_CMD_READ_DATA 0x03\\n#define W25Q64JV_CMD_PAGE_PROGRAM 0x02\\n#define W25Q64JV_CMD_WRITE_ENABLE 0x06\\n#define W25Q64JV_CMD_JEDEC_ID 0x9F\\n\\n#define W25Q64JV_PAGE_SIZE 256\\n#define W25Q64JV_TIMEOUT 1000\\n\\nstatic int w25q64jv_transfer(struct w25q64jv_dev *dev, const uint8_t *tx, uint8_t *rx, uint16_t size)\\n{\\n    SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)dev->bus_handle;\\n    HAL_StatusTypeDef ret = HAL_SPI_TransmitReceive(hspi, tx, rx, size, W25Q64JV_TIMEOUT);\\n    return (ret == HAL_OK) ? 0 : -1;\\n}\\n\\nint w25q64jv_init(struct w25q64jv_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    uint8_t tx[4] = {W25Q64JV_CMD_JEDEC_ID, 0, 0, 0};\\n    uint8_t rx[4] = {0};\\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\\n    if (ret != 0) return -1;\\n    // Expected JEDEC ID: 0xEF 0x40 0x17 for W25Q64JV\\n    if (rx[1] != 0xEF || rx[2] != 0x40 || rx[3] != 0x17) return -1;\\n    return 0;\\n}\\n\\nint w25q64jv_read(struct w25q64jv_dev *dev, uint32_t addr, uint8_t *buf, size_t len)\\n{\\n    if (len == 0) return 0;\\n    uint8_t tx[4];\\n    tx[0] = W25Q64JV_CMD_READ_DATA;\\n    tx[1] = (addr >> 16) & 0xFF;\\n    tx[2] = (addr >> 8) & 0xFF;\\n    tx[3] = addr & 0xFF;\\n    uint8_t rx[4];\\n    int ret = w25q64jv_transfer(dev, tx, rx, 4);\\n    if (ret != 0) return -1;\\n    // Now read data bytes\\n    size_t remaining = len;\\n    while (remaining > 0) {\\n        uint16_t chunk = (remaining > W25Q64JV_PAGE_SIZE) ? W25Q64JV_PAGE_SIZE : (uint16_t)remaining;\\n        ret = w25q64jv_transfer(dev, NULL, buf, chunk);\\n        if (ret != 0) return -1;\\n        buf += chunk;\\n        remaining -= chunk;\\n    }\\n    return 0;\\n}\\n\\nint w25q64jv_write(struct w25q64jv_dev *dev, uint32_t addr, const uint8_t *buf, size_t len)\\n{\\n    if (len == 0) return 0;\\n    // Write enable\\n    uint8_t we_cmd = W25Q64JV_CMD_WRITE_ENABLE;\\n    int ret = w25q64jv_transfer(dev, &we_cmd, NULL, 1);\\n    if (ret != 0) return -1;\\n    // Page program\\n    uint8_t tx[4 + W25Q64JV_PAGE_SIZE];\\n    tx[0] = W25Q64JV_CMD_PAGE_PROGRAM;\\n    tx[1] = (addr >> 16) & 0xFF;\\n    tx[2] = (addr >> 8) & 0xFF;\\n    tx[3] = addr & 0xFF;\\n    size_t chunk = (len > W25Q64JV_PAGE_SIZE) ? W25Q64JV_PAGE_SIZE : len;\\n    for (size_t i = 0; i < chunk; i++) {\\n        tx[4 + i] = buf[i];\\n    }\\n    ret = w25q64jv_transfer(dev, tx, NULL, 4 + chunk);\\n    if (ret != 0) return -1;\\n    // Wait for completion (poll BUSY)\\n    uint8_t status_cmd = 0x05;\\n    uint8_t status_rx;\\n    do {\\n        ret = w25q64jv_transfer(dev, &status_cmd, &status_rx, 1);\\n        if (ret != 0) return -1;\\n        // status_rx is the status register; BUSY is bit 0\\n    } while (status_rx & 0x01);\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "5a47ef44adb27a05"
+}

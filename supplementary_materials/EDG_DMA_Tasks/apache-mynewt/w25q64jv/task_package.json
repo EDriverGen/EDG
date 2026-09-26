@@ -1,0 +1,88 @@
+{
+  "package_id": "apache_mynewt_generic_hal__w25q64jv__spi0_dma",
+  "platform_base_context": "EDG_DMA_Tasks/apache-mynewt/w25q64jv/platform_base_context.json",
+  "connection_binding_context": "EDG_DMA_Tasks/apache-mynewt/w25q64jv/connection_binding_context.json",
+  "device_attachment_context": "EDG_DMA_Tasks/apache-mynewt/w25q64jv/device_attachment_context.json",
+  "reference_driver_root": "DriverGen/data/references/w25q64jv/apache-mynewt",
+  "device_ir": "EDG_DMA_Tasks/apache-mynewt/w25q64jv/device_ir.json",
+  "dma_requirements": "EDG_DMA_Tasks/apache-mynewt/w25q64jv/dma_requirements.json",
+  "evaluation_config": "EDG_DMA_Tasks/apache-mynewt/w25q64jv/evaluation_config.json",
+  "mode": "dma",
+  "notes": [
+    "W25Q64JV on apache-mynewt: DMA payload transfers on the original hardware connection.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use DMA for memory read/program payloads. Preserve opcode/address framing, chip-select boundaries, write enable, page boundaries, and device busy waits."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/apache-mynewt/hw/bus/drivers/spi_stm32/src/spi_stm32.c",
+    "DriverGen/data/rtos/apache-mynewt/hw/bus/drivers/spi_stm32/stm32f1xx/src/spidmacfg.c",
+    "DriverGen/data/rtos/apache-mynewt/hw/bus/drivers/spi_stm32/syscfg.yml"
+  ],
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "apache_mynewt_generic_hal",
+      "rtos": "apache-mynewt",
+      "rtos_bundle": "apache-mynewt",
+      "board": "generic_hal",
+      "board_alias": "mynewt_hal",
+      "integration": "mynewt_native_hal",
+      "integration_style": "integrated_rtos_hal_bsp",
+      "mcu_family": "stm32f1",
+      "mcu": "stm32f103rb"
+    },
+    "connection": {
+      "binding_id": "apache_mynewt_generic_hal_spi0_dma",
+      "platform_id": "apache_mynewt_generic_hal",
+      "connection_type": "spi",
+      "mode": "dma",
+      "bus_instance": "0",
+      "bus_instance_kind": "hal_spi_num",
+      "bus_symbol": "0",
+      "backend": "Apache Mynewt STM32F1 spi_stm32 bus driver with DMA",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "spi_num": 0,
+        "chip_select": "board_configured_cs"
+      },
+      "helper_usage_patterns": []
+    },
+    "device": {
+      "device_id": "w25q64jv",
+      "attachment_type": "spi_flash",
+      "required_bus_type": "spi",
+      "address_mode": null,
+      "addressing": {
+        "default": "spi1",
+        "selection_rule": "SPI CS# selected by board wiring."
+      },
+      "required_attachment": {
+        "signals": [
+          "CS",
+          "CLK",
+          "MOSI",
+          "MISO"
+        ],
+        "notes": [
+          "Standard SPI quad-pin connection."
+        ]
+      },
+      "optional_attachment": {},
+      "default_overrides": {
+        "bus_instance": "0",
+        "irq": "dma_completion",
+        "dma": "required",
+        "mode": "dma",
+        "device_irq": "absent"
+      },
+      "protocol_hints": {
+        "transfer_mode": "dma"
+      }
+    }
+  }
+}

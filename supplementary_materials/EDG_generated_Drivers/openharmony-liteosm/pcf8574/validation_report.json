@@ -1,0 +1,875 @@
+{
+  "job_id": "openharmony_liteosm_generic_hdf__pcf8574__i2c1_polling__deepseek_deepseek-v4-flash",
+  "device_id": "pcf8574",
+  "rtos_id": "openharmony-liteosm",
+  "provider": "deepseek",
+  "run_dir": "<RUN_DIR>",
+  "pipeline_version": "trace-rtos-v4",
+  "context_mode": "v2-mrse",
+  "reusable_inputs": null,
+  "checks": {
+    "rtos_evidence_validation": {
+      "passed_gates": [
+        "root_coverage",
+        "symbol_existence",
+        "root_role",
+        "example_consistency",
+        "no_stub_authority",
+        "cache_provenance"
+      ],
+      "failed_gates": [
+        "slot_coverage"
+      ],
+      "warnings": [
+        "mcu_affinity"
+      ],
+      "gate_results": [
+        {
+          "gate_id": "root_coverage",
+          "passed": true,
+          "severity": "info",
+          "message": "kernel-only rtos 'openharmony-liteosm' has 2 source roots (need >=2 for kernel + vendor/board)",
+          "evidence": {
+            "rtos_id": "openharmony-liteosm",
+            "n_roots": 2
+          }
+        },
+        {
+          "gate_id": "slot_coverage",
+          "passed": false,
+          "severity": "error",
+          "message": "1 required slot(s) uncovered: ['runtime.error_status']",
+          "evidence": {
+            "missing_required": [
+              "runtime.error_status"
+            ],
+            "non_symbol_fulfillments": [
+              "i2c.addressing",
+              "i2c.key_types",
+              "integration.bus_instance_binding"
+            ]
+          }
+        },
+        {
+          "gate_id": "symbol_existence",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings traced to parsed source",
+          "evidence": {
+            "missing": []
+          }
+        },
+        {
+          "gate_id": "root_role",
+          "passed": true,
+          "severity": "info",
+          "message": "all manifest_repo bindings come from authoritative roles",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "mcu_affinity",
+          "passed": false,
+          "severity": "warning",
+          "message": "no manifest binding's declared_in mentions mcu_family=generic_arm_m (7 manifest binding(s) checked); LLM Symbol Binder is the source of truth for MCU correctness — review for confidence",
+          "evidence": {
+            "other_paths_sample": [
+              "openharmony-liteosm-project:openharmony-drivers-hdf-core:1::framework/support/platform/src/i2c/i2c_if.c",
+              "openharmony-liteosm-project:openharmony-drivers-hdf-core:1::framework/support/platform/src/i2c/i2c_if.c",
+              "openharmony-liteosm-project:openharmony-drivers-hdf-core:1::framework/support/platform/src/i2c/i2c_if.c",
+              "openharmony-liteosm-project:openharmony-drivers-hdf-core:1::framework/support/platform/src/i2c/i2c_if.c",
+              "openharmony-liteosm-project:openharmony-kernel-liteos-m:0::kernel/src/los_tick.c",
+              "openharmony-liteosm-project:openharmony-drivers-hdf-core:1::framework/support/platform/include/i2c/i2c_service.h",
+              "openharmony-liteosm-project:openharmony-drivers-hdf-core:1::framework/support/platform/src/i2c/i2c_if.c"
+            ]
+          }
+        },
+        {
+          "gate_id": "example_consistency",
+          "passed": true,
+          "severity": "info",
+          "message": "no exemplar files referenced; gate skipped",
+          "evidence": {}
+        },
+        {
+          "gate_id": "no_stub_authority",
+          "passed": true,
+          "severity": "info",
+          "message": "no stub source_kind in current bindings (or all marked link-only)",
+          "evidence": {
+            "bad": []
+          }
+        },
+        {
+          "gate_id": "cache_provenance",
+          "passed": true,
+          "severity": "info",
+          "message": "all cache-provenance fields present",
+          "evidence": {
+            "missing": []
+          }
+        }
+      ]
+    },
+    "ir": {
+      "ok": false,
+      "issues": [
+        {
+          "level": "error",
+          "check_id": "device_ir.read_sequence[0].transaction.bytes",
+          "message": "transaction kind='write_then_read' requires a non-empty bytes list."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.operation_flows[1].steps[1].register",
+          "message": "step op='clear' requires either transaction or register."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.operation_flows[2].steps",
+          "message": "init flow must contain at least one bus/signal-producing step, explicitly state default/no-bus initialization, or set requires_human=true."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_3",
+          "message": "Evidence snippet not found: pcf8574 page 14 -> A2 A1 A0 64 (decimal), 40 (hexadecimal)"
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_7",
+          "message": "Evidence snippet not found: pcf8574 page 12 -> At power on, the I/Os are high."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.evidence_9",
+          "message": "Evidence snippet not found: pcf8574 page 18 -> V POR is the voltage level at which the reset condition is released and all the registers and the I 2 C/SMBus state machine are initialized to their default states."
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    },
+    "ir_flow_risk": {
+      "ok": true,
+      "issues": [
+        {
+          "level": "warning",
+          "check_id": "device_ir.flow_risk.audit_missing",
+          "message": "No device_ir_flow_audit.json receipt found; flow readiness is not fully audited."
+        },
+        {
+          "level": "error",
+          "check_id": "device_ir.flow_risk.requires_human[2]",
+          "message": "requires_human records unresolved generation-critical flow information: The datasheet says all I/Os are high at power on, but it does not provide a byte-level reset latch value beyond the pin-state description; confirm whether software should treat the default port byte as 0xFF."
+        }
+      ],
+      "informational_only": true,
+      "source": "cached_device_ir"
+    }
+  },
+  "all_checks_passed": false,
+  "codegen": {
+    "version": "v2",
+    "success": true,
+    "total_time_s": 178.6,
+    "final_attempt": 2,
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "runtime_path": "renode_i2c",
+    "slave_kind": "i2c_register_slave",
+    "spi_sub_mode": "",
+    "layer_failed": "",
+    "final_elf_path": "<RUN_DIR>/attempts/002/stage/out/pcf8574_openharmony-liteosm.elf",
+    "files_written": {
+      "pcf8574.h": 449,
+      "pcf8574.c": 1368,
+      "pcf8574_eval_adapter.c": 2879
+    },
+    "probe": {
+      "total": 3,
+      "pass": 3,
+      "fail": 0,
+      "error": 0
+    },
+    "invariants_count": 10,
+    "attempts": [
+      {
+        "attempt": 1,
+        "layer_failed": "probe",
+        "success": false,
+        "total_time_s": 79.198,
+        "bundle_summary": {
+          "device_id": "pcf8574",
+          "rtos_id": "openharmony-liteosm",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 465,
+          "source_chars": 1340,
+          "plan_hash": "37ad8af275808139",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c",
+            "preamble_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 5.44
+        },
+        "syntax": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0
+        },
+        "consistency": {
+          "overall": "mixed",
+          "ok": true,
+          "inconsistent_count": 0,
+          "llm_only_count": 2,
+          "consistent_count": 1,
+          "summary": "3 stim; 1 L1/L2; 2 llm_only",
+          "stimuli": [
+            {
+              "name": "all_pins_high",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0xFF] no interp = 1.0",
+                "ch=p1: bytes=[0xFF] no interp = 1.0",
+                "ch=p2: bytes=[0xFF] no interp = 1.0",
+                "ch=p3: bytes=[0xFF] no interp = 1.0",
+                "ch=p4: bytes=[0xFF] no interp = 1.0",
+                "ch=p5: bytes=[0xFF] no interp = 1.0",
+                "ch=p6: bytes=[0xFF] no interp = 1.0",
+                "ch=p7: bytes=[0xFF] no interp = 1.0"
+              ]
+            },
+            {
+              "name": "all_pins_low",
+              "verdict": "consistent_l1",
+              "layer": "L1",
+              "evidence": "ch=p0:single_u8=0; ch=p1:single_u8=0; ch=p2:single_u8=0; ch=p3:single_u8=0; ch=p4:single_u8=0; ch=p5:single_u8=0; ch=p6:single_u8=0; ch=p7:single_u8=0",
+              "warnings": []
+            },
+            {
+              "name": "mixed_pins",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0xA5] no interp = 1.0",
+                "ch=p1: bytes=[0xA5] no interp = 0.0",
+                "ch=p2: bytes=[0xA5] no interp = 1.0",
+                "ch=p3: bytes=[0xA5] no interp = 0.0",
+                "ch=p4: bytes=[0xA5] no interp = 0.0",
+                "ch=p5: bytes=[0xA5] no interp = 1.0",
+                "ch=p6: bytes=[0xA5] no interp = 0.0",
+                "ch=p7: bytes=[0xA5] no interp = 1.0"
+              ]
+            }
+          ]
+        },
+        "coverage": {
+          "ok": true,
+          "superset": true,
+          "covered_count": 1,
+          "missing_count": 0,
+          "llm_extras_count": 0,
+          "merged_count": 1,
+          "summary": "1/1 mechanical covered",
+          "covered": [
+            {
+              "mechanical": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "write_prefix_any_of": [],
+                "note": "flow_read_write_1: direct read read_port",
+                "source": "operation_flows[0].steps[0]",
+                "read_any": true,
+                "forbid_write_prefix": true
+              },
+              "llm_match": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "read_any": true,
+                "forbid_write_prefix": true,
+                "note": "flow_read_write_1: direct read read_port"
+              },
+              "reason": "read-any match (no prefixes required)",
+              "covered": true
+            }
+          ],
+          "missing": [],
+          "llm_extras": [],
+          "merged": [
+            {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x20",
+              "read_any": true,
+              "forbid_write_prefix": true,
+              "note": "flow_read_write_1: direct read read_port"
+            }
+          ]
+        },
+        "adapter_summary": {
+          "device_id": "pcf8574",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "source_chars": 2879,
+          "warnings": []
+        },
+        "link": {
+          "success": true,
+          "errors": 0,
+          "warnings": 6,
+          "elf_path": "<RUN_DIR>/attempts/001/stage/out/pcf8574_openharmony-liteosm.elf",
+          "text_bytes": 9175,
+          "data_bytes": 80,
+          "bss_bytes": 72
+        },
+        "probe": {
+          "total": 3,
+          "passed": 0,
+          "expectation_failures": 3,
+          "outcomes": [
+            {
+              "stimulus_name": "all_pins_high",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 0.0,
+              "read_channels": {
+                "p0": 0.0,
+                "p1": 0.0,
+                "p2": 0.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 0.0,
+                "p6": 0.0,
+                "p7": 0.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/001/stage/probe/trace_all_pins_high.jsonl",
+              "output_lines": [
+                "22:45:15.0583 [INFO] usart2: [host: 0.68s (+0.68s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:45:15.1240 [INFO] usart2: [host: 0.74s (+65.06ms)|virt: 0s (+0s)] read_ch_p0=0",
+                "22:45:15.1241 [INFO] usart2: [host:  0.74s (+0.11ms)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:45:15.1241 [INFO] usart2: [host:    0.74s (+65?s)|virt: 0s (+0s)] read_ch_p2=0",
+                "22:45:15.1242 [INFO] usart2: [host:    0.74s (+62?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:45:15.1242 [INFO] usart2: [host:    0.74s (+66?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:45:15.1242 [INFO] usart2: [host:    0.74s (+65?s)|virt: 0s (+0s)] read_ch_p5=0",
+                "22:45:15.1243 [INFO] usart2: [host:    0.74s (+68?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:45:15.1244 [INFO] usart2: [host:    0.74s (+65?s)|virt: 0s (+0s)] read_ch_p7=0",
+                "22:45:15.1244 [INFO] usart2: [host:    0.74s (+75?s)|virt: 0s (+0s)] read_raw=0",
+                "22:45:15.1245 [INFO] usart2: [host:    0.74s (+68?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:45:15.1246 [INFO] usart2: [host:    0.74s (+97?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.35014295578003,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "all_pins_low",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 0.0,
+              "read_channels": {
+                "p0": 0.0,
+                "p1": 0.0,
+                "p2": 0.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 0.0,
+                "p6": 0.0,
+                "p7": 0.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/001/stage/probe/trace_all_pins_low.jsonl",
+              "output_lines": [
+                "22:45:39.5163 [INFO] usart2: [host: 0.74s (+0.74s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:45:39.5845 [INFO] usart2: [host: 0.81s (+67.26ms)|virt: 0s (+0s)] read_ch_p0=0",
+                "22:45:39.5846 [INFO] usart2: [host:  0.81s (+0.11ms)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:45:39.5847 [INFO] usart2: [host:    0.81s (+78?s)|virt: 0s (+0s)] read_ch_p2=0",
+                "22:45:39.5848 [INFO] usart2: [host:    0.81s (+65?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:45:39.5848 [INFO] usart2: [host:    0.81s (+70?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:45:39.5849 [INFO] usart2: [host:    0.81s (+66?s)|virt: 0s (+0s)] read_ch_p5=0",
+                "22:45:39.5850 [INFO] usart2: [host:    0.81s (+65?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:45:39.5850 [INFO] usart2: [host:    0.81s (+65?s)|virt: 0s (+0s)] read_ch_p7=0",
+                "22:45:39.5851 [INFO] usart2: [host:    0.81s (+70?s)|virt: 0s (+0s)] read_raw=0",
+                "22:45:39.5852 [INFO] usart2: [host:    0.81s (+68?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:45:39.5853 [INFO] usart2: [host:    0.81s (+97?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.39994740486145,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "mixed_pins",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 0.0,
+              "read_channels": {
+                "p0": 0.0,
+                "p1": 0.0,
+                "p2": 0.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 0.0,
+                "p6": 0.0,
+                "p7": 0.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/001/stage/probe/trace_mixed_pins.jsonl",
+              "output_lines": [
+                "22:46:03.8608 [INFO] usart2: [host: 0.71s (+0.71s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:46:03.9204 [INFO] usart2: [host: 0.77s (+59.25ms)|virt: 0s (+0s)] read_ch_p0=0",
+                "22:46:03.9205 [INFO] usart2: [host:    0.77s (+98?s)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:46:03.9205 [INFO] usart2: [host:    0.77s (+75?s)|virt: 0s (+0s)] read_ch_p2=0",
+                "22:46:03.9206 [INFO] usart2: [host:    0.77s (+65?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:46:03.9206 [INFO] usart2: [host:    0.77s (+66?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:46:03.9207 [INFO] usart2: [host:    0.77s (+65?s)|virt: 0s (+0s)] read_ch_p5=0",
+                "22:46:03.9208 [INFO] usart2: [host:    0.77s (+71?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:46:03.9208 [INFO] usart2: [host:    0.77s (+64?s)|virt: 0s (+0s)] read_ch_p7=0",
+                "22:46:03.9209 [INFO] usart2: [host:    0.77s (+70?s)|virt: 0s (+0s)] read_raw=0",
+                "22:46:03.9210 [INFO] usart2: [host:    0.77s (+66?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:46:03.9211 [INFO] usart2: [host:    0.77s (+88?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.353647470474243,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            }
+          ]
+        },
+        "feedback_chars": 4551
+      },
+      {
+        "attempt": 2,
+        "layer_failed": "",
+        "success": true,
+        "total_time_s": 79.152,
+        "bundle_summary": {
+          "device_id": "pcf8574",
+          "rtos_id": "openharmony-liteosm",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "header_chars": 449,
+          "source_chars": 1368,
+          "plan_hash": "37ad8af275808139",
+          "api_contract_keys": [
+            "channels",
+            "dev_struct_type",
+            "eval_class",
+            "init_call",
+            "init_extra_setup_c",
+            "preamble_c"
+          ],
+          "stimuli_count": 3,
+          "model": "deepseek-v4-flash",
+          "generation_time_s": 5.459
+        },
+        "syntax": {
+          "success": true,
+          "errors": 0,
+          "warnings": 0
+        },
+        "consistency": {
+          "overall": "mixed",
+          "ok": true,
+          "inconsistent_count": 0,
+          "llm_only_count": 2,
+          "consistent_count": 1,
+          "summary": "3 stim; 1 L1/L2; 2 llm_only",
+          "stimuli": [
+            {
+              "name": "all_pins_high",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0xFF] no interp = 1.0",
+                "ch=p1: bytes=[0xFF] no interp = 1.0",
+                "ch=p2: bytes=[0xFF] no interp = 1.0",
+                "ch=p3: bytes=[0xFF] no interp = 1.0",
+                "ch=p4: bytes=[0xFF] no interp = 1.0",
+                "ch=p5: bytes=[0xFF] no interp = 1.0",
+                "ch=p6: bytes=[0xFF] no interp = 1.0",
+                "ch=p7: bytes=[0xFF] no interp = 1.0"
+              ]
+            },
+            {
+              "name": "all_pins_low",
+              "verdict": "consistent_l1",
+              "layer": "L1",
+              "evidence": "ch=p0:single_u8=0; ch=p1:single_u8=0; ch=p2:single_u8=0; ch=p3:single_u8=0; ch=p4:single_u8=0; ch=p5:single_u8=0; ch=p6:single_u8=0; ch=p7:single_u8=0",
+              "warnings": []
+            },
+            {
+              "name": "mixed_pins",
+              "verdict": "llm_only",
+              "layer": "L3",
+              "evidence": "no channel could be L1-verified",
+              "warnings": [
+                "ch=p0: bytes=[0xA5] no interp = 1.0",
+                "ch=p1: bytes=[0xA5] no interp = 0.0",
+                "ch=p2: bytes=[0xA5] no interp = 1.0",
+                "ch=p3: bytes=[0xA5] no interp = 0.0",
+                "ch=p4: bytes=[0xA5] no interp = 0.0",
+                "ch=p5: bytes=[0xA5] no interp = 1.0",
+                "ch=p6: bytes=[0xA5] no interp = 0.0",
+                "ch=p7: bytes=[0xA5] no interp = 1.0"
+              ]
+            }
+          ]
+        },
+        "coverage": {
+          "ok": true,
+          "superset": true,
+          "covered_count": 1,
+          "missing_count": 0,
+          "llm_extras_count": 0,
+          "merged_count": 1,
+          "summary": "1/1 mechanical covered",
+          "covered": [
+            {
+              "mechanical": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "write_prefix_any_of": [],
+                "note": "flow_read_write_1: direct read read_port",
+                "source": "operation_flows[0].steps[0]",
+                "read_any": true,
+                "forbid_write_prefix": true
+              },
+              "llm_match": {
+                "phase": "read_cycle",
+                "addr_or_pin": "0x20",
+                "read_any": true,
+                "forbid_write_prefix": true,
+                "note": "flow_read_write_1: direct read read_port"
+              },
+              "reason": "read-any match (no prefixes required)",
+              "covered": true
+            }
+          ],
+          "missing": [],
+          "llm_extras": [],
+          "merged": [
+            {
+              "phase": "read_cycle",
+              "addr_or_pin": "0x20",
+              "read_any": true,
+              "forbid_write_prefix": true,
+              "note": "flow_read_write_1: direct read read_port"
+            }
+          ]
+        },
+        "adapter_summary": {
+          "device_id": "pcf8574",
+          "eval_class": "multi_channel",
+          "bus_kind": "i2c",
+          "source_chars": 2879,
+          "warnings": []
+        },
+        "link": {
+          "success": true,
+          "errors": 0,
+          "warnings": 6,
+          "elf_path": "<RUN_DIR>/attempts/002/stage/out/pcf8574_openharmony-liteosm.elf",
+          "text_bytes": 9171,
+          "data_bytes": 80,
+          "bss_bytes": 72
+        },
+        "probe": {
+          "total": 3,
+          "passed": 3,
+          "expectation_failures": 0,
+          "outcomes": [
+            {
+              "stimulus_name": "all_pins_high",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 1.0,
+              "read_channels": {
+                "p0": 1.0,
+                "p1": 1.0,
+                "p2": 1.0,
+                "p3": 1.0,
+                "p4": 1.0,
+                "p5": 1.0,
+                "p6": 1.0,
+                "p7": 1.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_all_pins_high.jsonl",
+              "output_lines": [
+                "22:46:34.1205 [INFO] usart2: [host: 0.65s (+0.65s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:46:34.1854 [INFO] usart2: [host: 0.71s (+64.61ms)|virt: 0s (+0s)] read_ch_p0=1",
+                "22:46:34.1855 [INFO] usart2: [host:  0.71s (+0.12ms)|virt: 0s (+0s)] read_ch_p1=1",
+                "22:46:34.1856 [INFO] usart2: [host:    0.71s (+79?s)|virt: 0s (+0s)] read_ch_p2=1",
+                "22:46:34.1857 [INFO] usart2: [host:    0.71s (+71?s)|virt: 0s (+0s)] read_ch_p3=1",
+                "22:46:34.1857 [INFO] usart2: [host:    0.71s (+78?s)|virt: 0s (+0s)] read_ch_p4=1",
+                "22:46:34.1858 [INFO] usart2: [host:    0.71s (+71?s)|virt: 0s (+0s)] read_ch_p5=1",
+                "22:46:34.1859 [INFO] usart2: [host:    0.71s (+73?s)|virt: 0s (+0s)] read_ch_p6=1",
+                "22:46:34.1859 [INFO] usart2: [host:    0.71s (+72?s)|virt: 0s (+0s)] read_ch_p7=1",
+                "22:46:34.1860 [INFO] usart2: [host:    0.71s (+84?s)|virt: 0s (+0s)] read_raw=1",
+                "22:46:34.1861 [INFO] usart2: [host:    0.71s (+71?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:46:34.1862 [INFO] usart2: [host:    0.72s (+94?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.225107192993164,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "all_pins_low",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 0.0,
+              "read_channels": {
+                "p0": 0.0,
+                "p1": 0.0,
+                "p2": 0.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 0.0,
+                "p6": 0.0,
+                "p7": 0.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_all_pins_low.jsonl",
+              "output_lines": [
+                "22:46:58.5192 [INFO] usart2: [host: 0.67s (+0.67s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:46:58.5859 [INFO] usart2: [host: 0.74s (+66.24ms)|virt: 0s (+0s)] read_ch_p0=0",
+                "22:46:58.5861 [INFO] usart2: [host:  0.74s (+0.12ms)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:46:58.5861 [INFO] usart2: [host:    0.74s (+71?s)|virt: 0s (+0s)] read_ch_p2=0",
+                "22:46:58.5862 [INFO] usart2: [host:    0.74s (+69?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:46:58.5862 [INFO] usart2: [host:    0.74s (+72?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:46:58.5863 [INFO] usart2: [host:    0.74s (+71?s)|virt: 0s (+0s)] read_ch_p5=0",
+                "22:46:58.5863 [INFO] usart2: [host:    0.74s (+71?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:46:58.5864 [INFO] usart2: [host:    0.74s (+71?s)|virt: 0s (+0s)] read_ch_p7=0",
+                "22:46:58.5865 [INFO] usart2: [host:    0.74s (+75?s)|virt: 0s (+0s)] read_raw=0",
+                "22:46:58.5866 [INFO] usart2: [host:    0.74s (+81?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:46:58.5867 [INFO] usart2: [host:   0.74s (+0.1ms)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.368218421936035,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            },
+            {
+              "stimulus_name": "mixed_pins",
+              "boot_detected": true,
+              "test_done": true,
+              "result_pass": true,
+              "result_err": false,
+              "read_err": null,
+              "read_raw": 1.0,
+              "read_channels": {
+                "p0": 1.0,
+                "p1": 0.0,
+                "p2": 1.0,
+                "p3": 0.0,
+                "p4": 0.0,
+                "p5": 1.0,
+                "p6": 0.0,
+                "p7": 1.0
+              },
+              "mem_bytes": [],
+              "mem_probe_addr": null,
+              "mem_probe_len": null,
+              "memory_size_bytes": null,
+              "memory_page_bytes": null,
+              "display_frame_len": null,
+              "display_frame_err": null,
+              "display_status_err": null,
+              "display_status": null,
+              "rtc_get_err": null,
+              "rtc_set_err": null,
+              "rtc_time": {},
+              "trace_path": "<RUN_DIR>/attempts/002/stage/probe/trace_mixed_pins.jsonl",
+              "output_lines": [
+                "22:47:22.9873 [INFO] usart2: [host: 0.7s (+0.7s)|virt: 0s (+0s)] DRIVER_TEST START",
+                "22:47:23.0545 [INFO] usart2: [host: 0.76s (+66.92ms)|virt: 0s (+0s)] read_ch_p0=1",
+                "22:47:23.0547 [INFO] usart2: [host:  0.76s (+0.12ms)|virt: 0s (+0s)] read_ch_p1=0",
+                "22:47:23.0548 [INFO] usart2: [host:  0.76s (+0.14ms)|virt: 0s (+0s)] read_ch_p2=1",
+                "22:47:23.0549 [INFO] usart2: [host:    0.76s (+64?s)|virt: 0s (+0s)] read_ch_p3=0",
+                "22:47:23.0549 [INFO] usart2: [host:    0.76s (+64?s)|virt: 0s (+0s)] read_ch_p4=0",
+                "22:47:23.0550 [INFO] usart2: [host:    0.76s (+65?s)|virt: 0s (+0s)] read_ch_p5=1",
+                "22:47:23.0550 [INFO] usart2: [host:    0.76s (+65?s)|virt: 0s (+0s)] read_ch_p6=0",
+                "22:47:23.0551 [INFO] usart2: [host:    0.76s (+64?s)|virt: 0s (+0s)] read_ch_p7=1",
+                "22:47:23.0551 [INFO] usart2: [host:    0.76s (+71?s)|virt: 0s (+0s)] read_raw=1",
+                "22:47:23.0552 [INFO] usart2: [host:    0.76s (+69?s)|virt: 0s (+0s)] RESULT: PASS",
+                "22:47:23.0553 [INFO] usart2: [host:    0.76s (+91?s)|virt: 0s (+0s)] DRIVER_TEST DONE"
+              ],
+              "error": "",
+              "duration_s": 24.45071268081665,
+              "renode_exit": 0,
+              "expected_read_raw": null,
+              "expected_channels": {},
+              "expected_mem_bytes": null,
+              "expected_time": null,
+              "expected_err": null,
+              "runtime_path": "renode_i2c",
+              "slave_kind": "i2c_register_slave",
+              "spi_sub_mode": "",
+              "bus_kind": "i2c"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "evaluation": {
+    "ok": true,
+    "overall_claim": "build-valid",
+    "levels": [
+      {
+        "level": "L1",
+        "passed": true,
+        "claim": "build-valid",
+        "detail": "ELF 49296 bytes (text=9171, data=80, bss=72)"
+      },
+      {
+        "level": "L2",
+        "passed": false,
+        "claim": "runtime-smoke-valid",
+        "detail": "0/3 vectors passed; first failure: all_low (no_pass)"
+      },
+      {
+        "level": "L3",
+        "passed": false,
+        "claim": "protocol-valid-relaxed",
+        "detail": "skipped (L2 failed)"
+      },
+      {
+        "level": "L4",
+        "passed": false,
+        "claim": "semantic-valid",
+        "detail": "skipped (L2 failed)"
+      },
+      {
+        "level": "L5",
+        "passed": false,
+        "claim": "robust-valid",
+        "detail": "skipped (L2 failed)"
+      }
+    ],
+    "driver_dir": "<RUN_DIR>",
+    "combo": "pcf8574_openharmony-liteosm"
+  }
+}

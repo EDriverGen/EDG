@@ -1,0 +1,946 @@
+{
+  "device_id": "bme280",
+  "bus_type": "i2c",
+  "address_rule": {
+    "type": "address_pins",
+    "addressing_form": "7-bit",
+    "addresses": [
+      {
+        "address": "0x76",
+        "description": "I2C slave address when SDO is connected to GND",
+        "is_default": true
+      },
+      {
+        "address": "0x77",
+        "description": "I2C slave address when SDO is connected to VDDIO",
+        "is_default": false
+      }
+    ]
+  },
+  "register_map": {
+    "total_size_bytes": 256,
+    "addressing": "1-byte",
+    "auto_increment": true,
+    "page_size_bytes": null,
+    "write_busy_ms": null,
+    "notes": "Registers from 0x00 to 0xFF; auto-increment for burst reads."
+  },
+  "read_channels": [
+    {
+      "id": "temperature",
+      "raw_type": "int32",
+      "physical_unit": "milli_degC",
+      "read_call_hint": null,
+      "flow_id": "read_measurements",
+      "source_bytes": [
+        "temp_msb",
+        "temp_lsb",
+        "temp_xlsb"
+      ],
+      "source_signal": null,
+      "formula_id": "compensate_temperature",
+      "notes": "Raw temperature is 20-bit unsigned, stored in three registers."
+    },
+    {
+      "id": "pressure",
+      "raw_type": "int32",
+      "physical_unit": "Pa",
+      "read_call_hint": null,
+      "flow_id": "read_measurements",
+      "source_bytes": [
+        "press_msb",
+        "press_lsb",
+        "press_xlsb"
+      ],
+      "source_signal": null,
+      "formula_id": "compensate_pressure",
+      "notes": "Raw pressure is 20-bit unsigned, stored in three registers."
+    },
+    {
+      "id": "humidity",
+      "raw_type": "int32",
+      "physical_unit": "milli_percent",
+      "read_call_hint": null,
+      "flow_id": "read_measurements",
+      "source_bytes": [
+        "hum_msb",
+        "hum_lsb"
+      ],
+      "source_signal": null,
+      "formula_id": "compensate_humidity",
+      "notes": "Raw humidity is 16-bit unsigned, stored in two registers."
+    }
+  ],
+  "access_model": {
+    "kind": "register_pointer",
+    "address_bytes": 1,
+    "read_requires_pointer": true,
+    "direct_read_after_write": false,
+    "notes": "I2C: write register address, then read data with auto-increment."
+  },
+  "operation_flows": [
+    {
+      "flow_id": "probe_id",
+      "kind": "probe",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "role": null,
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xD0"
+            ],
+            "length": 1,
+            "pointer_target": "id",
+            "notes": "Read chip ID register."
+          },
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": null,
+          "output_ref": null
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Verify device presence. Canonicalized: removed non-read_channel outputs chip_id; keep them as probe/status notes rather than public measurement outputs."
+    },
+    {
+      "flow_id": "soft_reset",
+      "kind": "init",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write",
+          "role": null,
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xE0",
+              "0xB6"
+            ],
+            "length": null,
+            "pointer_target": "reset",
+            "notes": "Write 0xB6 to reset register."
+          },
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": null,
+          "output_ref": null
+        },
+        {
+          "op": "delay",
+          "role": null,
+          "transaction": null,
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": 2,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": "Wait for startup after reset.",
+          "output_ref": null
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Soft reset triggers power-on-reset."
+    },
+    {
+      "flow_id": "read_calibration",
+      "kind": "calibration",
+      "channels": [],
+      "preconditions": [],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "role": null,
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0x88"
+            ],
+            "length": 26,
+            "pointer_target": "calib00",
+            "notes": "Burst read calibration registers 0x88-0xA1."
+          },
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": null,
+          "output_ref": null
+        },
+        {
+          "op": "write_then_read",
+          "role": null,
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xE1"
+            ],
+            "length": 7,
+            "pointer_target": "calib41",
+            "notes": "Burst read calibration registers 0xE1-0xE7."
+          },
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": null,
+          "output_ref": null
+        }
+      ],
+      "outputs": [],
+      "requires_human": false,
+      "notes": "Calibration parameters from NVM. Canonicalized: removed non-read_channel outputs dig_H1, dig_H2, dig_H3, dig_H4, dig_H5, dig_H6, dig_P1, dig_P2, dig_P3, dig_P4, dig_P5, dig_P6, dig_P7, dig_P8, dig_P9, dig_T1, dig_T2, dig_T3; keep them as probe/status notes rather than public measurement outputs."
+    },
+    {
+      "flow_id": "read_measurements",
+      "kind": "read",
+      "channels": [
+        "temperature",
+        "pressure",
+        "humidity"
+      ],
+      "preconditions": [
+        "Device configured and in normal mode."
+      ],
+      "steps": [
+        {
+          "op": "write_then_read",
+          "role": null,
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xF7"
+            ],
+            "length": 8,
+            "pointer_target": "press_msb",
+            "notes": "Burst read from 0xF7 to 0xFE (pressure, temperature, humidity)."
+          },
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": null,
+          "output_ref": null
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8 || temp_xlsb:4",
+          "source_signal": null,
+          "formula_id": "compensate_temperature",
+          "unit": "milli_degC",
+          "notes": "Raw temperature is 20-bit unsigned."
+        },
+        {
+          "channel": "pressure",
+          "byte_source": "press_msb:8 || press_lsb:8 || press_xlsb:4",
+          "source_signal": null,
+          "formula_id": "compensate_pressure",
+          "unit": "Pa",
+          "notes": "Raw pressure is 20-bit unsigned."
+        },
+        {
+          "channel": "humidity",
+          "byte_source": "hum_msb:8 || hum_lsb:8",
+          "source_signal": null,
+          "formula_id": "compensate_humidity",
+          "unit": "milli_percent",
+          "notes": "Raw humidity is 16-bit unsigned."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Burst read all measurement registers."
+    },
+    {
+      "flow_id": "forced_mode_measurement",
+      "kind": "read",
+      "channels": [
+        "temperature",
+        "pressure",
+        "humidity"
+      ],
+      "preconditions": [
+        "Device in sleep mode."
+      ],
+      "steps": [
+        {
+          "op": "write",
+          "role": null,
+          "transaction": {
+            "kind": "write",
+            "bytes": [
+              "0xF4",
+              "0x25"
+            ],
+            "length": null,
+            "pointer_target": "ctrl_meas",
+            "notes": "Set forced mode (mode=01) with oversampling ×1 for temperature and pressure."
+          },
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": null,
+          "output_ref": null
+        },
+        {
+          "op": "poll_until",
+          "role": null,
+          "transaction": null,
+          "register": "status",
+          "mask": "0x08",
+          "value": "0x00",
+          "condition": "measuring bit (bit 3) becomes 0",
+          "timeout_ms": 100,
+          "interval_ms": 1,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": "Poll until conversion complete.",
+          "output_ref": null
+        },
+        {
+          "op": "write_then_read",
+          "role": null,
+          "transaction": {
+            "kind": "write_then_read",
+            "bytes": [
+              "0xF7"
+            ],
+            "length": 8,
+            "pointer_target": "press_msb",
+            "notes": "Burst read measurement data."
+          },
+          "register": null,
+          "mask": null,
+          "value": null,
+          "condition": null,
+          "timeout_ms": null,
+          "interval_ms": null,
+          "delay_ms": null,
+          "length": null,
+          "signal": null,
+          "source_signal": null,
+          "edge": null,
+          "duration_us": null,
+          "notes": null,
+          "output_ref": null
+        }
+      ],
+      "outputs": [
+        {
+          "channel": "temperature",
+          "byte_source": "temp_msb:8 || temp_lsb:8 || temp_xlsb:4",
+          "source_signal": null,
+          "formula_id": "compensate_temperature",
+          "unit": "milli_degC",
+          "notes": "Raw temperature is 20-bit unsigned."
+        },
+        {
+          "channel": "pressure",
+          "byte_source": "press_msb:8 || press_lsb:8 || press_xlsb:4",
+          "source_signal": null,
+          "formula_id": "compensate_pressure",
+          "unit": "Pa",
+          "notes": "Raw pressure is 20-bit unsigned."
+        },
+        {
+          "channel": "humidity",
+          "byte_source": "hum_msb:8 || hum_lsb:8",
+          "source_signal": null,
+          "formula_id": "compensate_humidity",
+          "unit": "milli_percent",
+          "notes": "Raw humidity is 16-bit unsigned."
+        }
+      ],
+      "requires_human": false,
+      "notes": "Trigger forced mode measurement and read results."
+    }
+  ],
+  "raw_encoding": {
+    "byte_order": "big_endian",
+    "bit_width": 20,
+    "effective_bits": 20,
+    "signed": false,
+    "right_shift": 0,
+    "sign_extend_from_bit": null,
+    "notes": "Temperature and pressure are 20-bit unsigned; humidity is 16-bit unsigned."
+  },
+  "registers_or_commands": [
+    {
+      "name": "id",
+      "value": "0xD0",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Chip identification number, read value is 0x60"
+    },
+    {
+      "name": "reset",
+      "value": "0xE0",
+      "access": "wo",
+      "size_bits": 8,
+      "description": "Soft reset register; writing 0xB6 triggers power-on-reset"
+    },
+    {
+      "name": "ctrl_hum",
+      "value": "0xF2",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls humidity oversampling"
+    },
+    {
+      "name": "status",
+      "value": "0xF3",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Status register indicating measuring and NVM copying status"
+    },
+    {
+      "name": "ctrl_meas",
+      "value": "0xF4",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Controls temperature and pressure oversampling and sensor mode"
+    },
+    {
+      "name": "config",
+      "value": "0xF5",
+      "access": "rw",
+      "size_bits": 8,
+      "description": "Sets standby time, IIR filter coefficient, and SPI 3-wire enable"
+    },
+    {
+      "name": "press_msb",
+      "value": "0xF7",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "MSB of raw pressure measurement output (up[19:12])"
+    },
+    {
+      "name": "press_lsb",
+      "value": "0xF8",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "LSB of raw pressure measurement output (up[11:4])"
+    },
+    {
+      "name": "press_xlsb",
+      "value": "0xF9",
+      "access": "ro",
+      "size_bits": 4,
+      "description": "XLSB of raw pressure measurement output (up[3:0])"
+    },
+    {
+      "name": "temp_msb",
+      "value": "0xFA",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "MSB of raw temperature measurement output (ut[19:12])"
+    },
+    {
+      "name": "temp_lsb",
+      "value": "0xFB",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "LSB of raw temperature measurement output (ut[11:4])"
+    },
+    {
+      "name": "temp_xlsb",
+      "value": "0xFC",
+      "access": "ro",
+      "size_bits": 4,
+      "description": "XLSB of raw temperature measurement output (ut[3:0])"
+    },
+    {
+      "name": "hum_msb",
+      "value": "0xFD",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "MSB of raw humidity measurement output (uh[15:8])"
+    },
+    {
+      "name": "hum_lsb",
+      "value": "0xFE",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "LSB of raw humidity measurement output (uh[7:0])"
+    },
+    {
+      "name": "calib00",
+      "value": "0x88",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "First calibration register (dig_T1 LSB)"
+    },
+    {
+      "name": "calib41",
+      "value": "0xE7",
+      "access": "ro",
+      "size_bits": 8,
+      "description": "Last calibration register (dig_H6)"
+    }
+  ],
+  "bitfields": [
+    {
+      "register": "ctrl_hum",
+      "name": "osrs_h",
+      "bits": "2:0",
+      "access": "rw",
+      "description": "Humidity oversampling setting"
+    },
+    {
+      "register": "status",
+      "name": "measuring",
+      "bits": "3",
+      "access": "ro",
+      "description": "Set to '1' when a conversion is running, '0' when results transferred"
+    },
+    {
+      "register": "status",
+      "name": "im_update",
+      "bits": "0",
+      "access": "ro",
+      "description": "Set to '1' when NVM data are being copied to image registers"
+    },
+    {
+      "register": "ctrl_meas",
+      "name": "osrs_t",
+      "bits": "7:5",
+      "access": "rw",
+      "description": "Temperature oversampling setting"
+    },
+    {
+      "register": "ctrl_meas",
+      "name": "osrs_p",
+      "bits": "4:2",
+      "access": "rw",
+      "description": "Pressure oversampling setting"
+    },
+    {
+      "register": "ctrl_meas",
+      "name": "mode",
+      "bits": "1:0",
+      "access": "rw",
+      "description": "Sensor mode selection (sleep, forced, normal)"
+    },
+    {
+      "register": "config",
+      "name": "t_sb",
+      "bits": "7:5",
+      "access": "rw",
+      "description": "Standby time in normal mode"
+    },
+    {
+      "register": "config",
+      "name": "filter",
+      "bits": "4:2",
+      "access": "rw",
+      "description": "IIR filter coefficient setting"
+    },
+    {
+      "register": "config",
+      "name": "spi3w_en",
+      "bits": "0",
+      "access": "rw",
+      "description": "Enables 3-wire SPI interface when set to '1'"
+    }
+  ],
+  "init_sequence": [
+    {
+      "transaction": null,
+      "notes": "Power-up: wait 2 ms for startup after VDD and VDDIO established."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xE0",
+          "0xB6"
+        ],
+        "length": null,
+        "pointer_target": "reset",
+        "notes": "Soft reset (optional)."
+      },
+      "notes": "Write 0xB6 to reset register."
+    },
+    {
+      "transaction": null,
+      "notes": "Wait 2 ms after reset."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xD0"
+        ],
+        "length": 1,
+        "pointer_target": "id",
+        "notes": "Read chip ID to verify communication."
+      },
+      "notes": "Expected value 0x60."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0x88"
+        ],
+        "length": 26,
+        "pointer_target": "calib00",
+        "notes": "Read calibration data from 0x88-0xA1."
+      },
+      "notes": "First part of calibration."
+    },
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xE1"
+        ],
+        "length": 7,
+        "pointer_target": "calib41",
+        "notes": "Read calibration data from 0xE1-0xE7."
+      },
+      "notes": "Second part of calibration."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xF2",
+          "0x01"
+        ],
+        "length": null,
+        "pointer_target": "ctrl_hum",
+        "notes": "Set humidity oversampling ×1."
+      },
+      "notes": "Must be written before ctrl_meas."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xF4",
+          "0x27"
+        ],
+        "length": null,
+        "pointer_target": "ctrl_meas",
+        "notes": "Set temperature oversampling ×1, pressure oversampling ×1, normal mode."
+      },
+      "notes": "Configures measurement."
+    },
+    {
+      "transaction": {
+        "kind": "write",
+        "bytes": [
+          "0xF5",
+          "0x00"
+        ],
+        "length": null,
+        "pointer_target": "config",
+        "notes": "Set standby 0.5 ms, filter off, SPI 3-wire disabled."
+      },
+      "notes": "Optional configuration."
+    }
+  ],
+  "read_sequence": [
+    {
+      "transaction": {
+        "kind": "write_then_read",
+        "bytes": [
+          "0xF7"
+        ],
+        "length": 8,
+        "pointer_target": "press_msb",
+        "notes": "Burst read from 0xF7 to 0xFE (pressure, temperature, humidity)."
+      },
+      "notes": "Read all measurement registers in one burst."
+    }
+  ],
+  "timing_constraints": [
+    {
+      "name": "startup_time",
+      "value": 2,
+      "unit": "ms",
+      "condition": "After both VDD > 1.58 V and VDDIO > 0.65 V",
+      "notes": "Time to first communication."
+    },
+    {
+      "name": "measurement_time",
+      "value": null,
+      "unit": "ms",
+      "condition": "Depends on oversampling settings",
+      "notes": "Formula: t_meas = 1.25 + (2.3 * osrs_h) + (2.3 * osrs_p * (1 + 0.5 * filter)) + (2.3 * osrs_t * (1 + 0.5 * filter))"
+    },
+    {
+      "name": "standby_time",
+      "value": null,
+      "unit": "ms",
+      "condition": "Set by t_sb bits in config register",
+      "notes": "Values: 0.5, 62.5, 125, 250, 500, 1000, 10, 20 ms."
+    }
+  ],
+  "conversion_formulae": [
+    {
+      "name": "compensate_temperature",
+      "formula": "var1 = ((((double)adc_T)/16384.0 - ((double)dig_T1)/1024.0) * ((double)dig_T2)); var2 = ((((double)adc_T)/131072.0 - ((double)dig_T1)/8192.0) * (((double)adc_T)/131072.0 - ((double)dig_T1)/8192.0)) * ((double)dig_T3); t_fine = (int32_t)(var1 + var2); T = (var1 + var2) / 5120.0;",
+      "integer_approximation_expression": {
+        "expression": "(((adc_T * 256 - dig_T1 * 16384) // 16384) * dig_T2 + (((adc_T * 256 - dig_T1 * 16384) // 131072) * ((adc_T * 256 - dig_T1 * 16384) // 131072)) * dig_T3 // 8 + 128) // 256",
+        "inputs": [
+          {
+            "name": "adc_T",
+            "byte_source": "temp_msb:8 || temp_lsb:8 || temp_xlsb:4",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Raw temperature ADC value (20-bit unsigned)."
+          },
+          {
+            "name": "dig_T1",
+            "byte_source": "calib00:16",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Calibration coefficient, unsigned short."
+          },
+          {
+            "name": "dig_T2",
+            "byte_source": "calib02:16",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Calibration coefficient, signed short."
+          },
+          {
+            "name": "dig_T3",
+            "byte_source": "calib04:16",
+            "source_signal": null,
+            "default_value": null,
+            "config_source": null,
+            "description": "Calibration coefficient, signed short."
+          }
+        ],
+        "output": {
+          "name": "temp_milli_degC",
+          "unit": "milli_degC"
+        }
+      }
+    },
+    {
+      "name": "compensate_pressure",
+      "formula": "var1 = ((double)t_fine/2.0) - 64000.0; var2 = var1 * var1 * ((double)dig_P6) / 32768.0; var2 = var2 + var1 * ((double)dig_P5) * 2.0; var2 = (var2/4.0) + (((double)dig_P4) * 65536.0); var1 = (((double)dig_P3) * var1 * var1 / 524288.0 + ((double)dig_P2) * var1) / 524288.0; var1 = (1.0 + var1 / 32768.0) * ((double)dig_P1); p = 1048576.0 - (double)adc_P; p = (p - (var2/4096.0)) * 6250.0 / var1; var1 = ((double)dig_P9) * p * p / 2147483648.0; var2 = p * ((double)dig_P8) / 32768.0; p = p + (var1 + var2 + ((double)dig_P7)) / 16.0;",
+      "integer_approximation_expression": null,
+      "executable_expression_status": "complex_compensation_algorithm",
+      "notes": "Canonicalized: exact compensation is preserved in formula/inputs, but the single-line integer expression was marked non-executable because it is too complex or not accepted by the safe expression evaluator."
+    },
+    {
+      "name": "compensate_humidity",
+      "formula": "var1 = ((double)t_fine) - 76800.0; var2 = (((double)dig_H4) * 64.0 + (((double)dig_H5) / 16384.0) * var1); var3 = adc_H - var2; var4 = ((double)dig_H2) / 65536.0; var5 = (1.0 + (((double)dig_H3) / 67108864.0) * var1); var6 = 1.0 + (((double)dig_H6) / 67108864.0) * var1 * var5; var6 = var3 * var4 * (var5 * var6); h = var6 * (1.0 - (((double)dig_H1) * var6 / 524288.0));",
+      "integer_approximation_expression": null,
+      "executable_expression_status": "complex_compensation_algorithm",
+      "notes": "Canonicalized: exact compensation is preserved in formula/inputs, but the single-line integer expression was marked non-executable because it is too complex or not accepted by the safe expression evaluator."
+    }
+  ],
+  "error_conditions": [
+    {
+      "condition": "Chip ID mismatch",
+      "detection": "Read id register, expected 0x60",
+      "driver_action": "return -ENODEV"
+    },
+    {
+      "condition": "Communication error",
+      "detection": "I2C NACK or timeout",
+      "driver_action": "return -EIO"
+    },
+    {
+      "condition": "Measurement timeout",
+      "detection": "Polling measuring bit in status register exceeds timeout",
+      "driver_action": "return -ETIMEDOUT"
+    },
+    {
+      "condition": "Calibration data out of bounds",
+      "detection": "Trimming data values outside expected ranges",
+      "driver_action": "return -EINVAL"
+    }
+  ],
+  "power_states": [
+    {
+      "name": "sleep",
+      "description": "No measurements, lowest power, all registers accessible.",
+      "current_ua": 0.1
+    },
+    {
+      "name": "forced",
+      "description": "Single measurement then return to sleep.",
+      "current_ua": null
+    },
+    {
+      "name": "normal",
+      "description": "Perpetual cycling of measurements and standby.",
+      "current_ua": null
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "bme280",
+      "page": 32,
+      "snippet": "The 7-bit device address is 111011x. The 6 MSB bits are fixed. The last bit is changeable by SDO value"
+    },
+    {
+      "source_id": "bme280",
+      "page": 27,
+      "snippet": "The 'id' register contains the chip identification number chip_id[7:0], which is 0x60."
+    },
+    {
+      "source_id": "bme280",
+      "page": 27,
+      "snippet": "If the value 0xB6 is written to the register, the device is reset using the complete power-on-reset procedure."
+    },
+    {
+      "source_id": "bme280",
+      "page": 27,
+      "snippet": "The 'ctrl_hum' register sets the humidity data acquisition options of the device."
+    },
+    {
+      "source_id": "bme280",
+      "page": 28,
+      "snippet": "The 'status' register contains two bits which indicate the status of the device."
+    },
+    {
+      "source_id": "bme280",
+      "page": 28,
+      "snippet": "The 'ctrl_meas' register sets the pressure and temperature data acquisition options of the device."
+    },
+    {
+      "source_id": "bme280",
+      "page": 30,
+      "snippet": "The 'config' register sets the rate, filter and interface options of the device."
+    },
+    {
+      "source_id": "bme280",
+      "page": 30,
+      "snippet": "The 'press' register contains the raw pressure measurement output data up[19:0]."
+    },
+    {
+      "source_id": "bme280",
+      "page": 31,
+      "snippet": "The 'temp' register contains the raw temperature measurement output data ut[19:0]."
+    },
+    {
+      "source_id": "bme280",
+      "page": 31,
+      "snippet": "The 'hum' register contains the raw humidity measurement output data uh[15:0]."
+    },
+    {
+      "source_id": "bme280",
+      "page": 24,
+      "snippet": "The trimming parameters are programmed into the devices' non-volatile memory (NVM) during production"
+    },
+    {
+      "source_id": "bme280",
+      "page": 23,
+      "snippet": "To read out data after a conversion, it is strongly recommended to use a burst read"
+    },
+    {
+      "source_id": "bme280",
+      "page": 8,
+      "snippet": "Start-up time                                    | t startup   | Time to first communication after both V DD > 1.58 V and V DDIO > 0.65 V |       |       | 2        | ms"
+    },
+    {
+      "source_id": "bme280",
+      "page": 51,
+      "snippet": "The active measurement time depends on the selected values for humidity, temperature and pressure oversampling"
+    },
+    {
+      "source_id": "bme280",
+      "page": 49,
+      "snippet": "Compensation formulas in double precision floating point"
+    },
+    {
+      "source_id": "bme280",
+      "page": 54,
+      "snippet": "0 Sensor OK, 10 Communication error or wrong device found, 20 Trimming data out of bound"
+    },
+    {
+      "source_id": "bme280",
+      "page": 14,
+      "snippet": "After powering up, the sensor settles in sleep mode"
+    }
+  ],
+  "requires_human": [
+    "Compensation formulas require careful implementation; use Bosch API recommended.",
+    "I2C address selection via SDO pin must be known for the specific hardware design.",
+    "Measurement time calculation depends on oversampling settings; formula not fully extracted.",
+    "Self-test error codes (10,20,30,31,40,41,42) may need handling."
+  ],
+  "ir_schema_version": "2026-05-05.ire-flow-p2+signals+completion"
+}

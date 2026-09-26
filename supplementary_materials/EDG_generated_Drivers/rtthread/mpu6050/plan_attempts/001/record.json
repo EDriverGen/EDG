@@ -1,0 +1,179 @@
+{
+  "attempt": 1,
+  "success": false,
+  "total_time_s": 21.015,
+  "plan_summary": {
+    "device_id": "mpu6050",
+    "rtos_id": "rtthread",
+    "eval_class": "multi_channel",
+    "bus_kind": "i2c",
+    "plan_hash": "d2e79d7542368dec",
+    "api_contract_keys": [
+      "channels",
+      "dev_struct_type",
+      "eval_class",
+      "init_call",
+      "init_extra_setup_c"
+    ],
+    "stimuli_count": 2,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 20.99
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 2,
+    "summary": "2 stim; 2 L1/L2",
+    "stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=accel_x:derivation `((((0x03 << 8) | 0xE8)) * 1000) // 16384` -> 61 == expected 61.0; ch=accel_y:derivation `((((0x04 << 8) | 0x31)) * 1000) // 16384` -> 65 == expected 65.0; ch=accel_z:derivation `((((0x04 << 8) | 0x7A)) * 1000) // 16384` -> 69 == expected 69.0; ch=gyro_x:derivation `((((0x04 << 8) | 0xC3)) * 1000) // 131` -> 9305 == expected 9305.0; ch=gyro_y:derivation `((((0x05 << 8) | 0x0C)) * 1000) // 131` -> 9862 == expected 9862.0; ch=gyro_z:derivation `((((0x05 << 8) | 0x55)) * 1000) // 131` -> 10419 == expected 10419.0; ch=temperature:derivation `(((((0x05 << 8) | 0x9E)) * 1000) // 340) + 36530` -> 40759 == expected 40759.0",
+        "warnings": []
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "verdict": "consistent_l2",
+        "layer": "L2",
+        "evidence": "ch=accel_x:derivation `(((((0xFC << 8) | 0x18) - 65536)) * 1000) // 16384` -> -61 == expected -61.0; ch=accel_y:derivation `(((((0xFB << 8) | 0xCF) - 65536)) * 1000) // 16384` -> -65 == expected -65.0; ch=accel_z:derivation `(((((0xFB << 8) | 0x86) - 65536)) * 1000) // 16384` -> -69 == expected -69.0; ch=gyro_x:derivation `(((((0xFB << 8) | 0x3D) - 65536)) * 1000) // 131` -> -9305 == expected -9305.0; ch=gyro_y:derivation `(((((0xFA << 8) | 0xF4) - 65536)) * 1000) // 131` -> -9862 == expected -9862.0; ch=gyro_z:derivation `(((((0xFA << 8) | 0xAB) - 65536)) * 1000) // 131` -> -10419 == expected -10419.0; ch=temperature:derivation `((((((0xFA << 8) | 0x62) - 65536)) * 1000) // 340) + 36530` -> 32301 == expected 32301.0",
+        "warnings": []
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 3,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 3,
+    "summary": "3/3 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x6B",
+              "0x00"
+            ]
+          ],
+          "note": "init: write",
+          "source": "operation_flows[0].steps[0]"
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x6B",
+              "0x00"
+            ]
+          ],
+          "note": "init: write"
+        },
+        "reason": "prefix overlap: [('0x6B', '0x00')] ∈ mechanical [('0x6B', '0x00')]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "init",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x75"
+            ]
+          ],
+          "note": "probe: write_then_read",
+          "source": "operation_flows[1].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "init",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x75"
+            ]
+          ],
+          "read_any": true,
+          "note": "probe: write_then_read"
+        },
+        "reason": "prefix overlap: [('0x75',)] ∈ mechanical [('0x75',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x3B"
+            ]
+          ],
+          "note": "read_sensors: write_then_read",
+          "source": "operation_flows[2].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x3B"
+            ]
+          ],
+          "read_any": true,
+          "note": "read_sensors: write_then_read"
+        },
+        "reason": "prefix overlap: [('0x3B',)] ∈ mechanical [('0x3B',)]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x6B",
+            "0x00"
+          ]
+        ],
+        "note": "init: write"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x75"
+          ]
+        ],
+        "read_any": true,
+        "note": "probe: write_then_read"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x3B"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_sensors: write_then_read"
+      }
+    ]
+  },
+  "validation_errors": [
+    "channel 'temperature' contradicts SECTION B3: semantic_kind=physical_scaled requires public_unit 'milli_degC', but api_contract unit is ''"
+  ],
+  "feedback_chars": 535
+}

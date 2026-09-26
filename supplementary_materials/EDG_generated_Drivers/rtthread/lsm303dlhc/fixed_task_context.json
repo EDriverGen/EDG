@@ -1,0 +1,213 @@
+{
+  "task_package_path": "<PROJECT_ROOT>/data/fixed_context/task_packages/rtthread_stm32f103rb__lsm303dlhc__i2c1_polling/task_package.json",
+  "task_package": {
+    "package_id": "rtthread_stm32f103rb__lsm303dlhc__i2c1_polling",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/rtthread_stm32f103rb.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/rtthread_stm32f103rb_i2c1_polling.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/lsm303dlhc.json",
+    "reference_driver_root": "DriverGen/data/references/lsm303dlhc/rtthread",
+    "fixed_task_context": {
+      "platform": {
+        "platform_id": "rtthread_stm32f103rb",
+        "rtos": "rt-thread",
+        "board": "stm32f103rb",
+        "integration": "repository_local_bsp",
+        "mcu": "stm32f103rb"
+      },
+      "connection": {
+        "binding_id": "rtthread_stm32f103rb_i2c1_polling",
+        "connection_type": "i2c",
+        "mode": "polling",
+        "bus_instance": "i2c1",
+        "bus_symbol": "i2c1",
+        "backend": "rt-thread i2c bus device / local bsp implementation",
+        "address_mode": "7-bit",
+        "fixed_attachment": {}
+      },
+      "device": {
+        "device_id": "lsm303dlhc",
+        "attachment_type": "multi_address_i2c_sensor",
+        "required_bus_type": "i2c",
+        "addressing": {
+          "default": {
+            "accelerometer": "0x19",
+            "magnetometer": "0x1E"
+          },
+          "alternates": {
+            "accelerometer": [
+              "0x18"
+            ],
+            "magnetometer": []
+          },
+          "selection_rule": "Use the common SA0_A-high accelerometer address and fixed magnetometer address."
+        },
+        "required_attachment": {
+          "signals": [],
+          "notes": [
+            "The accelerometer and magnetometer are two logical I2C targets in one physical package."
+          ]
+        },
+        "optional_attachment": {
+          "sa0_a": "optional",
+          "drdy_int_pins": "optional"
+        }
+      },
+      "default_runtime_assumptions": {
+        "irq": "absent",
+        "dma": "absent",
+        "reset_gpio": null,
+        "power_gpio": null
+      }
+    },
+    "notes": [
+      "This package freezes a concrete task setup for rt-thread + lsm303dlhc."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread",
+      "DriverGen/data/raw/lsm303dlhc",
+      "DriverGen/data/references/lsm303dlhc/rtthread"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "rtthread_stm32f103rb",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "rtos": "rt-thread",
+    "rtos_bundle": "rt-thread",
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "gpio_timing"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ]
+      },
+      "timing": [
+        "millisecond_delay",
+        "microsecond_delay"
+      ],
+      "gpio": "available",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "This platform corresponds to the existing local RT-Thread STM32F103RB experiments.",
+      "I2C and GPIO timing drivers both rely on the repository BSP layer rather than a separate vendor SDK."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/rt-thread",
+      "DriverGen/data/board_context/rtthread_stm32f103rb_i2c1_polling.json",
+      "DriverGen/data/references/*/rtthread/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "rtthread_stm32f103rb_i2c1_polling",
+    "platform_id": "rtthread_stm32f103rb",
+    "connection_type": "i2c",
+    "mode": "polling",
+    "bus_instance": "i2c1",
+    "bus_instance_kind": "named_bus",
+    "bus_symbol": "i2c1",
+    "backend": "rt-thread i2c bus device / local bsp implementation",
+    "address_mode": "7-bit",
+    "fixed_attachment": {},
+    "required_helpers": [
+      "rt_thread_mdelay"
+    ],
+    "notes": [
+      "Default I2C polling binding used by current RT-Thread STM32F103RB experiments."
+    ],
+    "evidence": [
+      "DriverGen/data/board_context/rtthread_stm32f103rb_i2c1_polling.json"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "lsm303dlhc",
+    "attachment_type": "multi_address_i2c_sensor",
+    "required_bus_type": "i2c",
+    "address_mode": "7-bit",
+    "addressing": {
+      "default": {
+        "accelerometer": "0x19",
+        "magnetometer": "0x1E"
+      },
+      "alternates": {
+        "accelerometer": [
+          "0x18"
+        ],
+        "magnetometer": []
+      },
+      "selection_rule": "Accelerometer address depends on SA0_A. Magnetometer address is fixed in the minimal model."
+    },
+    "required_attachment": {
+      "signals": [],
+      "notes": [
+        "Two logical I2C targets share the same physical package: accelerometer and magnetometer."
+      ]
+    },
+    "optional_attachment": {
+      "sa0_a": "optional",
+      "drdy_int_pins": "optional"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "notes": [
+      "Reference drivers probe both the accelerometer path and the fixed magnetometer identification registers."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/lsm303dlhc",
+      "DriverGen/data/references/lsm303dlhc/*/*_ref.h"
+    ]
+  },
+  "legacy_board_context": {
+    "task_package_id": "rtthread_stm32f103rb__lsm303dlhc__i2c1_polling",
+    "rtos": "rt-thread",
+    "rtos_bundle": "rt-thread",
+    "board": "stm32f103rb",
+    "board_alias": "f103rb",
+    "integration": "repository_local_bsp",
+    "integration_style": "rtos_core_plus_repository_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rb",
+    "bus_type": "i2c",
+    "bus_instance": "i2c1",
+    "bus_instance_kind": "named_bus",
+    "bus_symbol": "i2c1",
+    "bus_backend": "rt-thread i2c bus device / local bsp implementation",
+    "address_mode": "7-bit",
+    "mode": "polling",
+    "irq": "absent",
+    "dma": "absent",
+    "reset_gpio": null,
+    "power_gpio": null,
+    "fixed_attachment": {},
+    "device_attachment_context_id": "lsm303dlhc",
+    "device_addressing": {
+      "default": {
+        "accelerometer": "0x19",
+        "magnetometer": "0x1E"
+      },
+      "alternates": {
+        "accelerometer": [
+          "0x18"
+        ],
+        "magnetometer": []
+      },
+      "selection_rule": "Accelerometer address depends on SA0_A. Magnetometer address is fixed in the minimal model."
+    }
+  }
+}

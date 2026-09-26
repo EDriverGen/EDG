@@ -1,0 +1,109 @@
+{
+  "package_id": "cmsis_rtx_stm32f103rb__adxl345__spi1_dma",
+  "platform_base_context": "EDG_DMA_Tasks/cmsis-rtx/adxl345/platform_base_context.json",
+  "connection_binding_context": "EDG_DMA_Tasks/cmsis-rtx/adxl345/connection_binding_context.json",
+  "device_attachment_context": "EDG_DMA_Tasks/cmsis-rtx/adxl345/device_attachment_context.json",
+  "reference_driver_root": "DriverGen/data/references/adxl345/cmsis-rtx",
+  "device_ir": "EDG_DMA_Tasks/cmsis-rtx/adxl345/device_ir.json",
+  "dma_requirements": "EDG_DMA_Tasks/cmsis-rtx/adxl345/dma_requirements.json",
+  "evaluation_config": "EDG_DMA_Tasks/cmsis-rtx/adxl345/evaluation_config.json",
+  "mode": "dma",
+  "notes": [
+    "ADXL345 on cmsis-rtx: DMA payload transfers on the original hardware connection.",
+    "Keep the original board, MCU, bus instance, wiring, address/chip select, and device protocol.",
+    "Use the selected existing RTOS/BSP/HAL DMA backend for the core payload.",
+    "Keep transfer buffers allocated, accessible, and unchanged until the API's completion condition.",
+    "Apply the controller's end-of-transfer rules before consuming receive data or releasing chip select.",
+    "Report transfer submission errors, DMA/peripheral errors, and bounded-wait timeouts.",
+    "Finish or abort an outstanding transfer before buffer reuse or a subsequent operation.",
+    "Preserve device conversion delays, programming waits, command ordering, and numerical semantics.",
+    "Use SPI DMA for multibyte acceleration reads, preserving read/multibyte command bits and chip select."
+  ],
+  "evidence": [
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_spi.h",
+    "DriverGen/data/rtos/freertos-stm32f103-project/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_dma.c"
+  ],
+  "fixed_task_context": {
+    "platform": {
+      "platform_id": "cmsis_rtx_stm32f103rb",
+      "rtos": "cmsis-rtx",
+      "rtos_bundle": "cmsis-rtx-stm32f103-project",
+      "board": "stm32f103rb",
+      "board_alias": "f103rb",
+      "integration": "stm32cubef1_hal",
+      "integration_style": "cmsis_rtos2_plus_vendor_sdk_bsp",
+      "mcu_family": "stm32f1",
+      "mcu": "stm32f103rb"
+    },
+    "connection": {
+      "binding_id": "cmsis_rtx_stm32f103rb_spi1_dma",
+      "platform_id": "cmsis_rtx_stm32f103rb",
+      "connection_type": "spi",
+      "mode": "dma",
+      "bus_instance": "spi1",
+      "bus_instance_kind": "named_hal_handle",
+      "bus_symbol": "hspi1",
+      "backend": "STM32CubeF1 HAL SPI DMA with cmsis-rtx completion handling",
+      "address_mode": "chip-select",
+      "fixed_attachment": {
+        "chip_select": "board_configured_gpio",
+        "cs_handling": "driver_or_board_specific"
+      },
+      "helper_usage_patterns": []
+    },
+    "device": {
+      "device_id": "adxl345",
+      "attachment_type": "spi_accelerometer",
+      "required_bus_type": "spi",
+      "address_mode": "chip-select",
+      "addressing": null,
+      "required_attachment": {
+        "signals": [
+          "SCLK",
+          "MOSI",
+          "MISO",
+          "CS"
+        ],
+        "spi": {
+          "mode": "mode3",
+          "data_width_bits": 8,
+          "bit_order": "msb_first",
+          "max_hz": 5000000
+        },
+        "notes": [
+          "Use 4-wire SPI with chip select; register address byte encodes read/write and multi-byte burst bits."
+        ]
+      },
+      "optional_attachment": {
+        "interrupt_pins": [
+          "INT1",
+          "INT2"
+        ],
+        "alternate_bus": "i2c"
+      },
+      "default_overrides": {
+        "bus_instance": "spi1",
+        "irq": "dma_completion",
+        "dma": "required",
+        "reset_gpio": null,
+        "power_gpio": null,
+        "mode": "dma",
+        "device_irq": "absent"
+      },
+      "protocol_hints": {
+        "spi_proto": "register",
+        "register_read_mask": "0x80",
+        "multi_byte_mask": "0x40",
+        "address_mask": "0x3F",
+        "read_when_set": true,
+        "primary_channels": [
+          "accel_x",
+          "accel_y",
+          "accel_z"
+        ],
+        "transfer_mode": "dma"
+      }
+    }
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "device_id": "ds3231",
+  "rtos_id": "zephyr",
+  "eval_class": "rtc",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "rtc",
+    "init_call": "ds3231_init(g_eval_dev)",
+    "get_time_call": "ds3231_get_time(g_eval_dev, &t)",
+    "set_time_call": "ds3231_set_time(g_eval_dev, &t)",
+    "time_struct_decl": "struct ds3231_time drv;",
+    "time_struct_from_in": "struct ds3231_time drv = { .year = in->year - 2000, .month = in->month, .day = in->day, .hour = in->hour, .minute = in->minute, .second = in->second, .weekday = in->weekday };",
+    "time_fields": {
+      "year": "drv.year + 2000",
+      "month": "drv.month",
+      "day": "drv.day",
+      "hour": "drv.hour",
+      "minute": "drv.minute",
+      "second": "drv.second",
+      "weekday": "drv.weekday"
+    },
+    "dev_struct_type": "const struct device *",
+    "init_extra_setup_c": "g_eval_dev = device_get_binding(bus_name);\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }",
+    "preamble_c": "#include <zephyr/kernel.h>\n#include <zephyr/drivers/i2c.h>"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_time",
+        "mock_preload": {
+          "0x00": [
+            "0x45"
+          ],
+          "0x01": [
+            "0x30"
+          ],
+          "0x02": [
+            "0x14"
+          ],
+          "0x03": [
+            "0x03"
+          ],
+          "0x04": [
+            "0x15"
+          ],
+          "0x05": [
+            "0x06"
+          ],
+          "0x06": [
+            "0x23"
+          ]
+        },
+        "expected_time": {
+          "year": 2023,
+          "month": 6,
+          "day": 15,
+          "hour": 14,
+          "minute": 30,
+          "second": 45,
+          "weekday": 3
+        },
+        "derivation": "BCD: 0x45=45 sec, 0x30=30 min, 0x14=14 hr, 0x03=3 dow, 0x15=15 date, 0x06=6 month, 0x23=23 year -> 2023"
+      },
+      {
+        "name": "zero_time",
+        "mock_preload": {
+          "0x00": [
+            "0x00"
+          ],
+          "0x01": [
+            "0x00"
+          ],
+          "0x02": [
+            "0x00"
+          ],
+          "0x03": [
+            "0x01"
+          ],
+          "0x04": [
+            "0x01"
+          ],
+          "0x05": [
+            "0x01"
+          ],
+          "0x06": [
+            "0x00"
+          ]
+        },
+        "expected_time": {
+          "year": 2000,
+          "month": 1,
+          "day": 1,
+          "hour": 0,
+          "minute": 0,
+          "second": 0,
+          "weekday": 1
+        },
+        "derivation": "BCD: all zeros except day=1, date=1, month=1 -> 2000-01-01 00:00:00"
+      },
+      {
+        "name": "leap_year_time",
+        "mock_preload": {
+          "0x00": [
+            "0x59"
+          ],
+          "0x01": [
+            "0x59"
+          ],
+          "0x02": [
+            "0x23"
+          ],
+          "0x03": [
+            "0x04"
+          ],
+          "0x04": [
+            "0x29"
+          ],
+          "0x05": [
+            "0x02"
+          ],
+          "0x06": [
+            "0x24"
+          ]
+        },
+        "expected_time": {
+          "year": 2024,
+          "month": 2,
+          "day": 29,
+          "hour": 23,
+          "minute": 59,
+          "second": 59,
+          "weekday": 4
+        },
+        "derivation": "BCD: 0x59=59 sec, 0x59=59 min, 0x23=23 hr, 0x04=4 dow, 0x29=29 date, 0x02=2 month, 0x24=24 year -> 2024"
+      }
+    ]
+  },
+  "plan_hash": "09a0bfcada891a20",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.431,
+  "prompt_chars": 60473,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"rtc\", \"init_call\": \"ds3231_init(g_eval_dev)\", \"get_time_call\": \"ds3231_get_time(g_eval_dev, &t)\", \"set_time_call\": \"ds3231_set_time(g_eval_dev, &t)\", \"time_struct_decl\": \"struct ds3231_time drv;\", \"time_struct_from_in\": \"struct ds3231_time drv = { .year = in->year - 2000, .month = in->month, .day = in->day, .hour = in->hour, .minute = in->minute, .second = in->second, .weekday = in->weekday };\", \"time_fields\": {\"year\": \"drv.year + 2000\", \"month\": \"drv.month\", \"day\": \"drv.day\", \"hour\": \"drv.hour\", \"minute\": \"drv.minute\", \"second\": \"drv.second\", \"weekday\": \"drv.weekday\"}, \"dev_struct_type\": \"const struct device *\", \"init_extra_setup_c\": \"g_eval_dev = device_get_binding(bus_name);\\nif (g_eval_dev == NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }\", \"preamble_c\": \"#include <zephyr/kernel.h>\\n#include <zephyr/drivers/i2c.h>\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x68\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read_time: write_then_read\"}, {\"phase\": \"write_cycle\", \"addr_or_pin\": \"0x68\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"write_time: write\"}], \"test_stimuli\": [{\"name\": \"nominal_time\", \"mock_preload\": {\"0x00\": [\"0x45\"], \"0x01\": [\"0x30\"], \"0x02\": [\"0x14\"], \"0x03\": [\"0x03\"], \"0x04\": [\"0x15\"], \"0x05\": [\"0x06\"], \"0x06\": [\"0x23\"]}, \"expected_time\": {\"year\": 2023, \"month\": 6, \"day\": 15, \"hour\": 14, \"minute\": 30, \"second\": 45, \"weekday\": 3}, \"derivation\": \"BCD: 0x45=45 sec, 0x30=30 min, 0x14=14 hr, 0x03=3 dow, 0x15=15 date, 0x06=6 month, 0x23=23 year -> 2023\"}, {\"name\": \"zero_time\", \"mock_preload\": {\"0x00\": [\"0x00\"], \"0x01\": [\"0x00\"], \"0x02\": [\"0x00\"], \"0x03\": [\"0x01\"], \"0x04\": [\"0x01\"], \"0x05\": [\"0x01\"], \"0x06\": [\"0x00\"]}, \"expected_time\": {\"year\": 2000, \"month\": 1, \"day\": 1, \"hour\": 0, \"minute\": 0, \"second\": 0, \"weekday\": 1}, \"derivation\": \"BCD: all zeros except day=1, date=1, month=1 -> 2000-01-01 00:00:00\"}, {\"name\": \"leap_year_time\", \"mock_preload\": {\"0x00\": [\"0x59\"], \"0x01\": [\"0x59\"], \"0x02\": [\"0x23\"], \"0x03\": [\"0x04\"], \"0x04\": [\"0x29\"], \"0x05\": [\"0x02\"], \"0x06\": [\"0x24\"]}, \"expected_time\": {\"year\": 2024, \"month\": 2, \"day\": 29, \"hour\": 23, \"minute\": 59, \"second\": 59, \"weekday\": 4}, \"derivation\": \"BCD: 0x59=59 sec, 0x59=59 min, 0x23=23 hr, 0x04=4 dow, 0x29=29 date, 0x02=2 month, 0x24=24 year -> 2024\"}]}}"
+}

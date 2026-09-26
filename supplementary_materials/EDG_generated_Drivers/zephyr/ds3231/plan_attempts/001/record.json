@@ -1,0 +1,156 @@
+{
+  "attempt": 1,
+  "success": true,
+  "total_time_s": 7.513,
+  "plan_summary": {
+    "device_id": "ds3231",
+    "rtos_id": "zephyr",
+    "eval_class": "rtc",
+    "bus_kind": "i2c",
+    "plan_hash": "09a0bfcada891a20",
+    "api_contract_keys": [
+      "dev_struct_type",
+      "eval_class",
+      "get_time_call",
+      "init_call",
+      "init_extra_setup_c",
+      "preamble_c",
+      "set_time_call",
+      "time_fields",
+      "time_struct_decl",
+      "time_struct_from_in"
+    ],
+    "stimuli_count": 3,
+    "model": "deepseek-v4-flash",
+    "generation_time_s": 7.431
+  },
+  "consistency": {
+    "overall": "all_consistent",
+    "ok": true,
+    "inconsistent_count": 0,
+    "llm_only_count": 0,
+    "consistent_count": 3,
+    "summary": "3 stim; 3 L1/L2",
+    "stimuli": [
+      {
+        "name": "nominal_time",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "1/7 BCD fields matched: byte[0]=0x45(BCD)->second=45",
+        "warnings": [
+          "only 1/7 fields matched; layout may differ from DS3231 convention"
+        ]
+      },
+      {
+        "name": "zero_time",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "1/7 BCD fields matched: byte[0]=0x00(BCD)->hour=0",
+        "warnings": [
+          "only 1/7 fields matched; layout may differ from DS3231 convention"
+        ]
+      },
+      {
+        "name": "leap_year_time",
+        "verdict": "consistent_l1",
+        "layer": "L1",
+        "evidence": "1/7 BCD fields matched: byte[0]=0x59(BCD)->minute=59",
+        "warnings": [
+          "only 1/7 fields matched; layout may differ from DS3231 convention"
+        ]
+      }
+    ]
+  },
+  "coverage": {
+    "ok": true,
+    "superset": true,
+    "covered_count": 2,
+    "missing_count": 0,
+    "llm_extras_count": 0,
+    "merged_count": 2,
+    "summary": "2/2 mechanical covered",
+    "covered": [
+      {
+        "mechanical": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_time: write_then_read",
+          "source": "operation_flows[0].steps[0]",
+          "read_any": true
+        },
+        "llm_match": {
+          "phase": "read_cycle",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "read_time: write_then_read"
+        },
+        "reason": "prefix overlap: [('0x00',)] ∈ mechanical [('0x00',)]",
+        "covered": true
+      },
+      {
+        "mechanical": {
+          "phase": "write_cycle",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "write_time: write",
+          "source": "operation_flows[1].steps[0]"
+        },
+        "llm_match": {
+          "phase": "write_cycle",
+          "addr_or_pin": "0x68",
+          "write_prefix_any_of": [
+            [
+              "0x00"
+            ]
+          ],
+          "note": "write_time: write"
+        },
+        "reason": "prefix overlap: [('0x00',)] ∈ mechanical [('0x00',)]",
+        "covered": true
+      }
+    ],
+    "missing": [],
+    "llm_extras": [],
+    "merged": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_time: write_then_read"
+      },
+      {
+        "phase": "write_cycle",
+        "addr_or_pin": "0x68",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "write_time: write"
+      }
+    ]
+  },
+  "validation_errors": [
+    "rtc api_contract.get_time_call references address-of variable(s) ['t'] that are not declared by time_struct_decl. Keep the local time variable name consistent across time_struct_decl, get_time_call, and time_fields.",
+    "rtc api_contract.time_struct_decl declares ['drv'], but get_time_call does not pass any of those variables.",
+    "rtc api_contract.set_time_call references address-of variable(s) ['t'] that are not declared by time_struct_from_in. Keep the local time variable name consistent across time_struct_from_in and set_time_call.",
+    "rtc api_contract.time_struct_from_in declares ['drv'], but set_time_call does not pass any of those variables or the adapter `in` time object."
+  ]
+}

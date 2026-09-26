@@ -1,0 +1,134 @@
+{
+  "task_package_id": "tobudos_alientek_ministm32f103rct6__ds18b20__gpio_timing_default",
+  "rtos": "tobudos",
+  "device": "ds18b20",
+  "bus": "gpio_timing",
+  "reference_driver_original": "<PROJECT_ROOT>/data/references/ds18b20/tobudos",
+  "task_package": {
+    "package_id": "tobudos_alientek_ministm32f103rct6__ds18b20__gpio_timing_default",
+    "platform_base_context": "DriverGen/data/fixed_context/platform_base_context/tobudos_alientek_ministm32f103rct6.json",
+    "connection_binding_context": "DriverGen/data/fixed_context/connection_binding_context/tobudos_alientek_ministm32f103rct6_gpio_timing_default.json",
+    "device_attachment_context": "DriverGen/data/fixed_context/device_attachment_context/ds18b20.json",
+    "reference_driver_root": "DriverGen/data/references/ds18b20/tobudos",
+    "fixed_task_context": {},
+    "notes": [
+      "Manual task package completing the fixed-context RTOS/device matrix; fixed_task_context is resolved from the referenced layers."
+    ],
+    "evidence": [
+      "DriverGen/data/references/ds18b20/tobudos",
+      "DriverGen/data/raw/ds18b20"
+    ]
+  },
+  "platform_base_context": {
+    "platform_id": "tobudos_alientek_ministm32f103rct6",
+    "board": "ALIENTEK-MiniSTM32F103RCT6",
+    "board_alias": "ministm32f103rct6",
+    "rtos": "tobudos",
+    "rtos_bundle": "tobudos-project",
+    "integration": "chipadaptation_stm32f1_hal",
+    "integration_style": "kernel_plus_chipadaptation_vendor_bsp",
+    "mcu_family": "stm32f1",
+    "mcu": "stm32f103rct6",
+    "capabilities": {
+      "connection_types": [
+        "i2c",
+        "spi",
+        "gpio_timing",
+        "uart_polling"
+      ],
+      "available_instances": {
+        "i2c": [
+          "i2c1"
+        ],
+        "spi": [
+          "spi1"
+        ],
+        "gpio_timing": [
+          "default_gpio_slot"
+        ],
+        "uart_polling": [
+          "uart2"
+        ]
+      },
+      "timing": [
+        "tos_sleep_ms",
+        "microsecond_delay_board_helper"
+      ],
+      "gpio": "available_via_hal",
+      "irq": "optional",
+      "dma": "absent"
+    },
+    "notes": [
+      "TobudOS reference drivers use the kernel for coarse delays and STM32F1 HAL from ChipAdaptation for peripheral access.",
+      "SPI devices use SPI_HandleTypeDef hspi1; fixed-frame UART sensors use UART_HandleTypeDef huart2.",
+      "GPIO timing devices rely on board helper hooks for microsecond timing."
+    ],
+    "evidence": [
+      "DriverGen/data/rtos/tobudos-project/README.md",
+      "DriverGen/data/references/*/tobudos/*_ref.h"
+    ]
+  },
+  "connection_binding_context": {
+    "binding_id": "tobudos_alientek_ministm32f103rct6_gpio_timing_default",
+    "platform_id": "tobudos_alientek_ministm32f103rct6",
+    "connection_type": "gpio_timing",
+    "mode": "polling",
+    "bus_instance": "default_gpio_slot",
+    "bus_instance_kind": "fixed_sample_pins",
+    "bus_symbol": "GPIOA/GPIO_PIN_0 + GPIOA/GPIO_PIN_1",
+    "backend": "STM32F1 HAL GPIO + board microsecond timing hooks",
+    "address_mode": null,
+    "fixed_attachment": {
+      "trig_pin": "GPIOA:GPIO_PIN_0",
+      "echo_pin": "GPIOA:GPIO_PIN_1"
+    },
+    "notes": [
+      "This default gpio_timing slot matches the current HC-SR04 TobudOS sample reference."
+    ],
+    "evidence": [
+      "DriverGen/data/references/hcsr04/tobudos/hcsr04_sample_ref.c"
+    ]
+  },
+  "device_attachment_context": {
+    "device_id": "ds18b20",
+    "attachment_type": "gpio_one_wire_sensor",
+    "required_bus_type": "gpio_timing",
+    "address_mode": null,
+    "addressing": null,
+    "required_attachment": {
+      "signals": [
+        "data"
+      ],
+      "notes": [
+        "DS18B20 uses a Dallas 1-Wire data line with reset/presence pulse, bit slots, Skip ROM command, Convert T command, and Read Scratchpad command.",
+        "The data pin must be switchable between output drive and input sampling with microsecond-scale delay support."
+      ]
+    },
+    "optional_attachment": {
+      "pull_up": "external or board pull-up required by the 1-Wire bus",
+      "parasite_power": "not assumed"
+    },
+    "default_overrides": {
+      "bus_instance": null,
+      "irq": "absent",
+      "dma": "absent",
+      "reset_gpio": null,
+      "power_gpio": null
+    },
+    "protocol_hints": {
+      "gpio_protocol": "dallas_1wire_bitslot",
+      "scratchpad_bytes": 9,
+      "temperature_encoding": "signed little-endian 16-bit raw count, 1 LSB = 0.0625 degC",
+      "crc": "Dallas/Maxim CRC8 over first 8 scratchpad bytes"
+    },
+    "notes": [
+      "Reference drivers use Skip ROM for a single-drop bus and wait for conversion before reading the scratchpad."
+    ],
+    "evidence": [
+      "DriverGen/data/raw/ds18b20",
+      "DriverGen/evaluation/oracle/data/ds18b20/meta.json",
+      "DriverGen/data/references/ds18b20/*/*_ref.h",
+      "DriverGen/data/references/ds18b20/rtthread"
+    ]
+  }
+}

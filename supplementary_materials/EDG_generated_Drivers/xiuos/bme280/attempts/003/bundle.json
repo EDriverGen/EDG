@@ -1,0 +1,307 @@
+{
+  "device_id": "bme280",
+  "rtos_id": "xiuos",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef BME280_H\n#define BME280_H\n\n#include <stdint.h>\n#include \"bus_i2c.h\"\n\nstruct I2cBus;\n\nstruct bme280_dev {\n    struct I2cBus *bus;\n    int fd;\n    uint8_t i2c_addr;\n};\n\nint bme280_init(struct bme280_dev *dev, struct I2cBus *bus_handle);\nint bme280_read_all(struct bme280_dev *dev, int32_t *temp_raw, int32_t *pressure_raw, int32_t *humidity_raw);\n\n#endif",
+  "driver_source": "#include \"bme280.h\"\n#include \"transform.h\"\n#include \"bus.h\"\n#include \"bus_i2c.h\"\n#include \"dev_i2c.h\"\n#include <errno.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <string.h>\n\n#include \"bus_pin.h\"\n#define BME280_I2C_ADDR 0x76\n#define BME280_REG_ID 0xD0\n#define BME280_REG_RESET 0xE0\n#define BME280_REG_CONFIG 0xF5\n#define BME280_REG_CTRL_HUM 0xF2\n#define BME280_REG_CTRL_MEAS 0xF4\n#define BME280_REG_STATUS 0xF3\n#define BME280_REG_PRESS_MSB 0xF7\n#define BME280_REG_TEMP_MSB 0xFA\n#define BME280_REG_HUM_MSB 0xFD\n#define BME280_RESET_CMD 0xB6\n\nstatic int bme280_write_reg(struct bme280_dev *dev, uint8_t reg, uint8_t value)\n{\n    uint8_t buf[2] = {reg, value};\n    int ret = PrivWrite(dev->fd, buf, 2);\n    if (ret < 0) return -EIO;\n    return 0;\n}\n\nstatic int bme280_read_regs(struct bme280_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    int ret = PrivWrite(dev->fd, &reg, 1);\n    if (ret < 0) return -EIO;\n    ret = PrivRead(dev->fd, buf, len);\n    if (ret < 0) return -EIO;\n    return 0;\n}\n\nint bme280_init(struct bme280_dev *dev, struct I2cBus *bus_handle)\n{\n    int ret;\n    struct PrivIoctlCfg ioctl_cfg;\n    uint16_t i2c_addr = BME280_I2C_ADDR;\n\n    dev->bus = bus_handle;\n    dev->i2c_addr = BME280_I2C_ADDR;\n\n    dev->fd = PrivOpen(\"/dev/i2c1\", 0);\n    if (dev->fd < 0) return -EIO;\n\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\n    ioctl_cfg.args = &i2c_addr;\n    ret = PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg);\n    if (ret < 0) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    /* Read chip ID */\n    uint8_t id;\n    ret = bme280_read_regs(dev, BME280_REG_ID, &id, 1);\n    if (ret < 0 || id != 0x60) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    /* Soft reset */\n    ret = bme280_write_reg(dev, BME280_REG_RESET, BME280_RESET_CMD);\n    if (ret < 0) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n    PrivTaskDelay(2);\n\n    /* Write config register (filter off, standby 0.5ms) */\n    ret = bme280_write_reg(dev, BME280_REG_CONFIG, 0x00);\n    if (ret < 0) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    /* Set humidity oversampling to 1x */\n    ret = bme280_write_reg(dev, BME280_REG_CTRL_HUM, 0x01);\n    if (ret < 0) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    /* Set pressure/temp oversampling to 1x, normal mode */\n    ret = bme280_write_reg(dev, BME280_REG_CTRL_MEAS, 0x27);\n    if (ret < 0) {\n        PrivClose(dev->fd);\n        return -EIO;\n    }\n\n    PrivTaskDelay(10);\n\n    return 0;\n}\n\nint bme280_read_all(struct bme280_dev *dev, int32_t *temp_raw, int32_t *pressure_raw, int32_t *humidity_raw)\n{\n    int ret;\n    uint8_t buf[8];\n\n    /* Burst read from 0xF7, 8 bytes */\n    ret = bme280_read_regs(dev, BME280_REG_PRESS_MSB, buf, 8);\n    if (ret < 0) return ret;\n\n    /* Pressure: 20-bit, buf[0..2] */\n    uint32_t press = ((uint32_t)buf[0] << 12) | ((uint32_t)buf[1] << 4) | ((uint32_t)buf[2] >> 4);\n    /* Temperature: 20-bit, buf[3..5] */\n    uint32_t temp = ((uint32_t)buf[3] << 12) | ((uint32_t)buf[4] << 4) | ((uint32_t)buf[5] >> 4);\n    /* Humidity: 16-bit, buf[6..7] */\n    uint16_t hum = ((uint16_t)buf[6] << 8) | buf[7];\n\n    *temp_raw = (int32_t)temp;\n    *pressure_raw = (int32_t)press;\n    *humidity_raw = (int32_t)hum;\n\n    return 0;\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "bme280_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "temp",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "temp_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "pressure",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "pressure_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "humidity",
+        "call": "bme280_read_all(&g_eval_dev, &temp_raw, &pressure_raw, &humidity_raw)",
+        "out_arg": "humidity_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      }
+    ],
+    "dev_struct_type": "struct bme280_dev",
+    "init_extra_setup_c": "struct I2cBus *bus_handle = (struct I2cBus *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xD0"
+          ]
+        ],
+        "note": "init: id"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xE0"
+          ]
+        ],
+        "note": "init: reset"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xF5"
+          ]
+        ],
+        "note": "init: config"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x76",
+        "write_prefix_any_of": [
+          [
+            "0xF2"
+          ],
+          [
+            "0xF3"
+          ],
+          [
+            "0xF4"
+          ],
+          [
+            "0xF7"
+          ],
+          [
+            "0xF8"
+          ],
+          [
+            "0xF9"
+          ],
+          [
+            "0xFA"
+          ],
+          [
+            "0xFB"
+          ],
+          [
+            "0xFC"
+          ],
+          [
+            "0xFD"
+          ],
+          [
+            "0xFE"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_cycle: one of ctrl_hum, ctrl_meas, hum_lsb, hum_msb, press_lsb, press_msb, press_xlsb, status, temp_lsb, temp_msb, temp_xlsb"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "nominal_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "0xE1": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "0xF7": [
+            "0x01",
+            "0x90",
+            "0x00",
+            "0x00",
+            "0xFA",
+            "0x00",
+            "0x4E",
+            "0x20"
+          ]
+        },
+        "expected_channels": {
+          "temp": 25600,
+          "pressure": 4000,
+          "humidity": 20000
+        },
+        "derivation": "temp: raw = (0x01<<12)|(0x90<<4)|(0x00>>4) = 6400; pressure: raw = (0x00<<12)|(0xFA<<4)|(0x00>>4) = 4000; humidity: raw = (0x4E<<8)|0x20 = 20000"
+      },
+      {
+        "name": "zero_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "0xE1": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "0xF7": [
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp": 0,
+          "pressure": 0,
+          "humidity": 0
+        },
+        "derivation": "All raw values are 0."
+      },
+      {
+        "name": "max_values",
+        "mock_preload": {
+          "0xD0": [
+            "0x60"
+          ],
+          "0x88": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "0xE1": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "0xF7": [
+            "0xFF",
+            "0xFF",
+            "0xF0",
+            "0xFF",
+            "0xFF",
+            "0xF0",
+            "0xFF",
+            "0xFF"
+          ]
+        },
+        "expected_channels": {
+          "temp": 1048575,
+          "pressure": 1048575,
+          "humidity": 65535
+        },
+        "derivation": "temp: raw = (0xFF<<12)|(0xFF<<4)|(0xF0>>4) = 1048575; pressure: raw = (0xFF<<12)|(0xFF<<4)|(0xF0>>4) = 1048575; humidity: raw = (0xFF<<8)|0xFF = 65535"
+      }
+    ]
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 3,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 9.66,
+  "prompt_chars": 48034,
+  "raw_response": "{\"driver_header\": \"#ifndef BME280_H\\n#define BME280_H\\n\\n#include <stdint.h>\\n#include \\\"bus_i2c.h\\\"\\n\\nstruct bme280_dev {\\n    struct I2cBus *bus;\\n    int fd;\\n    uint8_t i2c_addr;\\n};\\n\\nint bme280_init(struct bme280_dev *dev, struct I2cBus *bus_handle);\\nint bme280_read_all(struct bme280_dev *dev, int32_t *temp_raw, int32_t *pressure_raw, int32_t *humidity_raw);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"bme280.h\\\"\\n#include \\\"transform.h\\\"\\n#include \\\"bus.h\\\"\\n#include \\\"bus_i2c.h\\\"\\n#include \\\"dev_i2c.h\\\"\\n#include <errno.h>\\n#include <stddef.h>\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define BME280_I2C_ADDR 0x76\\n#define BME280_REG_ID 0xD0\\n#define BME280_REG_RESET 0xE0\\n#define BME280_REG_CONFIG 0xF5\\n#define BME280_REG_CTRL_HUM 0xF2\\n#define BME280_REG_CTRL_MEAS 0xF4\\n#define BME280_REG_STATUS 0xF3\\n#define BME280_REG_PRESS_MSB 0xF7\\n#define BME280_REG_TEMP_MSB 0xFA\\n#define BME280_REG_HUM_MSB 0xFD\\n#define BME280_RESET_CMD 0xB6\\n\\nstatic int bme280_write_reg(struct bme280_dev *dev, uint8_t reg, uint8_t value)\\n{\\n    uint8_t buf[2] = {reg, value};\\n    int ret = PrivWrite(dev->fd, buf, 2);\\n    if (ret < 0) return -EIO;\\n    return 0;\\n}\\n\\nstatic int bme280_read_regs(struct bme280_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    int ret = PrivWrite(dev->fd, &reg, 1);\\n    if (ret < 0) return -EIO;\\n    ret = PrivRead(dev->fd, buf, len);\\n    if (ret < 0) return -EIO;\\n    return 0;\\n}\\n\\nint bme280_init(struct bme280_dev *dev, struct I2cBus *bus_handle)\\n{\\n    int ret;\\n    struct PrivIoctlCfg ioctl_cfg;\\n    uint16_t i2c_addr = BME280_I2C_ADDR;\\n\\n    dev->bus = bus_handle;\\n    dev->i2c_addr = BME280_I2C_ADDR;\\n\\n    dev->fd = PrivOpen(\\\"/dev/i2c1\\\", 0);\\n    if (dev->fd < 0) return -EIO;\\n\\n    ioctl_cfg.ioctl_driver_type = I2C_TYPE;\\n    ioctl_cfg.args = &i2c_addr;\\n    ret = PrivIoctl(dev->fd, OPE_INT, &ioctl_cfg);\\n    if (ret < 0) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    /* Read chip ID */\\n    uint8_t id;\\n    ret = bme280_read_regs(dev, BME280_REG_ID, &id, 1);\\n    if (ret < 0 || id != 0x60) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    /* Soft reset */\\n    ret = bme280_write_reg(dev, BME280_REG_RESET, BME280_RESET_CMD);\\n    if (ret < 0) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n    PrivTaskDelay(2);\\n\\n    /* Write config register (filter off, standby 0.5ms) */\\n    ret = bme280_write_reg(dev, BME280_REG_CONFIG, 0x00);\\n    if (ret < 0) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    /* Set humidity oversampling to 1x */\\n    ret = bme280_write_reg(dev, BME280_REG_CTRL_HUM, 0x01);\\n    if (ret < 0) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    /* Set pressure/temp oversampling to 1x, normal mode */\\n    ret = bme280_write_reg(dev, BME280_REG_CTRL_MEAS, 0x27);\\n    if (ret < 0) {\\n        PrivClose(dev->fd);\\n        return -EIO;\\n    }\\n\\n    PrivTaskDelay(10);\\n\\n    return 0;\\n}\\n\\nint bme280_read_all(struct bme280_dev *dev, int32_t *temp_raw, int32_t *pressure_raw, int32_t *humidity_raw)\\n{\\n    int ret;\\n    uint8_t buf[8];\\n\\n    /* Burst read from 0xF7, 8 bytes */\\n    ret = bme280_read_regs(dev, BME280_REG_PRESS_MSB, buf, 8);\\n    if (ret < 0) return ret;\\n\\n    /* Pressure: 20-bit, buf[0..2] */\\n    uint32_t press = ((uint32_t)buf[0] << 12) | ((uint32_t)buf[1] << 4) | ((uint32_t)buf[2] >> 4);\\n    /* Temperature: 20-bit, buf[3..5] */\\n    uint32_t temp = ((uint32_t)buf[3] << 12) | ((uint32_t)buf[4] << 4) | ((uint32_t)buf[5] >> 4);\\n    /* Humidity: 16-bit, buf[6..7] */\\n    uint16_t hum = ((uint16_t)buf[6] << 8) | buf[7];\\n\\n    *temp_raw = (int32_t)temp;\\n    *pressure_raw = (int32_t)press;\\n    *humidity_raw = (int32_t)hum;\\n\\n    return 0;\\n}\\n\"}",
+  "plan_hash": "d0f775e1d95af415"
+}

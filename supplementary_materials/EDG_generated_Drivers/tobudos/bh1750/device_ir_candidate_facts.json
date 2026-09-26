@@ -1,0 +1,422 @@
+{
+  "device_id": "bh1750",
+  "bus_type": "I2C",
+  "candidate_addresses": [
+    {
+      "value": "0100011",
+      "addressing_form": "7-bit",
+      "is_default": null,
+      "description": "Slave address when ADDR = 'L' (ADDR ≤ 0.3VCC)",
+      "evidence": {
+        "page": 10,
+        "snippet": "ADDR = 'L' (ADDR ≦ 0.3VCC) → '0100011'"
+      }
+    },
+    {
+      "value": "1011100",
+      "addressing_form": "7-bit",
+      "is_default": null,
+      "description": "Slave address when ADDR = 'H' (ADDR ≥ 0.7VCC)",
+      "evidence": {
+        "page": 10,
+        "snippet": "ADDR = 'H' (ADDR ≧ 0.7VCC) → '1011100'"
+      }
+    }
+  ],
+  "candidate_registers": [
+    {
+      "name": "Data Register",
+      "value": null,
+      "access": "read-only",
+      "size_bits": 16,
+      "description": "Illuminance data register, initial value 0x0000",
+      "semantic_roles": [
+        "result",
+        "data"
+      ],
+      "evidence": {
+        "page": 4,
+        "snippet": "Data Register → This is for registration of Ambient Light Data. Initial Value is '0000_0000_0000_0000'."
+      }
+    },
+    {
+      "name": "Measurement Time Register (MTreg)",
+      "value": "0100_0101",
+      "access": "write-only",
+      "size_bits": 8,
+      "description": "Measurement time register, default 69 decimal, range 31-254",
+      "semantic_roles": [
+        "config",
+        "coefficient"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "Measurement Time Register → This is for registration of measurement time. Initial Value is '0100_0101'."
+      }
+    }
+  ],
+  "candidate_bitfields": [
+    {
+      "register": "Data Register",
+      "name": "High Byte",
+      "bit_range": "15:8",
+      "reset_value": null,
+      "description": "High byte of illuminance data",
+      "semantic_roles": [
+        "data"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "High Byte [15:8]"
+      }
+    },
+    {
+      "register": "Data Register",
+      "name": "Low Byte",
+      "bit_range": "7:0",
+      "reset_value": null,
+      "description": "Low byte of illuminance data",
+      "semantic_roles": [
+        "data"
+      ],
+      "evidence": {
+        "page": 10,
+        "snippet": "Low Byte [7:0]"
+      }
+    },
+    {
+      "register": "Measurement Time Register (MTreg)",
+      "name": "MT[7:5]",
+      "bit_range": "7:5",
+      "reset_value": "010",
+      "description": "High bits of MTreg, sent as opcode 01000_MT[7,6,5]",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "Change Measurement time ( High bit ) | 01000_MT[7,6,5]"
+      }
+    },
+    {
+      "register": "Measurement Time Register (MTreg)",
+      "name": "MT[4:0]",
+      "bit_range": "4:0",
+      "reset_value": "00101",
+      "description": "Low bits of MTreg, sent as opcode 011_MT[4,3,2,1,0]",
+      "semantic_roles": [
+        "config"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "Change Masurement time ( Low bit ) | 011_MT[4,3,2,1,0]"
+      }
+    }
+  ],
+  "candidate_operations": [
+    {
+      "flow_id": "power_on",
+      "kind": "init",
+      "channels": [],
+      "summary": "Power on command",
+      "steps": [
+        {
+          "op": "write",
+          "target": "opcode",
+          "details": "Send Power On command (0x01)",
+          "evidence": {
+            "page": 5,
+            "snippet": "Power On | 0000_0001 | Waiting for measurement command."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 5,
+        "snippet": "Power On | 0000_0001"
+      }
+    },
+    {
+      "flow_id": "reset",
+      "kind": "init",
+      "channels": [],
+      "summary": "Reset data register",
+      "steps": [
+        {
+          "op": "write",
+          "target": "opcode",
+          "details": "Send Reset command (0x07) after Power On",
+          "evidence": {
+            "page": 5,
+            "snippet": "Reset | 0000_0111 | Reset Data register value. Reset command is not acceptable in Power Down mode."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 5,
+        "snippet": "Reset | 0000_0111"
+      }
+    },
+    {
+      "flow_id": "measure_continuous_hres",
+      "kind": "read",
+      "channels": [
+        "illuminance"
+      ],
+      "summary": "Continuously H-Resolution Mode measurement",
+      "steps": [
+        {
+          "op": "write",
+          "target": "opcode",
+          "details": "Send Continuously H-Resolution Mode command (0x10)",
+          "evidence": {
+            "page": 5,
+            "snippet": "Continuously H-Resolution Mode | 0001_0000"
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait max 180ms for first measurement completion",
+          "evidence": {
+            "page": 11,
+            "snippet": "After about 240ms, measurement result is registered to Data Register. ( High Resolution mode is typically 120ms, but measurement time is set twice. )"
+          }
+        },
+        {
+          "op": "read",
+          "target": "Data Register",
+          "details": "Read 2 bytes (High Byte then Low Byte) with I2C read",
+          "evidence": {
+            "page": 10,
+            "snippet": "Read measurement result. ST | Slave Address | R/W 1 | Ack | High Byte [15:8] | Ack | Low Byte [7:0] | Ack | SP"
+          }
+        }
+      ],
+      "outputs": [
+        "raw_illuminance_count"
+      ],
+      "evidence": {
+        "page": 11,
+        "snippet": "Continuously H-resolution mode ( ADDR = 'L' )"
+      }
+    },
+    {
+      "flow_id": "measure_one_time_hres2",
+      "kind": "read",
+      "channels": [
+        "illuminance"
+      ],
+      "summary": "One Time H-Resolution Mode2 measurement",
+      "steps": [
+        {
+          "op": "write",
+          "target": "opcode",
+          "details": "Send One Time H-Resolution Mode2 command (0x21)",
+          "evidence": {
+            "page": 5,
+            "snippet": "One Time H-Resolution Mode2 | 0010_0001"
+          }
+        },
+        {
+          "op": "delay",
+          "target": null,
+          "details": "Wait max 180ms for measurement completion",
+          "evidence": {
+            "page": 5,
+            "snippet": "Measurement Time is typically 120ms."
+          }
+        },
+        {
+          "op": "read",
+          "target": "Data Register",
+          "details": "Read 2 bytes (High Byte then Low Byte)",
+          "evidence": {
+            "page": 10,
+            "snippet": "Read measurement result."
+          }
+        }
+      ],
+      "outputs": [
+        "raw_illuminance_count"
+      ],
+      "evidence": {
+        "page": 5,
+        "snippet": "One Time H-Resolution Mode2 | 0010_0001"
+      }
+    },
+    {
+      "flow_id": "set_mtreg",
+      "kind": "calibration",
+      "channels": [],
+      "summary": "Change measurement time (sensitivity adjustment)",
+      "steps": [
+        {
+          "op": "write",
+          "target": "opcode",
+          "details": "Send High bit change: 01000_MT[7,6,5]",
+          "evidence": {
+            "page": 5,
+            "snippet": "Change Measurement time ( High bit ) | 01000_MT[7,6,5]"
+          }
+        },
+        {
+          "op": "write",
+          "target": "opcode",
+          "details": "Send Low bit change: 011_MT[4,3,2,1,0]",
+          "evidence": {
+            "page": 5,
+            "snippet": "Change Masurement time ( Low bit ) | 011_MT[4,3,2,1,0]"
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 5,
+        "snippet": "Change Measurement time ( High bit ) | 01000_MT[7,6,5]"
+      }
+    },
+    {
+      "flow_id": "power_down",
+      "kind": "power",
+      "channels": [],
+      "summary": "Power Down command",
+      "steps": [
+        {
+          "op": "write",
+          "target": "opcode",
+          "details": "Send Power Down command (0x00)",
+          "evidence": {
+            "page": 5,
+            "snippet": "Power Down | 0000_0000 | No active state."
+          }
+        }
+      ],
+      "outputs": [],
+      "evidence": {
+        "page": 5,
+        "snippet": "Power Down | 0000_0000"
+      }
+    }
+  ],
+  "candidate_channels": [
+    {
+      "id": "illuminance",
+      "description": "Ambient light illuminance in lux",
+      "source": "Data Register",
+      "formula_id": "illuminance_hres",
+      "evidence": {
+        "page": 11,
+        "snippet": "How to calculate when the data High Byte is '10000011' and Low Byte is '10010000' (2^15 + 2^9 + 2^8 + 2^7 + 2^4) / 1.2 ≒ 28067 [lx]"
+      }
+    }
+  ],
+  "candidate_formulae": [
+    {
+      "name": "illuminance_hres",
+      "formula": "raw_count / (1.2 * (69 / X))",
+      "inputs": [
+        "raw_count",
+        "MTreg_value"
+      ],
+      "output": "lux",
+      "evidence": {
+        "page": 11,
+        "snippet": "H-reslution mode : Illuminance per 1 count ( lx / count ) = 1 / 1.2 *( 69 / X )"
+      }
+    },
+    {
+      "name": "illuminance_hres2",
+      "formula": "raw_count / (1.2 * (69 / X) * 2)",
+      "inputs": [
+        "raw_count",
+        "MTreg_value"
+      ],
+      "output": "lux",
+      "evidence": {
+        "page": 11,
+        "snippet": "H-reslution mode2 : Illuminance per 1 count ( lx / count ) = 1 / 1.2 *( 69 / X ) / 2"
+      }
+    }
+  ],
+  "candidate_timing_constraints": [
+    {
+      "name": "H-Resolution Mode Measurement Time",
+      "value": 180,
+      "unit": "ms",
+      "condition": "Maximum time for H-Resolution mode measurement",
+      "evidence": {
+        "page": 2,
+        "snippet": "H-Resolution Mode Measurement Time | t HR | － | 120 | 180 | ms"
+      }
+    },
+    {
+      "name": "L-Resolution Mode Measurement Time",
+      "value": 24,
+      "unit": "ms",
+      "condition": "Maximum time for L-Resolution mode measurement",
+      "evidence": {
+        "page": 2,
+        "snippet": "L-Resolution Mode Measurement Time | t LR | － | 16 | 24 | ms"
+      }
+    },
+    {
+      "name": "DVI reset low time",
+      "value": 1,
+      "unit": "µs",
+      "condition": "DVI must be held low for at least 1µs after VCC supply for reset",
+      "evidence": {
+        "page": 6,
+        "snippet": "DVI 'L' term ( 1us )"
+      }
+    },
+    {
+      "name": "I2C SCL frequency",
+      "value": 400,
+      "unit": "kHz",
+      "condition": "Maximum SCL clock frequency",
+      "evidence": {
+        "page": 2,
+        "snippet": "I2C SCL Clock Frequency | f SCL | － | － | 400 | kHz"
+      }
+    }
+  ],
+  "evidence_spans": [
+    {
+      "source_id": "datasheet",
+      "page": 10,
+      "snippet": "Slave Address is 2 types, it is determined by ADDR Terminal ADDR = 'H' (ADDR ≧ 0.7VCC) → '1011100' ADDR = 'L' (ADDR ≦ 0.3VCC) → '0100011'"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 5,
+      "snippet": "Instruction Set Architecture: Power Down 0000_0000, Power On 0000_0001, Reset 0000_0111, Continuously H-Resolution Mode 0001_0000, Continuously H-Resolution Mode2 0001_0001, Continuously L-Resolution Mode 0001_0011, One Time H-Resolution Mode 0010_0000, One Time H-Resolution Mode2 0010_0001, One Time L-Resolution Mode 0010_0011, Change Measurement time (High bit) 01000_MT[7,6,5], Change Measurement time (Low bit) 011_MT[4,3,2,1,0]"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 4,
+      "snippet": "Data Register → This is for registration of Ambient Light Data. Initial Value is '0000_0000_0000_0000'. Measurement Time Register → This is for registration of measurement time. Initial Value is '0100_0101'."
+    },
+    {
+      "source_id": "datasheet",
+      "page": 11,
+      "snippet": "H-reslution mode : Illuminance per 1 count ( lx / count ) = 1 / 1.2 *( 69 / X )"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 2,
+      "snippet": "H-Resolution Mode Measurement Time | t HR | － | 120 | 180 | ms"
+    },
+    {
+      "source_id": "datasheet",
+      "page": 6,
+      "snippet": "DVI is I2C bus reference voltage terminal. And it is also asynchronous reset terminal. It is necessary to set to 'L' after VCC is supplied. In DVI 'L' term, internal state is set to Power Down mode."
+    }
+  ],
+  "requires_human": [
+    "DVI is likely a typo for VCC in some contexts; confirm power supply sequence.",
+    "ADDR terminal has 3-state buffer; ensure proper pull-up/pull-down during power-up.",
+    "Measurement time may be doubled in some modes; verify actual timing."
+  ]
+}

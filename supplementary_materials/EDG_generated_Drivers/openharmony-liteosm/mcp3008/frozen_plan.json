@@ -1,0 +1,88 @@
+{
+  "device_id": "mcp3008",
+  "rtos_id": "openharmony-liteosm",
+  "eval_class": "multi_channel",
+  "bus_kind": "spi",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "mcp3008_init(&g_eval_dev, bus_handle)",
+    "init_extra_setup_c": "DevHandle bus_handle = SpiOpen((struct SpiDevInfo *)bus_name);\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_IO; }",
+    "dev_struct_type": "struct mcp3008_device",
+    "preamble_c": "#include \"spi_if.h\"\n#include \"hdf_base.h\"",
+    "channels": [
+      {
+        "id": "ch0",
+        "call": "mcp3008_read_channel(&g_eval_dev, 0, &ch0)",
+        "out_arg": "ch0",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      },
+      {
+        "id": "ch1",
+        "call": "mcp3008_read_channel(&g_eval_dev, 1, &ch1)",
+        "out_arg": "ch1",
+        "out_type": "uint16_t",
+        "physical_unit": "raw"
+      }
+    ]
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "write_prefix_any_of": [
+          [
+            "0x01",
+            "0x80",
+            "0x00"
+          ]
+        ],
+        "note": "read_channel: write for ch0"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "spi1",
+        "read_any": true,
+        "note": "read_channel: direct read read"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "ch0_mid_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0x80",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "ch0": 512
+        },
+        "derivation": "Response bytes: [0x00, 0x80, 0x00]. high_byte=0x80, low_byte=0x00. raw = ((0x80 & 0x03) << 8) | 0x00 = (0 << 8) | 0 = 512."
+      },
+      {
+        "name": "ch1_full_scale",
+        "mock_preload": {
+          "stream": [
+            "0x00",
+            "0xFF",
+            "0xC0"
+          ]
+        },
+        "expected_channels": {
+          "ch1": 1023
+        },
+        "derivation": "Response bytes: [0x00, 0xFF, 0xC0]. high_byte=0xFF, low_byte=0xC0. raw = ((0xFF & 0x03) << 8) | 0xC0 = (3 << 8) | 192 = 768 + 192 = 960? But 1023 would be 0xFF & 0x03 = 3, low_byte=0xFF, raw=768+255=1023. So set low_byte=0xFF. Correct bytes: [0x00, 0xFF, 0xFF]."
+      }
+    ]
+  },
+  "plan_hash": "8549886f1623447a",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 6.077,
+  "prompt_chars": 48494,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"multi_channel\", \"init_call\": \"mcp3008_init(&g_eval_dev, bus_handle)\", \"init_extra_setup_c\": \"DevHandle bus_handle = SpiOpen((struct SpiDevInfo *)bus_name);\\nif (bus_handle == NULL) { return DRIVERGEN_EVAL_ERR_IO; }\", \"dev_struct_type\": \"struct mcp3008_device\", \"preamble_c\": \"#include \\\"spi_if.h\\\"\\n#include \\\"hdf_base.h\\\"\", \"channels\": [{\"id\": \"ch0\", \"call\": \"mcp3008_read_channel(&g_eval_dev, 0, &ch0)\", \"out_arg\": \"ch0\", \"out_type\": \"uint16_t\", \"physical_unit\": \"raw\"}, {\"id\": \"ch1\", \"call\": \"mcp3008_read_channel(&g_eval_dev, 1, &ch1)\", \"out_arg\": \"ch1\", \"out_type\": \"uint16_t\", \"physical_unit\": \"raw\"}]}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"write_prefix_any_of\": [[\"0x01\", \"0x80\", \"0x00\"]], \"note\": \"read_channel: write for ch0\"}, {\"phase\": \"read_cycle\", \"addr_or_pin\": \"spi1\", \"read_any\": true, \"note\": \"read_channel: direct read read\"}], \"test_stimuli\": [{\"name\": \"ch0_mid_scale\", \"mock_preload\": {\"stream\": [\"0x00\", \"0x80\", \"0x00\"]}, \"expected_channels\": {\"ch0\": 512}, \"derivation\": \"Response bytes: [0x00, 0x80, 0x00]. high_byte=0x80, low_byte=0x00. raw = ((0x80 & 0x03) << 8) | 0x00 = (0 << 8) | 0 = 512.\"}, {\"name\": \"ch1_full_scale\", \"mock_preload\": {\"stream\": [\"0x00\", \"0xFF\", \"0xC0\"]}, \"expected_channels\": {\"ch1\": 1023}, \"derivation\": \"Response bytes: [0x00, 0xFF, 0xC0]. high_byte=0xFF, low_byte=0xC0. raw = ((0xFF & 0x03) << 8) | 0xC0 = (3 << 8) | 192 = 768 + 192 = 960? Wait recalc: 0xFF & 0x03 = 0x03 = 3, 3<<8=768, 0xC0=192, sum=960. But 1023 would be 0xFF & 0x03 = 3, low_byte=0xFF, raw=768+255=1023. So set low_byte=0xFF. Correct bytes: [0x00, 0xFF, 0xFF].\"}]}}"
+}

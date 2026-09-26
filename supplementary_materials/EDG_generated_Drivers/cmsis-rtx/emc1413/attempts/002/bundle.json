@@ -1,0 +1,244 @@
+{
+  "device_id": "emc1413",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef EMC1413_H\n#define EMC1413_H\n\n#include <stdint.h>\n#include <stddef.h>\n\nstruct emc1413_dev {\n    void *bus_handle;\n    uint8_t i2c_addr;\n};\n\nint emc1413_init(struct emc1413_dev *dev, void *bus_handle);\nint emc1413_read_internal_temperature(struct emc1413_dev *dev, int32_t *temp);\nint emc1413_read_external_diode_1_temperature(struct emc1413_dev *dev, int32_t *temp);\nint emc1413_read_external_diode_2_temperature(struct emc1413_dev *dev, int32_t *temp);\n\n#endif",
+  "driver_source": "#include \"emc1413.h\"\n#include \"stm32f1xx_hal.h\"\n#include \"rtx_os.h\"\n#include \"cmsis_os2.h\"\n#include <string.h>\n\n#include \"cmsis_rtx.h\"\n#define EMC1413_I2C_ADDR 0x4C\n#define EMC1413_REG_MANUFACTURER_ID 0xFE\n#define EMC1413_REG_PRODUCT_ID 0xFD\n#define EMC1413_REG_CONFIG 0x03\n#define EMC1413_REG_CONV_RATE 0x04\n#define EMC1413_REG_INT_HIGH 0x00\n#define EMC1413_REG_INT_LOW 0x29\n#define EMC1413_REG_EXT1_HIGH 0x01\n#define EMC1413_REG_EXT1_LOW 0x10\n#define EMC1413_REG_EXT2_HIGH 0x23\n#define EMC1413_REG_EXT2_LOW 0x24\n\nstatic int emc1413_write_then_read(struct emc1413_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\n    uint16_t addr = (uint16_t)(dev->i2c_addr << 1);\n    if (HAL_I2C_Master_Transmit(hi2c, addr, &reg, 1, 100) != HAL_OK)\n        return -1;\n    if (HAL_I2C_Master_Receive(hi2c, addr, buf, len, 100) != HAL_OK)\n        return -1;\n    return 0;\n}\n\nstatic int emc1413_write(struct emc1413_dev *dev, uint8_t reg, uint8_t val)\n{\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\n    uint16_t addr = (uint16_t)(dev->i2c_addr << 1);\n    uint8_t data[2] = {reg, val};\n    if (HAL_I2C_Master_Transmit(hi2c, addr, data, 2, 100) != HAL_OK)\n        return -1;\n    return 0;\n}\n\nstatic int emc1413_read_temperature(struct emc1413_dev *dev, uint8_t reg_high, uint8_t reg_low, int32_t *temp)\n{\n    uint8_t high, low;\n    if (emc1413_write_then_read(dev, reg_high, &high, 1) != 0)\n        return -1;\n    if (emc1413_write_then_read(dev, reg_low, &low, 1) != 0)\n        return -1;\n    *temp = ((int32_t)high * 1000) + ((((low >> 5) & 0x07) * 125));\n    return 0;\n}\n\nint emc1413_init(struct emc1413_dev *dev, void *bus_handle)\n{\n    dev->bus_handle = bus_handle;\n    dev->i2c_addr = EMC1413_I2C_ADDR;\n\n    osDelay(15);\n\n    uint8_t id;\n    if (emc1413_write_then_read(dev, EMC1413_REG_MANUFACTURER_ID, &id, 1) != 0)\n        return -1;\n    if (id != 0x5D)\n        return -1;\n    if (emc1413_write_then_read(dev, EMC1413_REG_PRODUCT_ID, &id, 1) != 0)\n        return -1;\n    if (id != 0x21)\n        return -1;\n\n    if (emc1413_write(dev, EMC1413_REG_CONFIG, 0x00) != 0)\n        return -1;\n    if (emc1413_write(dev, EMC1413_REG_CONV_RATE, 0x06) != 0)\n        return -1;\n\n    return 0;\n}\n\nint emc1413_read_internal_temperature(struct emc1413_dev *dev, int32_t *temp)\n{\n    return emc1413_read_temperature(dev, EMC1413_REG_INT_HIGH, EMC1413_REG_INT_LOW, temp);\n}\n\nint emc1413_read_external_diode_1_temperature(struct emc1413_dev *dev, int32_t *temp)\n{\n    return emc1413_read_temperature(dev, EMC1413_REG_EXT1_HIGH, EMC1413_REG_EXT1_LOW, temp);\n}\n\nint emc1413_read_external_diode_2_temperature(struct emc1413_dev *dev, int32_t *temp)\n{\n    return emc1413_read_temperature(dev, EMC1413_REG_EXT2_HIGH, EMC1413_REG_EXT2_LOW, temp);\n}\n",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "emc1413_init(&g_eval_dev, bus_handle)",
+    "channels": [
+      {
+        "id": "temp_local",
+        "call": "emc1413_read_internal_temperature(&g_eval_dev, &temp_local)",
+        "out_arg": "temp_local",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_ext1",
+        "call": "emc1413_read_external_diode_1_temperature(&g_eval_dev, &temp_ext1)",
+        "out_arg": "temp_ext1",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      },
+      {
+        "id": "temp_ext2",
+        "call": "emc1413_read_external_diode_2_temperature(&g_eval_dev, &temp_ext2)",
+        "out_arg": "temp_ext2",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct emc1413_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0xFE"
+          ]
+        ],
+        "note": "probe: write_then_read Manufacturer ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0xFD"
+          ]
+        ],
+        "note": "probe: write_then_read Product ID"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x03",
+            "0x00"
+          ]
+        ],
+        "note": "init: write Configuration"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x04",
+            "0x06"
+          ]
+        ],
+        "note": "init: write Conversion Rate"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read_internal_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x29"
+          ]
+        ],
+        "note": "read_internal_temperature: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x01"
+          ]
+        ],
+        "note": "read_external_diode_1_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x10"
+          ]
+        ],
+        "note": "read_external_diode_1_temperature: write_then_read low byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x23"
+          ]
+        ],
+        "note": "read_external_diode_2_temperature: write_then_read high byte"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x4C",
+        "write_prefix_any_of": [
+          [
+            "0x24"
+          ]
+        ],
+        "note": "read_external_diode_2_temperature: write_then_read low byte"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "mock_preload": {
+          "0x4C:0x00": [
+            "0x1A"
+          ],
+          "0x4C:0x29": [
+            "0x80"
+          ],
+          "0x4C:0x01": [
+            "0x00"
+          ],
+          "0x4C:0x02": [
+            "0xE0"
+          ],
+          "0xFD": [
+            "0x21"
+          ],
+          "0xFE": [
+            "0x5D"
+          ]
+        },
+        "channel_preload_bytes": {
+          "temp_local": [
+            "0x1A",
+            "0x80"
+          ],
+          "temp_ext1": [
+            "0x64",
+            "0x00"
+          ],
+          "temp_ext2": [
+            "0x7F",
+            "0xE0"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 26500,
+          "temp_ext1": 100000,
+          "temp_ext2": 127875
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp_local: (0x1A * 1000) + (((0x80 >> 5) & 0x07) * 125) = 26500; temp_ext1: (0x64 * 1000) + (((0x00 >> 5) & 0x07) * 125) = 100000; temp_ext2: (0x7F * 1000) + (((0xE0 >> 5) & 0x07) * 125) = 127875"
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "mock_preload": {
+          "0x4C:0x00": [
+            "0x64"
+          ],
+          "0x4C:0x29": [
+            "0x00"
+          ],
+          "0x4C:0x01": [
+            "0xE0"
+          ],
+          "0x4C:0x02": [
+            "0x00"
+          ],
+          "0xFD": [
+            "0x21"
+          ],
+          "0xFE": [
+            "0x5D"
+          ]
+        },
+        "channel_preload_bytes": {
+          "temp_local": [
+            "0x64",
+            "0x00"
+          ],
+          "temp_ext1": [
+            "0x7F",
+            "0xE0"
+          ],
+          "temp_ext2": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_channels": {
+          "temp_local": 100000,
+          "temp_ext1": 127875,
+          "temp_ext2": 0
+        },
+        "raw_tolerance": 0,
+        "derivation": "temp_local: (0x64 * 1000) + (((0x00 >> 5) & 0x07) * 125) = 100000; temp_ext1: (0x7F * 1000) + (((0xE0 >> 5) & 0x07) * 125) = 127875; temp_ext2: (0x00 * 1000) + (((0x00 >> 5) & 0x07) * 125) = 0"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae+output_semantics"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 12.595,
+  "prompt_chars": 50413,
+  "raw_response": "{\"driver_header\": \"#ifndef EMC1413_H\\n#define EMC1413_H\\n\\n#include <stdint.h>\\n#include <stddef.h>\\n\\nstruct emc1413_dev {\\n    void *bus_handle;\\n    uint8_t i2c_addr;\\n};\\n\\nint emc1413_init(struct emc1413_dev *dev, void *bus_handle);\\nint emc1413_read_internal_temperature(struct emc1413_dev *dev, int32_t *temp);\\nint emc1413_read_external_diode_1_temperature(struct emc1413_dev *dev, int32_t *temp);\\nint emc1413_read_external_diode_2_temperature(struct emc1413_dev *dev, int32_t *temp);\\n\\n#endif\\n\", \"driver_source\": \"#include \\\"emc1413.h\\\"\\n#include \\\"stm32f1xx_hal.h\\\"\\n#include \\\"cmsis_rtx.h\\\"\\n#include \\\"rtx_os.h\\\"\\n#include \\\"cmsis_os2.h\\\"\\n#include <string.h>\\n\\n#define EMC1413_I2C_ADDR 0x4C\\n#define EMC1413_REG_MANUFACTURER_ID 0xFE\\n#define EMC1413_REG_PRODUCT_ID 0xFD\\n#define EMC1413_REG_CONFIG 0x03\\n#define EMC1413_REG_CONV_RATE 0x04\\n#define EMC1413_REG_INT_HIGH 0x00\\n#define EMC1413_REG_INT_LOW 0x29\\n#define EMC1413_REG_EXT1_HIGH 0x01\\n#define EMC1413_REG_EXT1_LOW 0x10\\n#define EMC1413_REG_EXT2_HIGH 0x23\\n#define EMC1413_REG_EXT2_LOW 0x24\\n\\nstatic int emc1413_write_then_read(struct emc1413_dev *dev, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\\n    uint16_t addr = (uint16_t)(dev->i2c_addr << 1);\\n    if (HAL_I2C_Master_Transmit(hi2c, addr, &reg, 1, 100) != HAL_OK)\\n        return -1;\\n    if (HAL_I2C_Master_Receive(hi2c, addr, buf, len, 100) != HAL_OK)\\n        return -1;\\n    return 0;\\n}\\n\\nstatic int emc1413_write(struct emc1413_dev *dev, uint8_t reg, uint8_t val)\\n{\\n    I2C_HandleTypeDef *hi2c = (I2C_HandleTypeDef *)dev->bus_handle;\\n    uint16_t addr = (uint16_t)(dev->i2c_addr << 1);\\n    uint8_t data[2] = {reg, val};\\n    if (HAL_I2C_Master_Transmit(hi2c, addr, data, 2, 100) != HAL_OK)\\n        return -1;\\n    return 0;\\n}\\n\\nstatic int emc1413_read_temperature(struct emc1413_dev *dev, uint8_t reg_high, uint8_t reg_low, int32_t *temp)\\n{\\n    uint8_t high, low;\\n    if (emc1413_write_then_read(dev, reg_high, &high, 1) != 0)\\n        return -1;\\n    if (emc1413_write_then_read(dev, reg_low, &low, 1) != 0)\\n        return -1;\\n    *temp = ((int32_t)high * 1000) + ((((low >> 5) & 0x07) * 125));\\n    return 0;\\n}\\n\\nint emc1413_init(struct emc1413_dev *dev, void *bus_handle)\\n{\\n    dev->bus_handle = bus_handle;\\n    dev->i2c_addr = EMC1413_I2C_ADDR;\\n\\n    osDelay(15);\\n\\n    uint8_t id;\\n    if (emc1413_write_then_read(dev, EMC1413_REG_MANUFACTURER_ID, &id, 1) != 0)\\n        return -1;\\n    if (id != 0x5D)\\n        return -1;\\n    if (emc1413_write_then_read(dev, EMC1413_REG_PRODUCT_ID, &id, 1) != 0)\\n        return -1;\\n    if (id != 0x21)\\n        return -1;\\n\\n    if (emc1413_write(dev, EMC1413_REG_CONFIG, 0x00) != 0)\\n        return -1;\\n    if (emc1413_write(dev, EMC1413_REG_CONV_RATE, 0x06) != 0)\\n        return -1;\\n\\n    return 0;\\n}\\n\\nint emc1413_read_internal_temperature(struct emc1413_dev *dev, int32_t *temp)\\n{\\n    return emc1413_read_temperature(dev, EMC1413_REG_INT_HIGH, EMC1413_REG_INT_LOW, temp);\\n}\\n\\nint emc1413_read_external_diode_1_temperature(struct emc1413_dev *dev, int32_t *temp)\\n{\\n    return emc1413_read_temperature(dev, EMC1413_REG_EXT1_HIGH, EMC1413_REG_EXT1_LOW, temp);\\n}\\n\\nint emc1413_read_external_diode_2_temperature(struct emc1413_dev *dev, int32_t *temp)\\n{\\n    return emc1413_read_temperature(dev, EMC1413_REG_EXT2_HIGH, EMC1413_REG_EXT2_LOW, temp);\\n}\\n\"}",
+  "plan_hash": "3f8c1953eb1b22e2"
+}

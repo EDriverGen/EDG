@@ -1,0 +1,64 @@
+{
+  "device_id": "hcsr04",
+  "rtos_id": "xiuos",
+  "eval_class": "single_channel",
+  "bus_kind": "gpio",
+  "driver_header": "#ifndef HCSR04_H\n#define HCSR04_H\n\n#include <stdint.h>\n\nstruct hcsr04_device {\n    int trig_fd;\n    int echo_fd;\n};\n\nint hcsr04_init(struct hcsr04_device *dev, const char *trig_path, const char *echo_path);\nint hcsr04_read_distance(struct hcsr04_device *dev, int32_t *raw);\n\n#endif /* HCSR04_H */",
+  "driver_source": "#include \"hcsr04.h\"\n#include \"transform.h\"\n#include <errno.h>\n#include <stdint.h>\n#include <string.h>\n\n#define TRIG_PULSE_US 10\n#define TIMEOUT_US 100000\n#define SOUND_SPEED_NUM 343\n#define SOUND_SPEED_DEN 2000\n\nstatic int gpio_write(int fd, int value) {\n    uint8_t buf = value ? 1 : 0;\n    return PrivWrite(fd, &buf, 1);\n}\n\nstatic int gpio_read(int fd) {\n    uint8_t buf;\n    int ret = PrivRead(fd, &buf, 1);\n    if (ret < 0) return -1;\n    return buf ? 1 : 0;\n}\n\nstatic void delay_us(int us) {\n    // Use PrivTaskDelay with ms resolution; for short delays, approximate\n    if (us >= 1000) {\n        PrivTaskDelay(us / 1000);\n    } else {\n        // busy wait approximation (not ideal but acceptable for short delays)\n        volatile int i;\n        for (i = 0; i < us * 10; i++) {\n            __asm__ volatile(\"nop\");\n        }\n    }\n}\n\nint hcsr04_init(struct hcsr04_device *dev, const char *trig_path, const char *echo_path) {\n    if (!dev || !trig_path || !echo_path) return -EINVAL;\n    \n    dev->trig_fd = open(trig_path, O_RDWR);\n    if (dev->trig_fd < 0) return -errno;\n    \n    dev->echo_fd = open(echo_path, O_RDWR);\n    if (dev->echo_fd < 0) {\n        close(dev->trig_fd);\n        return -errno;\n    }\n    \n    // Configure trig as output, echo as input (assume default modes)\n    // No explicit configure call needed; open with O_RDWR sets appropriate mode\n    \n    return 0;\n}\n\nint hcsr04_read_distance(struct hcsr04_device *dev, int32_t *raw) {\n    if (!dev || !raw) return -EINVAL;\n    \n    // Send trigger pulse\n    gpio_write(dev->trig_fd, 1);\n    delay_us(TRIG_PULSE_US);\n    gpio_write(dev->trig_fd, 0);\n    \n    // Wait for echo pin to go high (start of pulse)\n    int timeout = 0;\n    while (gpio_read(dev->echo_fd) == 0) {\n        delay_us(1);\n        timeout++;\n        if (timeout > TIMEOUT_US) {\n            *raw = 0;\n            return -EIO;\n        }\n    }\n    \n    // Measure high pulse width\n    uint32_t width = 0;\n    while (gpio_read(dev->echo_fd) == 1) {\n        delay_us(1);\n        width++;\n        if (width > TIMEOUT_US) {\n            *raw = 0;\n            return -EIO;\n        }\n    }\n    \n    // Convert to mm: (width * 343) / 2000\n    int64_t tmp = (int64_t)width * SOUND_SPEED_NUM;\n    *raw = (int32_t)(tmp / SOUND_SPEED_DEN);\n    \n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "hcsr04_init(&g_eval_dev, \"/dev/gpio_trig\", \"/dev/gpio_echo\")",
+    "read_call": "hcsr04_read_distance(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "mm",
+    "dev_struct_type": "struct hcsr04_device",
+    "init_extra_setup_c": "",
+    "preamble_c": ""
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "gpio1",
+        "note": "init: configure pin mode (output then input)"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "gpio1",
+        "read_any": true,
+        "note": "read_cycle: pulse / 1-wire handshake then sample bits"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_gpio_pulse_width_positive",
+        "mock_preload": {
+          "schedule": [
+            [
+              1,
+              400
+            ],
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        "expected_read_raw": 68,
+        "raw_tolerance": 3,
+        "derivation": "GPIO pulse schedule drives echo_pulse_width_us high for 400 us; formula input T=400; (400 * 343) // 2000 = 68."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.gpio_measure_pulse+conversion_formulae"
+  },
+  "runtime_path": "renode_gpio_pulse",
+  "slave_kind": "gpio_pulse_injector",
+  "spi_sub_mode": "",
+  "attempt": 2,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 7.993,
+  "prompt_chars": 32615,
+  "raw_response": "{\"driver_header\": \"#ifndef HCSR04_H\\n#define HCSR04_H\\n\\n#include <stdint.h>\\n\\nstruct hcsr04_device {\\n    int trig_fd;\\n    int echo_fd;\\n};\\n\\nint hcsr04_init(struct hcsr04_device *dev, const char *trig_path, const char *echo_path);\\nint hcsr04_read_distance(struct hcsr04_device *dev, int32_t *raw);\\n\\n#endif /* HCSR04_H */\", \"driver_source\": \"#include \\\"hcsr04.h\\\"\\n#include \\\"transform.h\\\"\\n#include <errno.h>\\n#include <stdint.h>\\n#include <string.h>\\n#include <unistd.h>\\n\\n#define TRIG_PULSE_US 10\\n#define TIMEOUT_US 100000\\n#define SOUND_SPEED_NUM 343\\n#define SOUND_SPEED_DEN 2000\\n\\nstatic int gpio_write(int fd, int value) {\\n    uint8_t buf = value ? 1 : 0;\\n    return PrivWrite(fd, &buf, 1);\\n}\\n\\nstatic int gpio_read(int fd) {\\n    uint8_t buf;\\n    int ret = PrivRead(fd, &buf, 1);\\n    if (ret < 0) return -1;\\n    return buf ? 1 : 0;\\n}\\n\\nstatic void delay_us(int us) {\\n    // Use PrivTaskDelay with ms resolution; for short delays, approximate\\n    if (us >= 1000) {\\n        PrivTaskDelay(us / 1000);\\n    } else {\\n        // busy wait approximation (not ideal but acceptable for short delays)\\n        volatile int i;\\n        for (i = 0; i < us * 10; i++) {\\n            __asm__ volatile(\\\"nop\\\");\\n        }\\n    }\\n}\\n\\nint hcsr04_init(struct hcsr04_device *dev, const char *trig_path, const char *echo_path) {\\n    if (!dev || !trig_path || !echo_path) return -EINVAL;\\n    \\n    dev->trig_fd = open(trig_path, O_RDWR);\\n    if (dev->trig_fd < 0) return -errno;\\n    \\n    dev->echo_fd = open(echo_path, O_RDWR);\\n    if (dev->echo_fd < 0) {\\n        close(dev->trig_fd);\\n        return -errno;\\n    }\\n    \\n    // Configure trig as output, echo as input (assume default modes)\\n    // No explicit configure call needed; open with O_RDWR sets appropriate mode\\n    \\n    return 0;\\n}\\n\\nint hcsr04_read_distance(struct hcsr04_device *dev, int32_t *raw) {\\n    if (!dev || !raw) return -EINVAL;\\n    \\n    // Send trigger pulse\\n    gpio_write(dev->trig_fd, 1);\\n    delay_us(TRIG_PULSE_US);\\n    gpio_write(dev->trig_fd, 0);\\n    \\n    // Wait for echo pin to go high (start of pulse)\\n    int timeout = 0;\\n    while (gpio_read(dev->echo_fd) == 0) {\\n        delay_us(1);\\n        timeout++;\\n        if (timeout > TIMEOUT_US) {\\n            *raw = 0;\\n            return -EIO;\\n        }\\n    }\\n    \\n    // Measure high pulse width\\n    uint32_t width = 0;\\n    while (gpio_read(dev->echo_fd) == 1) {\\n        delay_us(1);\\n        width++;\\n        if (width > TIMEOUT_US) {\\n            *raw = 0;\\n            return -EIO;\\n        }\\n    }\\n    \\n    // Convert to mm: (width * 343) / 2000\\n    int64_t tmp = (int64_t)width * SOUND_SPEED_NUM;\\n    *raw = (int32_t)(tmp / SOUND_SPEED_DEN);\\n    \\n    return 0;\\n}\"}",
+  "plan_hash": "0f810dd7fe5a6fcc"
+}

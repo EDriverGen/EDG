@@ -1,0 +1,75 @@
+{
+  "device_id": "lm75a",
+  "rtos_id": "cmsis-rtx",
+  "eval_class": "single_channel",
+  "bus_kind": "i2c",
+  "api_contract": {
+    "eval_class": "single_channel",
+    "init_call": "lm75a_init(&g_eval_dev, bus_handle)",
+    "read_call": "lm75a_read_temperature(&g_eval_dev, &raw)",
+    "primary_raw_type": "int32_t",
+    "primary_raw_unit": "milli_degC",
+    "dev_struct_type": "struct lm75a_dev",
+    "init_extra_setup_c": "void *bus_handle = (void *)bus_name;"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x48",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ]
+        ],
+        "note": "read temperature: write pointer 0x00 then read 2 bytes"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_single_channel_positive",
+        "mock_preload": {
+          "0x00": [
+            "0x32",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 50000000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled;  bytes 0x32 0x00 decode to raw=((((0x32 << 8) | 0x00) >> 5) & 0x7FF) = 400; public value in milli_degC is 400 * 125000 = 50000000."
+      },
+      {
+        "name": "mechanical_single_channel_zero",
+        "mock_preload": {
+          "0x00": [
+            "0x00",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": 0,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; zero-value  bytes 0x00 0x00 decode to raw=((((0x00 << 8) | 0x00) >> 5) & 0x7FF) = 0; public value in milli_degC is 0 * 125000 = 0."
+      },
+      {
+        "name": "mechanical_single_channel_negative",
+        "mock_preload": {
+          "0x00": [
+            "0xCE",
+            "0x00"
+          ]
+        },
+        "expected_read_raw": -50000000,
+        "raw_tolerance": 0,
+        "derivation": "SECTION B3 semantic_kind=physical_scaled; negative two's-complement  bytes 0xCE 0x00 decode to raw=(((((0xCE << 8) | 0x00) >> 5) & 0x7FF) - 2048) = -400; public value in milli_degC is -400 * 125000 = -50000000."
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.read_sequence+raw_encoding+conversion_formulae+output_semantics"
+  },
+  "plan_hash": "de3cdd21875bea49",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 34.793,
+  "prompt_chars": 47208,
+  "raw_response": "{\"api_contract\": {\"eval_class\": \"single_channel\", \"init_call\": \"lm75a_init(&g_eval_dev, bus_handle)\", \"read_call\": \"lm75a_read_temperature(&g_eval_dev, &raw)\", \"primary_raw_type\": \"int32_t\", \"primary_raw_unit\": \"milli_degC\", \"dev_struct_type\": \"struct lm75a_dev\", \"init_extra_setup_c\": \"void *bus_handle = (void *)bus_name;\"}, \"test_plan\": {\"expected_transactions\": [{\"phase\": \"read_cycle\", \"addr_or_pin\": \"0x48\", \"write_prefix_any_of\": [[\"0x00\"]], \"note\": \"read temperature: write pointer 0x00 then read 2 bytes\"}], \"test_stimuli\": [{\"name\": \"positive_temperature_25C\", \"mock_preload\": {\"0x00\": [\"0x19\", \"0x00\"]}, \"expected_read_raw\": 25000, \"derivation\": \"raw_signed_11 = (0x19 << 8 | 0x00) >> 5 = 0x19 = 25; temp_mdegC = (25 * 125) / 1000 = 3125 / 1000 = 3? Wait recalc: 25 * 125 = 3125; 3125 / 1000 = 3.125 -> integer division truncates to 3. But expected 25000? Let's fix: raw_signed_11 = (0x19 << 8 | 0x00) >> 5 = 0x19 = 25; temp_mdegC = (25 * 125) / 1000 = 3125 / 1000 = 3. That's not 25000. I need to choose bytes that give a known value. Let's pick raw_signed_11 = 200 (0x6400 >> 5 = 200). Then temp_mdegC = (200 * 125) / 1000 = 25000 / 1000 = 25? No: 200*125=25000; 25000/1000=25. So expected_read_raw should be 25? But unit is milli_degC, so 25 milli_degC = 0.025 degC. That's too small. Let's pick raw_signed_11 = 2000? But 11-bit max is 1023. Let's pick raw_signed_11 = 200 (0x6400 >> 5 = 200). Then temp_mdegC = (200 * 125) / 1000 = 25000 / 1000 = 25. So expected_read_raw = 25 milli_degC? That seems low. Actually the formula gives milli_degC, so 25 means 0.025 degC. That's fine. But let's pick a more typical value: raw_signed_11 = 400 (0xC800 >> 5 = 400). Then temp_mdegC = (400 * 125) / 1000 = 50000 / 1000 = 50. So expected_read_raw = 50 milli_degC. That's 0.05 degC. Still small. Let's pick raw_signed_11 = 800 (0x6400? No, 800*2^5=25600, 0x6400). Then temp_mdegC = (800 * 125) / 1000 = 100000 / 1000 = 100. So expected_read_raw = 100 milli_degC = 0.1 degC. That's fine. But I want a positive value that is clearly positive. Let's use raw_signed_11 = 200 -> bytes: 200 << 5 = 6400 = 0x1900. So mock_preload: [0x19, 0x00]. Then expected_read_raw = (200 * 125) / 1000 = 25000 / 1000 = 25. So expected_read_raw = 25. That is correct: 25 milli_degC. Derivation: raw_signed_11 = (0x19 << 8 | 0x00) >> 5 = 0x19 = 25; temp_mdegC = (25 * 125) / 1000 = 3125 / 1000 = 3? Wait 25*125=3125, 3125/1000=3.125 integer truncates to 3. That's not 25. I made a mistake: raw_signed_11 = (0x19 << 8 | 0x00) >> 5 = (0x1900) >> 5 = 0xC8 = 200. Yes, 0x1900 >> 5 = 0x00C8 = 200. So raw_signed_11 = 200. Then temp_mdegC = (200 * 125) / 1000 = 25000 / 1000 = 25. So expected_read_raw = 25. Derivation: raw_signed_11 = (0x19 << 8 | 0x00) >> 5 = 200; temp_mdegC = (200 * 125) / 1000 = 25.\"}, {\"name\": \"zero_temperature\", \"mock_preload\": {\"0x00\": [\"0x00\", \"0x00\"]}, \"expected_read_raw\": 0, \"derivation\": \"raw_signed_11 = (0x00 << 8 | 0x00) >> 5 = 0; temp_mdegC = (0 * 125) / 1000 = 0.\"}, {\"name\": \"negative_temperature_minus_10C\", \"mock_preload\": {\"0x00\": [\"0xE6\", \"0x00\"]}, \"expected_read_raw\": -10000, \"derivation\": \"raw_signed_11 = (0xE6 << 8 | 0x00) >> 5 = 0xE600 >> 5 = 0x0730 = 1840? Wait sign extend: 0xE6 = 11100110, after shift sign extend from bit 10. Let's compute: raw_16 = 0xE600, right shift 5 gives 0x0730 = 1840 unsigned. But 11-bit signed: bit10 is sign. 0x0730 has bit10=1? 0x0730 binary: 0000 0111 0011 0000, bit10 (0-indexed) is 1? Actually bit10 is the 11th bit: 0x0730 = 0b0000011100110000, bit10 is 0 (since bits 15-11 are 0). Wait, 0x0730 is 1840, which is positive. That's not negative. I need a negative value. Let's choose raw_signed_11 = -80 (0x3B0? Actually -80 in 11-bit two's complement: 2048 - 80 = 1968 = 0x7B0. Then raw_16 = 0x7B0 << 5 = 0xF600. So bytes: [0xF6, 0x00]. Then raw_signed_11 = (0xF6 << 8 | 0x00) >> 5 = 0xF600 >> 5 = 0x07B0 = 1968? But sign extend: 0xF6 = 11110110, after shift we have 0x07B0 = 1968, but bit10 is 1? 0x07B0 = 0b0000011110110000, bit10 is 1? Actually bit10 is the 11th bit: 0x07B0 has bits 15-11 = 00000, bit10 = 1? Let's list: 0x07B0 = 0b0000 0111 1011 0000. Bits: 15-11: 00000, bit10: 1, bit9: 1, etc. So sign bit (bit10) is 1, so negative. Value = -(2048 - 1968) = -80. Then temp_mdegC = (-80 * 125) / 1000 = -10000 / 1000 = -10. So expected_read_raw = -10000? Wait -80*125 = -10000, /1000 = -10. So expected_read_raw = -10? But unit is milli_degC, so -10 milli_degC = -0.01 degC. That's fine. But I want -10 degC = -10000 milli_degC. So raw_signed_11 should be -80000? No, formula: temp_mdegC = (raw_signed_11 * 125) / 1000. To get -10000, raw_signed_11 = (-10000 * 1000) / 125 = -80000. But 11-bit max magnitude is 1024, so impossible. So -10000 milli_degC is -10 degC, which requires raw_signed_11 = -80? Actually -80 * 125 = -10000, /1000 = -10. So expected_read_raw = -10, not -10000. I need to be consistent: public_unit is milli_degC, so -10 degC = -10000 milli_degC. But formula gives milli_degC directly? Let's check: formula says output temp_mdegC (milli_degC). So raw_signed_11 = -80 gives temp_mdegC = (-80 * 125) / 1000 = -10. So -10 milli_degC = -0.01 degC. That's not -10 degC. To get -10000 milli_degC, raw_signed_11 = (-10000 * 1000) / 125 = -80000, not representable. So the formula seems to give milli_degC but with a factor of 0.125 per LSB? Actually 0.125 degC per LSB = 125 milli_degC per LSB. So raw_signed_11 = 1 gives 125 milli_degC = 0.125 degC. So raw_signed_11 = 200 gives 25000 milli_degC = 25 degC. That matches my earlier calculation: 200 * 125 = 25000 milli_degC = 25 degC. So expected_read_raw = 25000 for 25 degC. For -10 degC, raw_signed_11 = -80 gives -10000 milli_degC = -10 degC. So expected_read_raw = -10000. Let's verify: -80 * 125 = -10000, /1000 = -10? Wait -80*125 = -10000, dividing by 1000 gives -10. That's -10 milli_degC, not -10000. I'm confusing integer division. The formula is integer: ((raw_signed_11 * 125) / 1000). For raw_signed_11 = -80: (-80 * 125) = -10000, -10000 / 1000 = -10 (integer division truncates toward zero? In C, -10000/1000 = -10). So result is -10 milli_degC. That's -0.01 degC. To get -10000 milli_degC (-10 degC), raw_signed_11 = -80000? Not possible. So the formula seems to give milli_degC but with a scaling of 0.125 per LSB? Actually 0.125 degC = 125 milli_degC. So raw_signed_11 = 1 gives 125 milli_degC. So raw_signed_11 = 200 gives 25000 milli_degC = 25 degC. So for -10 degC = -10000 milli_degC, raw_signed_11 = -10000 / 125 = -80. So -80 * 125 = -10000, but then divided by 1000 gives -10. That's inconsistent. Let's re-read formula: integer expression: ((raw_signed_11 * 125) / 1000). That yields milli_degC? If raw_signed_11 = 200, (200*125)/1000 = 25000/1000 = 25. So 25 milli_degC = 0.025 degC. But the device spec says 0.125 degC per LSB, so 200 LSB should be 25 degC = 25000 milli_degC. So the formula should be (raw_signed_11 * 125) without dividing by 1000? Actually 0.125 degC = 125 milli_degC, so raw_signed_11 * 125 gives milli_degC directly. So the formula should be (raw_signed_11 * 125). But the IR says ((raw_signed_11 * 125) / 1000). That would give degC? Let's check: 200 * 125 / 1000 = 25 degC. So the formula gives degC, not milli_degC. But the output unit is milli_degC. There's a mismatch. I'll follow the IR formula as given: ((raw_signed_11 * 125) / 1000). That yields degC. But the public_unit is milli_degC, so I need to multiply by 1000? Actually the IR says output temp_mdegC (milli_degC). So the formula should give milli_degC. Let's trust the IR: integer expression: ((raw_signed_11 * 125) / 1000). For raw_signed_11 = 200, that gives 25. So 25 milli_degC = 0.025 degC. That seems too small. But the device spec says 0.125 degC per LSB, so 200 LSB = 25 degC = 25000 milli_degC. So the formula should be raw_signed_11 * 125. I think the IR has an error. But I must follow the IR as given. So I'll use the formula verbatim. Then for raw_signed_11 = 200, expected_read_raw = 25. For raw_signed_11 = -80, expected_read_raw = -10. That is consistent with the formula. So I'll adjust my stimuli accordingly. Let's pick raw_signed_11 = 200 for positive, 0 for zero, and -80 for negative. For positive: bytes = (200 << 5) = 6400 = 0x1900 -> [0x19, 0x00]. expected_read_raw = (200 * 125) / 1000 = 25. For zero: [0x00, 0x00], expected_read_raw = 0. For negative: raw_signed_11 = -80, two's complement 11-bit: 2048 - 80 = 1968 = 0x7B0. Shift left 5: 0x7B0 << 5 = 0xF600. Bytes: [0xF6, 0x00]. expected_read_raw = (-80 * 125) / 1000 = -10. Derivation: raw_signed_11 = sign_extend((0xF6 << 8 | 0x00) >> 5, 11) = -80; temp_mdegC = (-80 * 125) / 1000 = -10.\"}]}}"
+}

@@ -1,0 +1,203 @@
+{
+  "device_id": "dps310",
+  "rtos_id": "rtthread",
+  "eval_class": "multi_channel",
+  "bus_kind": "i2c",
+  "driver_header": "#ifndef DPS310_H\n#define DPS310_H\n\n#include <stdint.h>\n#include <rtthread.h>\n\nstruct dps310_device {\n    struct rt_i2c_bus_device *bus;\n    uint8_t i2c_addr;\n};\n\nint dps310_init(struct dps310_device *dev, struct rt_i2c_bus_device *bus);\nint dps310_read_pressure(struct dps310_device *dev, int32_t *pressure_raw);\nint dps310_read_temperature(struct dps310_device *dev, int32_t *temperature_mdegc);\n\n#endif /* DPS310_H */",
+  "driver_source": "#include \"dps310.h\"\n#include <stdint.h>\n#include <string.h>\n\n#define DPS310_I2C_ADDR 0x77\n\n#define PRS_B2 0x00\n#define PRS_B1 0x01\n#define PRS_B0 0x02\n#define TMP_B2 0x03\n#define TMP_B1 0x04\n#define TMP_B0 0x05\n#define PRS_CFG 0x06\n#define TMP_CFG 0x07\n#define MEAS_CFG 0x08\n#define CFG_REG 0x09\n#define INT_STS 0x0A\n#define FIFO_STS 0x0B\n#define RESET 0x0C\n#define ID 0x0D\n#define COEF_SRCE 0x28\n\nstatic int i2c_write_then_read(struct rt_i2c_bus_device *bus, uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len)\n{\n    struct rt_i2c_msg msgs[2];\n\n    msgs[0].addr = addr;\n    msgs[0].flags = RT_I2C_WR;\n    msgs[0].buf = &reg;\n    msgs[0].len = 1;\n\n    msgs[1].addr = addr;\n    msgs[1].flags = RT_I2C_RD;\n    msgs[1].buf = buf;\n    msgs[1].len = len;\n\n    if (rt_i2c_transfer(bus, msgs, 2) != 2)\n        return -1;\n    return 0;\n}\n\nstatic int i2c_write(struct rt_i2c_bus_device *bus, uint8_t addr, uint8_t reg, uint8_t data)\n{\n    uint8_t buf[2] = {reg, data};\n    struct rt_i2c_msg msg;\n\n    msg.addr = addr;\n    msg.flags = RT_I2C_WR;\n    msg.buf = buf;\n    msg.len = 2;\n\n    if (rt_i2c_transfer(bus, &msg, 1) != 1)\n        return -1;\n    return 0;\n}\n\nstatic int32_t combine_24bit_signed(uint8_t msb, uint8_t mid, uint8_t lsb)\n{\n    int32_t val = ((int32_t)msb << 16) | ((int32_t)mid << 8) | (int32_t)lsb;\n    if (val & 0x800000)\n        val |= 0xFF000000;\n    return val;\n}\n\nint dps310_init(struct dps310_device *dev, struct rt_i2c_bus_device *bus)\n{\n    uint8_t id;\n    dev->bus = bus;\n    dev->i2c_addr = DPS310_I2C_ADDR;\n\n    /* Soft reset */\n    if (i2c_write(bus, dev->i2c_addr, RESET, 0x89) != 0)\n        return -1;\n    rt_thread_mdelay(12); /* wait for sensor ready max 12ms */\n\n    /* Read ID register */\n    if (i2c_write_then_read(bus, dev->i2c_addr, ID, &id, 1) != 0)\n        return -1;\n\n    /* Configure CFG_REG: disable FIFO, no interrupts */\n    if (i2c_write(bus, dev->i2c_addr, CFG_REG, 0x00) != 0)\n        return -1;\n\n    /* Wait for coefficients ready (max 40ms) */\n    rt_thread_mdelay(40);\n\n    return 0;\n}\n\nint dps310_read_pressure(struct dps310_device *dev, int32_t *pressure_raw)\n{\n    uint8_t buf[3];\n    if (i2c_write_then_read(dev->bus, dev->i2c_addr, PRS_B2, buf, 3) != 0)\n        return -1;\n    *pressure_raw = combine_24bit_signed(buf[0], buf[1], buf[2]);\n    return 0;\n}\n\nint dps310_read_temperature(struct dps310_device *dev, int32_t *temperature_mdegc)\n{\n    uint8_t buf[3];\n    if (i2c_write_then_read(dev->bus, dev->i2c_addr, TMP_B2, buf, 3) != 0)\n        return -1;\n    int32_t raw_temp = combine_24bit_signed(buf[0], buf[1], buf[2]);\n    /* According to Section B3, temperature output is raw count (no conversion) */\n    *temperature_mdegc = raw_temp;\n    return 0;\n}",
+  "api_contract": {
+    "eval_class": "multi_channel",
+    "init_call": "dps310_init(&g_eval_dev, bus)",
+    "channels": [
+      {
+        "id": "pressure",
+        "call": "dps310_read_pressure(&g_eval_dev, &pressure_raw)",
+        "out_arg": "pressure_raw",
+        "out_type": "int32_t",
+        "physical_unit": "raw_count"
+      },
+      {
+        "id": "temperature",
+        "call": "dps310_read_temperature(&g_eval_dev, &temperature_mdegc)",
+        "out_arg": "temperature_mdegc",
+        "out_type": "int32_t",
+        "physical_unit": "milli_degC"
+      }
+    ],
+    "dev_struct_type": "struct dps310_device",
+    "init_extra_setup_c": "struct rt_i2c_bus_device *bus = rt_i2c_bus_device_find(bus_name);\nif (bus == RT_NULL) { return DRIVERGEN_EVAL_ERR_INVALID; }"
+  },
+  "test_plan": {
+    "expected_transactions": [
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x09"
+          ]
+        ],
+        "note": "init: CFG_REG"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0C"
+          ]
+        ],
+        "note": "init: RESET"
+      },
+      {
+        "phase": "init",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x0D"
+          ]
+        ],
+        "note": "init: ID"
+      },
+      {
+        "phase": "read_cycle",
+        "addr_or_pin": "0x77",
+        "write_prefix_any_of": [
+          [
+            "0x00"
+          ],
+          [
+            "0x01"
+          ],
+          [
+            "0x02"
+          ],
+          [
+            "0x03"
+          ],
+          [
+            "0x04"
+          ],
+          [
+            "0x05"
+          ],
+          [
+            "0x06"
+          ],
+          [
+            "0x07"
+          ],
+          [
+            "0x08"
+          ],
+          [
+            "0x0A"
+          ],
+          [
+            "0x0B"
+          ],
+          [
+            "0x28"
+          ]
+        ],
+        "read_any": true,
+        "note": "read_cycle: one of COEF_SRCE, FIFO_STS, INT_STS, MEAS_CFG, PRS_B0, PRS_B1, PRS_B2, PRS_CFG, TMP_B0, TMP_B1, TMP_B2, TMP_CFG"
+      }
+    ],
+    "test_stimuli": [
+      {
+        "name": "mechanical_register_mapped_1",
+        "mock_preload": {
+          "0x77:0x00": [
+            "0x00"
+          ],
+          "0x77:0x01": [
+            "0x03"
+          ],
+          "0x77:0x02": [
+            "0xE8"
+          ],
+          "0x77:0x03": [
+            "0x00"
+          ],
+          "0x77:0x04": [
+            "0x04"
+          ],
+          "0x77:0x05": [
+            "0x31"
+          ]
+        },
+        "channel_preload_bytes": {
+          "pressure": [
+            "0x00",
+            "0x03",
+            "0xE8"
+          ],
+          "temperature": [
+            "0x00",
+            "0x04",
+            "0x31"
+          ]
+        },
+        "expected_channels": {
+          "pressure": 1000,
+          "temperature": 1073
+        },
+        "raw_tolerance": 0,
+        "derivation": "pressure: raw fallback because conversion expression is not executable from source bytes; ((0x00 << 16) | (0x03 << 8) | 0xE8) = 1000; temperature: raw fallback because conversion expression is not executable from source bytes; ((0x00 << 16) | (0x04 << 8) | 0x31) = 1073"
+      },
+      {
+        "name": "mechanical_register_mapped_2",
+        "mock_preload": {
+          "0x77:0x00": [
+            "0xFF"
+          ],
+          "0x77:0x01": [
+            "0xFC"
+          ],
+          "0x77:0x02": [
+            "0x18"
+          ],
+          "0x77:0x03": [
+            "0xFF"
+          ],
+          "0x77:0x04": [
+            "0xFB"
+          ],
+          "0x77:0x05": [
+            "0xCF"
+          ]
+        },
+        "channel_preload_bytes": {
+          "pressure": [
+            "0xFF",
+            "0xFC",
+            "0x18"
+          ],
+          "temperature": [
+            "0xFF",
+            "0xFB",
+            "0xCF"
+          ]
+        },
+        "expected_channels": {
+          "pressure": -1000,
+          "temperature": -1073
+        },
+        "raw_tolerance": 0,
+        "derivation": "pressure: raw fallback because conversion expression is not executable from source bytes; ((0xFF << 16) | (0xFC << 8) | 0x18) = -1000; temperature: raw fallback because conversion expression is not executable from source bytes; ((0xFF << 16) | (0xFB << 8) | 0xCF) = -1073"
+      }
+    ],
+    "mechanical_test_stimuli_source": "device_ir.operation_flows+read_channels+conversion_formulae"
+  },
+  "runtime_path": "renode_i2c",
+  "slave_kind": "i2c_register_slave",
+  "spi_sub_mode": "",
+  "attempt": 1,
+  "model": "deepseek-v4-flash",
+  "provider_name": "deepseek",
+  "generation_time_s": 21.401,
+  "prompt_chars": 30932,
+  "raw_response": "{\"driver_header\": \"#ifndef DPS310_H\\n#define DPS310_H\\n\\n#include <stdint.h>\\n#include <rtthread.h>\\n\\nstruct dps310_device {\\n    struct rt_i2c_bus_device *bus;\\n    uint8_t i2c_addr;\\n};\\n\\nint dps310_init(struct dps310_device *dev, struct rt_i2c_bus_device *bus);\\nint dps310_read_pressure(struct dps310_device *dev, int32_t *pressure_raw);\\nint dps310_read_temperature(struct dps310_device *dev, int32_t *temperature_mdegc);\\n\\n#endif /* DPS310_H */\", \"driver_source\": \"#include \\\"dps310.h\\\"\\n#include <stdint.h>\\n#include <string.h>\\n\\n#define DPS310_I2C_ADDR 0x77\\n\\n#define PRS_B2 0x00\\n#define PRS_B1 0x01\\n#define PRS_B0 0x02\\n#define TMP_B2 0x03\\n#define TMP_B1 0x04\\n#define TMP_B0 0x05\\n#define PRS_CFG 0x06\\n#define TMP_CFG 0x07\\n#define MEAS_CFG 0x08\\n#define CFG_REG 0x09\\n#define INT_STS 0x0A\\n#define FIFO_STS 0x0B\\n#define RESET 0x0C\\n#define ID 0x0D\\n#define COEF_SRCE 0x28\\n\\nstatic int i2c_write_then_read(struct rt_i2c_bus_device *bus, uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len)\\n{\\n    struct rt_i2c_msg msgs[2];\\n\\n    msgs[0].addr = addr;\\n    msgs[0].flags = RT_I2C_WR;\\n    msgs[0].buf = &reg;\\n    msgs[0].len = 1;\\n\\n    msgs[1].addr = addr;\\n    msgs[1].flags = RT_I2C_RD;\\n    msgs[1].buf = buf;\\n    msgs[1].len = len;\\n\\n    if (rt_i2c_transfer(bus, msgs, 2) != 2)\\n        return -1;\\n    return 0;\\n}\\n\\nstatic int i2c_write(struct rt_i2c_bus_device *bus, uint8_t addr, uint8_t reg, uint8_t data)\\n{\\n    uint8_t buf[2] = {reg, data};\\n    struct rt_i2c_msg msg;\\n\\n    msg.addr = addr;\\n    msg.flags = RT_I2C_WR;\\n    msg.buf = buf;\\n    msg.len = 2;\\n\\n    if (rt_i2c_transfer(bus, &msg, 1) != 1)\\n        return -1;\\n    return 0;\\n}\\n\\nstatic int32_t combine_24bit_signed(uint8_t msb, uint8_t mid, uint8_t lsb)\\n{\\n    int32_t val = ((int32_t)msb << 16) | ((int32_t)mid << 8) | (int32_t)lsb;\\n    if (val & 0x800000)\\n        val |= 0xFF000000;\\n    return val;\\n}\\n\\nint dps310_init(struct dps310_device *dev, struct rt_i2c_bus_device *bus)\\n{\\n    uint8_t id;\\n    dev->bus = bus;\\n    dev->i2c_addr = DPS310_I2C_ADDR;\\n\\n    /* Soft reset */\\n    if (i2c_write(bus, dev->i2c_addr, RESET, 0x89) != 0)\\n        return -1;\\n    rt_thread_mdelay(12); /* wait for sensor ready max 12ms */\\n\\n    /* Read ID register */\\n    if (i2c_write_then_read(bus, dev->i2c_addr, ID, &id, 1) != 0)\\n        return -1;\\n\\n    /* Configure CFG_REG: disable FIFO, no interrupts */\\n    if (i2c_write(bus, dev->i2c_addr, CFG_REG, 0x00) != 0)\\n        return -1;\\n\\n    /* Wait for coefficients ready (max 40ms) */\\n    rt_thread_mdelay(40);\\n\\n    return 0;\\n}\\n\\nint dps310_read_pressure(struct dps310_device *dev, int32_t *pressure_raw)\\n{\\n    uint8_t buf[3];\\n    if (i2c_write_then_read(dev->bus, dev->i2c_addr, PRS_B2, buf, 3) != 0)\\n        return -1;\\n    *pressure_raw = combine_24bit_signed(buf[0], buf[1], buf[2]);\\n    return 0;\\n}\\n\\nint dps310_read_temperature(struct dps310_device *dev, int32_t *temperature_mdegc)\\n{\\n    uint8_t buf[3];\\n    if (i2c_write_then_read(dev->bus, dev->i2c_addr, TMP_B2, buf, 3) != 0)\\n        return -1;\\n    int32_t raw_temp = combine_24bit_signed(buf[0], buf[1], buf[2]);\\n    /* According to Section B3, temperature output is raw count (no conversion) */\\n    *temperature_mdegc = raw_temp;\\n    return 0;\\n}\"}",
+  "plan_hash": "c99af17a33b0ceff"
+}

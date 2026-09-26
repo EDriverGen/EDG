@@ -1,0 +1,209 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "riot__mhz19b",
+  "device_id": "mhz19b",
+  "rtos_id": "riot",
+  "bus": "uart_polling",
+  "scope": "mhz19b/riot: fixed task bus is uart_polling. Contract is limited to RTOS/BSP headers, handles, called setup/transfer APIs, fixed controller binding and driver-level waits.",
+  "api_contract": {
+    "bus": "uart_polling",
+    "required_headers": [
+      "periph/uart.h",
+      "xtimer.h",
+      "stdint.h"
+    ],
+    "api_functions": {
+      "uart_init": {
+        "signature": "int uart_init(uart_t uart, uint32_t baud, uart_rx_cb_t rx_cb, void *arg);",
+        "header": "data/rtos/riot/drivers/include/periph/uart.h",
+        "pack_line": 220,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 25
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/riot/uart_polling/pack.md",
+          "line_start": 220,
+          "line_end": 220
+        }
+      },
+      "uart_write": {
+        "signature": "void uart_write(uart_t uart, const uint8_t *data, size_t len);",
+        "header": "data/rtos/riot/drivers/include/periph/uart.h",
+        "pack_line": 418,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 40
+          },
+          {
+            "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 61
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/riot/uart_polling/pack.md",
+          "line_start": 418,
+          "line_end": 418
+        }
+      },
+      "xtimer_msleep": {
+        "signature": "static inline void xtimer_msleep(uint32_t milliseconds);",
+        "header": "data/rtos/riot/sys/include/xtimer.h",
+        "pack_line": 640,
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 41
+          }
+        ],
+        "kind": "function",
+        "pack_evidence": {
+          "file": "evidence/rtos/shared/baseline_api/riot/uart_polling/pack.md",
+          "line_start": 640,
+          "line_end": 640
+        }
+      }
+    },
+    "unresolved_reference_symbols": [
+      {
+        "symbol": "RIOT",
+        "reference": [
+          {
+            "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+            "line": 2
+          }
+        ]
+      }
+    ],
+    "fixed_task_binding": {
+      "binding_id": "riot_generic_periph_uart1_polling",
+      "platform_id": "riot_generic_periph",
+      "connection_type": "uart_polling",
+      "mode": "polling",
+      "bus_instance": "UART_DEV(1)",
+      "bus_instance_kind": "periph_device_macro",
+      "bus_symbol": "UART_DEV(1)",
+      "backend": "RIOT periph UART driver",
+      "address_mode": null,
+      "fixed_attachment": {
+        "baud_rate": 9600,
+        "data_bits": 8,
+        "parity": "none",
+        "stop_bits": 1
+      },
+      "notes": [
+        "Default RIOT UART polling binding for fixed-frame sensors."
+      ],
+      "evidence": [
+        "DriverGen/data/rtos/riot/drivers/include/periph/uart.h",
+        "DriverGen/data/references/mhz19b/riot/mhz19b_sample_ref.c",
+        "DriverGen/data/references/mhz19b/riot/mhz19b_ref.c"
+      ]
+    },
+    "setup_symbols": [
+      "uart_init"
+    ],
+    "transfer_symbols": [
+      "uart_write"
+    ],
+    "timing_symbols": [
+      "xtimer_msleep"
+    ],
+    "transaction_symbols": [
+      "uart_write"
+    ],
+    "strict_v2_semantic_check": {
+      "fixed_bus": "UART_DEV(1)",
+      "api_declarations_checked": {
+        "uart_init": "int uart_init(uart_t uart, uint32_t baud, uart_rx_cb_t rx_cb, void *arg);",
+        "uart_write": "void uart_write(uart_t uart, const uint8_t *data, size_t len);",
+        "xtimer_msleep": "static inline void xtimer_msleep(uint32_t milliseconds);"
+      },
+      "operation_sets": {
+        "setup": [
+          "uart_init"
+        ],
+        "transfer": [
+          "uart_write"
+        ],
+        "timing": [
+          "xtimer_msleep"
+        ]
+      },
+      "rule": "C requires usable signatures/parameters, full operation directions, units/returns and task-fixed context; all generated bindings and notes were examined."
+    }
+  },
+  "facts": [
+    {
+      "id": "header_types",
+      "category": "headers/types/handle",
+      "requirement": "Expose usable reference-driver RTOS/BSP include headers and the required bus handle/type context. Header set: periph/uart.h. Bus type references in declared API signatures: see API signature entries",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.h",
+          "line_start": 7,
+          "line_end": 7
+        }
+      ]
+    },
+    {
+      "id": "fixed_bus_binding",
+      "category": "task binding",
+      "requirement": "Preserve the task-fixed uart_polling controller/instance and mode from connection_binding_context; a device alternate bus is irrelevant. Binding: {\"address_mode\": null, \"backend\": \"RIOT periph UART driver\", \"binding_id\": \"riot_generic_periph_uart1_polling\", \"bus_instance\": \"UART_DEV(1)\", \"bus_instance_kind\": \"periph_device_macro\", \"bus_symbol\": \"UART_DEV(1)\", \"connection_type\": \"uart_polling\", \"evidence\": [\"DriverGen/data/rtos/riot/drivers/include/periph/uart.h\", \"DriverGen/data/references/mhz19b/riot/mhz19b_sample_ref.c\", \"DriverGen/data/references/mhz19b/riot/mhz19b_ref.c\"], \"fixed_attachment\": {\"baud_rate\": 9600, \"data_bits\": 8, \"parity\": \"none\", \"stop_bits\": 1}, \"mode\": \"polling\", \"notes\": [\"Default RIOT UART polling binding for fixed-frame sensors.\"], \"platform_id\": \"riot_generic_periph\"}",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/riot__mhz19b/inputs/task_requirements.json",
+          "line_start": 10,
+          "line_end": 40
+        }
+      ]
+    },
+    {
+      "id": "bus_setup_api",
+      "category": "setup/configuration/acquisition",
+      "requirement": "Expose required reference setup/acquire APIs with source signature, types and documented return/sequence: uart_init. Supplied declarations are in api_contract.api_functions; caller-supplied fixed bus may provide controller initialization. Required reference operations/signatures: uart_init: int uart_init(uart_t uart, uint32_t baud, uart_rx_cb_t rx_cb, void *arg);.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 25,
+          "line_end": 25
+        }
+      ]
+    },
+    {
+      "id": "bus_transfer_api",
+      "category": "transfer/return",
+      "requirement": "Expose the fixed-task uart_polling transfer/GPIO calls and signatures used by this reference, including direction, buffer/count, timeout and return semantics when supplied: uart_write. Required reference operations/signatures: uart_write: void uart_write(uart_t uart, const uint8_t *data, size_t len);.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 40,
+          "line_end": 40
+        }
+      ]
+    },
+    {
+      "id": "driver_timing_units",
+      "category": "driver timing",
+      "requirement": "Expose waits/time conversions actually used inside the reference driver, with units and tick conversion where available: xtimer_msleep. Sample/demo poll periods are excluded. Required reference operations/signatures: xtimer_msleep: static inline void xtimer_msleep(uint32_t milliseconds);.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/riot__mhz19b/inputs/reference_drivers/mhz19b_ref.c",
+          "line_start": 41,
+          "line_end": 41
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+#ifndef PCF8574_H
+#define PCF8574_H
+
+#include <stdint.h>
+#include "stm32f1xx_hal.h"
+
+#include "threadx.h"
+struct pcf8574_device {
+    I2C_HandleTypeDef *bus_handle;
+    uint8_t i2c_addr;
+};
+
+int pcf8574_init(struct pcf8574_device *dev, void *bus_handle);
+int pcf8574_read_port(struct pcf8574_device *dev, uint8_t *port_byte);
+
+#endif

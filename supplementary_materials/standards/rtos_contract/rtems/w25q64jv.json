@@ -1,0 +1,110 @@
+{
+  "schema_version": "edg-rtos-contract-reference-1.0",
+  "artifact_role": "audit_reference_contract",
+  "task_id": "rtems__w25q64jv",
+  "device_id": "w25q64jv",
+  "rtos_id": "rtems",
+  "bus": "spi",
+  "scope": "RTEMS w25q64jv task, fixed bus=SPI polling. The task metadata says generic devfs SPI, while its copied reference driver and harness use STM32 HAL SPI/GPIO. The target API surface cannot be resolved unambiguously from these conflicting materials; preserve the source facts and mark affected findings U.",
+  "api_contract": {
+    "task_binding": {
+      "rtos": "rtems",
+      "bus": "spi",
+      "binding_id": "rtems_generic_devfs_spi0_polling",
+      "connection_binding_context": "/dev/spidev0.0"
+    },
+    "reference_driver_api": {
+      "headers": [
+        "stm32f1xx_hal.h"
+      ],
+      "types": [
+        "SPI_HandleTypeDef",
+        "GPIO_TypeDef",
+        "HAL_StatusTypeDef"
+      ],
+      "operations": [
+        "HAL_SPI_Transmit",
+        "HAL_SPI_Receive",
+        "HAL_GPIO_WritePin"
+      ],
+      "timeout_unit": "milliseconds"
+    },
+    "conflict": "task_requirements.fixed_task_context says RTEMS devfs but copied reference explicitly uses STM32 HAL; task connection binding context separately names /dev/spidev0.0. The copied harness contains only a HAL shim, not a resolution to native runtime integration."
+  },
+  "facts": [
+    {
+      "id": "bus_binding",
+      "category": "bus_binding",
+      "requirement": "Fixed SPI task uses spi0 polling and a pre-provided SPI peripheral context; exact target binding backend is unclear because fixed context says RTEMS devfs while reference uses HAL SPI handle.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/task_requirements.json",
+          "line_start": 14,
+          "line_end": 29
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/task_requirements.json",
+          "line_start": 103,
+          "line_end": 119
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/reference_drivers/w25q64jv_ref.h",
+          "line_start": 27,
+          "line_end": 34
+        }
+      ]
+    },
+    {
+      "id": "spi_transfer",
+      "category": "polling_transport_or_io",
+      "requirement": "Reference uses HAL_SPI_Transmit/Receive with SPI_HandleTypeDef, byte buffers, length, and 100 ms timeout; native task target context instead specifies devfs SPI, so the required RTOS-facing transfer interface cannot be uniquely established.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 20,
+          "line_end": 24
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 60,
+          "line_end": 66
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/reference_drivers/w25q64jv_ref.h",
+          "line_start": 7,
+          "line_end": 9
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/stm32f1xx_hal.h",
+          "line_start": 13,
+          "line_end": 22
+        }
+      ]
+    },
+    {
+      "id": "chip_select",
+      "category": "gpio_chip_select",
+      "requirement": "Reference toggles CS using HAL_GPIO_WritePin(GPIO_TypeDef *, uint16_t, uint8_t); task attachment requires CS encoded by devfs node, so the task-level native CS interface is unresolved.",
+      "required": true,
+      "evidence": [
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/reference_drivers/w25q64jv_ref.c",
+          "line_start": 6,
+          "line_end": 12
+        },
+        {
+          "file": "evidence/rtos/tasks/rtems__w25q64jv/inputs/task_requirements.json",
+          "line_start": 108,
+          "line_end": 119
+        },
+        {
+          "file": "evidence/rtos/shared/harness_api/rtems/stm32f1xx_hal.h",
+          "line_start": 24,
+          "line_end": 24
+        }
+      ]
+    }
+  ]
+}
